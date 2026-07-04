@@ -25,6 +25,7 @@ export interface FilterSearch {
   facet?: string;
   feature?: string;
   axis?: string;
+  view?: "grid" | "row"; // display preference, not a filter
 }
 
 const splitCsv = (v: string | undefined): string[] =>
@@ -59,6 +60,7 @@ export function parseFilterSearch(raw: Record<string, unknown>): FilterSearch {
     facet: str(raw.facet),
     feature: str(raw.feature),
     axis: str(raw.axis),
+    view: raw.view === "row" ? "row" : undefined,
   };
 }
 

@@ -1,7 +1,8 @@
+import { Rows, SquaresFour } from "@phosphor-icons/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { FilterSidebar } from "@/components/filter-sidebar";
-import { FontGrid } from "@/components/font-grid";
+import { FontGrid, type ViewMode } from "@/components/font-grid";
 import { Input } from "@/components/ui/input";
 import { buildFacetIndex } from "@/lib/fonts/data";
 import { withFacets } from "@/lib/fonts/facets";
@@ -15,6 +16,7 @@ import {
   searchToFilter,
 } from "@/lib/fonts/filter";
 import { getAllFonts } from "@/lib/fonts/queries";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
   component: App,
@@ -32,9 +34,24 @@ function App() {
   const facetIndex = useMemo(() => buildFacetIndex(fonts), [fonts]);
   const filter = useMemo(() => searchToFilter(search), [search]);
   const results = useMemo(() => applyFilters(fonts, filter), [fonts, filter]);
+  const view: ViewMode = search.view === "row" ? "row" : "grid";
 
+  // Preserve the view preference across filter changes (view isn't a filter).
   const setFilter = (next: FilterState) => {
-    navigate({ search: filterToSearch(next), replace: true });
+    navigate({
+      search: { ...filterToSearch(next), view: search.view },
+      replace: true,
+    });
+  };
+
+  const setView = (next: ViewMode) => {
+    navigate({
+      search: {
+        ...filterToSearch(filter),
+        view: next === "row" ? "row" : undefined,
+      },
+      replace: true,
+    });
   };
 
   const activeCount =
@@ -64,12 +81,31 @@ function App() {
           {activeCount > 0 && (
             <button
               type="button"
-              onClick={() => navigate({ search: {}, replace: true })}
+              onClick={() =>
+                navigate({ search: { view: search.view }, replace: true })
+              }
               className="underline underline-offset-2 hover:text-foreground"
             >
               Clear {activeCount} filters
             </button>
           )}
+        </div>
+
+        <div className="flex items-center gap-1 sm:ml-auto">
+          <ViewToggle
+            active={view === "grid"}
+            label="Grid view"
+            onClick={() => setView("grid")}
+          >
+            <SquaresFour className="size-4" />
+          </ViewToggle>
+          <ViewToggle
+            active={view === "row"}
+            label="Row view"
+            onClick={() => setView("row")}
+          >
+            <Rows className="size-4" />
+          </ViewToggle>
         </div>
       </div>
 
@@ -91,10 +127,40 @@ function App() {
               previewText={previewText}
               favorites={favorites}
               onToggleFavorite={toggle}
+              view={view}
             />
           )}
         </main>
       </div>
     </div>
+  );
+}
+
+function ViewToggle({
+  active,
+  label,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  label: string;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      aria-pressed={active}
+      className={cn(
+        "rounded-md border p-1.5 transition-colors",
+        active
+          ? "border-foreground bg-foreground text-background"
+          : "text-muted-foreground hover:border-foreground hover:text-foreground"
+      )}
+    >
+      {children}
+    </button>
   );
 }
