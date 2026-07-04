@@ -18,10 +18,6 @@ export function FontCard({
   isFavorite,
   onToggleFavorite,
 }: Props) {
-  useEffect(() => {
-    ensureFontLoaded(font.name, font.isVariable);
-  }, [font.name, font.isVariable]);
-
   // Weight/instance switcher (pain point 4). Build the option list from named
   // instances when variable, else fall back to a single default.
   const weightOptions = useMemo(() => {
@@ -41,6 +37,13 @@ export function FontCard({
       { label: "Regular", weight: 400, coords: {} as Record<string, number> },
     ];
   }, [font.instances]);
+
+  useEffect(() => {
+    ensureFontLoaded(
+      font.name,
+      weightOptions.map((o) => o.weight)
+    );
+  }, [font.name, weightOptions]);
 
   const [active, setActive] = useState(() => {
     const reg = weightOptions.find((o) => o.weight === 400);

@@ -5,28 +5,24 @@ const loaded = new Set<string>();
 
 /**
  * Inject a <link> to the Google Fonts CSS2 stylesheet for a family.
- * Requests the full variable range when the family is variable so any weight /
- * axis value can be previewed (pain point 4).
+ *
+ * `weights` are the concrete weight values we want to preview (from the
+ * family's named instances). We request exactly those so each weight button
+ * maps to a real cut — requesting a made-up axis tuple 404s and silently falls
+ * back to a single default weight, which is why 100–400 looked identical.
  */
-export function ensureFontLoaded(family: string, isVariable: boolean) {
+export function ensureFontLoaded(family: string, weights: number[]) {
   if (typeof document === "undefined") return;
-  const key = family;
-  if (loaded.has(key)) return;
-  loaded.add(key);
+  if (loaded.has(family)) return;
+  loaded.add(family);
 
-  const spec = isVariable
-    ? // ask for the widest common axis range; Google clamps to what exists
-      `${encodeFamily(family)}:ital,opsz,wght@0,6..144,1..1000`
-    : encodeFamily(family);
+  const uniq = [...new Set(weights.filter((w) => w > 0))].sort((a, b) => a - b);
+  const spec =
+    uniq.length > 0
+      ? `${encodeFamily(family)}:wght@${uniq.join(";")}`
+      : encodeFamily(family);
 
-  // Primary request; if the variable spec 404s the browser just skips it, so
-  // we also queue a plain fallback that always resolves.
   appendLink(`https://fonts.googleapis.com/css2?family=${spec}&display=swap`);
-  if (isVariable) {
-    appendLink(
-      `https://fonts.googleapis.com/css2?family=${encodeFamily(family)}&display=swap`
-    );
-  }
 }
 
 function encodeFamily(family: string) {

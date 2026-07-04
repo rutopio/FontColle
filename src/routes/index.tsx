@@ -61,7 +61,7 @@ function App() {
       <div className="flex gap-6">
         <FilterSidebar index={index} filter={filter} onChange={setFilter} />
 
-        <main className="grid flex-1 grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <main className="grid flex-1 grid-cols-1 items-start gap-4 md:grid-cols-2 lg:grid-cols-3">
           {results.map((font) => (
             <FontCard
               key={font.id}
