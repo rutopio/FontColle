@@ -20,6 +20,7 @@
       "!.drizzle",
       "!.tanstack",
       "!src/routeTree.gen.ts",
+      "!worker-configuration.d.ts",
       "!src/lib/db/migrations",
       "!src/lib/db/seed.sql",
       "!src/components/ui",

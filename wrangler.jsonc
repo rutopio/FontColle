@@ -1,13 +1,18 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "font-finder",
+  "main": "@tanstack/react-start/server-entry",
   "compatibility_date": "2025-07-01",
+  "compatibility_flags": ["nodejs_compat"],
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "font-finder-d1",
       "database_id": "d2394735-b199-4bce-a639-7a90314f1bda",
-      "migrations_dir": "src/lib/db/migrations"
+      "migrations_dir": "src/lib/db/migrations",
+      // Dev hits the real (migrated + seeded) D1 rather than an empty local
+      // miniflare instance, so pages render real data (mirrors TypeSpan).
+      "remote": true
     }
   ]
 }

@@ -3,7 +3,8 @@ import { useEffect, useMemo, useState } from "react";
 import { FilterSidebar } from "@/components/filter-sidebar";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { facetIndex, getFont } from "@/lib/fonts/data";
+import { buildFacetIndex, type FacetIndex } from "@/lib/fonts/data";
+import { withFacets } from "@/lib/fonts/facets";
 import {
   buildFeatureSettings,
   DEFAULT_ON,
@@ -15,14 +16,18 @@ import {
   filterToSearch,
 } from "@/lib/fonts/filter";
 import { ensureFontRangeLoaded } from "@/lib/fonts/loader";
+import { getAllFonts } from "@/lib/fonts/queries";
 import type { FontRecord } from "@/lib/fonts/types";
 
 export const Route = createFileRoute("/$fontId")({
   component: DetailPage,
-  loader: ({ params }) => {
-    const font = getFont(params.fontId);
+  loader: async ({ params }) => {
+    // One catalog fetch: the detail body needs the font, the sidebar needs the
+    // facet index for its counts (todo §8b: pure-navigation sidebar).
+    const all = withFacets(await getAllFonts());
+    const font = all.find((f) => f.id === params.fontId);
     if (!font) throw notFound();
-    return { font };
+    return { font, facetIndex: buildFacetIndex(all) };
   },
   notFoundComponent: () => (
     <div className="container p-6">
@@ -38,10 +43,10 @@ export const Route = createFileRoute("/$fontId")({
 });
 
 function DetailPage() {
-  const { font } = Route.useLoaderData();
+  const { font, facetIndex } = Route.useLoaderData();
   return (
     <div className="container flex min-h-svh gap-6 p-6">
-      <DetailSidebar />
+      <DetailSidebar index={facetIndex} />
       <Detail font={font} />
     </div>
   );
@@ -49,17 +54,13 @@ function DetailPage() {
 
 // Sidebar on the detail page is pure navigation: any pill click goes back to the
 // list with that filter applied (todo §8b).
-function DetailSidebar() {
+function DetailSidebar({ index }: { index: FacetIndex }) {
   const navigate = Route.useNavigate();
   const goToList = (next: FilterState) => {
     navigate({ to: "/", search: filterToSearch(next) });
   };
   return (
-    <FilterSidebar
-      index={facetIndex}
-      filter={emptyFilter}
-      onChange={goToList}
-    />
+    <FilterSidebar index={index} filter={emptyFilter} onChange={goToList} />
   );
 }
 

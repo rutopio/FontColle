@@ -3,7 +3,8 @@ import { useMemo, useState } from "react";
 import { FilterSidebar } from "@/components/filter-sidebar";
 import { FontCard } from "@/components/font-card";
 import { Input } from "@/components/ui/input";
-import { facetIndex, fonts } from "@/lib/fonts/data";
+import { buildFacetIndex } from "@/lib/fonts/data";
+import { withFacets } from "@/lib/fonts/facets";
 import { useFavorites } from "@/lib/fonts/favorites";
 import {
   applyFilters,
@@ -13,20 +14,24 @@ import {
   parseFilterSearch,
   searchToFilter,
 } from "@/lib/fonts/filter";
+import { getAllFonts } from "@/lib/fonts/queries";
 
 export const Route = createFileRoute("/")({
   component: App,
   validateSearch: (raw): FilterSearch => parseFilterSearch(raw),
+  loader: async () => ({ fonts: withFacets(await getAllFonts()) }),
 });
 
 function App() {
+  const { fonts } = Route.useLoaderData();
   const search = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
   const [previewText, setPreviewText] = useState("");
   const { favorites, toggle } = useFavorites();
 
+  const facetIndex = useMemo(() => buildFacetIndex(fonts), [fonts]);
   const filter = useMemo(() => searchToFilter(search), [search]);
-  const results = useMemo(() => applyFilters(fonts, filter), [filter]);
+  const results = useMemo(() => applyFilters(fonts, filter), [fonts, filter]);
 
   const setFilter = (next: FilterState) => {
     navigate({ search: filterToSearch(next), replace: true });
