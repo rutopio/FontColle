@@ -2,7 +2,7 @@ import { Heart } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
-import { ensureFontLoaded } from "@/lib/fonts/loader";
+import { ensureFontLoaded, previewFontFamily } from "@/lib/fonts/loader";
 import type { FontRecord } from "@/lib/fonts/types";
 import { cn } from "@/lib/utils";
 
@@ -64,7 +64,7 @@ export function FontRow({
       </div>
 
       <p
-        style={{ fontFamily: `"${font.name}", sans-serif` }}
+        style={{ fontFamily: previewFontFamily(font.name) }}
         className="truncate text-3xl leading-tight"
       >
         {previewText || "The quick brown fox jumps over the lazy dog"}

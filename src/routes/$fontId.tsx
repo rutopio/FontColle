@@ -15,7 +15,7 @@ import {
   type FilterState,
   filterToSearch,
 } from "@/lib/fonts/filter";
-import { ensureFontRangeLoaded } from "@/lib/fonts/loader";
+import { ensureFontRangeLoaded, previewFontFamily } from "@/lib/fonts/loader";
 import { getAllFonts } from "@/lib/fonts/queries";
 import type { FontRecord } from "@/lib/fonts/types";
 
@@ -89,7 +89,7 @@ function Detail({ font }: { font: FontRecord }) {
       .map((a) => `"${a.tag}" ${axisState[a.tag]}`)
       .join(", ");
     return {
-      fontFamily: `"${font.name}", sans-serif`,
+      fontFamily: previewFontFamily(font.name),
       fontSize: `${size}px`,
       fontWeight: axisState.wght ? Math.round(axisState.wght) : undefined,
       fontVariationSettings: varSettings || undefined,
@@ -228,7 +228,7 @@ function Detail({ font }: { font: FontRecord }) {
                 <span
                   className="text-2xl"
                   style={{
-                    fontFamily: `"${font.name}", sans-serif`,
+                    fontFamily: previewFontFamily(font.name),
                     fontWeight: inst.coords.wght
                       ? Math.round(inst.coords.wght)
                       : undefined,

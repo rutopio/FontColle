@@ -4,6 +4,15 @@
 const loaded = new Set<string>();
 
 /**
+ * Preview font-family chain: the family, then Adobe NotDef so any codepoint the
+ * family lacks renders as a visible .notdef box (registered in styles.css),
+ * then sans-serif as a last resort.
+ */
+export function previewFontFamily(name: string): string {
+  return `"${name}", "Adobe NotDef", sans-serif`;
+}
+
+/**
  * Inject a <link> to the Google Fonts CSS2 stylesheet for a family.
  *
  * `weights` are the concrete weight values we want to preview (from the

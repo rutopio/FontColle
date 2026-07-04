@@ -3,6 +3,18 @@
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/inter";
 
+/* Adobe NotDef (OFL 1.1): preview fallback. Maps every codepoint to a visible
+   .notdef box, so when a previewed font lacks a glyph the missing character
+   shows as an obvious box instead of the browser's default fallback. Used last
+   in the preview font-family chain. */
+@font-face {
+  font-family: "Adobe NotDef";
+  src: url("/fonts/adobe-notdef.woff2") format("woff2");
+  font-weight: 100 1000;
+  font-style: normal;
+  size-adjust: 100%;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

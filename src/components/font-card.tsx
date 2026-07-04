@@ -2,7 +2,7 @@ import { Heart } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { ensureFontLoaded } from "@/lib/fonts/loader";
+import { ensureFontLoaded, previewFontFamily } from "@/lib/fonts/loader";
 import type { FontRecord } from "@/lib/fonts/types";
 import { cn } from "@/lib/utils";
 
@@ -52,7 +52,7 @@ export function FontCard({
   });
 
   const previewStyle: React.CSSProperties = {
-    fontFamily: `"${font.name}", sans-serif`,
+    fontFamily: previewFontFamily(font.name),
     fontWeight: active.weight,
     fontVariationSettings: buildVariationSettings(active.coords),
   };
