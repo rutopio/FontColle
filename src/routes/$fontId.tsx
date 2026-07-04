@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { FilterLayout } from "@/components/filter-layout";
+import { Column, ColumnHeader, FilterLayout } from "@/components/filter-layout";
 import { Badge } from "@/components/ui/badge";
 import { buildFacetIndex } from "@/lib/fonts/data";
 import { withFacets } from "@/lib/fonts/facets";
@@ -103,32 +103,21 @@ function Detail({ font }: { font: FontRecord }) {
   };
 
   return (
-    <main className="flex min-w-0 flex-1 flex-col gap-5">
-      <Link
-        to="/"
-        className="w-fit text-muted-foreground text-sm hover:text-foreground"
-      >
-        ← All fonts
-      </Link>
-
-      <div className="flex items-start justify-between gap-4">
-        <div>
+    <Column>
+      <ColumnHeader className="justify-between">
+        <div className="flex min-w-0 flex-col">
+          <Link
+            to="/"
+            className="w-fit text-muted-foreground text-xs hover:text-foreground"
+          >
+            ← All fonts
+          </Link>
           <h1
-            className="font-semibold text-4xl leading-tight"
+            className="truncate font-semibold text-2xl leading-tight"
             style={{ fontFamily: `"${font.name}", sans-serif` }}
           >
             {font.name}
           </h1>
-          {font.designer && (
-            <p className="mt-1.5 text-muted-foreground text-sm">
-              by {font.designer}
-            </p>
-          )}
-          <div className="mt-2.5 flex flex-wrap gap-1.5">
-            <Badge variant="secondary">{font.class}</Badge>
-            {font.isVariable && <Badge variant="secondary">Variable</Badge>}
-            {font.license && <Badge variant="outline">{font.license}</Badge>}
-          </div>
         </div>
         <a
           href={`https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`}
@@ -138,7 +127,20 @@ function Detail({ font }: { font: FontRecord }) {
         >
           Download ↗
         </a>
-      </div>
+      </ColumnHeader>
+
+      {(font.designer || font.class) && (
+        <div className="flex flex-wrap items-center gap-2">
+          {font.designer && (
+            <span className="text-muted-foreground text-sm">
+              by {font.designer}
+            </span>
+          )}
+          <Badge variant="secondary">{font.class}</Badge>
+          {font.isVariable && <Badge variant="secondary">Variable</Badge>}
+          {font.license && <Badge variant="outline">{font.license}</Badge>}
+        </div>
+      )}
 
       {/* TYPE TESTER */}
       <Panel label="Type tester">
@@ -299,7 +301,7 @@ function Detail({ font }: { font: FontRecord }) {
           </div>
         </Panel>
       </div>
-    </main>
+    </Column>
   );
 }
 

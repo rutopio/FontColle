@@ -1,7 +1,7 @@
 import { Rows, SquaresFour } from "@phosphor-icons/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo } from "react";
-import { FilterLayout } from "@/components/filter-layout";
+import { Column, ColumnHeader, FilterLayout } from "@/components/filter-layout";
 import { FontGrid, type ViewMode } from "@/components/font-grid";
 import {
   Select,
@@ -95,8 +95,8 @@ function App() {
 
   return (
     <FilterLayout index={facetIndex} filter={filter} onFilterChange={setFilter}>
-      <main className="flex min-w-0 flex-1 flex-col gap-6">
-        <div className="sticky top-0 z-10 -mt-6 flex flex-wrap items-center gap-3 border-border border-b bg-background pt-6 pb-4">
+      <Column>
+        <ColumnHeader>
           <div className="flex items-center gap-3 text-muted-foreground text-sm">
             <span>{results.length} fonts</span>
             {activeCount > 0 && (
@@ -147,7 +147,7 @@ function App() {
               </TabsList>
             </Tabs>
           </div>
-        </div>
+        </ColumnHeader>
 
         {results.length === 0 ? (
           <p className="py-16 text-center text-muted-foreground text-sm">
@@ -162,7 +162,7 @@ function App() {
             view={view}
           />
         )}
-      </main>
+      </Column>
     </FilterLayout>
   );
 }
