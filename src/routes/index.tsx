@@ -9,6 +9,7 @@ import { applyFilters, buildFacetIndex, emptyFilter } from "@/lib/fonts/filter";
 import type { FontRecord } from "@/lib/fonts/types";
 
 const fonts = fontsData as FontRecord[];
+const facetIndex = buildFacetIndex(fonts);
 
 export const Route = createFileRoute("/")({
   component: App,
@@ -19,8 +20,7 @@ function App() {
   const [previewText, setPreviewText] = useState("");
   const { favorites, toggle } = useFavorites();
 
-  const index = useMemo(() => buildFacetIndex(fonts), [fonts]);
-  const results = useMemo(() => applyFilters(fonts, filter), [fonts, filter]);
+  const results = useMemo(() => applyFilters(fonts, filter), [filter]);
 
   const activeCount =
     filter.classes.length +
@@ -59,7 +59,11 @@ function App() {
       </div>
 
       <div className="flex gap-6">
-        <FilterSidebar index={index} filter={filter} onChange={setFilter} />
+        <FilterSidebar
+          index={facetIndex}
+          filter={filter}
+          onChange={setFilter}
+        />
 
         <main className="grid flex-1 grid-cols-1 items-start gap-4 md:grid-cols-2 lg:grid-cols-3">
           {results.map((font) => (
