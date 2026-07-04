@@ -96,7 +96,7 @@ function App() {
   return (
     <FilterLayout index={facetIndex} filter={filter} onFilterChange={setFilter}>
       <main className="flex min-w-0 flex-1 flex-col gap-6">
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="sticky top-0 z-10 -mt-6 flex flex-wrap items-center gap-3 border-border border-b bg-background pt-6 pb-4">
           <div className="flex items-center gap-3 text-muted-foreground text-sm">
             <span>{results.length} fonts</span>
             {activeCount > 0 && (
