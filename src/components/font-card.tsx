@@ -60,11 +60,17 @@ export function FontCard({
     <div className="flex flex-col gap-4 rounded-lg border bg-card p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h3 className="truncate font-medium text-sm">{font.name}</h3>
-          <p className="truncate text-muted-foreground text-xs">
-            {font.class}
-            {font.designer ? ` · ${font.designer}` : ""}
-          </p>
+          <div className="flex items-center gap-2">
+            <h3 className="truncate font-medium text-sm">{font.name}</h3>
+            <Badge variant="secondary" className="shrink-0 text-[10px]">
+              {font.class}
+            </Badge>
+          </div>
+          {font.designer && (
+            <p className="truncate text-muted-foreground text-xs">
+              {font.designer}
+            </p>
+          )}
         </div>
         <button
           type="button"
@@ -94,7 +100,7 @@ export function FontCard({
               type="button"
               onClick={() => setActive(o)}
               className={cn(
-                "rounded border px-2 py-0.5 text-xs transition-colors",
+                "rounded border px-2 py-0.5 font-mono text-xs transition-colors",
                 active === o
                   ? "border-foreground bg-foreground text-background"
                   : "text-muted-foreground hover:border-foreground"
@@ -119,7 +125,7 @@ export function FontCard({
         ))}
       </div>
 
-      <div className="flex items-center justify-between border-t pt-3">
+      <div className="mt-auto flex items-center justify-between border-t pt-3">
         <span className="text-muted-foreground text-xs">
           {font.features.length} features
         </span>

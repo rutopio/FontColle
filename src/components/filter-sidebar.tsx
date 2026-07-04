@@ -107,7 +107,7 @@ function Pills({
             )}
           >
             {value}
-            <span className="ml-1 opacity-60">{count}</span>
+            <span className="ml-1 font-mono opacity-60">{count}</span>
           </button>
         );
       })}

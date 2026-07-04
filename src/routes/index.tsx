@@ -29,7 +29,7 @@ function App() {
     filter.axes.length;
 
   return (
-    <div className="mx-auto flex min-h-svh max-w-7xl flex-col gap-6 p-6">
+    <div className="container flex min-h-svh flex-col gap-6 p-6">
       <header className="flex flex-col gap-1">
         <h1 className="font-semibold text-2xl">Font Finder</h1>
         <p className="text-muted-foreground text-sm">
@@ -65,7 +65,7 @@ function App() {
           onChange={setFilter}
         />
 
-        <main className="grid flex-1 grid-cols-1 items-start gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <main className="grid flex-1 grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {results.map((font) => (
             <FontCard
               key={font.id}
