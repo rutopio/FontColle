@@ -25,6 +25,39 @@ export function ensureFontLoaded(family: string, weights: number[]) {
   appendLink(`https://fonts.googleapis.com/css2?family=${spec}&display=swap`);
 }
 
+/**
+ * Load a family for the detail-page tester: request the *full* range of each
+ * registered axis (wght/wdth/opsz/…) so sliders can move across the whole space.
+ * css2 needs the axes listed alphabetically with lowercase-before-uppercase
+ * tags; we only send registered lowercase axes it accepts (custom axes like GRAD
+ * still animate via font-variation-settings on the variable file css2 returns).
+ */
+export function ensureFontRangeLoaded(
+  family: string,
+  axes: { tag: string; min: number | null; max: number | null }[]
+) {
+  if (typeof document === "undefined") return;
+  const key = `range:${family}`;
+  if (loaded.has(key)) return;
+  loaded.add(key);
+
+  const registered = axes
+    .filter((a) => /^[a-z]{4}$/.test(a.tag) && a.min != null && a.max != null)
+    .sort((a, b) => a.tag.localeCompare(b.tag));
+
+  let spec = encodeFamily(family);
+  if (registered.length) {
+    const tags = registered.map((a) => a.tag).join(",");
+    const ranges = registered.map((a) => `${a.min}..${a.max}`).join(",");
+    spec = `${spec}:${tags}@${ranges}`;
+  }
+  appendLink(`https://fonts.googleapis.com/css2?family=${spec}&display=swap`);
+  // Plain fallback in case the range spec is rejected for some family.
+  appendLink(
+    `https://fonts.googleapis.com/css2?family=${encodeFamily(family)}&display=swap`
+  );
+}
+
 function encodeFamily(family: string) {
   return family.trim().replace(/\s+/g, "+");
 }

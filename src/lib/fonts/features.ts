@@ -69,7 +69,7 @@ export function featureName(tag: string): string {
  * the browser default, so untouched default-on features keep the engine default.
  */
 export function buildFeatureSettings(
-  overrides: Record<string, boolean>,
+  overrides: Record<string, boolean>
 ): string | undefined {
   const parts: string[] = [];
   for (const [tag, on] of Object.entries(overrides)) {

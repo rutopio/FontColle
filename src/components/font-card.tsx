@@ -1,4 +1,5 @@
 import { Heart } from "@phosphor-icons/react";
+import { Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { ensureFontLoaded } from "@/lib/fonts/loader";
@@ -57,7 +58,11 @@ export function FontCard({
   };
 
   return (
-    <div className="flex flex-col gap-4 rounded-lg border bg-card p-5">
+    <Link
+      to="/$fontId"
+      params={{ fontId: font.id }}
+      className="flex flex-col gap-4 rounded-lg border bg-card p-5 transition-colors hover:border-foreground focus-visible:border-foreground focus-visible:outline-none"
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
@@ -74,7 +79,10 @@ export function FontCard({
         </div>
         <button
           type="button"
-          onClick={() => onToggleFavorite(font.id)}
+          onClick={(e) => {
+            e.preventDefault();
+            onToggleFavorite(font.id);
+          }}
           aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
           className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
         >
@@ -98,7 +106,10 @@ export function FontCard({
             <button
               key={`${o.label}-${o.weight}`}
               type="button"
-              onClick={() => setActive(o)}
+              onClick={(e) => {
+                e.preventDefault();
+                setActive(o);
+              }}
               className={cn(
                 "rounded border px-2 py-0.5 font-mono text-xs transition-colors",
                 active === o
@@ -133,12 +144,13 @@ export function FontCard({
           href={`https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`}
           target="_blank"
           rel="noreferrer"
+          onClick={(e) => e.stopPropagation()}
           className="text-xs underline underline-offset-2 hover:text-foreground"
         >
           Download ↗
         </a>
       </div>
-    </div>
+    </Link>
   );
 }
 

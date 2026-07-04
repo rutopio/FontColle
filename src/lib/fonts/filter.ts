@@ -16,6 +16,52 @@ export const emptyFilter: FilterState = {
   axes: [],
 };
 
+// URL search-param shape. Filters live in the URL so they persist across
+// list <-> detail navigation, and the detail sidebar can link back to the list
+// with a filter applied. Arrays are comma-joined; empty keys are omitted.
+export interface FilterSearch {
+  q?: string;
+  class?: string;
+  facet?: string;
+  feature?: string;
+  axis?: string;
+}
+
+const splitCsv = (v: string | undefined): string[] =>
+  v ? v.split(",").filter(Boolean) : [];
+
+export function searchToFilter(s: FilterSearch): FilterState {
+  return {
+    query: s.q ?? "",
+    classes: splitCsv(s.class),
+    facets: splitCsv(s.facet),
+    features: splitCsv(s.feature),
+    axes: splitCsv(s.axis),
+  };
+}
+
+export function filterToSearch(f: FilterState): FilterSearch {
+  const s: FilterSearch = {};
+  if (f.query) s.q = f.query;
+  if (f.classes.length) s.class = f.classes.join(",");
+  if (f.facets.length) s.facet = f.facets.join(",");
+  if (f.features.length) s.feature = f.features.join(",");
+  if (f.axes.length) s.axis = f.axes.join(",");
+  return s;
+}
+
+/** Validate/coerce raw URL search into FilterSearch (drops unknown keys). */
+export function parseFilterSearch(raw: Record<string, unknown>): FilterSearch {
+  const str = (v: unknown) => (typeof v === "string" ? v : undefined);
+  return {
+    q: str(raw.q),
+    class: str(raw.class),
+    facet: str(raw.facet),
+    feature: str(raw.feature),
+    axis: str(raw.axis),
+  };
+}
+
 export function applyFilters(
   fonts: FontRecord[],
   f: FilterState

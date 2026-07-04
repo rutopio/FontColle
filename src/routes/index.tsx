@@ -1,26 +1,36 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { FilterSidebar } from "@/components/filter-sidebar";
 import { FontCard } from "@/components/font-card";
 import { Input } from "@/components/ui/input";
-import fontsData from "@/data/fonts.json";
+import { facetIndex, fonts } from "@/lib/fonts/data";
 import { useFavorites } from "@/lib/fonts/favorites";
-import { applyFilters, buildFacetIndex, emptyFilter } from "@/lib/fonts/filter";
-import type { FontRecord } from "@/lib/fonts/types";
-
-const fonts = fontsData as FontRecord[];
-const facetIndex = buildFacetIndex(fonts);
+import {
+  applyFilters,
+  type FilterSearch,
+  type FilterState,
+  filterToSearch,
+  parseFilterSearch,
+  searchToFilter,
+} from "@/lib/fonts/filter";
 
 export const Route = createFileRoute("/")({
   component: App,
+  validateSearch: (raw): FilterSearch => parseFilterSearch(raw),
 });
 
 function App() {
-  const [filter, setFilter] = useState(emptyFilter);
+  const search = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
   const [previewText, setPreviewText] = useState("");
   const { favorites, toggle } = useFavorites();
 
+  const filter = useMemo(() => searchToFilter(search), [search]);
   const results = useMemo(() => applyFilters(fonts, filter), [filter]);
+
+  const setFilter = (next: FilterState) => {
+    navigate({ search: filterToSearch(next), replace: true });
+  };
 
   const activeCount =
     filter.classes.length +
@@ -49,7 +59,7 @@ function App() {
           {activeCount > 0 && (
             <button
               type="button"
-              onClick={() => setFilter(emptyFilter)}
+              onClick={() => navigate({ search: {}, replace: true })}
               className="underline underline-offset-2 hover:text-foreground"
             >
               Clear {activeCount} filters
