@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "font-finder",
+  "compatibility_date": "2025-07-01",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "font-finder-d1",
+      // Filled in after `wrangler d1 create font-finder-d1`.
+      "database_id": "",
+      "migrations_dir": "src/lib/db/migrations"
+    }
+  ]
+}

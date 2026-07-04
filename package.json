@@ -11,7 +11,12 @@
     "format": "biome format --write .",
     "check": "biome check --write . && pnpm check-types",
     "check-types": "tsc --noEmit",
-    "ui": "pnpm dlx shadcn@latest"
+    "ui": "pnpm dlx shadcn@latest",
+    "db": "drizzle-kit",
+    "db:apply:local": "wrangler d1 migrations apply font-finder-d1 --local",
+    "db:apply:remote": "wrangler d1 migrations apply font-finder-d1 --remote",
+    "db:seed:local": "node scripts/harvester/seed-d1.mjs --local",
+    "db:seed:remote": "node scripts/harvester/seed-d1.mjs --remote"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
@@ -26,6 +31,7 @@
     "@tanstack/router-plugin": "latest",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "drizzle-orm": "0.45.2",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "shadcn": "^4.13.0",
@@ -42,9 +48,11 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^6",
+    "drizzle-kit": "0.31.10",
     "jsdom": "^28",
     "typescript": "^6",
     "vite": "^8",
-    "vitest": "^4"
+    "vitest": "^4",
+    "wrangler": "4.98.0"
   }
 }
