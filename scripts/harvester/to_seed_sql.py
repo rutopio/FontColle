@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Emit idempotent SQL to seed/refresh D1 from the frontend dataset.
 
-Reads a records file (same shape as public/fonts.json) and writes SQL that:
-  - upserts each family by family_dir (stable key)
-  - replaces that family's axes / features / instances
+For the full ~2000-family catalog the output is split into chunk files
+(seed.000.sql, seed.001.sql, …) so each stays within D1's --file limits.
 
-Run: python3 to_seed_sql.py ../../src/data/fonts.json ../../src/lib/db/seed.sql
-Apply: wrangler d1 execute font-finder-d1 --local --file src/lib/db/seed.sql
+Run:   python3 to_seed_sql.py ../../src/data/fonts.json ../../src/lib/db/seed
+Apply: for f in src/lib/db/seed.*.sql; do \
+         wrangler d1 execute font-finder-d1 --remote --file "$f"; done
 """
 import json, sys, time
 
@@ -23,62 +23,82 @@ def q(v):
     return "'" + str(v).replace("'", "''") + "'"
 
 
-def emit(records, out):
-    now = int(time.time() * 1000)
-    # No explicit BEGIN/COMMIT: D1 remote rejects SQL transaction statements in a
-    # --file batch (it manages atomicity itself). Statements are ordered so each
-    # family's child-row DELETEs run before its INSERTs.
-    lines: list[str] = []
-    for r in records:
-        fam = r["id"]
-        # Upsert family; content_hash is a cheap stable digest of the record.
-        chash = str(abs(hash(json.dumps(r, sort_keys=True))) % (10**12))
-        subsets = json.dumps(r.get("subsets", []), ensure_ascii=False)
+def statements_for(r, now):
+    """SQL statements to upsert one family and replace its child rows."""
+    lines = []
+    fam = r["id"]
+    chash = str(abs(hash(json.dumps(r, sort_keys=True))) % (10**12))
+    subsets = json.dumps(r.get("subsets", []), ensure_ascii=False)
+    cols = (
+        "family_dir,name,designer,category,primary_class,license,license_dir,"
+        "is_variable,subsets,primary_ttf,version,version_string,created_ms,"
+        "modified_ms,date_added,weight_class,width_class,fs_type,glyph_count,"
+        "char_count,units_per_em,has_stat,primary_script,panose,content_hash,updated_at"
+    )
+    vals = (
+        f"{q(fam)},{q(r['name'])},{q(r.get('designer'))},{q(r.get('category'))},"
+        f"{q(r.get('class','Sans'))},{q(r.get('license'))},{q(r.get('licenseDir'))},"
+        f"{q(bool(r.get('isVariable')))},{q(subsets)},{q(r.get('primaryTtf'))},"
+        f"{q(r.get('version'))},{q(r.get('versionString'))},{q(r.get('createdMs'))},"
+        f"{q(r.get('modifiedMs'))},{q(r.get('dateAdded'))},{q(r.get('weightClass'))},"
+        f"{q(r.get('widthClass'))},{q(r.get('fsType'))},{q(r.get('glyphCount'))},"
+        f"{q(r.get('charCount'))},{q(r.get('unitsPerEm'))},{q(bool(r.get('hasStat')))},"
+        f"{q(r.get('primaryScript'))},{q(r.get('panose'))},{q(chash)},{now}"
+    )
+    update = ",".join(
+        f"{c}=excluded.{c}"
+        for c in cols.split(",")
+        if c != "family_dir"
+    )
+    lines.append(
+        f"INSERT INTO family ({cols}) VALUES ({vals}) "
+        f"ON CONFLICT(family_dir) DO UPDATE SET {update};"
+    )
+    fid = f"(SELECT id FROM family WHERE family_dir={q(fam)})"
+    lines.append(f"DELETE FROM family_axis WHERE family_id={fid};")
+    lines.append(f"DELETE FROM family_feature WHERE family_id={fid};")
+    lines.append(f"DELETE FROM family_instance WHERE family_id={fid};")
+    for a in r.get("axes", []):
         lines.append(
-            "INSERT INTO family "
-            "(family_dir,name,designer,category,primary_class,license,"
-            "is_variable,subsets,primary_ttf,content_hash,updated_at) VALUES ("
-            f"{q(fam)},{q(r['name'])},{q(r.get('designer'))},{q(r.get('category'))},"
-            f"{q(r.get('class','Sans'))},{q(r.get('license'))},"
-            f"{q(bool(r.get('isVariable')))},{q(subsets)},{q(r.get('primary_ttf'))},"
-            f"{q(chash)},{now}) "
-            "ON CONFLICT(family_dir) DO UPDATE SET "
-            "name=excluded.name,designer=excluded.designer,category=excluded.category,"
-            "primary_class=excluded.primary_class,license=excluded.license,"
-            "is_variable=excluded.is_variable,subsets=excluded.subsets,"
-            "primary_ttf=excluded.primary_ttf,content_hash=excluded.content_hash,"
-            "updated_at=excluded.updated_at;"
+            "INSERT INTO family_axis "
+            "(family_id,axis_tag,axis_name,min_value,default_value,max_value) VALUES ("
+            f"{fid},{q(a['tag'])},{q(a.get('name'))},{q(a.get('min'))},"
+            f"{q(a.get('default'))},{q(a.get('max'))});"
         )
-        # Clear + re-insert child rows for this family (idempotent refresh).
-        fid = f"(SELECT id FROM family WHERE family_dir={q(fam)})"
-        lines.append(f"DELETE FROM family_axis WHERE family_id={fid};")
-        lines.append(f"DELETE FROM family_feature WHERE family_id={fid};")
-        lines.append(f"DELETE FROM family_instance WHERE family_id={fid};")
-        for a in r.get("axes", []):
-            lines.append(
-                "INSERT INTO family_axis "
-                "(family_id,axis_tag,axis_name,min_value,default_value,max_value) VALUES ("
-                f"{fid},{q(a['tag'])},{q(a.get('name'))},{q(a.get('min'))},"
-                f"{q(a.get('default'))},{q(a.get('max'))});"
-            )
-        for feat in r.get("features", []):
-            kind = "GPOS" if feat in GPOS_TAGS else "GSUB"
-            lines.append(
-                "INSERT INTO family_feature (family_id,feature_tag,table_kind) VALUES ("
-                f"{fid},{q(feat)},{q(kind)});"
-            )
-        for inst in r.get("instances", []):
-            coords = json.dumps(inst.get("coords", {}))
-            lines.append(
-                "INSERT INTO family_instance (family_id,name,coords) VALUES ("
-                f"{fid},{q(inst.get('name'))},{q(coords)});"
-            )
-    with open(out, "w") as fh:
-        fh.write("\n".join(lines) + "\n")
-    print(f"wrote {len(records)} families -> {out} ({len(lines)} statements)")
+    for feat in r.get("features", []):
+        kind = "GPOS" if feat in GPOS_TAGS else "GSUB"
+        lines.append(
+            "INSERT INTO family_feature (family_id,feature_tag,table_kind) VALUES ("
+            f"{fid},{q(feat)},{q(kind)});"
+        )
+    for inst in r.get("instances", []):
+        coords = json.dumps(inst.get("coords", {}))
+        lines.append(
+            "INSERT INTO family_instance (family_id,name,coords) VALUES ("
+            f"{fid},{q(inst.get('name'))},{q(coords)});"
+        )
+    return lines
+
+
+def emit(records, out_prefix, chunk_families=250):
+    now = int(time.time() * 1000)
+    total_stmts = 0
+    files = 0
+    for i in range(0, len(records), chunk_families):
+        chunk = records[i : i + chunk_families]
+        lines = []
+        for r in chunk:
+            lines.extend(statements_for(r, now))
+        path = f"{out_prefix}.{files:03d}.sql"
+        with open(path, "w") as fh:
+            fh.write("\n".join(lines) + "\n")
+        total_stmts += len(lines)
+        files += 1
+        print(f"  {path}: {len(chunk)} families, {len(lines)} statements")
+    print(f"wrote {len(records)} families across {files} files ({total_stmts} statements)")
 
 
 if __name__ == "__main__":
     src = sys.argv[1] if len(sys.argv) > 1 else "../../src/data/fonts.json"
-    out = sys.argv[2] if len(sys.argv) > 2 else "../../src/lib/db/seed.sql"
-    emit(json.load(open(src)), out)
+    out_prefix = sys.argv[2] if len(sys.argv) > 2 else "../../src/lib/db/seed"
+    emit(json.load(open(src)), out_prefix)

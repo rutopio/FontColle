@@ -6,22 +6,52 @@ import {
   text,
 } from "drizzle-orm/sqlite-core";
 
-// One row per published family. content_hash lets the harvester skip unchanged
-// families on incremental runs (todo §5/§7).
-export const family = sqliteTable("family", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  familyDir: text("family_dir").notNull().unique(), // repo dir, stable key
-  name: text("name").notNull(),
-  designer: text("designer"),
-  category: text("category"), // Google's coarse style
-  primaryClass: text("primary_class").notNull(), // our re-derived class (§12)
-  license: text("license"),
-  isVariable: integer("is_variable", { mode: "boolean" }).notNull(),
-  subsets: text("subsets"), // JSON array
-  primaryTtf: text("primary_ttf"),
-  contentHash: text("content_hash").notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
-});
+// One row per published family. Archival metadata is stored as flat columns
+// (no JSON blob — D1/SQLite can't index or scan blobs efficiently). content_hash
+// lets the harvester skip unchanged families on incremental runs (todo §5/§7).
+export const family = sqliteTable(
+  "family",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    familyDir: text("family_dir").notNull().unique(), // repo dir, stable key
+    name: text("name").notNull(),
+    designer: text("designer"),
+    category: text("category"), // Google's coarse style
+    primaryClass: text("primary_class").notNull(), // our re-derived class (§12)
+    license: text("license"), // OFL / APACHE / UFL
+    licenseDir: text("license_dir"), // ofl / apache / ufl (repo path)
+    isVariable: integer("is_variable", { mode: "boolean" }).notNull(),
+    subsets: text("subsets"), // JSON array of subset names
+    primaryTtf: text("primary_ttf"),
+
+    // --- version tracking (from head + name table) ---
+    version: real("version"), // head.fontRevision, e.g. 2.1
+    versionString: text("version_string"), // name ID 5, "Version 2.100"
+    createdMs: integer("created_ms"), // font head.created (epoch ms)
+    modifiedMs: integer("modified_ms"), // font head.modified (epoch ms)
+    dateAdded: text("date_added"), // METADATA date_added, "2011-05-11"
+
+    // --- classification / metrics (from OS/2 + head + maxp + cmap) ---
+    weightClass: integer("weight_class"), // OS/2 usWeightClass
+    widthClass: integer("width_class"), // OS/2 usWidthClass
+    fsType: integer("fs_type"), // OS/2 embedding permission bits
+    glyphCount: integer("glyph_count"), // maxp numGlyphs
+    charCount: integer("char_count"), // cmap character count
+    unitsPerEm: integer("units_per_em"), // head unitsPerEm
+    hasStat: integer("has_stat", { mode: "boolean" }), // STAT table present
+    primaryScript: text("primary_script"), // METADATA primary_script, "Latn"
+    // PANOSE 10 digits as a compact string "2,11,2,0,..." (rarely populated,
+    // kept flat for the few families that set it).
+    panose: text("panose"),
+
+    contentHash: text("content_hash").notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (t) => [
+    index("family_class_idx").on(t.primaryClass),
+    index("family_variable_idx").on(t.isVariable),
+  ]
+);
 
 // Reverse index: feature tag -> family (todo §5). GIN-equivalent for SQLite is a
 // plain index on the tag; the intersection query joins per selected tag.

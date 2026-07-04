@@ -284,6 +284,16 @@ function Detail({ font }: { font: FontRecord }) {
             label="OpenType features"
             value={String(font.features.length)}
           />
+          {font.glyphCount != null && (
+            <Spec label="Glyphs" value={font.glyphCount.toLocaleString()} />
+          )}
+          {font.charCount != null && (
+            <Spec label="Characters" value={font.charCount.toLocaleString()} />
+          )}
+          {font.version != null && (
+            <Spec label="Version" value={String(font.version)} />
+          )}
+          {font.dateAdded && <Spec label="Added" value={font.dateAdded} />}
           {font.license && <Spec label="License" value={font.license} />}
         </Panel>
         <Panel label="Subsets">

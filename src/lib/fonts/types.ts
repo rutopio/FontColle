@@ -24,4 +24,12 @@ export interface FontRecord {
   instances: FontInstance[];
   features: string[];
   facets: string[];
+  // Archival metadata (may be null for older/edge fonts).
+  version: number | null;
+  versionString: string | null;
+  dateAdded: string | null;
+  weightClass: number | null;
+  glyphCount: number | null;
+  charCount: number | null;
+  primaryScript: string | null;
 }

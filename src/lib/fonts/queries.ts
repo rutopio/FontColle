@@ -49,6 +49,13 @@ async function loadAllFonts(): Promise<FontRecord[]> {
           .map((x) => x.featureTag)
           .sort(),
         facets: [], // derived client-side from axes/features/subsets
+        version: f.version,
+        versionString: f.versionString,
+        dateAdded: f.dateAdded,
+        weightClass: f.weightClass,
+        glyphCount: f.glyphCount,
+        charCount: f.charCount,
+        primaryScript: f.primaryScript,
       };
     })
     .sort((a, b) => a.name.localeCompare(b.name));

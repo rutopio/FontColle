@@ -57,6 +57,7 @@ def to_record(r):
         if s in subsets:
             facets.append(s)
 
+    panose = ttf.get("panose")
     return {
         "id": r["family_dir"],
         "name": r.get("name") or r["family_dir"],
@@ -64,8 +65,25 @@ def to_record(r):
         "class": primary_class(r.get("category")),
         "category": r.get("category"),
         "license": r.get("license"),
+        "licenseDir": r.get("license_dir"),
         "isVariable": bool(ttf.get("is_variable")),
         "subsets": subsets,
+        "primaryTtf": r.get("primary_ttf"),
+        # archival metadata (flat)
+        "version": ttf.get("version"),
+        "versionString": ttf.get("version_string"),
+        "createdMs": ttf.get("created_ms"),
+        "modifiedMs": ttf.get("modified_ms"),
+        "dateAdded": r.get("date_added"),
+        "weightClass": ttf.get("weight_class"),
+        "widthClass": ttf.get("width_class"),
+        "fsType": ttf.get("fs_type"),
+        "glyphCount": ttf.get("glyph_count"),
+        "charCount": ttf.get("char_count"),
+        "unitsPerEm": ttf.get("units_per_em"),
+        "hasStat": bool(ttf.get("has_stat")),
+        "primaryScript": r.get("primary_script"),
+        "panose": ",".join(str(x) for x in panose) if panose else None,
         "axes": [
             {"tag": a["tag"], "name": a.get("name"),
              "min": a.get("min"), "default": a.get("default"), "max": a.get("max")}

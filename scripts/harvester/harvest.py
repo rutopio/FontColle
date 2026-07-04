@@ -35,6 +35,10 @@ def parse_metadata_pb(text):
         "category": scalar("category"),
         "license": scalar("license"),
         "subsets": re.findall(r'subsets:\s*"([^"]+)"', text),
+        "date_added": scalar("date_added"),      # e.g. "2010-08-17"
+        "primary_script": scalar("primary_script"),  # e.g. "Latn"
+        "stroke": scalar("stroke"),              # SERIF / SANS_SERIF stroke class
+        "classifications": re.findall(r'classifications:\s*"([^"]+)"', text),
     }
     # fonts { ... } blocks -> weights/styles
     fonts = []
@@ -61,12 +65,23 @@ def parse_metadata_pb(text):
     meta["metadata_axes"] = axes
     return meta
 
+# OpenType epoch: 1904-01-01. head.created/modified are seconds since then.
+_MAC_EPOCH_OFFSET = 2082844800  # seconds between 1904-01-01 and 1970-01-01
+
+def _epoch_ms(long_datetime):
+    """head created/modified (secs since 1904) -> unix epoch ms, or None."""
+    try:
+        return int((long_datetime - _MAC_EPOCH_OFFSET) * 1000)
+    except Exception:
+        return None
+
 def parse_ttf(raw_bytes):
     f = TTFont(io.BytesIO(raw_bytes), lazy=True)
+    nm = f["name"]
     out = {"axes": [], "named_instances": [], "gsub_features": [], "gpos_features": [],
            "is_variable": "fvar" in f}
+
     if "fvar" in f:
-        nm = f["name"]
         for a in f["fvar"].axes:
             out["axes"].append({
                 "tag": a.axisTag,
@@ -84,36 +99,72 @@ def parse_ttf(raw_bytes):
             for fr in f[tag].table.FeatureList.FeatureRecord:
                 feats.add(fr.FeatureTag)
         out[tag.lower() + "_features"] = sorted(feats)
+
+    # --- archival metadata (flat scalars, no blob) ---
+    head = f["head"] if "head" in f else None
+    os2 = f["OS/2"] if "OS/2" in f else None
+    cmap = {}
+    try:
+        cmap = f.getBestCmap()
+    except Exception:
+        pass
+
+    out["version"] = round(head.fontRevision, 4) if head else None
+    out["version_string"] = nm.getDebugName(5)  # "Version 1.085"
+    out["created_ms"] = _epoch_ms(head.created) if head else None
+    out["modified_ms"] = _epoch_ms(head.modified) if head else None
+    out["weight_class"] = os2.usWeightClass if os2 else None
+    out["width_class"] = os2.usWidthClass if os2 else None
+    out["fs_type"] = os2.fsType if os2 else None  # embedding permission bits
+    out["glyph_count"] = f["maxp"].numGlyphs if "maxp" in f else None
+    out["char_count"] = len(cmap)
+    out["units_per_em"] = head.unitsPerEm if head else None
+    out["has_stat"] = "STAT" in f
+    if os2 and hasattr(os2, "panose"):
+        p = os2.panose
+        out["panose"] = [p.bFamilyType, p.bSerifStyle, p.bWeight, p.bProportion,
+                         p.bContrast, p.bStrokeVariation, p.bArmStyle, p.bLetterForm,
+                         p.bMidline, p.bXHeight]
+    else:
+        out["panose"] = None
+    # Unicode block coverage bits (OS/2 ulUnicodeRange1..4) as a compact int list
+    if os2:
+        out["unicode_ranges"] = [getattr(os2, f"ulUnicodeRange{i}", 0) for i in (1, 2, 3, 4)]
+    else:
+        out["unicode_ranges"] = None
+
     f.close()
     return out
 
-def pick_primary_ttf(family_dir, meta):
-    """Prefer a VF file (has [ in name), else the metadata's first font filename."""
-    # Try listing the dir to find a VF file
-    api = f"https://api.github.com/repos/google/fonts/contents/ofl/{family_dir}?ref=main"
-    try:
-        listing = json.loads(fetch(api))
-        ttfs = [x["name"] for x in listing if x["name"].endswith(".ttf")]
-        vf = [n for n in ttfs if "[" in n]
-        if vf:
-            return vf[0]
-        if ttfs:
-            return ttfs[0]
-    except Exception:
-        pass
-    if meta["fonts"]:
-        return meta["fonts"][0]["filename"]
+def pick_primary_ttf(meta):
+    """Pick from METADATA fonts: prefer a VF file (has [ in name), else first.
+
+    Uses only METADATA (no per-family GitHub contents API, which is rate-limited
+    at 60 req/hr unauthenticated and would fail across 2000 families).
+    """
+    fonts = meta.get("fonts") or []
+    vf = [f["filename"] for f in fonts if f.get("filename") and "[" in f["filename"]]
+    if vf:
+        return vf[0]
+    if fonts and fonts[0].get("filename"):
+        return fonts[0]["filename"]
     return None
 
-def harvest(family_dir):
-    rec = {"family_dir": family_dir, "_stats": {}}
-    md_text = fetch(f"{RAW}/ofl/{family_dir}/METADATA.pb")
+def harvest(entry):
+    """entry is "license\tfamily_dir" (license in ofl/apache/ufl)."""
+    if "\t" in entry:
+        license_dir, family_dir = entry.split("\t", 1)
+    else:
+        license_dir, family_dir = "ofl", entry
+    base = f"{RAW}/{license_dir}/{family_dir}"
+    rec = {"family_dir": family_dir, "license_dir": license_dir, "_stats": {}}
+    md_text = fetch(f"{base}/METADATA.pb")
     meta = parse_metadata_pb(md_text)
     rec.update(meta)
-    ttf_name = pick_primary_ttf(family_dir, meta)
+    ttf_name = pick_primary_ttf(meta)
     rec["primary_ttf"] = ttf_name
     if ttf_name:
-        url = f"{RAW}/ofl/{family_dir}/{urllib.parse.quote(ttf_name)}"
+        url = f"{base}/{urllib.parse.quote(ttf_name)}"
         t0 = time.time()
         raw = fetch(url, binary=True)
         t_dl = time.time() - t0

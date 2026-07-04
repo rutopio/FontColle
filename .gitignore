@@ -14,3 +14,4 @@ todos.json
 # typescript
 *.tsbuildinfo
 scripts/harvester/*.log
+src/lib/db/seed.*.sql
