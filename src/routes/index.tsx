@@ -28,6 +28,7 @@ import {
 import { getAllFonts } from "@/lib/fonts/queries";
 import {
   DEFAULT_SORT,
+  SORT_LABELS,
   SORT_OPTIONS,
   type SortKey,
   sortFonts,
@@ -118,8 +119,8 @@ function App() {
 
         <div className="ml-auto flex items-center gap-2">
           <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
-            <SelectTrigger className="h-9 w-[168px]" aria-label="Sort by">
-              <SelectValue placeholder="Sort" />
+            <SelectTrigger className="h-9 w-[176px]" aria-label="Sort by">
+              <SelectValue placeholder="Sort">{SORT_LABELS[sort]}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               {SORT_OPTIONS.map((g) => (
