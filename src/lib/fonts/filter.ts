@@ -26,6 +26,7 @@ export interface FilterSearch {
   feature?: string;
   axis?: string;
   view?: "grid" | "row"; // display preference, not a filter
+  sort?: string; // sort key, not a filter
 }
 
 const splitCsv = (v: string | undefined): string[] =>
@@ -61,6 +62,7 @@ export function parseFilterSearch(raw: Record<string, unknown>): FilterSearch {
     feature: str(raw.feature),
     axis: str(raw.axis),
     view: raw.view === "row" ? "row" : undefined,
+    sort: str(raw.sort),
   };
 }
 

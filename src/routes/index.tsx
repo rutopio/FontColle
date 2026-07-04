@@ -4,6 +4,16 @@ import { useMemo } from "react";
 import { FilterSidebar } from "@/components/filter-sidebar";
 import { FontGrid, type ViewMode } from "@/components/font-grid";
 import { SiteHeader } from "@/components/site-header";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { buildFacetIndex } from "@/lib/fonts/data";
 import { withFacets } from "@/lib/fonts/facets";
 import { useFavorites } from "@/lib/fonts/favorites";
@@ -16,8 +26,13 @@ import {
   searchToFilter,
 } from "@/lib/fonts/filter";
 import { getAllFonts } from "@/lib/fonts/queries";
+import {
+  DEFAULT_SORT,
+  SORT_OPTIONS,
+  type SortKey,
+  sortFonts,
+} from "@/lib/fonts/sort";
 import { usePreview } from "@/lib/preview/context";
-import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
   component: App,
@@ -34,13 +49,18 @@ function App() {
 
   const facetIndex = useMemo(() => buildFacetIndex(fonts), [fonts]);
   const filter = useMemo(() => searchToFilter(search), [search]);
-  const results = useMemo(() => applyFilters(fonts, filter), [fonts, filter]);
   const view: ViewMode = search.view === "row" ? "row" : "grid";
+  const sort = (search.sort as SortKey) ?? DEFAULT_SORT;
 
-  // Preserve the view preference across filter changes (view isn't a filter).
+  const results = useMemo(
+    () => sortFonts(applyFilters(fonts, filter), sort),
+    [fonts, filter, sort]
+  );
+
+  // view and sort are display prefs, not filters — preserve them across changes.
   const setFilter = (next: FilterState) => {
     navigate({
-      search: { ...filterToSearch(next), view: search.view },
+      search: { ...filterToSearch(next), view: search.view, sort: search.sort },
       replace: true,
     });
   };
@@ -50,6 +70,18 @@ function App() {
       search: {
         ...filterToSearch(filter),
         view: next === "row" ? "row" : undefined,
+        sort: search.sort,
+      },
+      replace: true,
+    });
+  };
+
+  const setSort = (next: SortKey) => {
+    navigate({
+      search: {
+        ...filterToSearch(filter),
+        view: search.view,
+        sort: next === DEFAULT_SORT ? undefined : next,
       },
       replace: true,
     });
@@ -65,14 +97,17 @@ function App() {
     <div className="container flex min-h-svh flex-col gap-6 p-6 pb-24">
       <SiteHeader />
 
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-3 text-muted-foreground text-sm">
           <span>{results.length} fonts</span>
           {activeCount > 0 && (
             <button
               type="button"
               onClick={() =>
-                navigate({ search: { view: search.view }, replace: true })
+                navigate({
+                  search: { view: search.view, sort: search.sort },
+                  replace: true,
+                })
               }
               className="underline underline-offset-2 hover:text-foreground"
             >
@@ -81,21 +116,35 @@ function App() {
           )}
         </div>
 
-        <div className="flex items-center gap-1 ml-auto">
-          <ViewToggle
-            active={view === "grid"}
-            label="Grid view"
-            onClick={() => setView("grid")}
-          >
-            <SquaresFour className="size-4" />
-          </ViewToggle>
-          <ViewToggle
-            active={view === "row"}
-            label="Row view"
-            onClick={() => setView("row")}
-          >
-            <Rows className="size-4" />
-          </ViewToggle>
+        <div className="ml-auto flex items-center gap-2">
+          <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
+            <SelectTrigger className="h-9 w-[168px]" aria-label="Sort by">
+              <SelectValue placeholder="Sort" />
+            </SelectTrigger>
+            <SelectContent>
+              {SORT_OPTIONS.map((g) => (
+                <SelectGroup key={g.group}>
+                  <SelectLabel>{g.group}</SelectLabel>
+                  {g.items.map(([key, label]) => (
+                    <SelectItem key={key} value={key}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Tabs value={view} onValueChange={(v) => setView(v as ViewMode)}>
+            <TabsList>
+              <TabsTrigger value="grid" aria-label="Grid view">
+                <SquaresFour className="size-4" />
+              </TabsTrigger>
+              <TabsTrigger value="row" aria-label="Row view">
+                <Rows className="size-4" />
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
       </div>
 
@@ -123,34 +172,5 @@ function App() {
         </main>
       </div>
     </div>
-  );
-}
-
-function ViewToggle({
-  active,
-  label,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  label: string;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={label}
-      aria-pressed={active}
-      className={cn(
-        "rounded-md border p-1.5 transition-colors",
-        active
-          ? "border-foreground bg-foreground text-background"
-          : "text-muted-foreground hover:border-foreground hover:text-foreground"
-      )}
-    >
-      {children}
-    </button>
   );
 }
