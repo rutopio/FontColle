@@ -1,0 +1,69 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.4.15/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "ignoreUnknown": true,
+    "includes": [
+      "**",
+      "!dist",
+      "!.wrangler",
+      "!.vercel",
+      "!.netlify",
+      "!.output",
+      "!build",
+      "!deprecated",
+      "!drizzle",
+      "!.drizzle",
+      "!.tanstack",
+      "!src/routeTree.gen.ts",
+      "!src/components/ui",
+      "!src/styles.css"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 80,
+    "lineEnding": "lf"
+  },
+  "javascript": {
+    "formatter": {
+      "semicolons": "always",
+      "quoteStyle": "double",
+      "trailingCommas": "es5",
+      "arrowParentheses": "always",
+      "bracketSpacing": true,
+      "bracketSameLine": false
+    }
+  },
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "domains": {
+      "react": "recommended"
+    },
+    "rules": {
+      "recommended": true,
+      "nursery": {
+        "useSortedClasses": {
+          "level": "warn",
+          "options": {
+            "functions": ["cn", "clsx", "cva", "tw"]
+          }
+        }
+      }
+    }
+  }
+}
