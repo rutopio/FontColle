@@ -13,8 +13,9 @@
   font-weight: 100 1000;
   font-style: normal;
   size-adjust: 100%;
-  /* block: don't paint until loaded, so NotDef never flashes while the real
-     font is still arriving (the real fonts also use display=block). */
+  /* block: tiny file, load before painting so it only ever shows as a genuine
+     missing-glyph box, never a half-loaded flash. Real fonts use
+     display=optional (no swap-in flash; they warm the cache for next visit). */
   font-display: block;
 }
 

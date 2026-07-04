@@ -31,7 +31,7 @@ export function ensureFontLoaded(family: string, weights: number[]) {
       ? `${encodeFamily(family)}:wght@${uniq.join(";")}`
       : encodeFamily(family);
 
-  appendLink(`https://fonts.googleapis.com/css2?family=${spec}&display=block`);
+  appendLink(`https://fonts.googleapis.com/css2?family=${spec}&display=optional`);
 }
 
 /**
@@ -60,10 +60,10 @@ export function ensureFontRangeLoaded(
     const ranges = registered.map((a) => `${a.min}..${a.max}`).join(",");
     spec = `${spec}:${tags}@${ranges}`;
   }
-  appendLink(`https://fonts.googleapis.com/css2?family=${spec}&display=block`);
+  appendLink(`https://fonts.googleapis.com/css2?family=${spec}&display=optional`);
   // Plain fallback in case the range spec is rejected for some family.
   appendLink(
-    `https://fonts.googleapis.com/css2?family=${encodeFamily(family)}&display=block`
+    `https://fonts.googleapis.com/css2?family=${encodeFamily(family)}&display=optional`
   );
 }
 
