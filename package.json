@@ -29,6 +29,7 @@
     "@tanstack/react-router-devtools": "latest",
     "@tanstack/react-router-ssr-query": "latest",
     "@tanstack/react-start": "latest",
+    "@tanstack/react-virtual": "3.14.5",
     "@tanstack/router-plugin": "latest",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

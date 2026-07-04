@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { FilterSidebar } from "@/components/filter-sidebar";
-import { FontCard } from "@/components/font-card";
+import { FontGrid } from "@/components/font-grid";
 import { Input } from "@/components/ui/input";
 import { buildFacetIndex } from "@/lib/fonts/data";
 import { withFacets } from "@/lib/fonts/facets";
@@ -80,20 +80,18 @@ function App() {
           onChange={setFilter}
         />
 
-        <main className="grid flex-1 grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {results.map((font) => (
-            <FontCard
-              key={font.id}
-              font={font}
-              previewText={previewText}
-              isFavorite={favorites.includes(font.id)}
-              onToggleFavorite={toggle}
-            />
-          ))}
-          {results.length === 0 && (
-            <p className="col-span-full py-16 text-center text-muted-foreground text-sm">
+        <main className="min-w-0 flex-1">
+          {results.length === 0 ? (
+            <p className="py-16 text-center text-muted-foreground text-sm">
               No fonts match these filters.
             </p>
+          ) : (
+            <FontGrid
+              fonts={results}
+              previewText={previewText}
+              favorites={favorites}
+              onToggleFavorite={toggle}
+            />
           )}
         </main>
       </div>
