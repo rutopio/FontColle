@@ -1,3 +1,4 @@
+import { ScrollArea } from "@/components/ui/scroll-area";
 import type { FilterState } from "@/lib/fonts/filter";
 import { cn } from "@/lib/utils";
 
@@ -24,39 +25,43 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
   };
 
   return (
-    <aside className="flex w-60 shrink-0 flex-col gap-6 overflow-y-auto pr-2">
-      <Section title="Category">
-        <Pills
-          items={index.classes}
-          selected={filter.classes}
-          onToggle={(v) => toggle("classes", v)}
-        />
-      </Section>
+    <aside className="sticky top-6 flex h-[calc(100svh-3rem)] w-64 shrink-0 flex-col rounded-lg border border-sidebar-border bg-background text-sidebar-foreground shadow-sm">
+      <ScrollArea className="min-h-0 flex-1">
+        <div className="flex flex-col gap-4 p-3">
+          <Section title="Category">
+            <Pills
+              items={index.classes}
+              selected={filter.classes}
+              onToggle={(v) => toggle("classes", v)}
+            />
+          </Section>
 
-      <Section title="Properties">
-        <Pills
-          items={index.facets}
-          selected={filter.facets}
-          onToggle={(v) => toggle("facets", v)}
-        />
-      </Section>
+          <Section title="Properties">
+            <Pills
+              items={index.facets}
+              selected={filter.facets}
+              onToggle={(v) => toggle("facets", v)}
+            />
+          </Section>
 
-      <Section title="Variable axes">
-        <Pills
-          items={index.axes}
-          selected={filter.axes}
-          onToggle={(v) => toggle("axes", v)}
-        />
-      </Section>
+          <Section title="Variable axes">
+            <Pills
+              items={index.axes}
+              selected={filter.axes}
+              onToggle={(v) => toggle("axes", v)}
+            />
+          </Section>
 
-      <Section title="OpenType features">
-        <Pills
-          items={index.features}
-          selected={filter.features}
-          onToggle={(v) => toggle("features", v)}
-          mono
-        />
-      </Section>
+          <Section title="OpenType features">
+            <Pills
+              items={index.features}
+              selected={filter.features}
+              onToggle={(v) => toggle("features", v)}
+              mono
+            />
+          </Section>
+        </div>
+      </ScrollArea>
     </aside>
   );
 }

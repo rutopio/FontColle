@@ -1,9 +1,8 @@
 import { Rows, SquaresFour } from "@phosphor-icons/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo } from "react";
-import { FilterSidebar } from "@/components/filter-sidebar";
+import { FilterLayout } from "@/components/filter-layout";
 import { FontGrid, type ViewMode } from "@/components/font-grid";
-import { SiteHeader } from "@/components/site-header";
 import {
   Select,
   SelectContent,
@@ -95,83 +94,75 @@ function App() {
     filter.axes.length;
 
   return (
-    <div className="container flex min-h-svh flex-col gap-6 p-6 pb-24">
-      <SiteHeader />
+    <FilterLayout index={facetIndex} filter={filter} onFilterChange={setFilter}>
+      <main className="flex min-w-0 flex-1 flex-col gap-6">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-3 text-muted-foreground text-sm">
+            <span>{results.length} fonts</span>
+            {activeCount > 0 && (
+              <button
+                type="button"
+                onClick={() =>
+                  navigate({
+                    search: { view: search.view, sort: search.sort },
+                    replace: true,
+                  })
+                }
+                className="underline underline-offset-2 hover:text-foreground"
+              >
+                Clear {activeCount} filters
+              </button>
+            )}
+          </div>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-3 text-muted-foreground text-sm">
-          <span>{results.length} fonts</span>
-          {activeCount > 0 && (
-            <button
-              type="button"
-              onClick={() =>
-                navigate({
-                  search: { view: search.view, sort: search.sort },
-                  replace: true,
-                })
-              }
-              className="underline underline-offset-2 hover:text-foreground"
-            >
-              Clear {activeCount} filters
-            </button>
-          )}
+          <div className="ml-auto flex items-center gap-2">
+            <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
+              <SelectTrigger className="h-9 w-[176px]" aria-label="Sort by">
+                <SelectValue placeholder="Sort">
+                  {SORT_LABELS[sort]}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {SORT_OPTIONS.map((g) => (
+                  <SelectGroup key={g.group}>
+                    <SelectLabel>{g.group}</SelectLabel>
+                    {g.items.map(([key, label]) => (
+                      <SelectItem key={key} value={key}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Tabs value={view} onValueChange={(v) => setView(v as ViewMode)}>
+              <TabsList>
+                <TabsTrigger value="grid" aria-label="Grid view">
+                  <SquaresFour className="size-4" />
+                </TabsTrigger>
+                <TabsTrigger value="row" aria-label="Row view">
+                  <Rows className="size-4" />
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
         </div>
 
-        <div className="ml-auto flex items-center gap-2">
-          <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
-            <SelectTrigger className="h-9 w-[176px]" aria-label="Sort by">
-              <SelectValue placeholder="Sort">{SORT_LABELS[sort]}</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {SORT_OPTIONS.map((g) => (
-                <SelectGroup key={g.group}>
-                  <SelectLabel>{g.group}</SelectLabel>
-                  {g.items.map(([key, label]) => (
-                    <SelectItem key={key} value={key}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Tabs value={view} onValueChange={(v) => setView(v as ViewMode)}>
-            <TabsList>
-              <TabsTrigger value="grid" aria-label="Grid view">
-                <SquaresFour className="size-4" />
-              </TabsTrigger>
-              <TabsTrigger value="row" aria-label="Row view">
-                <Rows className="size-4" />
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
-      </div>
-
-      <div className="flex gap-6">
-        <FilterSidebar
-          index={facetIndex}
-          filter={filter}
-          onChange={setFilter}
-        />
-
-        <main className="min-w-0 flex-1">
-          {results.length === 0 ? (
-            <p className="py-16 text-center text-muted-foreground text-sm">
-              No fonts match these filters.
-            </p>
-          ) : (
-            <FontGrid
-              fonts={results}
-              previewText={previewText}
-              favorites={favorites}
-              onToggleFavorite={toggle}
-              view={view}
-            />
-          )}
-        </main>
-      </div>
-    </div>
+        {results.length === 0 ? (
+          <p className="py-16 text-center text-muted-foreground text-sm">
+            No fonts match these filters.
+          </p>
+        ) : (
+          <FontGrid
+            fonts={results}
+            previewText={previewText}
+            favorites={favorites}
+            onToggleFavorite={toggle}
+            view={view}
+          />
+        )}
+      </main>
+    </FilterLayout>
   );
 }

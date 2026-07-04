@@ -1,9 +1,8 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { FilterSidebar } from "@/components/filter-sidebar";
-import { SiteHeader } from "@/components/site-header";
+import { FilterLayout } from "@/components/filter-layout";
 import { Badge } from "@/components/ui/badge";
-import { buildFacetIndex, type FacetIndex } from "@/lib/fonts/data";
+import { buildFacetIndex } from "@/lib/fonts/data";
 import { withFacets } from "@/lib/fonts/facets";
 import {
   buildFeatureSettings,
@@ -45,26 +44,20 @@ export const Route = createFileRoute("/$fontId")({
 
 function DetailPage() {
   const { font, facetIndex } = Route.useLoaderData();
-  return (
-    <div className="container flex min-h-svh flex-col gap-6 p-6 pb-24">
-      <SiteHeader />
-      <div className="flex gap-6">
-        <DetailSidebar index={facetIndex} />
-        <Detail font={font} />
-      </div>
-    </div>
-  );
-}
-
-// Sidebar on the detail page is pure navigation: any pill click goes back to the
-// list with that filter applied (todo §8b).
-function DetailSidebar({ index }: { index: FacetIndex }) {
   const navigate = Route.useNavigate();
+  // Sidebar on the detail page is pure navigation: any pill click goes back to
+  // the list with that filter applied (todo §8b).
   const goToList = (next: FilterState) => {
     navigate({ to: "/", search: filterToSearch(next) });
   };
   return (
-    <FilterSidebar index={index} filter={emptyFilter} onChange={goToList} />
+    <FilterLayout
+      index={facetIndex}
+      filter={emptyFilter}
+      onFilterChange={goToList}
+    >
+      <Detail font={font} />
+    </FilterLayout>
   );
 }
 
