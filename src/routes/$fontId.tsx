@@ -1,6 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { FilterSidebar } from "@/components/filter-sidebar";
+import { SiteHeader } from "@/components/site-header";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { buildFacetIndex, type FacetIndex } from "@/lib/fonts/data";
@@ -45,9 +46,12 @@ export const Route = createFileRoute("/$fontId")({
 function DetailPage() {
   const { font, facetIndex } = Route.useLoaderData();
   return (
-    <div className="container flex min-h-svh gap-6 p-6">
-      <DetailSidebar index={facetIndex} />
-      <Detail font={font} />
+    <div className="container flex min-h-svh flex-col gap-6 p-6">
+      <SiteHeader />
+      <div className="flex gap-6">
+        <DetailSidebar index={facetIndex} />
+        <Detail font={font} />
+      </div>
     </div>
   );
 }

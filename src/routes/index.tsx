@@ -3,6 +3,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { FilterSidebar } from "@/components/filter-sidebar";
 import { FontGrid, type ViewMode } from "@/components/font-grid";
+import { SiteHeader } from "@/components/site-header";
 import { Input } from "@/components/ui/input";
 import { buildFacetIndex } from "@/lib/fonts/data";
 import { withFacets } from "@/lib/fonts/facets";
@@ -62,12 +63,7 @@ function App() {
 
   return (
     <div className="container flex min-h-svh flex-col gap-6 p-6">
-      <header className="flex flex-col gap-1">
-        <h1 className="font-semibold text-2xl">Font Finder</h1>
-        <p className="text-muted-foreground text-sm">
-          Filter Google Fonts by real OpenType features and variable axes.
-        </p>
-      </header>
+      <SiteHeader />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <Input
