@@ -41,6 +41,21 @@ export function FontGrid({
   // the window virtualizer takes over.
   const [mounted, setMounted] = useState(false);
 
+  // Card entrance animation only fires right after the result set changes
+  // (filter/search), not on every scroll-mount. We open a short window when
+  // `fonts` changes and apply the animation class only during it.
+  const [animating, setAnimating] = useState(false);
+  const firstRun = useRef(true);
+  useEffect(() => {
+    if (firstRun.current) {
+      firstRun.current = false;
+      return;
+    }
+    setAnimating(true);
+    const t = setTimeout(() => setAnimating(false), 260);
+    return () => clearTimeout(t);
+  }, [fonts]);
+
   useLayoutEffect(() => {
     const measure = () => {
       if (!listRef.current) return;
@@ -126,10 +141,12 @@ export function FontGrid({
               }}
             >
               {view === "row" ? (
-                rowFonts.map(renderCell)
+                <div className={animating ? "animate-card-in" : undefined}>
+                  {rowFonts.map(renderCell)}
+                </div>
               ) : (
                 <div
-                  className="grid gap-4 pb-4"
+                  className={`grid gap-4 pb-4 ${animating ? "animate-card-in" : ""}`}
                   style={{
                     gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
                   }}

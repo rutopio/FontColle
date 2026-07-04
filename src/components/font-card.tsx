@@ -55,6 +55,8 @@ export function FontCard({
     fontFamily: previewFontFamily(font.name),
     fontWeight: active.weight,
     fontVariationSettings: buildVariationSettings(active.coords),
+    // Smooth the weight/axis change instead of a hard jump.
+    transition: "font-weight 200ms ease, font-variation-settings 200ms ease",
   };
 
   return (
