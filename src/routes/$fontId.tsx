@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from "react";
 import { FilterSidebar } from "@/components/filter-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { buildFacetIndex, type FacetIndex } from "@/lib/fonts/data";
 import { withFacets } from "@/lib/fonts/facets";
 import {
@@ -19,6 +18,7 @@ import {
 import { ensureFontRangeLoaded, previewFontFamily } from "@/lib/fonts/loader";
 import { getAllFonts } from "@/lib/fonts/queries";
 import type { FontRecord } from "@/lib/fonts/types";
+import { usePreview } from "@/lib/preview/context";
 
 export const Route = createFileRoute("/$fontId")({
   component: DetailPage,
@@ -46,7 +46,7 @@ export const Route = createFileRoute("/$fontId")({
 function DetailPage() {
   const { font, facetIndex } = Route.useLoaderData();
   return (
-    <div className="container flex min-h-svh flex-col gap-6 p-6">
+    <div className="container flex min-h-svh flex-col gap-6 p-6 pb-24">
       <SiteHeader />
       <div className="flex gap-6">
         <DetailSidebar index={facetIndex} />
@@ -69,8 +69,9 @@ function DetailSidebar({ index }: { index: FacetIndex }) {
 }
 
 function Detail({ font }: { font: FontRecord }) {
-  const [text, setText] = useState("The quick brown fox jumps over 1234567890");
+  const { text } = usePreview();
   const [size, setSize] = useState(72);
+  const specimen = text || "The quick brown fox jumps over 1234567890";
 
   // Axis state: tag -> current value, seeded from each axis default.
   const [axisState, setAxisState] = useState<Record<string, number>>(() =>
@@ -148,29 +149,22 @@ function Detail({ font }: { font: FontRecord }) {
 
       {/* TYPE TESTER */}
       <Panel label="Type tester">
-        <div className="mb-4 flex flex-wrap items-center gap-3">
-          <Input
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            className="min-w-[200px] flex-1"
+        <div className="mb-4 flex items-center justify-end gap-2 text-muted-foreground text-xs">
+          Size
+          <input
+            type="range"
+            min={16}
+            max={200}
+            value={size}
+            onChange={(e) => setSize(Number(e.target.value))}
+            className="accent-foreground"
           />
-          <div className="flex items-center gap-2 text-muted-foreground text-xs">
-            Size
-            <input
-              type="range"
-              min={16}
-              max={200}
-              value={size}
-              onChange={(e) => setSize(Number(e.target.value))}
-              className="accent-foreground"
-            />
-            <span className="w-12 text-right font-mono text-foreground">
-              {size}px
-            </span>
-          </div>
+          <span className="w-12 text-right font-mono text-foreground">
+            {size}px
+          </span>
         </div>
         <p style={specimenStyle} className="break-words leading-tight">
-          {text || " "}
+          {specimen}
         </p>
       </Panel>
 

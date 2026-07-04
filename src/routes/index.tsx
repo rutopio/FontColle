@@ -1,10 +1,9 @@
 import { Rows, SquaresFour } from "@phosphor-icons/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { FilterSidebar } from "@/components/filter-sidebar";
 import { FontGrid, type ViewMode } from "@/components/font-grid";
 import { SiteHeader } from "@/components/site-header";
-import { Input } from "@/components/ui/input";
 import { buildFacetIndex } from "@/lib/fonts/data";
 import { withFacets } from "@/lib/fonts/facets";
 import { useFavorites } from "@/lib/fonts/favorites";
@@ -17,6 +16,7 @@ import {
   searchToFilter,
 } from "@/lib/fonts/filter";
 import { getAllFonts } from "@/lib/fonts/queries";
+import { usePreview } from "@/lib/preview/context";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
@@ -29,7 +29,7 @@ function App() {
   const { fonts } = Route.useLoaderData();
   const search = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
-  const [previewText, setPreviewText] = useState("");
+  const { text: previewText } = usePreview();
   const { favorites, toggle } = useFavorites();
 
   const facetIndex = useMemo(() => buildFacetIndex(fonts), [fonts]);
@@ -62,16 +62,10 @@ function App() {
     filter.axes.length;
 
   return (
-    <div className="container flex min-h-svh flex-col gap-6 p-6">
+    <div className="container flex min-h-svh flex-col gap-6 p-6 pb-24">
       <SiteHeader />
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <Input
-          value={previewText}
-          onChange={(e) => setPreviewText(e.target.value)}
-          placeholder="Type to preview across all fonts…"
-          className="sm:max-w-md"
-        />
+      <div className="flex items-center gap-3">
         <div className="flex items-center gap-3 text-muted-foreground text-sm">
           <span>{results.length} fonts</span>
           {activeCount > 0 && (
@@ -87,7 +81,7 @@ function App() {
           )}
         </div>
 
-        <div className="flex items-center gap-1 sm:ml-auto">
+        <div className="flex items-center gap-1 ml-auto">
           <ViewToggle
             active={view === "grid"}
             label="Grid view"

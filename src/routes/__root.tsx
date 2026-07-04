@@ -1,6 +1,8 @@
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import { PreviewDock } from "@/components/preview-dock";
+import { PreviewProvider } from "@/lib/preview/context";
 
 import appCss from "../styles.css?url";
 
@@ -41,7 +43,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        {children}
+        <PreviewProvider>
+          {children}
+          <PreviewDock />
+        </PreviewProvider>
         <TanStackDevtools
           config={{
             position: "bottom-right",
