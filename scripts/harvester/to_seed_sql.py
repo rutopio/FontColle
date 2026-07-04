@@ -25,7 +25,10 @@ def q(v):
 
 def emit(records, out):
     now = int(time.time() * 1000)
-    lines = ["PRAGMA foreign_keys=ON;", "BEGIN TRANSACTION;"]
+    # No explicit BEGIN/COMMIT: D1 remote rejects SQL transaction statements in a
+    # --file batch (it manages atomicity itself). Statements are ordered so each
+    # family's child-row DELETEs run before its INSERTs.
+    lines: list[str] = []
     for r in records:
         fam = r["id"]
         # Upsert family; content_hash is a cheap stable digest of the record.
@@ -70,7 +73,6 @@ def emit(records, out):
                 "INSERT INTO family_instance (family_id,name,coords) VALUES ("
                 f"{fid},{q(inst.get('name'))},{q(coords)});"
             )
-    lines.append("COMMIT;")
     with open(out, "w") as fh:
         fh.write("\n".join(lines) + "\n")
     print(f"wrote {len(records)} families -> {out} ({len(lines)} statements)")
