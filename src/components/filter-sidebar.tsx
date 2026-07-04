@@ -1,6 +1,12 @@
+import { CaretDown } from "@phosphor-icons/react";
+import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { FilterState } from "@/lib/fonts/filter";
 import { cn } from "@/lib/utils";
+
+// Pills for facets with fewer than this many fonts stay hidden behind a
+// collapsible until the user opens it, unless they're already selected.
+const RARE_THRESHOLD = 5;
 
 interface FacetIndex {
   classes: [string, number][];
@@ -94,28 +100,61 @@ function Pills({
   onToggle: (v: string) => void;
   mono?: boolean;
 }) {
+  const [showRare, setShowRare] = useState(false);
+
+  // Rare (count < threshold) pills hide by default, but a selected one always
+  // shows so the user can see and clear it.
+  const common = items.filter(
+    ([value, count]) => count >= RARE_THRESHOLD || selected.includes(value)
+  );
+  const rare = items.filter(
+    ([value, count]) => count < RARE_THRESHOLD && !selected.includes(value)
+  );
+
+  const renderPill = ([value, count]: [string, number]) => {
+    const on = selected.includes(value);
+    return (
+      <button
+        key={value}
+        type="button"
+        onClick={() => onToggle(value)}
+        className={cn(
+          "rounded-full border px-2.5 py-1 text-xs transition-colors",
+          mono && "font-mono",
+          on
+            ? "border-foreground bg-foreground text-background"
+            : "text-muted-foreground hover:border-foreground hover:text-foreground"
+        )}
+      >
+        {value}
+        <span className="ml-1 font-mono opacity-60">{count}</span>
+      </button>
+    );
+  };
+
   return (
-    <div className="flex flex-wrap gap-1.5">
-      {items.map(([value, count]) => {
-        const on = selected.includes(value);
-        return (
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap gap-1.5">{common.map(renderPill)}</div>
+      {rare.length > 0 && (
+        <>
+          {showRare && (
+            <div className="flex flex-wrap gap-1.5">{rare.map(renderPill)}</div>
+          )}
           <button
-            key={value}
             type="button"
-            onClick={() => onToggle(value)}
-            className={cn(
-              "rounded-full border px-2.5 py-1 text-xs transition-colors",
-              mono && "font-mono",
-              on
-                ? "border-foreground bg-foreground text-background"
-                : "text-muted-foreground hover:border-foreground hover:text-foreground"
-            )}
+            onClick={() => setShowRare((v) => !v)}
+            className="flex w-fit items-center gap-1 text-muted-foreground text-xs hover:text-foreground"
           >
-            {value}
-            <span className="ml-1 font-mono opacity-60">{count}</span>
+            <CaretDown
+              className={cn(
+                "size-3 transition-transform",
+                showRare && "rotate-180"
+              )}
+            />
+            {showRare ? "Show less" : `${rare.length} more`}
           </button>
-        );
-      })}
+        </>
+      )}
     </div>
   );
 }
