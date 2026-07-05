@@ -29,10 +29,11 @@ def statements_for(r, now):
     fam = r["id"]
     chash = str(abs(hash(json.dumps(r, sort_keys=True))) % (10**12))
     subsets = json.dumps(r.get("subsets", []), ensure_ascii=False)
+    weights = json.dumps(r.get("weights", []))
     cols = (
         "family_dir,name,designer,category,primary_class,license,license_dir,"
         "is_variable,subsets,primary_ttf,version,version_string,created_ms,"
-        "modified_ms,date_added,weight_class,width_class,fs_type,glyph_count,"
+        "modified_ms,date_added,weight_class,width_class,weights,fs_type,glyph_count,"
         "char_count,units_per_em,has_stat,primary_script,panose,content_hash,updated_at"
     )
     vals = (
@@ -41,7 +42,7 @@ def statements_for(r, now):
         f"{q(bool(r.get('isVariable')))},{q(subsets)},{q(r.get('primaryTtf'))},"
         f"{q(r.get('version'))},{q(r.get('versionString'))},{q(r.get('createdMs'))},"
         f"{q(r.get('modifiedMs'))},{q(r.get('dateAdded'))},{q(r.get('weightClass'))},"
-        f"{q(r.get('widthClass'))},{q(r.get('fsType'))},{q(r.get('glyphCount'))},"
+        f"{q(r.get('widthClass'))},{q(weights)},{q(r.get('fsType'))},{q(r.get('glyphCount'))},"
         f"{q(r.get('charCount'))},{q(r.get('unitsPerEm'))},{q(bool(r.get('hasStat')))},"
         f"{q(r.get('primaryScript'))},{q(r.get('panose'))},{q(chash)},{now}"
     )

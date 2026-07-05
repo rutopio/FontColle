@@ -29,6 +29,41 @@ def primary_class(cat):
     if "HANDWRITING" in c or "SCRIPT" in c: return "Script"
     return "Sans"
 
+# Standard weight steps we expose as filter pills. A variable wght axis "covers"
+# every step inside [min, max]; a static family contributes its distinct
+# per-file weights snapped to the nearest step.
+WEIGHT_STEPS = [100, 200, 300, 400, 500, 600, 700, 800, 900]
+
+
+def snap_weight(w):
+    """Snap an arbitrary usWeightClass to the nearest standard 100 step."""
+    if w is None:
+        return None
+    return min(WEIGHT_STEPS, key=lambda s: abs(s - w))
+
+
+def derive_weights(r, ttf, axes):
+    """The set of standard weight steps this family offers.
+
+    Variable: all steps inside the wght axis range. Static: the distinct
+    per-file weights from METADATA, snapped. Fallback: the primary weight_class.
+    """
+    steps = set()
+    wght = next((a for a in axes if a["tag"] == "wght"), None)
+    if wght and wght.get("min") is not None and wght.get("max") is not None:
+        lo, hi = wght["min"], wght["max"]
+        steps.update(s for s in WEIGHT_STEPS if lo <= s <= hi)
+    for fo in r.get("fonts", []) or []:
+        s = snap_weight(fo.get("weight"))
+        if s is not None:
+            steps.add(s)
+    if not steps:
+        s = snap_weight(ttf.get("weight_class"))
+        if s is not None:
+            steps.add(s)
+    return sorted(steps)
+
+
 def to_record(r):
     ttf = r.get("ttf", {}) or {}
     axes = ttf.get("axes", [])
@@ -77,6 +112,7 @@ def to_record(r):
         "dateAdded": r.get("date_added"),
         "weightClass": ttf.get("weight_class"),
         "widthClass": ttf.get("width_class"),
+        "weights": derive_weights(r, ttf, axes),
         "fsType": ttf.get("fs_type"),
         "glyphCount": ttf.get("glyph_count"),
         "charCount": ttf.get("char_count"),
