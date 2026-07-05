@@ -33,6 +33,17 @@ import { specimenFor } from "@/lib/fonts/specimen";
 import type { FontRecord } from "@/lib/fonts/types";
 import { usePreview } from "@/lib/preview/context";
 
+// Preset values offered in the click-to-edit dropdowns.
+const SIZE_PRESETS = [
+  10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 40, 48, 52, 60, 72, 100, 160, 240,
+  300,
+];
+// Per-axis presets; axes without an entry just get free-form entry.
+const AXIS_PRESETS: Record<string, number[]> = {
+  wght: [100, 200, 300, 400, 500, 600, 700, 800, 900],
+  wdth: [50, 62.5, 75, 87.5, 100, 112.5, 125, 150, 200],
+};
+
 export const Route = createFileRoute("/$fontId")({
   component: DetailPage,
   loader: async ({ params }) => {
@@ -319,53 +330,81 @@ function ResetButton({
 }
 
 // A slider's numeric readout that doubles as a manual input: a dotted underline
-// hints it's clickable; clicking swaps it for a number field that commits on
-// blur/Enter (clamped to [min, max]) and cancels on Escape.
+// hints it's editable. Clicking swaps it for a borderless underlined field (no
+// spinner box, à la the LiveMirror pt-input) plus a dropdown of preset values.
+// Commits on blur/Enter/preset-pick (clamped to [min, max]); Escape cancels.
 function EditableValue({
   value,
   min,
   max,
-  step = 1,
   suffix,
+  presets,
   onChange,
   ariaLabel,
 }: {
   value: number;
   min: number;
   max: number;
-  step?: number;
   suffix?: string;
+  presets?: number[];
   onChange: (v: number) => void;
   ariaLabel: string;
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
 
-  const commit = () => {
-    const n = Number(draft);
-    if (Number.isFinite(n)) onChange(Math.min(max, Math.max(min, n)));
+  const commit = (raw: string) => {
+    const n = Number(raw);
+    if (Number.isFinite(n) && raw.trim() !== "")
+      onChange(Math.min(max, Math.max(min, n)));
     setEditing(false);
   };
 
+  // Only presets within range, so a picked value never gets clamped away.
+  const options = (presets ?? []).filter((p) => p >= min && p <= max);
+
   if (editing) {
     return (
-      <input
-        type="number"
-        min={min}
-        max={max}
-        step={step}
-        value={draft}
-        // biome-ignore lint/a11y/noAutofocus: focus the field the user just opened.
-        autoFocus
-        aria-label={ariaLabel}
-        onChange={(e) => setDraft(e.target.value)}
-        onBlur={commit}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") commit();
-          if (e.key === "Escape") setEditing(false);
-        }}
-        className="w-14 rounded border bg-transparent px-1 text-right font-mono text-foreground text-xs outline-none focus:border-foreground"
-      />
+      <span className="relative inline-flex items-baseline font-mono text-foreground text-xs">
+        <input
+          type="text"
+          inputMode="decimal"
+          value={draft}
+          size={1}
+          // biome-ignore lint/a11y/noAutofocus: focus the field the user just opened.
+          autoFocus
+          aria-label={ariaLabel}
+          onChange={(e) => setDraft(e.target.value)}
+          // Delay so a preset mousedown commits before blur closes the field.
+          onBlur={() => setTimeout(() => setEditing(false), 120)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") commit(draft);
+            if (e.key === "Escape") setEditing(false);
+          }}
+          className="w-[4ch] border-transparent border-b bg-transparent text-right outline-none hover:border-muted-foreground focus:border-foreground"
+        />
+        {suffix}
+        {options.length > 0 && (
+          <ul className="absolute top-full right-0 z-20 mt-1 max-h-56 min-w-16 overflow-auto rounded-md border bg-popover py-1 text-popover-foreground shadow-md">
+            {options.map((p) => (
+              <li key={p}>
+                <button
+                  type="button"
+                  // mousedown fires before the input's blur, so the value commits.
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    commit(String(p));
+                  }}
+                  className="block w-full px-3 py-1 text-right hover:bg-muted"
+                >
+                  {p}
+                  {suffix}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </span>
     );
   }
 
@@ -446,6 +485,7 @@ function DetailSidebar({
                 min={16}
                 max={200}
                 suffix="px"
+                presets={SIZE_PRESETS}
                 onChange={onSizeChange}
                 ariaLabel="Preview font size"
               />
@@ -487,7 +527,7 @@ function DetailSidebar({
                         value={Math.round(axisState[a.tag])}
                         min={a.min ?? 0}
                         max={a.max ?? 100}
-                        step={0.5}
+                        presets={AXIS_PRESETS[a.tag]}
                         onChange={(v) => onAxisChange(a.tag, v)}
                         ariaLabel={`${a.name ?? a.tag} value`}
                       />
