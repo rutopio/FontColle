@@ -185,7 +185,7 @@ function App() {
 
             <div className="ml-auto flex items-center gap-2">
               <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
-                <SelectTrigger className="h-9 w-[176px]" aria-label="Sort by">
+                <SelectTrigger className="h-8 w-[176px]" aria-label="Sort by">
                   <SelectValue placeholder="Sort">
                     {SORT_LABELS[sort]}
                   </SelectValue>
@@ -205,11 +205,13 @@ function App() {
               </Select>
 
               <Tabs value={view} onValueChange={(v) => setView(v as ViewMode)}>
-                <TabsList>
+                <TabsList className="h-8">
                   <TabsTrigger value="grid" aria-label="Grid view">
+                    Grid
                     <SquaresFourIcon className="size-4" />
                   </TabsTrigger>
                   <TabsTrigger value="row" aria-label="Row view">
+                    Row
                     <RowsIcon className="size-4" />
                   </TabsTrigger>
                 </TabsList>
