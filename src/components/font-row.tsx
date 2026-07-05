@@ -37,7 +37,7 @@ export function FontRow({
     <Link
       to="/$fontId"
       params={{ fontId: font.id }}
-      className="flex flex-col gap-3 border-b py-6 transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:outline-none"
+      className="flex h-28 flex-col justify-center gap-3 overflow-hidden border-b transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:outline-none"
     >
       <div className="flex items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-2">

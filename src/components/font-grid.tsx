@@ -24,8 +24,11 @@ function columnsFor(width: number, view: ViewMode): number {
 }
 
 const GAP = 16; // Tailwind gap-4
-const ESTIMATED_ROW = 320; // grid card row estimate
-const ESTIMATED_LINE = 128; // row-mode line estimate
+// Fixed row heights so every card/line is the same size. Because the size is
+// fixed we don't measure elements, so changing a preview's weight can't reflow
+// the list. Cards/lines clip their own overflow to honor these.
+const CARD_H = 288; // grid card height (h-72)
+const LINE_H = 112; // row-mode line height (h-28)
 
 export function FontGrid({
   fonts,
@@ -74,7 +77,7 @@ export function FontGrid({
 
   const virtualizer = useWindowVirtualizer({
     count: rowCount,
-    estimateSize: () => (view === "row" ? ESTIMATED_LINE : ESTIMATED_ROW + GAP),
+    estimateSize: () => (view === "row" ? LINE_H : CARD_H + GAP),
     overscan: 4,
     scrollMargin,
   });
@@ -131,7 +134,6 @@ export function FontGrid({
             <div
               key={row.key}
               data-index={row.index}
-              ref={virtualizer.measureElement}
               style={{
                 position: "absolute",
                 top: 0,

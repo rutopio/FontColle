@@ -69,7 +69,7 @@ export function FontCard({
     <Link
       to="/$fontId"
       params={{ fontId: font.id }}
-      className="flex flex-col gap-4 rounded-lg border bg-card p-5 transition-colors hover:border-foreground focus-visible:border-foreground focus-visible:outline-none"
+      className="flex h-72 flex-col gap-4 overflow-hidden rounded-lg border bg-card p-5 transition-colors hover:border-foreground focus-visible:border-foreground focus-visible:outline-none"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -103,7 +103,7 @@ export function FontCard({
 
       <p
         style={previewStyle}
-        className="min-h-16 break-words text-2xl leading-snug"
+        className="min-h-16 flex-1 overflow-hidden break-words text-2xl leading-snug"
       >
         {previewText || specimenFor(font)}
       </p>
