@@ -101,12 +101,22 @@ export function FontCard({
         </button>
       </div>
 
-      <p
-        style={previewStyle}
-        className="min-h-16 flex-1 overflow-hidden break-words text-2xl leading-snug"
-      >
-        {previewText || specimenFor(font)}
-      </p>
+      {fontLoaded ? (
+        <p
+          style={previewStyle}
+          className="min-h-16 flex-1 overflow-hidden break-words text-2xl leading-snug"
+        >
+          {previewText || specimenFor(font)}
+        </p>
+      ) : (
+        // Skeleton while the web font is still loading, so the card shows a
+        // steady placeholder instead of an empty/blank preview area.
+        <div className="flex min-h-16 flex-1 flex-col gap-2.5 py-1" aria-hidden>
+          <div className="h-4 w-[85%] animate-pulse rounded bg-muted" />
+          <div className="h-4 w-[70%] animate-pulse rounded bg-muted" />
+          <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
+        </div>
+      )}
 
       {weightOptions.length > 1 && (
         <div className="flex flex-wrap gap-1">
