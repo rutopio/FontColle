@@ -90,6 +90,7 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
             selected={filter.axes}
             onToggle={(v) => toggle("axes", v)}
             grid
+            spread
           />
           <Section
             title="OpenType features"
@@ -97,8 +98,8 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
             items={index.features}
             selected={filter.features}
             onToggle={(v) => toggle("features", v)}
-            mono
             grid
+            spread
           />
         </div>
       </ScrollArea>
@@ -193,20 +194,21 @@ function Section({
   items,
   selected,
   onToggle,
-  mono,
   sortable = true,
   grid,
+  spread,
 }: {
   title: string;
   icon: Icon;
   items: [string, number][];
   selected: string[];
   onToggle: (v: string) => void;
-  mono?: boolean;
   // When false, hide the Count/A–Z tabs and keep the default count order.
   sortable?: boolean;
   // When true, lay pills out three-per-row at equal width instead of wrapping.
   grid?: boolean;
+  // When true, spread name left / count right with a mono name.
+  spread?: boolean;
 }) {
   const [sort, setSort] = useState<SortMode>("count");
 
@@ -243,8 +245,8 @@ function Section({
         items={sorted}
         selected={selected}
         onToggle={onToggle}
-        mono={mono}
         grid={grid}
+        spread={spread}
       />
     </div>
   );
@@ -254,14 +256,16 @@ function Pills({
   items,
   selected,
   onToggle,
-  mono,
   grid,
+  spread,
 }: {
   items: [string, number][];
   selected: string[];
   onToggle: (v: string) => void;
-  mono?: boolean;
   grid?: boolean;
+  // When true, push name left and count right (justify-between) and render the
+  // name in a mono face. Used for Variable axes and OpenType features.
+  spread?: boolean;
 }) {
   const [showRare, setShowRare] = useState(false);
 
@@ -282,16 +286,16 @@ function Pills({
         type="button"
         onClick={() => onToggle(value)}
         className={cn(
-          "flex items-center justify-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-colors",
+          "flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-colors",
+          spread ? "justify-between" : "justify-center",
           // Equal-width three-per-row: let each cell shrink and clip its label.
           grid && "min-w-0",
-          mono && "font-mono",
           on
             ? "border-foreground bg-foreground text-background"
             : "text-muted-foreground hover:border-foreground hover:text-foreground"
         )}
       >
-        <span className="truncate">{value}</span>
+        <span className={cn("truncate", spread && "font-mono")}>{value}</span>
         <span className="font-mono opacity-60">{count}</span>
       </button>
     );
