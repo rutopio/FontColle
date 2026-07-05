@@ -25,6 +25,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { featureName } from "@/lib/fonts/features";
 import {
   type FilterState,
   WEIGHT_LABELS,
@@ -175,15 +176,11 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
             grid
             spread
           />
-          <Section
-            title="OpenType features"
-            icon={ToggleRightIcon}
-            items={index.features}
-            selected={filter.features}
-            onToggle={(v) => toggle("features", v)}
-            onReset={() => clearSection("features", index.features)}
-            grid
-            spread
+          <FeatureSection
+            features={index.features}
+            selectedFeatures={filter.features}
+            onToggleFeature={(v) => toggle("features", v)}
+            onResetFeatures={() => onChange({ ...filter, features: [] })}
           />
         </div>
       </ScrollArea>
@@ -447,6 +444,43 @@ function LanguageSection({
       dialogTitle="Languages"
       dialogDescription="Filter fonts by the languages they support."
       searchPlaceholder="Search languages"
+    />
+  );
+}
+
+// OpenType features: dozens of four-letter tags. The sidebar shows only the
+// selected ones as pills; the Browse all dialog lists all with human names.
+function FeatureSection({
+  features,
+  selectedFeatures,
+  onToggleFeature,
+  onResetFeatures,
+}: {
+  features: [string, number][];
+  selectedFeatures: string[];
+  onToggleFeature: (v: string) => void;
+  onResetFeatures: () => void;
+}) {
+  // Label each tag with its human name (smcp -> "Small Caps"), name-sorted.
+  const items = useMemo(
+    () =>
+      features
+        .map(([tag, count]) => [tag, count, featureName(tag)] as const)
+        .sort((a, b) => a[2].localeCompare(b[2])),
+    [features]
+  );
+
+  return (
+    <FacetPickerSection
+      title="OpenType features"
+      icon={ToggleRightIcon}
+      items={items}
+      selected={selectedFeatures}
+      onToggle={onToggleFeature}
+      onReset={onResetFeatures}
+      dialogTitle="OpenType features"
+      dialogDescription="Filter fonts by the OpenType features they include."
+      searchPlaceholder="Search features"
     />
   );
 }
