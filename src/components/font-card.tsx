@@ -109,16 +109,25 @@ export function FontCard({
               className={cn("size-5", isFavorite && "text-red-500")}
             />
           </button>
-          <a
-            href={`https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`}
-            target="_blank"
-            rel="noreferrer"
-            onClick={(e) => e.stopPropagation()}
+          {/* A button, not an <a>: the whole card is already a <Link> (an
+              <a>), and <a> can't nest <a> (hydration error). Open Google Fonts
+              in a new tab and stop the click from triggering card navigation. */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              window.open(
+                `https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`,
+                "_blank",
+                "noreferrer"
+              );
+            }}
             aria-label="Download on Google Fonts"
             className="text-muted-foreground transition-colors hover:text-foreground"
           >
             <DownloadSimpleIcon className="size-5" />
-          </a>
+          </button>
         </div>
       </div>
 
