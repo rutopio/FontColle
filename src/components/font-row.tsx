@@ -72,6 +72,7 @@ export function FontRow({
 
       {fontLoaded ? (
         <p
+          dir="auto"
           style={{ fontFamily: previewFontFamily(font.name, fontLoaded) }}
           className="truncate text-3xl leading-tight"
         >

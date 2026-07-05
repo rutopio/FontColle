@@ -187,7 +187,11 @@ function Detail({ font }: { font: FontRecord }) {
             {size}px
           </span>
         </div>
-        <p style={specimenStyle} className="break-words leading-tight">
+        <p
+          dir="auto"
+          style={specimenStyle}
+          className="break-words leading-tight"
+        >
           {specimen}
         </p>
       </Panel>
