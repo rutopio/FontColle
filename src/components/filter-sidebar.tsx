@@ -1,4 +1,5 @@
 import {
+  ArrowsDownUpIcon,
   BookmarkSimpleIcon,
   CaretDownIcon,
   type Icon,
@@ -9,7 +10,6 @@ import {
 } from "@phosphor-icons/react";
 import { useEffect, useMemo, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { FilterState } from "@/lib/fonts/filter";
 import {
   ensureFontLoaded,
@@ -229,16 +229,16 @@ function Section({
           {title}
         </h2>
         {sortable && items.length > 1 && (
-          <Tabs value={sort} onValueChange={(v) => setSort(v as SortMode)}>
-            <TabsList>
-              <TabsTrigger value="count" className="text-xs">
-                Count
-              </TabsTrigger>
-              <TabsTrigger value="alpha" className="text-xs">
-                A–Z
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+          // Single toggle showing the current order; click flips count <-> alpha.
+          <button
+            type="button"
+            onClick={() => setSort((s) => (s === "count" ? "alpha" : "count"))}
+            aria-label={`Sort by ${sort === "count" ? "count" : "name"}, click to change`}
+            className="flex items-center gap-1 rounded-md border px-2 py-1 font-mono text-muted-foreground text-xs transition-colors hover:border-foreground hover:text-foreground"
+          >
+            <ArrowsDownUpIcon className="size-3" />
+            {sort === "count" ? "123" : "A–Z"}
+          </button>
         )}
       </div>
       <Pills
