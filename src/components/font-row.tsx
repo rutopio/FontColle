@@ -70,12 +70,16 @@ export function FontRow({
         </button>
       </div>
 
-      <p
-        style={{ fontFamily: previewFontFamily(font.name, fontLoaded) }}
-        className="truncate text-3xl leading-tight"
-      >
-        {previewText || specimenFor(font)}
-      </p>
+      {fontLoaded ? (
+        <p
+          style={{ fontFamily: previewFontFamily(font.name, fontLoaded) }}
+          className="truncate text-3xl leading-tight"
+        >
+          {previewText || specimenFor(font)}
+        </p>
+      ) : (
+        <div className="h-8 w-2/3 animate-pulse rounded bg-muted" aria-hidden />
+      )}
     </Link>
   );
 }
