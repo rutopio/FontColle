@@ -152,7 +152,9 @@ function App() {
     filter.features.length +
     filter.axes.length +
     filter.weights.length +
-    filter.widths.length;
+    filter.widths.length +
+    filter.scripts.length +
+    filter.languages.length;
 
   return (
     <FilterLayout

@@ -9,6 +9,7 @@ export interface FontAxis {
 export interface FontInstance {
   name: string | null;
   coords: Record<string, number>;
+  italic: boolean;
 }
 
 export interface FontRecord {
@@ -24,6 +25,10 @@ export interface FontRecord {
   instances: FontInstance[];
   features: string[];
   facets: string[];
+  // Writing-system / language coverage (todo: language-support task).
+  languages: string[]; // supported lang ids, e.g. "en_Latn"
+  scripts: string[]; // distinct scripts, e.g. "Latn", "Cyrl"
+  cjkCoverage: Record<string, number>; // lang id -> exemplar coverage ratio
   // Archival metadata (may be null for older/edge fonts).
   version: number | null;
   versionString: string | null;

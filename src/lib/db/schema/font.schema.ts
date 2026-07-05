@@ -46,6 +46,9 @@ export const family = sqliteTable(
     // PANOSE 10 digits as a compact string "2,11,2,0,..." (rarely populated,
     // kept flat for the few families that set it).
     panose: text("panose"),
+    // CJK exemplar coverage ratios {"zh_Hant":1.0,...} as JSON, for progressive
+    // display. Supported languages/scripts live in reverse-index tables below.
+    cjkCoverage: text("cjk_coverage"),
 
     contentHash: text("content_hash").notNull(),
     updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
@@ -102,6 +105,38 @@ export const familyInstance = sqliteTable(
       .references(() => family.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
     coords: text("coords").notNull(), // JSON {"wght":300,...}
+    italic: integer("italic", { mode: "boolean" }).notNull().default(false),
   },
   (t) => [index("family_instance_family_idx").on(t.familyId)]
+);
+
+// Reverse index: language id -> family (todo: language-support task). Mirrors
+// family_feature so "families supporting language X" is a plain indexed join.
+export const familyLanguage = sqliteTable(
+  "family_language",
+  {
+    familyId: integer("family_id")
+      .notNull()
+      .references(() => family.id, { onDelete: "cascade" }),
+    langId: text("lang_id").notNull(), // gflanguages id, "en_Latn"
+  },
+  (t) => [
+    index("family_language_lang_idx").on(t.langId),
+    index("family_language_family_idx").on(t.familyId),
+  ]
+);
+
+// Reverse index: script code -> family. Primary "writing system" filter.
+export const familyScript = sqliteTable(
+  "family_script",
+  {
+    familyId: integer("family_id")
+      .notNull()
+      .references(() => family.id, { onDelete: "cascade" }),
+    script: text("script").notNull(), // ISO 15924, "Latn", "Cyrl"
+  },
+  (t) => [
+    index("family_script_script_idx").on(t.script),
+    index("family_script_family_idx").on(t.familyId),
+  ]
 );

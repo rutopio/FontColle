@@ -1,0 +1,119 @@
+#!/usr/bin/env python3
+"""Writing-system / language coverage, computed the way Google Fonts does.
+
+HYBRID model (locked in tasks/todo.md):
+- Alphabetic scripts (Latn/Cyrl/Grek/Arab/Hebr/Thai/Deva/…): a language is
+  "supported" iff |cmap ∩ exemplar.base| / |exemplar.base| >= ALPHA_THRESHOLD
+  (0.98, tolerating one rare char — e.g. German missing only ẞ).
+- CJK (Hant/Hans/Jpan/Kore): 100% is the wrong bar. Support is driven by the
+  METADATA `subsets` tags (what the GF website uses); we ALSO compute the
+  exemplar coverage ratio as a numeric field for progressive display.
+
+Uses gflanguages exemplar data + gftools' parse() for the coverage math.
+Kept as a separate module so harvest.py stays about font I/O.
+"""
+from functools import lru_cache
+
+import gflanguages
+from gftools.util.google_fonts import parse
+
+ALPHA_THRESHOLD = 0.98
+
+# Scripts whose support we decide by exemplar coverage ratio. CJK scripts are
+# excluded here and handled via subset tags instead.
+CJK_SCRIPTS = {"Hant", "Hans", "Jpan", "Kore", "Hani", "Kana", "Hira", "Bopo"}
+
+# METADATA subset tag -> the gflanguages language id it implies. GF's website
+# treats the presence of a CJK subset as support for that language.
+SUBSET_TO_CJK_LANG = {
+    "chinese-traditional": "zh_Hant",
+    "chinese-hongkong": "zh_Hant",
+    "chinese-simplified": "zh_Hans",
+    "japanese": "ja_Jpan",
+    "korean": "ko_Kore",
+}
+# CJK language ids we also report a coverage ratio for (progressive display).
+CJK_RATIO_LANGS = ["zh_Hant", "zh_Hans", "ja_Jpan", "ko_Kore"]
+
+
+@lru_cache(maxsize=1)
+def _languages():
+    return gflanguages.LoadLanguages()
+
+
+@lru_cache(maxsize=1)
+def _scripts():
+    return gflanguages.LoadScripts()
+
+
+@lru_cache(maxsize=1)
+def _lang_exemplars():
+    """lang_id -> (script, set(base codepoints)); skip langs without a base."""
+    out = {}
+    for lid, lang in _languages().items():
+        base = lang.exemplar_chars.base if lang.exemplar_chars else ""
+        if not base:
+            continue
+        cps = parse(base)
+        if cps:
+            out[lid] = (lang.script, cps)
+    return out
+
+
+def script_name(code):
+    s = _scripts().get(code)
+    return s.name if s is not None else code
+
+
+def language_label_map():
+    """lang_id -> {name, script, population} for the frontend label map."""
+    out = {}
+    for lid, lang in _languages().items():
+        out[lid] = {
+            "name": lang.name,
+            "script": lang.script,
+            "population": lang.population or 0,
+        }
+    return out
+
+
+def script_label_map():
+    """script code -> human name (Latn -> "Latin")."""
+    return {code: s.name for code, s in _scripts().items()}
+
+
+def coverage(cmap_codepoints, subsets):
+    """Return (languages, scripts, cjk_coverage) for one family.
+
+    - cmap_codepoints: set of str characters the family's fonts cover (union).
+    - subsets: METADATA subset tags (drives CJK support).
+    languages: sorted list of supported lang ids (alphabetic ratio>=0.98 + CJK
+    from subsets). scripts: distinct scripts of the supported languages.
+    cjk_coverage: {lang_id: ratio} for the CJK languages, for display.
+    """
+    cps = set(cmap_codepoints)
+    langs = set()
+
+    # Alphabetic: ratio over exemplar base, excluding CJK scripts.
+    for lid, (script, base) in _lang_exemplars().items():
+        if script in CJK_SCRIPTS:
+            continue
+        have = len(base & cps)
+        if have / len(base) >= ALPHA_THRESHOLD:
+            langs.add(lid)
+
+    # CJK: presence of the subset tag is the support signal.
+    cjk_coverage = {}
+    for sub in subsets or []:
+        lid = SUBSET_TO_CJK_LANG.get(sub)
+        if lid:
+            langs.add(lid)
+    # Numeric coverage ratio for CJK languages (progressive display / sorting).
+    ex = _lang_exemplars()
+    for lid in CJK_RATIO_LANGS:
+        if lid in ex:
+            _, base = ex[lid]
+            cjk_coverage[lid] = round(len(base & cps) / len(base), 4)
+
+    scripts = sorted({_languages()[lid].script for lid in langs if lid in _languages()})
+    return sorted(langs), scripts, cjk_coverage

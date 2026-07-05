@@ -22,6 +22,8 @@ export interface FilterState {
   axes: string[]; // axis tags, AND across
   weights: string[]; // standard weight steps ("100".."900"), OR within
   widths: string[]; // usWidthClass steps ("1".."9"), OR within
+  scripts: string[]; // writing-system codes ("Latn"…), AND across
+  languages: string[]; // language ids ("en_Latn"…), AND across
 }
 
 export const emptyFilter: FilterState = {
@@ -32,6 +34,8 @@ export const emptyFilter: FilterState = {
   axes: [],
   weights: [],
   widths: [],
+  scripts: [],
+  languages: [],
 };
 
 // Standard weight steps we expose as pills. Mirrors the harvester's snapping.
@@ -118,6 +122,8 @@ export interface FilterSearch {
   axis?: string;
   weight?: string;
   width?: string;
+  script?: string;
+  lang?: string;
   view?: "grid" | "row"; // display preference, not a filter
   sort?: string; // sort key, not a filter
 }
@@ -134,6 +140,8 @@ export function searchToFilter(s: FilterSearch): FilterState {
     axes: splitCsv(s.axis),
     weights: splitCsv(s.weight),
     widths: splitCsv(s.width),
+    scripts: splitCsv(s.script),
+    languages: splitCsv(s.lang),
   };
 }
 
@@ -146,6 +154,8 @@ export function filterToSearch(f: FilterState): FilterSearch {
   if (f.axes.length) s.axis = f.axes.join(",");
   if (f.weights.length) s.weight = f.weights.join(",");
   if (f.widths.length) s.width = f.widths.join(",");
+  if (f.scripts.length) s.script = f.scripts.join(",");
+  if (f.languages.length) s.lang = f.languages.join(",");
   return s;
 }
 
@@ -164,6 +174,8 @@ export function parseFilterSearch(raw: Record<string, unknown>): FilterSearch {
     feature: str(raw.feature),
     weight: numCsv(raw.weight),
     width: numCsv(raw.width),
+    script: str(raw.script),
+    lang: str(raw.lang),
     view: raw.view === "row" ? "row" : undefined,
     sort: str(raw.sort),
   };
@@ -205,6 +217,15 @@ export function applyFilters(
       const set = familyWidthSet(font);
       if (!f.widths.some((w) => set.includes(Number(w)))) return false;
     }
+    // AND across scripts: family must cover every selected writing system.
+    if (f.scripts.length && !f.scripts.every((s) => font.scripts.includes(s)))
+      return false;
+    // AND across languages: family must support every selected language.
+    if (
+      f.languages.length &&
+      !f.languages.every((l) => font.languages.includes(l))
+    )
+      return false;
     return true;
   });
 }
@@ -213,22 +234,26 @@ export function applyFilters(
 export function buildFacetIndex(fonts: FontRecord[]) {
   const classes = new Map<string, number>();
   const facets = new Map<string, number>();
-  const scripts = new Map<string, number>();
+  const subsetScripts = new Map<string, number>();
   const features = new Map<string, number>();
   const axes = new Map<string, number>();
   const weights = new Map<string, number>();
   const widths = new Map<string, number>();
+  const wsScripts = new Map<string, number>(); // real writing systems (Latn…)
+  const languages = new Map<string, number>();
   const bump = (m: Map<string, number>, k: string) =>
     m.set(k, (m.get(k) ?? 0) + 1);
 
   for (const font of fonts) {
     bump(classes, font.class);
     for (const x of font.facets)
-      bump(SCRIPT_FACETS.has(x) ? scripts : facets, x);
+      bump(SCRIPT_FACETS.has(x) ? subsetScripts : facets, x);
     for (const x of font.features) bump(features, x);
     for (const a of font.axes) bump(axes, a.tag);
     for (const w of familyWeightSet(font)) bump(weights, String(w));
     for (const w of familyWidthSet(font)) bump(widths, String(w));
+    for (const s of font.scripts) bump(wsScripts, s);
+    for (const l of font.languages) bump(languages, l);
   }
   const sorted = (m: Map<string, number>) =>
     [...m.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
@@ -238,10 +263,14 @@ export function buildFacetIndex(fonts: FontRecord[]) {
   return {
     classes: sorted(classes),
     facets: sorted(facets),
-    scripts: sorted(scripts),
+    // subset-derived script facets (latin/cjk/…), shown in the Subsets section
+    subsetScripts: sorted(subsetScripts),
     features: sorted(features),
     axes: sorted(axes),
     weights: byStep(weights),
     widths: byStep(widths),
+    // real writing systems + languages (language-support task)
+    wsScripts: sorted(wsScripts),
+    languages: sorted(languages),
   };
 }
