@@ -19,7 +19,11 @@ import {
   featureName,
 } from "@/lib/fonts/features";
 import { type FilterState, filterToSearch } from "@/lib/fonts/filter";
-import { ensureFontRangeLoaded, previewFontFamily } from "@/lib/fonts/loader";
+import {
+  ensureFontRangeLoaded,
+  previewFontFamily,
+  useFontLoaded,
+} from "@/lib/fonts/loader";
 import { getAllFonts } from "@/lib/fonts/queries";
 import { specimenFor } from "@/lib/fonts/specimen";
 import type { FontRecord } from "@/lib/fonts/types";
@@ -87,18 +91,20 @@ function Detail({ font }: { font: FontRecord }) {
     ensureFontRangeLoaded(font.name, font.axes);
   }, [font.name, font.axes]);
 
+  const fontLoaded = useFontLoaded(font.name);
+
   const specimenStyle: React.CSSProperties = useMemo(() => {
     const varSettings = font.axes
       .map((a) => `"${a.tag}" ${axisState[a.tag]}`)
       .join(", ");
     return {
-      fontFamily: previewFontFamily(font.name),
+      fontFamily: previewFontFamily(font.name, fontLoaded),
       fontSize: `${size}px`,
       fontWeight: axisState.wght ? Math.round(axisState.wght) : undefined,
       fontVariationSettings: varSettings || undefined,
       fontFeatureSettings: buildFeatureSettings(featureState),
     };
-  }, [font.name, font.axes, axisState, size, featureState]);
+  }, [font.name, font.axes, axisState, size, featureState, fontLoaded]);
 
   const gsub = font.features.filter((t) => !GPOS_TAGS.has(t));
   const gpos = font.features.filter((t) => GPOS_TAGS.has(t));
@@ -241,7 +247,7 @@ function Detail({ font }: { font: FontRecord }) {
                 <span
                   className="text-2xl"
                   style={{
-                    fontFamily: previewFontFamily(font.name),
+                    fontFamily: previewFontFamily(font.name, fontLoaded),
                     fontWeight: inst.coords.wght
                       ? Math.round(inst.coords.wght)
                       : undefined,

@@ -2,7 +2,11 @@ import { Heart } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { ensureFontLoaded, previewFontFamily } from "@/lib/fonts/loader";
+import {
+  ensureFontLoaded,
+  previewFontFamily,
+  useFontLoaded,
+} from "@/lib/fonts/loader";
 import { specimenFor } from "@/lib/fonts/specimen";
 import type { FontRecord } from "@/lib/fonts/types";
 import { cn } from "@/lib/utils";
@@ -52,8 +56,9 @@ export function FontCard({
     return reg ?? weightOptions[Math.floor(weightOptions.length / 2)];
   });
 
+  const fontLoaded = useFontLoaded(font.name);
   const previewStyle: React.CSSProperties = {
-    fontFamily: previewFontFamily(font.name),
+    fontFamily: previewFontFamily(font.name, fontLoaded),
     fontWeight: active.weight,
     fontVariationSettings: buildVariationSettings(active.coords),
     // Smooth the weight/axis change instead of a hard jump.

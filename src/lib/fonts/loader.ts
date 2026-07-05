@@ -1,15 +1,60 @@
 // Loads a Google Font family stylesheet on demand via the CSS2 API. We only
 // need the font files for preview; downloads redirect to Google (see todo §6).
 
+import { useEffect, useState } from "react";
+
 const loaded = new Set<string>();
 
 /**
- * Preview font-family chain: the family, then Adobe NotDef so any codepoint the
- * family lacks renders as a visible .notdef box (registered in styles.css),
- * then sans-serif as a last resort.
+ * Preview font-family chain. The second slot switches on load state so the two
+ * "missing glyph" cases look different:
+ * - `isLoaded === false` (family still downloading): fall back to Adobe Blank,
+ *   which renders every codepoint empty, so the preview stays blank instead of
+ *   flashing NotDef boxes for the whole string.
+ * - `isLoaded === true` (family ready): fall back to Adobe NotDef, so a genuine
+ *   missing glyph shows as a visible .notdef box.
+ * sans-serif is the last resort if neither fallback face is available.
  */
-export function previewFontFamily(name: string): string {
-  return `"${name}", "Adobe NotDef", sans-serif`;
+export function previewFontFamily(name: string, isLoaded = true): string {
+  const fallback = isLoaded ? "Adobe NotDef" : "Adobe Blank";
+  return `"${name}", "${fallback}", sans-serif`;
+}
+
+/**
+ * Track whether a preview family's web font has actually loaded, so callers can
+ * pick the right fallback (Blank while loading, NotDef once ready). Uses the
+ * CSS Font Loading API; assumes loaded during SSR / when unsupported.
+ */
+export function useFontLoaded(name: string): boolean {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    if (typeof document === "undefined" || !document.fonts) {
+      setReady(true);
+      return;
+    }
+    let cancelled = false;
+    // `check` needs a size+family; a nominal 16px is enough to query the set.
+    const probe = `16px "${name}"`;
+    if (document.fonts.check(probe)) {
+      setReady(true);
+      return;
+    }
+    setReady(false);
+    document.fonts
+      .load(probe)
+      .then(() => {
+        if (!cancelled) setReady(document.fonts.check(probe));
+      })
+      .catch(() => {
+        if (!cancelled) setReady(true); // don't get stuck on Blank if load errors
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [name]);
+
+  return ready;
 }
 
 /**
