@@ -48,15 +48,9 @@ function App() {
   const { text: previewText } = usePreview();
   const { favorites, toggle } = useFavorites();
 
-  const { setFilter: setSharedFilter } = useFilter();
+  const { setFilter: setSharedFilter, listScrollY } = useFilter();
   const facetIndex = useMemo(() => buildFacetIndex(fonts), [fonts]);
   const filter = useMemo(() => searchToFilter(search), [search]);
-
-  // Mirror the URL-derived filter into shared context so the detail page's
-  // sidebar can reflect what's selected on the list.
-  useEffect(() => {
-    setSharedFilter(filter);
-  }, [filter, setSharedFilter]);
   const view: ViewMode = search.view === "row" ? "row" : "grid";
   const sort = (search.sort as SortKey) ?? DEFAULT_SORT;
 
@@ -64,6 +58,42 @@ function App() {
     () => sortFonts(applyFilters(fonts, filter), sort),
     [fonts, filter, sort]
   );
+
+  // Mirror the URL-derived filter into shared context so the detail page's
+  // sidebar can reflect what's selected on the list.
+  useEffect(() => {
+    setSharedFilter(filter);
+  }, [filter, setSharedFilter]);
+
+  // Remember the scroll position while browsing the list.
+  useEffect(() => {
+    const onScroll = () => {
+      listScrollY.current = window.scrollY;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [listScrollY]);
+
+  // Restore it when returning from a detail page. The window virtualizer grows
+  // its total height over the first few frames, so retry across frames until
+  // the target is reachable (or we give up after a short budget).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
+  useEffect(() => {
+    const target = listScrollY.current;
+    if (target <= 0) return;
+    let frames = 0;
+    let raf = 0;
+    const tick = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      window.scrollTo(0, Math.min(target, max));
+      frames++;
+      if (window.scrollY < target - 1 && frames < 30) {
+        raf = requestAnimationFrame(tick);
+      }
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, []);
 
   // view and sort are display prefs, not filters — preserve them across changes.
   const setFilter = (next: FilterState) => {

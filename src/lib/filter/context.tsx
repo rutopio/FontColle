@@ -3,6 +3,7 @@ import {
   type ReactNode,
   useContext,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { emptyFilter, type FilterState } from "@/lib/fonts/filter";
@@ -10,6 +11,11 @@ import { emptyFilter, type FilterState } from "@/lib/fonts/filter";
 interface FilterState_ {
   filter: FilterState;
   setFilter: (next: FilterState) => void;
+  // Last known list scroll position. A ref (not state) because it's read/written
+  // imperatively around navigation and must never trigger a re-render. Restoring
+  // it manually is more reliable than router scrollRestoration for the window
+  // virtualizer, whose total height isn't final on the first frame back.
+  listScrollY: React.RefObject<number>;
 }
 
 const FilterContext = createContext<FilterState_ | null>(null);
@@ -20,7 +26,8 @@ const FilterContext = createContext<FilterState_ | null>(null);
 // even though the detail URL carries no filter params.
 export function FilterProvider({ children }: { children: ReactNode }) {
   const [filter, setFilter] = useState<FilterState>(emptyFilter);
-  const value = useMemo(() => ({ filter, setFilter }), [filter]);
+  const listScrollY = useRef(0);
+  const value = useMemo(() => ({ filter, setFilter, listScrollY }), [filter]);
   return (
     <FilterContext.Provider value={value}>{children}</FilterContext.Provider>
   );
