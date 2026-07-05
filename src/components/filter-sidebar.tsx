@@ -1,4 +1,12 @@
-import { CaretDown } from "@phosphor-icons/react";
+import {
+  BookmarkSimple,
+  CaretDown,
+  type Icon,
+  Shapes,
+  SlidersHorizontal,
+  ToggleRight,
+  Translate,
+} from "@phosphor-icons/react";
 import { useMemo, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -41,30 +49,35 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
         <div className="flex flex-col gap-8 p-4">
           <Section
             title="Category"
+            icon={Shapes}
             items={index.classes}
             selected={filter.classes}
             onToggle={(v) => toggle("classes", v)}
           />
           <Section
             title="Properties"
+            icon={BookmarkSimple}
             items={index.facets}
             selected={filter.facets}
             onToggle={(v) => toggle("facets", v)}
           />
           <Section
             title="Subsets"
+            icon={Translate}
             items={index.scripts}
             selected={filter.facets}
             onToggle={(v) => toggle("facets", v)}
           />
           <Section
             title="Variable axes"
+            icon={SlidersHorizontal}
             items={index.axes}
             selected={filter.axes}
             onToggle={(v) => toggle("axes", v)}
           />
           <Section
             title="OpenType features"
+            icon={ToggleRight}
             items={index.features}
             selected={filter.features}
             onToggle={(v) => toggle("features", v)}
@@ -78,12 +91,14 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
 
 function Section({
   title,
+  icon: Icon,
   items,
   selected,
   onToggle,
   mono,
 }: {
   title: string;
+  icon: Icon;
   items: [string, number][];
   selected: string[];
   onToggle: (v: string) => void;
@@ -103,7 +118,8 @@ function Section({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+        <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase tracking-wide">
+          <Icon className="size-4" />
           {title}
         </h2>
         {items.length > 1 && (
