@@ -81,6 +81,7 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
             selected={filter.facets}
             onToggle={(v) => toggle("facets", v)}
             sortable={false}
+            grid
           />
           <Section
             title="Variable axes"
@@ -88,6 +89,7 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
             items={index.axes}
             selected={filter.axes}
             onToggle={(v) => toggle("axes", v)}
+            grid
           />
           <Section
             title="OpenType features"
@@ -96,6 +98,7 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
             selected={filter.features}
             onToggle={(v) => toggle("features", v)}
             mono
+            grid
           />
         </div>
       </ScrollArea>
@@ -192,6 +195,7 @@ function Section({
   onToggle,
   mono,
   sortable = true,
+  grid,
 }: {
   title: string;
   icon: Icon;
@@ -201,6 +205,8 @@ function Section({
   mono?: boolean;
   // When false, hide the Count/A–Z tabs and keep the default count order.
   sortable?: boolean;
+  // When true, lay pills out three-per-row at equal width instead of wrapping.
+  grid?: boolean;
 }) {
   const [sort, setSort] = useState<SortMode>("count");
 
@@ -238,6 +244,7 @@ function Section({
         selected={selected}
         onToggle={onToggle}
         mono={mono}
+        grid={grid}
       />
     </div>
   );
@@ -248,11 +255,13 @@ function Pills({
   selected,
   onToggle,
   mono,
+  grid,
 }: {
   items: [string, number][];
   selected: string[];
   onToggle: (v: string) => void;
   mono?: boolean;
+  grid?: boolean;
 }) {
   const [showRare, setShowRare] = useState(false);
 
@@ -273,27 +282,30 @@ function Pills({
         type="button"
         onClick={() => onToggle(value)}
         className={cn(
-          "rounded-full border px-2.5 py-1 text-xs transition-colors",
+          "flex items-center justify-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-colors",
+          // Equal-width three-per-row: let each cell shrink and clip its label.
+          grid && "min-w-0",
           mono && "font-mono",
           on
             ? "border-foreground bg-foreground text-background"
             : "text-muted-foreground hover:border-foreground hover:text-foreground"
         )}
       >
-        {value}
-        <span className="ml-1 font-mono opacity-60">{count}</span>
+        <span className="truncate">{value}</span>
+        <span className="font-mono opacity-60">{count}</span>
       </button>
     );
   };
 
+  // Grid mode lays pills out three-per-row at equal width; otherwise they wrap.
+  const rowClass = grid ? "grid grid-cols-3 gap-1.5" : "flex flex-wrap gap-1.5";
+
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap gap-1.5">{common.map(renderPill)}</div>
+      <div className={rowClass}>{common.map(renderPill)}</div>
       {rare.length > 0 && (
         <>
-          {showRare && (
-            <div className="flex flex-wrap gap-1.5">{rare.map(renderPill)}</div>
-          )}
+          {showRare && <div className={rowClass}>{rare.map(renderPill)}</div>}
           <button
             type="button"
             onClick={() => setShowRare((v) => !v)}
