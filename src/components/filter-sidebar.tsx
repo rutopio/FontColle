@@ -1,11 +1,11 @@
 import {
-  BookmarkSimple,
-  CaretDown,
+  BookmarkSimpleIcon,
+  CaretDownIcon,
   type Icon,
-  Shapes,
-  SlidersHorizontal,
-  ToggleRight,
-  Translate,
+  ShapesIcon,
+  SlidersHorizontalIcon,
+  ToggleRightIcon,
+  TranslateIcon,
 } from "@phosphor-icons/react";
 import { useEffect, useMemo, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -69,14 +69,14 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
           />
           <Section
             title="Properties"
-            icon={BookmarkSimple}
+            icon={BookmarkSimpleIcon}
             items={index.facets}
             selected={filter.facets}
             onToggle={(v) => toggle("facets", v)}
           />
           <Section
             title="Subsets"
-            icon={Translate}
+            icon={TranslateIcon}
             items={index.scripts}
             selected={filter.facets}
             onToggle={(v) => toggle("facets", v)}
@@ -84,14 +84,14 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
           />
           <Section
             title="Variable axes"
-            icon={SlidersHorizontal}
+            icon={SlidersHorizontalIcon}
             items={index.axes}
             selected={filter.axes}
             onToggle={(v) => toggle("axes", v)}
           />
           <Section
             title="OpenType features"
-            icon={ToggleRight}
+            icon={ToggleRightIcon}
             items={index.features}
             selected={filter.features}
             onToggle={(v) => toggle("features", v)}
@@ -118,10 +118,10 @@ function CategoryCards({
   return (
     <div className="flex flex-col gap-2">
       <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase tracking-wide">
-        <Shapes className="size-4" />
+        <ShapesIcon className="size-4" />
         Category
       </h2>
-      <div className="grid grid-cols-3 gap-1.5">
+      <div className="grid grid-cols-3 gap-3">
         {items.map(([value, count]) => (
           <CategoryCard
             key={value}
@@ -160,7 +160,7 @@ function CategoryCard({
       onClick={onToggle}
       aria-pressed={on}
       className={cn(
-        "relative flex cursor-pointer flex-col items-center gap-2 rounded-md border px-2 py-3 text-center shadow-xs outline-none transition-[color,box-shadow]",
+        "relative flex cursor-pointer flex-col items-center gap-2 rounded-md border p-2 text-center shadow-xs outline-none transition-[color,box-shadow]",
         on ? "border-primary" : "border-input hover:border-foreground/40"
       )}
     >
@@ -177,7 +177,7 @@ function CategoryCard({
       <span className="font-medium text-foreground text-xs leading-none">
         {value}
       </span>
-      <span className="font-mono text-[10px] text-muted-foreground leading-none">
+      <span className="font-mono text-muted-foreground text-xs leading-none">
         {count}
       </span>
     </button>
@@ -299,7 +299,7 @@ function Pills({
             onClick={() => setShowRare((v) => !v)}
             className="flex w-fit items-center gap-1 text-muted-foreground text-xs hover:text-foreground"
           >
-            <CaretDown
+            <CaretDownIcon
               className={cn(
                 "size-3 transition-transform",
                 showRare && "rotate-180"

@@ -1,4 +1,4 @@
-import { TextAa } from "@phosphor-icons/react";
+import { TextAaIcon } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import type * as React from "react";
 import { FilterSidebar } from "@/components/filter-sidebar";
@@ -47,7 +47,7 @@ export function AppSidebar({
                 render={<Link to="/" aria-label="All fonts" />}
               >
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <TextAa className="size-4" weight="bold" />
+                  <TextAaIcon className="size-4" weight="bold" />
                 </div>
                 <span className="truncate font-medium">Font Finder</span>
               </SidebarMenuButton>
