@@ -13,7 +13,10 @@ const UDHR_ART18 = {
   hebrew: "כל אדם זכאי לחירות המחשבה, המצפון והדת.",
   thai: "ทุกคนมีสิทธิในอิสรภาพแห่งความคิด มโนธรรม และศาสนา",
   devanagari: "प्रत्येक व्यक्ति को विचार, अंतरात्मा और धर्म की स्वतंत्रता का अधिकार है।",
-  chinese: "人人有思想、良心和宗教自由的权利。",
+  // Chinese has distinct Simplified vs Traditional wording; Google Fonts splits
+  // these via the chinese-simplified / -traditional / -hongkong subsets.
+  chineseSimplified: "人人有思想、良心和宗教自由的权利。",
+  chineseTraditional: "人人有思想、良心和宗教自由的權利。",
   japanese: "すべての人は、思想、良心及び宗教の自由についての権利を有する。",
   korean: "모든 사람은 사상, 양심 및 종교의 자유에 대한 권리를 가진다.",
 } as const;
@@ -24,8 +27,13 @@ const UDHR_ART18 = {
 export function specimenFor(font: FontRecord): string {
   const has = (s: string) => font.subsets.includes(s);
 
+  // Traditional (incl. Hong Kong) vs Simplified use different characters, so
+  // branch on the specific chinese-* subset rather than lumping them together.
+  if (has("chinese-traditional") || has("chinese-hongkong")) {
+    return UDHR_ART18.chineseTraditional;
+  }
   if (font.subsets.some((s) => s.startsWith("chinese"))) {
-    return UDHR_ART18.chinese;
+    return UDHR_ART18.chineseSimplified;
   }
   if (has("japanese")) return UDHR_ART18.japanese;
   if (has("korean")) return UDHR_ART18.korean;
