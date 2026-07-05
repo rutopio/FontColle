@@ -294,18 +294,23 @@ function CardGrid({
           <Icon className="size-4" />
           {title}
         </h2>
-        {selected.length > 0 && (
-          // Ghost button in the same slot as the sort toggle on other sections.
-          <button
-            type="button"
-            onClick={onReset}
-            aria-label={`Reset ${title}`}
-            className="flex items-center gap-1 rounded-md px-2 py-1 font-mono text-muted-foreground text-xs transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted/50"
-          >
-            <XIcon className="size-3" />
-            Reset
-          </button>
-        )}
+        {/* Always rendered (hidden while empty) so the title row keeps a
+            constant height whether or not a selection exists. Same slot/style
+            as the sort toggle on other sections. */}
+        <button
+          type="button"
+          onClick={onReset}
+          aria-label={`Reset ${title}`}
+          disabled={selected.length === 0}
+          aria-hidden={selected.length === 0}
+          className={cn(
+            "flex items-center gap-1 rounded-md px-2 py-1 font-mono text-muted-foreground text-xs transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted/50",
+            selected.length === 0 && "invisible"
+          )}
+        >
+          <XIcon className="size-3" />
+          Reset
+        </button>
       </div>
       {/* At most one value per section (enforced by the handler). */}
       <div className="grid grid-cols-3 gap-3">
