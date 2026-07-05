@@ -60,7 +60,6 @@ type SortMode = "count" | "alpha";
 interface FacetIndex {
   classes: [string, number][];
   facets: [string, number][];
-  subsetScripts: [string, number][];
   features: [string, number][];
   axes: [string, number][];
   weights: [string, number][];
@@ -133,15 +132,6 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
             selected={filter.facets}
             onToggle={(v) => toggle("facets", v)}
             onReset={() => clearSection("facets", index.facets)}
-          />
-          <Section
-            title="Subsets"
-            icon={TranslateIcon}
-            items={index.subsetScripts}
-            selected={filter.facets}
-            onToggle={(v) => toggle("facets", v)}
-            sortable={false}
-            grid
           />
           <WritingSystemSection
             scripts={index.wsScripts}

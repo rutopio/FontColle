@@ -51,24 +51,8 @@ export function deriveFacets(font: FontRecord): string[] {
     if (f) facets.add(f);
   }
 
-  if (font.subsets.includes("latin")) facets.add("latin");
-  if (
-    font.subsets.some(
-      (s) => s.startsWith("chinese") || s === "japanese" || s === "korean"
-    )
-  ) {
-    facets.add("cjk");
-  }
-  for (const s of [
-    "arabic",
-    "cyrillic",
-    "greek",
-    "hebrew",
-    "thai",
-    "devanagari",
-  ]) {
-    if (font.subsets.includes(s)) facets.add(s);
-  }
+  // Script/subset facets (latin/cjk/…) are intentionally not derived here: the
+  // Writing system section covers scripts with real cmap-based coverage.
 
   return [...facets].sort();
 }
