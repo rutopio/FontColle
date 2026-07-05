@@ -149,7 +149,9 @@ function App() {
     filter.classes.length +
     filter.facets.length +
     filter.features.length +
-    filter.axes.length;
+    filter.axes.length +
+    filter.weights.length +
+    filter.widths.length;
 
   return (
     <FilterLayout index={facetIndex} filter={filter} onFilterChange={setFilter}>
