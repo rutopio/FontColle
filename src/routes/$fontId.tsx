@@ -1,4 +1,4 @@
-import { ArrowLeft } from "@phosphor-icons/react";
+import { ArrowLeftIcon } from "@phosphor-icons/react";
 import {
   createFileRoute,
   Link,
@@ -128,7 +128,7 @@ function Detail({ font }: { font: FontRecord }) {
                 aria-label="All fonts"
                 onClick={() => router.history.back()}
               >
-                <ArrowLeft />
+                <ArrowLeftIcon />
               </Button>
             ) : (
               <Button
@@ -137,7 +137,7 @@ function Detail({ font }: { font: FontRecord }) {
                 size="icon"
                 aria-label="All fonts"
               >
-                <ArrowLeft />
+                <ArrowLeftIcon />
               </Button>
             )}
             <h1

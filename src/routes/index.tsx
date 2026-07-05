@@ -1,4 +1,4 @@
-import { Rows, SquaresFour } from "@phosphor-icons/react";
+import { RowsIcon, SquaresFourIcon } from "@phosphor-icons/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo } from "react";
 import { Column, FilterLayout } from "@/components/filter-layout";
@@ -178,10 +178,10 @@ function App() {
               <Tabs value={view} onValueChange={(v) => setView(v as ViewMode)}>
                 <TabsList>
                   <TabsTrigger value="grid" aria-label="Grid view">
-                    <SquaresFour className="size-4" />
+                    <SquaresFourIcon className="size-4" />
                   </TabsTrigger>
                   <TabsTrigger value="row" aria-label="Row view">
-                    <Rows className="size-4" />
+                    <RowsIcon className="size-4" />
                   </TabsTrigger>
                 </TabsList>
               </Tabs>

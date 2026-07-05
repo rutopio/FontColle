@@ -1,4 +1,4 @@
-import { DownloadSimple, Heart } from "@phosphor-icons/react";
+import { DownloadSimpleIcon, HeartIcon } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -100,7 +100,7 @@ export function FontCard({
             }
             className="text-muted-foreground transition-colors hover:text-foreground"
           >
-            <Heart
+            <HeartIcon
               weight={isFavorite ? "fill" : "regular"}
               className={cn("size-5", isFavorite && "text-red-500")}
             />
@@ -113,7 +113,7 @@ export function FontCard({
             aria-label="Download on Google Fonts"
             className="text-muted-foreground transition-colors hover:text-foreground"
           >
-            <DownloadSimple className="size-5" />
+            <DownloadSimpleIcon className="size-5" />
           </a>
         </div>
       </div>

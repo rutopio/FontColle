@@ -1,4 +1,4 @@
-import { Heart } from "@phosphor-icons/react";
+import { HeartIcon } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -63,7 +63,7 @@ export function FontRow({
           aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
           className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
         >
-          <Heart
+          <HeartIcon
             weight={isFavorite ? "fill" : "regular"}
             className={cn("size-5", isFavorite && "text-red-500")}
           />
