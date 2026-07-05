@@ -1,0 +1,4902 @@
+{
+  "aa_Latn": {
+    "name": "Afar",
+    "script": "Latn",
+    "population": 2119662
+  },
+  "ab_Cyrl": {
+    "name": "Abkhazian",
+    "script": "Cyrl",
+    "population": 91952
+  },
+  "abi_Latn": {
+    "name": "Abidji",
+    "script": "Latn",
+    "population": 50500
+  },
+  "abn_Latn": {
+    "name": "Abua",
+    "script": "Latn",
+    "population": 25000
+  },
+  "abq_Cyrl": {
+    "name": "Abaza",
+    "script": "Cyrl",
+    "population": 50000
+  },
+  "abr_Latn": {
+    "name": "Abron",
+    "script": "Latn",
+    "population": 1467010
+  },
+  "acd_Latn": {
+    "name": "Gikyode",
+    "script": "Latn",
+    "population": 18000
+  },
+  "ace_Latn": {
+    "name": "Achinese",
+    "script": "Latn",
+    "population": 3738364
+  },
+  "ach_Latn": {
+    "name": "Acoli",
+    "script": "Latn",
+    "population": 1600361
+  },
+  "acu_Latn": {
+    "name": "Achuar-Shiwiar",
+    "script": "Latn",
+    "population": 7800
+  },
+  "ada_Latn": {
+    "name": "Adangme",
+    "script": "Latn",
+    "population": 880206
+  },
+  "ade_Latn": {
+    "name": "Adele",
+    "script": "Latn",
+    "population": 64000
+  },
+  "adj_Latn": {
+    "name": "Adioukrou",
+    "script": "Latn",
+    "population": 180000
+  },
+  "ady_Cyrl": {
+    "name": "Adyghe",
+    "script": "Cyrl",
+    "population": 444583
+  },
+  "aeb_Latn": {
+    "name": "Tunisian Darija",
+    "script": "Latn",
+    "population": 11000000
+  },
+  "af_Latn": {
+    "name": "Afrikaans",
+    "script": "Latn",
+    "population": 9318845
+  },
+  "agc_Latn": {
+    "name": "Agatu",
+    "script": "Latn",
+    "population": 187000
+  },
+  "agq_Latn": {
+    "name": "Aghem",
+    "script": "Latn",
+    "population": 38843
+  },
+  "aha_Latn": {
+    "name": "Ahanta",
+    "script": "Latn",
+    "population": 245000
+  },
+  "ahl_Latn": {
+    "name": "Igo",
+    "script": "Latn",
+    "population": 7700
+  },
+  "ahs_Latn": {
+    "name": "Ashe",
+    "script": "Latn",
+    "population": 53000
+  },
+  "aht_Latn": {
+    "name": "Ahtna",
+    "script": "Latn",
+    "population": 15
+  },
+  "aii_Cyrl": {
+    "name": "Assyrian Neo-Aramaic, Cyrillic",
+    "script": "Cyrl",
+    "population": 0
+  },
+  "aii_Syrc": {
+    "name": "Assyrian Neo-Aramaic",
+    "script": "Syrc",
+    "population": 0
+  },
+  "ajg_Latn": {
+    "name": "Aja",
+    "script": "Latn",
+    "population": 550000
+  },
+  "akp_Latn": {
+    "name": "Siwu",
+    "script": "Latn",
+    "population": 27000
+  },
+  "aks_Latn": {
+    "name": "Akeselem",
+    "script": "Latn",
+    "population": 69100
+  },
+  "ala_Latn": {
+    "name": "Alago",
+    "script": "Latn",
+    "population": 350000
+  },
+  "ale_Latn": {
+    "name": "Aleut",
+    "script": "Latn",
+    "population": 150
+  },
+  "aln_Latn": {
+    "name": "Gheg Albanian",
+    "script": "Latn",
+    "population": 1430249
+  },
+  "alq_Latn": {
+    "name": "Algonquin",
+    "script": "Latn",
+    "population": 3300
+  },
+  "alt_Cyrl": {
+    "name": "Southern Altai",
+    "script": "Cyrl",
+    "population": 19841
+  },
+  "am_Ethi": {
+    "name": "Amharic",
+    "script": "Ethi",
+    "population": 35728475
+  },
+  "an_Latn": {
+    "name": "Aragonese",
+    "script": "Latn",
+    "population": 26008
+  },
+  "anc_Latn": {
+    "name": "Ngas",
+    "script": "Latn",
+    "population": 740000
+  },
+  "ank_Latn": {
+    "name": "Goemai",
+    "script": "Latn",
+    "population": 200000
+  },
+  "ann_Latn": {
+    "name": "Obolo",
+    "script": "Latn",
+    "population": 336000
+  },
+  "anv_Latn": {
+    "name": "Denya",
+    "script": "Latn",
+    "population": 36000
+  },
+  "anw_Latn": {
+    "name": "Anaang",
+    "script": "Latn",
+    "population": 2900000
+  },
+  "any_Latn": {
+    "name": "Anyin",
+    "script": "Latn",
+    "population": 1506400
+  },
+  "aoz_Latn": {
+    "name": "Uab Meto",
+    "script": "Latn",
+    "population": 720970
+  },
+  "apd_Latn": {
+    "name": "Sudanese Arabic",
+    "script": "Latn",
+    "population": 33000000
+  },
+  "ar_Arab": {
+    "name": "Arabic",
+    "script": "Arab",
+    "population": 350901500
+  },
+  "arn_Latn": {
+    "name": "Mapuche",
+    "script": "Latn",
+    "population": 272802
+  },
+  "as_Beng": {
+    "name": "Assamese",
+    "script": "Beng",
+    "population": 17239170
+  },
+  "asa_Latn": {
+    "name": "Asu",
+    "script": "Latn",
+    "population": 702633
+  },
+  "asg_Latn": {
+    "name": "Cishingini",
+    "script": "Latn",
+    "population": 172000
+  },
+  "ast_Latn": {
+    "name": "Asturian",
+    "script": "Latn",
+    "population": 650205
+  },
+  "atg_Latn": {
+    "name": "Ivbie North-Okpela-Arhe",
+    "script": "Latn",
+    "population": 69000
+  },
+  "ati_Latn": {
+    "name": "Attié",
+    "script": "Latn",
+    "population": 739000
+  },
+  "av_Cyrl": {
+    "name": "Avaric",
+    "script": "Cyrl",
+    "population": 552715
+  },
+  "avn_Latn": {
+    "name": "Avatime",
+    "script": "Latn",
+    "population": 24000
+  },
+  "avu_Latn": {
+    "name": "Avokaya",
+    "script": "Latn",
+    "population": 100000
+  },
+  "awa_Deva": {
+    "name": "Awadhi",
+    "script": "Deva",
+    "population": 25862923
+  },
+  "awc_Latn": {
+    "name": "Cicipu",
+    "script": "Latn",
+    "population": 44000
+  },
+  "awo_Latn": {
+    "name": "Awak",
+    "script": "Latn",
+    "population": 6000
+  },
+  "ay_Latn": {
+    "name": "Aymara",
+    "script": "Latn",
+    "population": 2838620
+  },
+  "ayb_Latn": {
+    "name": "Ayizo Gbe",
+    "script": "Latn",
+    "population": 400000
+  },
+  "az_Cyrl": {
+    "name": "Azerbaijani (Cyrillic)",
+    "script": "Cyrl",
+    "population": 1142175
+  },
+  "az_Latn": {
+    "name": "Azerbaijani",
+    "script": "Latn",
+    "population": 9690091
+  },
+  "azo_Latn": {
+    "name": "Awing",
+    "script": "Latn",
+    "population": 19000
+  },
+  "ba_Cyrl": {
+    "name": "Bashkir",
+    "script": "Cyrl",
+    "population": 1842386
+  },
+  "bal_Arab": {
+    "name": "Baluchi",
+    "script": "Arab",
+    "population": 10796398
+  },
+  "ban_Bali": {
+    "name": "Balinese (Balinese)",
+    "script": "Bali",
+    "population": 0
+  },
+  "ban_Latn": {
+    "name": "Balinese",
+    "script": "Latn",
+    "population": 4806468
+  },
+  "bas_Latn": {
+    "name": "Basaa",
+    "script": "Latn",
+    "population": 332940
+  },
+  "bav_Latn": {
+    "name": "Vengo",
+    "script": "Latn",
+    "population": 27000
+  },
+  "bax_Latn": {
+    "name": "Bamun (Latin)",
+    "script": "Latn",
+    "population": 673000
+  },
+  "bba_Latn": {
+    "name": "Baatonum",
+    "script": "Latn",
+    "population": 1300000
+  },
+  "bbc_Batk": {
+    "name": "Batak Toba, Batak",
+    "script": "Batk",
+    "population": 0
+  },
+  "bbc_Latn": {
+    "name": "Batak Toba",
+    "script": "Latn",
+    "population": 2456639
+  },
+  "bbj_Latn": {
+    "name": "Ghomala",
+    "script": "Latn",
+    "population": 388430
+  },
+  "bbo_Latn": {
+    "name": "Northern Bobo Madaré",
+    "script": "Latn",
+    "population": 119000
+  },
+  "bbp_Latn": {
+    "name": "Banda, West Central",
+    "script": "Latn",
+    "population": 10000
+  },
+  "bci_Latn": {
+    "name": "Baoulé",
+    "script": "Latn",
+    "population": 3022921
+  },
+  "bcn_Latn": {
+    "name": "Bali",
+    "script": "Latn",
+    "population": 2000
+  },
+  "bcq_Latn": {
+    "name": "Bench",
+    "script": "Latn",
+    "population": 356000
+  },
+  "bcw_Latn": {
+    "name": "Bana",
+    "script": "Latn",
+    "population": 23000
+  },
+  "bcy_Latn": {
+    "name": "Bacama",
+    "script": "Latn",
+    "population": 300000
+  },
+  "bdh_Latn": {
+    "name": "Baka, DRC/South Sudan",
+    "script": "Latn",
+    "population": 60000
+  },
+  "be_Cyrl": {
+    "name": "Belarusian",
+    "script": "Cyrl",
+    "population": 10064517
+  },
+  "beh_Latn": {
+    "name": "Biali",
+    "script": "Latn",
+    "population": 100000
+  },
+  "bej_Latn": {
+    "name": "Bedawiyet",
+    "script": "Latn",
+    "population": 2460326
+  },
+  "bem_Latn": {
+    "name": "Bemba",
+    "script": "Latn",
+    "population": 5402246
+  },
+  "ber_Latn": {
+    "name": "Berber (Latin)",
+    "script": "Latn",
+    "population": 0
+  },
+  "bet_Latn": {
+    "name": "Bété, Guiberoua",
+    "script": "Latn",
+    "population": 265000
+  },
+  "bev_Latn": {
+    "name": "Bété, Daloa",
+    "script": "Latn",
+    "population": 265000
+  },
+  "bex_Latn": {
+    "name": "Jur Modo",
+    "script": "Latn",
+    "population": 100000
+  },
+  "bez_Latn": {
+    "name": "Bena",
+    "script": "Latn",
+    "population": 995397
+  },
+  "bfa_Latn": {
+    "name": "Bari",
+    "script": "Latn",
+    "population": 865000
+  },
+  "bfd_Latn": {
+    "name": "Bafut",
+    "script": "Latn",
+    "population": 158146
+  },
+  "bfo_Latn": {
+    "name": "Malba Birifor",
+    "script": "Latn",
+    "population": 108000
+  },
+  "bg_Cyrl": {
+    "name": "Bulgarian",
+    "script": "Cyrl",
+    "population": 7878314
+  },
+  "bho_Deva": {
+    "name": "Bhojpuri",
+    "script": "Deva",
+    "population": 32934797
+  },
+  "bhy_Latn": {
+    "name": "Bhele",
+    "script": "Latn",
+    "population": 15000
+  },
+  "bi_Latn": {
+    "name": "Bislama",
+    "script": "Latn",
+    "population": 268499
+  },
+  "bib_Latn": {
+    "name": "Bissa",
+    "script": "Latn",
+    "population": 1150000
+  },
+  "bik_Latn": {
+    "name": "Bikol",
+    "script": "Latn",
+    "population": 3275430
+  },
+  "bim_Latn": {
+    "name": "Bimoba",
+    "script": "Latn",
+    "population": 267000
+  },
+  "bin_Latn": {
+    "name": "Bini",
+    "script": "Latn",
+    "population": 1519598
+  },
+  "biv_Latn": {
+    "name": "Birifor, Southern",
+    "script": "Latn",
+    "population": 190000
+  },
+  "bjt_Latn": {
+    "name": "Balanta-Ganja",
+    "script": "Latn",
+    "population": 95992
+  },
+  "bjv_Latn": {
+    "name": "Bedjond",
+    "script": "Latn",
+    "population": 216000
+  },
+  "bkc_Latn": {
+    "name": "Baka, Cameroon/Gabon",
+    "script": "Latn",
+    "population": 71000
+  },
+  "bkm_Latn": {
+    "name": "Kom",
+    "script": "Latn",
+    "population": 360685
+  },
+  "bkv_Latn": {
+    "name": "Bekwarra",
+    "script": "Latn",
+    "population": 200000
+  },
+  "bla_Latn": {
+    "name": "Siksika",
+    "script": "Latn",
+    "population": 2900
+  },
+  "blo_Latn": {
+    "name": "Anii",
+    "script": "Latn",
+    "population": 49000
+  },
+  "bm_Latn": {
+    "name": "Bambara",
+    "script": "Latn",
+    "population": 8994564
+  },
+  "bmq_Latn": {
+    "name": "Bomu",
+    "script": "Latn",
+    "population": 168159
+  },
+  "bn_Beng": {
+    "name": "Bangla",
+    "script": "Beng",
+    "population": 267280377
+  },
+  "bng_Latn": {
+    "name": "Benga",
+    "script": "Latn",
+    "population": 5400
+  },
+  "bnm_Latn": {
+    "name": "Bapuku",
+    "script": "Latn",
+    "population": 15000
+  },
+  "bo_Tibt": {
+    "name": "Tibetan",
+    "script": "Tibt",
+    "population": 3006696
+  },
+  "bom_Latn": {
+    "name": "Berom",
+    "script": "Latn",
+    "population": 1000000
+  },
+  "bot_Latn": {
+    "name": "Bongo",
+    "script": "Latn",
+    "population": 19000
+  },
+  "bov_Latn": {
+    "name": "Tuwuli",
+    "script": "Latn",
+    "population": 11000
+  },
+  "box_Latn": {
+    "name": "Buamu",
+    "script": "Latn",
+    "population": 268000
+  },
+  "boz_Latn": {
+    "name": "Tiéyaxo Bozo",
+    "script": "Latn",
+    "population": 335000
+  },
+  "bpy_Beng": {
+    "name": "Bishnupriya",
+    "script": "Beng",
+    "population": 90174
+  },
+  "bqc_Latn": {
+    "name": "Boko",
+    "script": "Latn",
+    "population": 160000
+  },
+  "bqj_Latn": {
+    "name": "Bandial",
+    "script": "Latn",
+    "population": 13000
+  },
+  "bqp_Latn": {
+    "name": "Bisã",
+    "script": "Latn",
+    "population": 21000
+  },
+  "bqv_Latn": {
+    "name": "Koro Wachi",
+    "script": "Latn",
+    "population": 46717
+  },
+  "br_Latn": {
+    "name": "Breton",
+    "script": "Latn",
+    "population": 563140
+  },
+  "brx_Deva": {
+    "name": "Bodo",
+    "script": "Deva",
+    "population": 1856526
+  },
+  "bs_Cyrl": {
+    "name": "Bosnian (Cyrillic)",
+    "script": "Cyrl",
+    "population": 3797234
+  },
+  "bs_Latn": {
+    "name": "Bosnian",
+    "script": "Latn",
+    "population": 3797234
+  },
+  "bsc_Latn": {
+    "name": "Bassari",
+    "script": "Latn",
+    "population": 15264
+  },
+  "bsc_Latn_GN": {
+    "name": "Guinean Bassari",
+    "script": "Latn",
+    "population": 18000
+  },
+  "bsj_Latn": {
+    "name": "Bangwinji",
+    "script": "Latn",
+    "population": 6000
+  },
+  "bsp_Latn": {
+    "name": "Baga Sitemu",
+    "script": "Latn",
+    "population": 44000
+  },
+  "bsq_Latn": {
+    "name": "Bassa (Latin)",
+    "script": "Latn",
+    "population": 410000
+  },
+  "bss_Latn": {
+    "name": "Akoose",
+    "script": "Latn",
+    "population": 149823
+  },
+  "bto_Latn": {
+    "name": "Rinconada Bikol",
+    "script": "Latn",
+    "population": 305706
+  },
+  "btt_Latn": {
+    "name": "Bete-Bendi",
+    "script": "Latn",
+    "population": 100000
+  },
+  "bua_Cyrl": {
+    "name": "Buriat",
+    "script": "Cyrl",
+    "population": 311788
+  },
+  "buc_Latn": {
+    "name": "Bushi",
+    "script": "Latn",
+    "population": 57762
+  },
+  "bud_Latn": {
+    "name": "Ntcham",
+    "script": "Latn",
+    "population": 329000
+  },
+  "bug_Latn": {
+    "name": "Buginese",
+    "script": "Latn",
+    "population": 4298211
+  },
+  "bum_Latn": {
+    "name": "Bulu",
+    "script": "Latn",
+    "population": 1276269
+  },
+  "bus_Latn": {
+    "name": "Bokobaru",
+    "script": "Latn",
+    "population": 62000
+  },
+  "buu_Latn": {
+    "name": "Budu",
+    "script": "Latn",
+    "population": 475000
+  },
+  "buw_Latn": {
+    "name": "gevové",
+    "script": "Latn",
+    "population": 4000
+  },
+  "bvb_Latn": {
+    "name": "Bube",
+    "script": "Latn",
+    "population": 66058
+  },
+  "bvi_Latn": {
+    "name": "Belanda Viri, Latin",
+    "script": "Latn",
+    "population": 73000
+  },
+  "bwj_Latn": {
+    "name": "Láá Láá Bwamu",
+    "script": "Latn",
+    "population": 69200
+  },
+  "bwq_Latn": {
+    "name": "Southern Bobo Madaré",
+    "script": "Latn",
+    "population": 180000
+  },
+  "bwr_Latn": {
+    "name": "Bura-Pabir",
+    "script": "Latn",
+    "population": 528000
+  },
+  "byn_Latn": {
+    "name": "Bilen",
+    "script": "Latn",
+    "population": 79055
+  },
+  "bys_Latn": {
+    "name": "Burak",
+    "script": "Latn",
+    "population": 4000
+  },
+  "byv_Latn": {
+    "name": "Medumba",
+    "script": "Latn",
+    "population": 305195
+  },
+  "bza_Latn": {
+    "name": "Bandi",
+    "script": "Latn",
+    "population": 160000
+  },
+  "bze_Latn": {
+    "name": "Jenaama Bozo",
+    "script": "Latn",
+    "population": 166203
+  },
+  "bzw_Latn": {
+    "name": "Basa",
+    "script": "Latn",
+    "population": 300000
+  },
+  "bzx_Latn": {
+    "name": "Bozo, Hainyaxo",
+    "script": "Latn",
+    "population": 47000
+  },
+  "ca_Latn": {
+    "name": "Catalan",
+    "script": "Latn",
+    "population": 8679138
+  },
+  "cae_Latn": {
+    "name": "Lehar",
+    "script": "Latn",
+    "population": 19000
+  },
+  "car_Latn": {
+    "name": "Carib",
+    "script": "Latn",
+    "population": 8600
+  },
+  "cbj_Latn": {
+    "name": "Ede Cabe",
+    "script": "Latn",
+    "population": 2240
+  },
+  "ccp_Cakm": {
+    "name": "Chakma",
+    "script": "Cakm",
+    "population": 0
+  },
+  "cdr_Latn": {
+    "name": "Kamuku",
+    "script": "Latn",
+    "population": 45000
+  },
+  "ce_Cyrl": {
+    "name": "Chechen",
+    "script": "Cyrl",
+    "population": 935365
+  },
+  "ceb_Latn": {
+    "name": "Cebuano",
+    "script": "Latn",
+    "population": 26203440
+  },
+  "cfa_Latn": {
+    "name": "Dikaka",
+    "script": "Latn",
+    "population": 25000
+  },
+  "cgg_Latn": {
+    "name": "Chiga",
+    "script": "Latn",
+    "population": 2335662
+  },
+  "ch_Latn": {
+    "name": "Chamorro",
+    "script": "Latn",
+    "population": 46324
+  },
+  "chk_Latn": {
+    "name": "Chuukese",
+    "script": "Latn",
+    "population": 30730
+  },
+  "chm_Cyrl": {
+    "name": "Mari",
+    "script": "Cyrl",
+    "population": 524371
+  },
+  "chp_Latn": {
+    "name": "Chipewyan",
+    "script": "Latn",
+    "population": 753
+  },
+  "chr_Cher": {
+    "name": "Cherokee",
+    "script": "Cher",
+    "population": 25613
+  },
+  "chy_Latn": {
+    "name": "Cheyenne",
+    "script": "Latn",
+    "population": 380
+  },
+  "cic_Latn": {
+    "name": "Chickasaw",
+    "script": "Latn",
+    "population": 0
+  },
+  "cjk_Latn": {
+    "name": "Chokwe",
+    "script": "Latn",
+    "population": 2500000
+  },
+  "cjs_Cyrl": {
+    "name": "Shor",
+    "script": "Cyrl",
+    "population": 0
+  },
+  "ckb_Arab": {
+    "name": "Central Kurdish",
+    "script": "Arab",
+    "population": 11086548
+  },
+  "ckl_Latn": {
+    "name": "Kibaku",
+    "script": "Latn",
+    "population": 200000
+  },
+  "cko_Latn": {
+    "name": "Anufo",
+    "script": "Latn",
+    "population": 180000
+  },
+  "ckt_Cyrl": {
+    "name": "Chukot",
+    "script": "Cyrl",
+    "population": 8526
+  },
+  "cky_Latn": {
+    "name": "Cakfem-Mushere",
+    "script": "Latn",
+    "population": 5000
+  },
+  "cla_Latn": {
+    "name": "Ron",
+    "script": "Latn",
+    "population": 180000
+  },
+  "cme_Latn": {
+    "name": "Cerma",
+    "script": "Latn",
+    "population": 63000
+  },
+  "co_Latn": {
+    "name": "Corsican",
+    "script": "Latn",
+    "population": 162835
+  },
+  "coo_Latn": {
+    "name": "Comox",
+    "script": "Latn",
+    "population": 50
+  },
+  "cou_Latn": {
+    "name": "Wamey",
+    "script": "Latn",
+    "population": 38000
+  },
+  "crh_Cyrl": {
+    "name": "Crimean Turkish, Cyrillic",
+    "script": "Cyrl",
+    "population": 245968
+  },
+  "cri_Latn": {
+    "name": "Sãotomense",
+    "script": "Latn",
+    "population": 70000
+  },
+  "crs_Latn": {
+    "name": "Seselwa Creole French",
+    "script": "Latn",
+    "population": 94061
+  },
+  "cs_Latn": {
+    "name": "Czech",
+    "script": "Latn",
+    "population": 13045532
+  },
+  "csb_Latn": {
+    "name": "Kashubian",
+    "script": "Latn",
+    "population": 49766
+  },
+  "csk_Latn": {
+    "name": "Jola-Kasa",
+    "script": "Latn",
+    "population": 45000
+  },
+  "ctd_Latn": {
+    "name": "Tedim Chin",
+    "script": "Latn",
+    "population": 0
+  },
+  "cu_Cyrl": {
+    "name": "Church Slavic",
+    "script": "Cyrl",
+    "population": 0
+  },
+  "cv_Cyrl": {
+    "name": "Chuvash",
+    "script": "Cyrl",
+    "population": 1842386
+  },
+  "cwe_Latn": {
+    "name": "Kwere",
+    "script": "Latn",
+    "population": 315000
+  },
+  "cy_Latn": {
+    "name": "Welsh",
+    "script": "Latn",
+    "population": 536376
+  },
+  "da_Latn": {
+    "name": "Danish",
+    "script": "Latn",
+    "population": 7072056
+  },
+  "daa_Latn": {
+    "name": "Dangaléat",
+    "script": "Latn",
+    "population": 60000
+  },
+  "dag_Latn": {
+    "name": "Dagbani",
+    "script": "Latn",
+    "population": 1160000
+  },
+  "dar_Cyrl": {
+    "name": "Dargwa",
+    "script": "Cyrl",
+    "population": 368477
+  },
+  "dav_Latn": {
+    "name": "Taita",
+    "script": "Latn",
+    "population": 438928
+  },
+  "dbd_Latn": {
+    "name": "Dadiya",
+    "script": "Latn",
+    "population": 70000
+  },
+  "dbq_Latn": {
+    "name": "Daba",
+    "script": "Latn",
+    "population": 25000
+  },
+  "ddn_Latn": {
+    "name": "Dendi",
+    "script": "Latn",
+    "population": 270000
+  },
+  "de_Latn": {
+    "name": "German",
+    "script": "Latn",
+    "population": 134799567
+  },
+  "del_Latn": {
+    "name": "Delaware",
+    "script": "Latn",
+    "population": 2
+  },
+  "dga_Latn": {
+    "name": "Dagaare, Southern",
+    "script": "Latn",
+    "population": 924000
+  },
+  "dgh_Latn": {
+    "name": "Dghwede",
+    "script": "Latn",
+    "population": 30000
+  },
+  "dgi_Latn": {
+    "name": "Northern Dagara",
+    "script": "Latn",
+    "population": 247000
+  },
+  "dgr_Latn": {
+    "name": "Dogrib",
+    "script": "Latn",
+    "population": 2638
+  },
+  "did_Latn": {
+    "name": "Didinga",
+    "script": "Latn",
+    "population": 100000
+  },
+  "din_Latn": {
+    "name": "Dinka",
+    "script": "Latn",
+    "population": 1300000
+  },
+  "dip_Latn": {
+    "name": "Dinka, Northeastern",
+    "script": "Latn",
+    "population": 812000
+  },
+  "djc_Latn": {
+    "name": "Dar Daju Daju",
+    "script": "Latn",
+    "population": 75000
+  },
+  "dje_Latn": {
+    "name": "Zarma",
+    "script": "Latn",
+    "population": 3871308
+  },
+  "dng_Cyrl": {
+    "name": "Dungan",
+    "script": "Cyrl",
+    "population": 110000
+  },
+  "dnj_Latn": {
+    "name": "Dan",
+    "script": "Latn",
+    "population": 1099244
+  },
+  "dnj_Latn_LR": {
+    "name": "Liberian Dan",
+    "script": "Latn",
+    "population": 1099244
+  },
+  "dno_Latn": {
+    "name": "Ndrulo",
+    "script": "Latn",
+    "population": 150000
+  },
+  "doi_Deva": {
+    "name": "Dogri",
+    "script": "Deva",
+    "population": 2652180
+  },
+  "dop_Latn": {
+    "name": "Lukpa",
+    "script": "Latn",
+    "population": 160000
+  },
+  "dow_Latn": {
+    "name": "Doyayo",
+    "script": "Latn",
+    "population": 15000
+  },
+  "dri_Latn": {
+    "name": "C’Lela",
+    "script": "Latn",
+    "population": 90000
+  },
+  "dsb_Latn": {
+    "name": "Lower Sorbian",
+    "script": "Latn",
+    "population": 6973
+  },
+  "dtm_Latn": {
+    "name": "Tomo Kan Dogon",
+    "script": "Latn",
+    "population": 355000
+  },
+  "dts_Latn": {
+    "name": "Dogon, Toro So",
+    "script": "Latn",
+    "population": 110000
+  },
+  "dty_Deva": {
+    "name": "Dotyali",
+    "script": "Deva",
+    "population": 758197
+  },
+  "dua_Latn": {
+    "name": "Duala",
+    "script": "Latn",
+    "population": 133176
+  },
+  "dug_Latn": {
+    "name": "Chiduruma",
+    "script": "Latn",
+    "population": 582000
+  },
+  "dur_Latn": {
+    "name": "Dii",
+    "script": "Latn",
+    "population": 71000
+  },
+  "dv_Thaa": {
+    "name": "Divehi",
+    "script": "Thaa",
+    "population": 372368
+  },
+  "dwr_Latn": {
+    "name": "Dawro",
+    "script": "Latn",
+    "population": 533000
+  },
+  "dya_Latn": {
+    "name": "Dyan",
+    "script": "Latn",
+    "population": 14100
+  },
+  "dyi_Latn": {
+    "name": "Sénoufo, Djimini",
+    "script": "Latn",
+    "population": 96000
+  },
+  "dyo_Latn": {
+    "name": "Jola-Fonyi",
+    "script": "Latn",
+    "population": 409146
+  },
+  "dyu_Latn": {
+    "name": "Dyula",
+    "script": "Latn",
+    "population": 6667328
+  },
+  "dz_Tibt": {
+    "name": "Dzongkha",
+    "script": "Tibt",
+    "population": 370341
+  },
+  "dzg_Latn": {
+    "name": "Dazaga",
+    "script": "Latn",
+    "population": 582000
+  },
+  "ebo_Latn": {
+    "name": "Teke-Ebo",
+    "script": "Latn",
+    "population": 260000
+  },
+  "ebu_Latn": {
+    "name": "Embu",
+    "script": "Latn",
+    "population": 802918
+  },
+  "ee_Latn": {
+    "name": "Ewe",
+    "script": "Latn",
+    "population": 4690856
+  },
+  "efi_Latn": {
+    "name": "Efik",
+    "script": "Latn",
+    "population": 2996392
+  },
+  "eka_Latn": {
+    "name": "Ekajuk",
+    "script": "Latn",
+    "population": 63000
+  },
+  "ekm_Latn": {
+    "name": "Elip",
+    "script": "Latn",
+    "population": 20000
+  },
+  "ekp_Latn": {
+    "name": "Ekpeye",
+    "script": "Latn",
+    "population": 226000
+  },
+  "el_Grek": {
+    "name": "Greek",
+    "script": "Grek",
+    "population": 12384861
+  },
+  "ema_Latn": {
+    "name": "Emai-Iuleha-Ora",
+    "script": "Latn",
+    "population": 314000
+  },
+  "emk_Latn": {
+    "name": "Maninkakan, Eastern",
+    "script": "Latn",
+    "population": 4670000
+  },
+  "ems_Latn": {
+    "name": "Alutiiq",
+    "script": "Latn",
+    "population": 80
+  },
+  "en_Latn": {
+    "name": "English",
+    "script": "Latn",
+    "population": 1636848718
+  },
+  "enf_Cyrl": {
+    "name": "Forest Enets",
+    "script": "Cyrl",
+    "population": 50
+  },
+  "enh_Cyrl": {
+    "name": "Tundra Enets",
+    "script": "Cyrl",
+    "population": 35
+  },
+  "enn_Latn": {
+    "name": "Engenni",
+    "script": "Latn",
+    "population": 20000
+  },
+  "eo_Latn": {
+    "name": "Esperanto",
+    "script": "Latn",
+    "population": 301
+  },
+  "es_Latn": {
+    "name": "Spanish",
+    "script": "Latn",
+    "population": 487664084
+  },
+  "esu_Latn": {
+    "name": "Central Yupik",
+    "script": "Latn",
+    "population": 20956
+  },
+  "et_Latn": {
+    "name": "Estonian",
+    "script": "Latn",
+    "population": 878449
+  },
+  "eto_Latn": {
+    "name": "Eton, Cameroon",
+    "script": "Latn",
+    "population": 400000
+  },
+  "etu_Latn": {
+    "name": "Ejagham",
+    "script": "Latn",
+    "population": 120000
+  },
+  "etx_Latn": {
+    "name": "Iten",
+    "script": "Latn",
+    "population": 40000
+  },
+  "eu_Latn": {
+    "name": "Basque",
+    "script": "Latn",
+    "population": 1088518
+  },
+  "evn_Cyrl": {
+    "name": "Evenki",
+    "script": "Cyrl",
+    "population": 16000
+  },
+  "ewo_Latn": {
+    "name": "Ewondo",
+    "script": "Latn",
+    "population": 860095
+  },
+  "eza_Latn": {
+    "name": "Ezaa",
+    "script": "Latn",
+    "population": 590000
+  },
+  "fa_Arab": {
+    "name": "Persian",
+    "script": "Arab",
+    "population": 84854403
+  },
+  "fan_Latn": {
+    "name": "Fang",
+    "script": "Latn",
+    "population": 426450
+  },
+  "fat_Latn": {
+    "name": "Fanti",
+    "script": "Latn",
+    "population": 11442678
+  },
+  "fbl_Latn": {
+    "name": "West Albay Bikol",
+    "script": "Latn",
+    "population": 2511162
+  },
+  "ff_Adlm": {
+    "name": "Fulah (Adlam)",
+    "script": "Adlm",
+    "population": 1
+  },
+  "ff_Latn": {
+    "name": "Fulah",
+    "script": "Latn",
+    "population": 7788902
+  },
+  "ffm_Latn": {
+    "name": "Maasina Fulfulde",
+    "script": "Latn",
+    "population": 1505611
+  },
+  "fi_Latn": {
+    "name": "Finnish",
+    "script": "Latn",
+    "population": 5736841
+  },
+  "fil_Latn": {
+    "name": "Filipino",
+    "script": "Latn",
+    "population": 66905683
+  },
+  "fj_Latn": {
+    "name": "Fijian",
+    "script": "Latn",
+    "population": 365029
+  },
+  "flr_Latn": {
+    "name": "Fuliiru",
+    "script": "Latn",
+    "population": 400000
+  },
+  "fmp_Latn": {
+    "name": "Fe’fe’",
+    "script": "Latn",
+    "population": 140000
+  },
+  "fo_Latn": {
+    "name": "Faroese",
+    "script": "Latn",
+    "population": 71350
+  },
+  "fod_Latn": {
+    "name": "Foodo",
+    "script": "Latn",
+    "population": 21000
+  },
+  "fon_Latn": {
+    "name": "Fon",
+    "script": "Latn",
+    "population": 3216150
+  },
+  "fr_Latn": {
+    "name": "French",
+    "script": "Latn",
+    "population": 272965534
+  },
+  "fub_Latn": {
+    "name": "Fulfulde, Adamawa",
+    "script": "Latn",
+    "population": 5135000
+  },
+  "fuc_Latn": {
+    "name": "Pulaar",
+    "script": "Latn",
+    "population": 5778000
+  },
+  "fue_Latn": {
+    "name": "Fulfulde, Borgu",
+    "script": "Latn",
+    "population": 842000
+  },
+  "fuf_Latn": {
+    "name": "Pular",
+    "script": "Latn",
+    "population": 5443000
+  },
+  "fuh_Latn": {
+    "name": "Fulfulde, Western Niger",
+    "script": "Latn",
+    "population": 3180000
+  },
+  "fuq_Latn": {
+    "name": "Central-Eastern Niger Fulfulde",
+    "script": "Latn",
+    "population": 1594068
+  },
+  "fur_Latn": {
+    "name": "Friulian",
+    "script": "Latn",
+    "population": 37441
+  },
+  "fuv_Latn": {
+    "name": "Nigerian Fulfulde",
+    "script": "Latn",
+    "population": 14339876
+  },
+  "fvr_Latn": {
+    "name": "Fur",
+    "script": "Latn",
+    "population": 1230163
+  },
+  "fy_Latn": {
+    "name": "Western Frisian",
+    "script": "Latn",
+    "population": 743057
+  },
+  "ga_Latn": {
+    "name": "Irish",
+    "script": "Latn",
+    "population": 1155943
+  },
+  "gaa_Latn": {
+    "name": "Ga",
+    "script": "Latn",
+    "population": 821525
+  },
+  "gag_Cyrl": {
+    "name": "Gagauz (Cyrillic)",
+    "script": "Cyrl",
+    "population": 0
+  },
+  "gag_Latn": {
+    "name": "Gagauz",
+    "script": "Latn",
+    "population": 111028
+  },
+  "gah_Latn": {
+    "name": "Alekano",
+    "script": "Latn",
+    "population": 25000
+  },
+  "gby_Latn": {
+    "name": "Gbari",
+    "script": "Latn",
+    "population": 350000
+  },
+  "gd_Latn": {
+    "name": "Scottish Gaelic",
+    "script": "Latn",
+    "population": 65103
+  },
+  "gde_Latn": {
+    "name": "Gude",
+    "script": "Latn",
+    "population": 270000
+  },
+  "gej_Latn": {
+    "name": "Gen",
+    "script": "Latn",
+    "population": 600000
+  },
+  "gel_Latn": {
+    "name": "ut-Ma’in",
+    "script": "Latn",
+    "population": 36000
+  },
+  "gil_Latn": {
+    "name": "Gilbertese",
+    "script": "Latn",
+    "population": 67077
+  },
+  "giz_Latn": {
+    "name": "Southern Giziga",
+    "script": "Latn",
+    "population": 211000
+  },
+  "gjn_Latn": {
+    "name": "Gonja",
+    "script": "Latn",
+    "population": 300000
+  },
+  "gkn_Latn": {
+    "name": "Gokana",
+    "script": "Latn",
+    "population": 100000
+  },
+  "gkp_Latn": {
+    "name": "Kpelle, Guinea",
+    "script": "Latn",
+    "population": 622000
+  },
+  "gl_Latn": {
+    "name": "Galician",
+    "script": "Latn",
+    "population": 3515529
+  },
+  "gld_Cyrl": {
+    "name": "Nanai",
+    "script": "Cyrl",
+    "population": 1390
+  },
+  "gmm_Latn": {
+    "name": "Gbaya-Mbodomo",
+    "script": "Latn",
+    "population": 8000
+  },
+  "gmv_Latn": {
+    "name": "Gamo",
+    "script": "Latn",
+    "population": 1090000
+  },
+  "gn_Latn": {
+    "name": "Guarani",
+    "script": "Latn",
+    "population": 5827106
+  },
+  "gna_Latn": {
+    "name": "Kaansa",
+    "script": "Latn",
+    "population": 15000
+  },
+  "gnd_Latn": {
+    "name": "Zulgo-Gemzek",
+    "script": "Latn",
+    "population": 26000
+  },
+  "gng_Latn": {
+    "name": "Ngangam",
+    "script": "Latn",
+    "population": 80000
+  },
+  "goa_Latn": {
+    "name": "Guro",
+    "script": "Latn",
+    "population": 700000
+  },
+  "god_Latn": {
+    "name": "Godié",
+    "script": "Latn",
+    "population": 26400
+  },
+  "gof_Latn": {
+    "name": "Gofa",
+    "script": "Latn",
+    "population": 392000
+  },
+  "gom_Deva": {
+    "name": "Goan Konkani",
+    "script": "Deva",
+    "population": 4243488
+  },
+  "gov_Latn": {
+    "name": "Goo",
+    "script": "Latn",
+    "population": 8500
+  },
+  "gqr_Latn": {
+    "name": "Gor",
+    "script": "Latn",
+    "population": 175000
+  },
+  "grb_Latn": {
+    "name": "Grebo",
+    "script": "Latn",
+    "population": 495000
+  },
+  "grc_Grek": {
+    "name": "Ancient Greek (Greek)",
+    "script": "Grek",
+    "population": 0
+  },
+  "gsw_Latn": {
+    "name": "Swiss German",
+    "script": "Latn",
+    "population": 7956951
+  },
+  "gu_Gujr": {
+    "name": "Gujarati",
+    "script": "Gujr",
+    "population": 59679028
+  },
+  "guc_Latn": {
+    "name": "Wayuu",
+    "script": "Latn",
+    "population": 132528
+  },
+  "gud_Latn": {
+    "name": "Dida, Yocoboué",
+    "script": "Latn",
+    "population": 200000
+  },
+  "guk_Latn": {
+    "name": "Gumuz",
+    "script": "Latn",
+    "population": 248000
+  },
+  "gur_Latn": {
+    "name": "Frafra",
+    "script": "Latn",
+    "population": 1026907
+  },
+  "guw_Latn": {
+    "name": "Gun",
+    "script": "Latn",
+    "population": 1500000
+  },
+  "gux_Latn": {
+    "name": "Gourmanchéma",
+    "script": "Latn",
+    "population": 900000
+  },
+  "guz_Latn": {
+    "name": "Gusii",
+    "script": "Latn",
+    "population": 2622867
+  },
+  "gv_Latn": {
+    "name": "Manx",
+    "script": "Latn",
+    "population": 1719
+  },
+  "gvl_Latn": {
+    "name": "Gulay",
+    "script": "Latn",
+    "population": 250478
+  },
+  "gwd_Latn": {
+    "name": "Gawwada",
+    "script": "Latn",
+    "population": 146000
+  },
+  "gwi_Latn": {
+    "name": "Gwichʼin",
+    "script": "Latn",
+    "population": 565
+  },
+  "gyi_Latn": {
+    "name": "Gyele",
+    "script": "Latn",
+    "population": 4300
+  },
+  "ha_Latn": {
+    "name": "Hausa",
+    "script": "Latn",
+    "population": 37412649
+  },
+  "haa_Latn": {
+    "name": "Han",
+    "script": "Latn",
+    "population": 6
+  },
+  "hag_Latn": {
+    "name": "Hanga",
+    "script": "Latn",
+    "population": 6800
+  },
+  "har_Latn": {
+    "name": "Harari",
+    "script": "Latn",
+    "population": 26000
+  },
+  "haw_Latn": {
+    "name": "Hawaiian",
+    "script": "Latn",
+    "population": 29604
+  },
+  "hdy_Latn": {
+    "name": "Hadiyya",
+    "script": "Latn",
+    "population": 2364000
+  },
+  "he_Hebr": {
+    "name": "Hebrew",
+    "script": "Hebr",
+    "population": 8675480
+  },
+  "hei_Latn": {
+    "name": "Heiltsuk",
+    "script": "Latn",
+    "population": 300
+  },
+  "hi_Deva": {
+    "name": "Hindi",
+    "script": "Deva",
+    "population": 545367583
+  },
+  "hia_Latn": {
+    "name": "Lamang",
+    "script": "Latn",
+    "population": 40000
+  },
+  "hig_Latn": {
+    "name": "Kamwe",
+    "script": "Latn",
+    "population": 664000
+  },
+  "hil_Latn": {
+    "name": "Hiligaynon",
+    "script": "Latn",
+    "population": 9171204
+  },
+  "hmn_Latn": {
+    "name": "Hmong",
+    "script": "Latn",
+    "population": 2700000
+  },
+  "hnn_Hano": {
+    "name": "Hanunoo (Hanunoo)",
+    "script": "Hano",
+    "population": 13000
+  },
+  "hop_Latn": {
+    "name": "Hopi",
+    "script": "Latn",
+    "population": 6100
+  },
+  "hr_Latn": {
+    "name": "Croatian",
+    "script": "Latn",
+    "population": 6767930
+  },
+  "hsb_Latn": {
+    "name": "Upper Sorbian",
+    "script": "Latn",
+    "population": 12825
+  },
+  "ht_Latn": {
+    "name": "Haitian Creole",
+    "script": "Latn",
+    "population": 8964918
+  },
+  "hu_Latn": {
+    "name": "Hungarian",
+    "script": "Latn",
+    "population": 12394427
+  },
+  "hur_Latn": {
+    "name": "Halkomelem",
+    "script": "Latn",
+    "population": 260
+  },
+  "hy_Armn": {
+    "name": "Armenian",
+    "script": "Armn",
+    "population": 5317271
+  },
+  "hz_Latn": {
+    "name": "Herero",
+    "script": "Latn",
+    "population": 239336
+  },
+  "ia_Latn": {
+    "name": "Interlingua",
+    "script": "Latn",
+    "population": 135
+  },
+  "ibb_Latn": {
+    "name": "Ibibio",
+    "script": "Latn",
+    "population": 2996392
+  },
+  "iby_Latn": {
+    "name": "Ibani",
+    "script": "Latn",
+    "population": 129000
+  },
+  "ica_Latn": {
+    "name": "Ede Ica",
+    "script": "Latn",
+    "population": 126000
+  },
+  "ich_Latn": {
+    "name": "Etkywan",
+    "script": "Latn",
+    "population": 50000
+  },
+  "id_Latn": {
+    "name": "Indonesian",
+    "script": "Latn",
+    "population": 171207687
+  },
+  "idd_Latn": {
+    "name": "Ede Idaca",
+    "script": "Latn",
+    "population": 192000
+  },
+  "idu_Latn": {
+    "name": "Idoma",
+    "script": "Latn",
+    "population": 980000
+  },
+  "ife_Latn": {
+    "name": "Ifè",
+    "script": "Latn",
+    "population": 111909
+  },
+  "ig_Latn": {
+    "name": "Igbo",
+    "script": "Latn",
+    "population": 27823640
+  },
+  "igb_Latn": {
+    "name": "Ebira",
+    "script": "Latn",
+    "population": 2200000
+  },
+  "ige_Latn": {
+    "name": "Igede",
+    "script": "Latn",
+    "population": 461000
+  },
+  "ii_Yiii": {
+    "name": "Sichuan Yi",
+    "script": "Yiii",
+    "population": 8364120
+  },
+  "ijj_Latn": {
+    "name": "Ede Ije",
+    "script": "Latn",
+    "population": 174000
+  },
+  "ijs_Latn": {
+    "name": "Ijo, Southeast",
+    "script": "Latn",
+    "population": 2471000
+  },
+  "ikk_Latn": {
+    "name": "Ika",
+    "script": "Latn",
+    "population": 23000
+  },
+  "ikw_Latn": {
+    "name": "Ikwere",
+    "script": "Latn",
+    "population": 717000
+  },
+  "ikx_Latn": {
+    "name": "Ik",
+    "script": "Latn",
+    "population": 14000
+  },
+  "ilo_Latn": {
+    "name": "Iloko",
+    "script": "Latn",
+    "population": 10481376
+  },
+  "inh_Cyrl": {
+    "name": "Ingush",
+    "script": "Cyrl",
+    "population": 226755
+  },
+  "iqw_Latn": {
+    "name": "Ikwo",
+    "script": "Latn",
+    "population": 260000
+  },
+  "iri_Latn": {
+    "name": "Rigwe",
+    "script": "Latn",
+    "population": 40000
+  },
+  "irk_Latn": {
+    "name": "Iraqw",
+    "script": "Latn",
+    "population": 1013000
+  },
+  "is_Latn": {
+    "name": "Icelandic",
+    "script": "Latn",
+    "population": 350734
+  },
+  "ish_Latn": {
+    "name": "Esan",
+    "script": "Latn",
+    "population": 700000
+  },
+  "it_Latn": {
+    "name": "Italian",
+    "script": "Latn",
+    "population": 70743415
+  },
+  "itl_Cyrl": {
+    "name": "Itelmen",
+    "script": "Cyrl",
+    "population": 808
+  },
+  "izr_Latn": {
+    "name": "Izere",
+    "script": "Latn",
+    "population": 500000
+  },
+  "izz_Latn": {
+    "name": "Izii",
+    "script": "Latn",
+    "population": 540000
+  },
+  "ja_Jpan": {
+    "name": "Japanese",
+    "script": "Jpan",
+    "population": 119676253
+  },
+  "jab_Latn": {
+    "name": "Hyam",
+    "script": "Latn",
+    "population": 300000
+  },
+  "jam_Latn": {
+    "name": "Jamaican Creole English",
+    "script": "Latn",
+    "population": 2668141
+  },
+  "jbu_Latn": {
+    "name": "Jukun Takum",
+    "script": "Latn",
+    "population": 2400
+  },
+  "jen_Latn": {
+    "name": "Dza",
+    "script": "Latn",
+    "population": 100000
+  },
+  "jgk_Latn": {
+    "name": "Gwak",
+    "script": "Latn",
+    "population": 95000
+  },
+  "jgo_Latn": {
+    "name": "Ngomba",
+    "script": "Latn",
+    "population": 94333
+  },
+  "jib_Latn": {
+    "name": "Jibu",
+    "script": "Latn",
+    "population": 30000
+  },
+  "jmc_Latn": {
+    "name": "Machame",
+    "script": "Latn",
+    "population": 433290
+  },
+  "jpr_Hebr": {
+    "name": "Judeo-Persian",
+    "script": "Hebr",
+    "population": 0
+  },
+  "jra_Latn": {
+    "name": "Jarai (Latin)",
+    "script": "Latn",
+    "population": 530000
+  },
+  "jv_Java": {
+    "name": "Javanese (Javanese)",
+    "script": "Java",
+    "population": 0
+  },
+  "jv_Latn": {
+    "name": "Javanese",
+    "script": "Latn",
+    "population": 91180665
+  },
+  "ka_Geor": {
+    "name": "Georgian",
+    "script": "Geor",
+    "population": 3543645
+  },
+  "kaa_Cyrl": {
+    "name": "Kara-Kalpak",
+    "script": "Cyrl",
+    "population": 489046
+  },
+  "kab_Latn": {
+    "name": "Kabyle",
+    "script": "Latn",
+    "population": 3351886
+  },
+  "kad_Latn": {
+    "name": "Adara",
+    "script": "Latn",
+    "population": 300000
+  },
+  "kai_Latn": {
+    "name": "Karekare",
+    "script": "Latn",
+    "population": 1800000
+  },
+  "kaj_Latn": {
+    "name": "Jju",
+    "script": "Latn",
+    "population": 656000
+  },
+  "kam_Latn": {
+    "name": "Kamba",
+    "script": "Latn",
+    "population": 4068120
+  },
+  "kao_Latn": {
+    "name": "Xaasongaxango",
+    "script": "Latn",
+    "population": 1012000
+  },
+  "kbd_Cyrl": {
+    "name": "Kabardian",
+    "script": "Cyrl",
+    "population": 1070872
+  },
+  "kbo_Latn": {
+    "name": "Keliko",
+    "script": "Latn",
+    "population": 63000
+  },
+  "kbp_Latn": {
+    "name": "Kabiyé",
+    "script": "Latn",
+    "population": 1000000
+  },
+  "kby_Latn": {
+    "name": "Kanuri, Manga",
+    "script": "Latn",
+    "population": 1170000
+  },
+  "kca_Cyrl": {
+    "name": "Khanty",
+    "script": "Cyrl",
+    "population": 14000
+  },
+  "kcg_Latn": {
+    "name": "Tyap",
+    "script": "Latn",
+    "population": 274000
+  },
+  "kck_Latn": {
+    "name": "Kalanga",
+    "script": "Latn",
+    "population": 770953
+  },
+  "kdc_Latn": {
+    "name": "Kutu",
+    "script": "Latn",
+    "population": 45000
+  },
+  "kde_Latn": {
+    "name": "Makonde",
+    "script": "Latn",
+    "population": 1463820
+  },
+  "kdh_Latn": {
+    "name": "Tem",
+    "script": "Latn",
+    "population": 390000
+  },
+  "kdj_Latn": {
+    "name": "Karamojong",
+    "script": "Latn",
+    "population": 97900
+  },
+  "kdl_Latn": {
+    "name": "Tsikimba",
+    "script": "Latn",
+    "population": 100000
+  },
+  "kea_Latn": {
+    "name": "Kabuverdianu",
+    "script": "Latn",
+    "population": 530762
+  },
+  "ken_Latn": {
+    "name": "Kenyang",
+    "script": "Latn",
+    "population": 65000
+  },
+  "keu_Latn": {
+    "name": "Akebu",
+    "script": "Latn",
+    "population": 70300
+  },
+  "kez_Latn": {
+    "name": "Kukele",
+    "script": "Latn",
+    "population": 200000
+  },
+  "kg_Latn": {
+    "name": "Kongo",
+    "script": "Latn",
+    "population": 1526700
+  },
+  "kgp_Latn": {
+    "name": "Kaingang",
+    "script": "Latn",
+    "population": 50811
+  },
+  "kha_Latn": {
+    "name": "Khasi",
+    "script": "Latn",
+    "population": 1060872
+  },
+  "khq_Latn": {
+    "name": "Koyra Chiini",
+    "script": "Latn",
+    "population": 332407
+  },
+  "ki_Latn": {
+    "name": "Kikuyu",
+    "script": "Latn",
+    "population": 9099743
+  },
+  "kia_Latn": {
+    "name": "Kim",
+    "script": "Latn",
+    "population": 53000
+  },
+  "kib_Latn": {
+    "name": "Koalib",
+    "script": "Latn",
+    "population": 150000
+  },
+  "kiu_Latn": {
+    "name": "Kirmanjki",
+    "script": "Latn",
+    "population": 155833
+  },
+  "kj_Latn": {
+    "name": "Kuanyama",
+    "script": "Latn",
+    "population": 920524
+  },
+  "kjh_Cyrl": {
+    "name": "Khakas",
+    "script": "Cyrl",
+    "population": 0
+  },
+  "kk_Arab": {
+    "name": "Kazakh (Arabic)",
+    "script": "Arab",
+    "population": 1418002
+  },
+  "kk_Cyrl": {
+    "name": "Kazakh",
+    "script": "Cyrl",
+    "population": 12219390
+  },
+  "kkj_Latn": {
+    "name": "Kako",
+    "script": "Latn",
+    "population": 149823
+  },
+  "kkz_Latn": {
+    "name": "Kaska",
+    "script": "Latn",
+    "population": 125
+  },
+  "kl_Latn": {
+    "name": "Kalaallisut",
+    "script": "Latn",
+    "population": 55440
+  },
+  "kln_Latn": {
+    "name": "Kalenjin",
+    "script": "Latn",
+    "population": 4068120
+  },
+  "km_Khmr": {
+    "name": "Khmer",
+    "script": "Khmr",
+    "population": 15065030
+  },
+  "kmb_Latn": {
+    "name": "Kimbundu",
+    "script": "Latn",
+    "population": 8130575
+  },
+  "kmg_Latn": {
+    "name": "Kâte",
+    "script": "Latn",
+    "population": 30000
+  },
+  "kmy_Latn": {
+    "name": "Koma",
+    "script": "Latn",
+    "population": 76000
+  },
+  "kn_Knda": {
+    "name": "Kannada",
+    "script": "Knda",
+    "population": 49065330
+  },
+  "knb_Latn": {
+    "name": "Lubuagan Kalinga",
+    "script": "Latn",
+    "population": 30000
+  },
+  "knc_Latn": {
+    "name": "Kanuri, Central",
+    "script": "Latn",
+    "population": 8819000
+  },
+  "knf_Latn": {
+    "name": "Mankanya",
+    "script": "Latn",
+    "population": 83151
+  },
+  "knp_Latn": {
+    "name": "Kwanja",
+    "script": "Latn",
+    "population": 10000
+  },
+  "ko_Kore": {
+    "name": "Korean",
+    "script": "Kore",
+    "population": 78187423
+  },
+  "koi_Cyrl": {
+    "name": "Komi-Permyak",
+    "script": "Cyrl",
+    "population": 63774
+  },
+  "kok_Deva": {
+    "name": "Konkani",
+    "script": "Deva",
+    "population": 4906533
+  },
+  "koo_Latn": {
+    "name": "Konjo",
+    "script": "Latn",
+    "population": 1535000
+  },
+  "kpe_Latn": {
+    "name": "Kpelle",
+    "script": "Latn",
+    "population": 1186303
+  },
+  "kpo_Latn": {
+    "name": "Ikposo",
+    "script": "Latn",
+    "population": 160000
+  },
+  "kpy_Cyrl": {
+    "name": "Koryak",
+    "script": "Cyrl",
+    "population": 1665
+  },
+  "kpz_Latn": {
+    "name": "Sapiny",
+    "script": "Latn",
+    "population": 270000
+  },
+  "kqn_Latn": {
+    "name": "Kaonde",
+    "script": "Latn",
+    "population": 509000
+  },
+  "kqp_Latn": {
+    "name": "Kimré",
+    "script": "Latn",
+    "population": 20000
+  },
+  "kqs_Latn": {
+    "name": "Kissi, Northern",
+    "script": "Latn",
+    "population": 698000
+  },
+  "kr_Latn": {
+    "name": "Kanuri",
+    "script": "Latn",
+    "population": 8845500
+  },
+  "krc_Cyrl": {
+    "name": "Karachay-Balkar",
+    "script": "Cyrl",
+    "population": 240927
+  },
+  "kri_Latn": {
+    "name": "Krio",
+    "script": "Latn",
+    "population": 6293683
+  },
+  "krl_Latn": {
+    "name": "Karelian",
+    "script": "Latn",
+    "population": 116212
+  },
+  "krs_Latn": {
+    "name": "Gbaya, Sudan",
+    "script": "Latn",
+    "population": 47000
+  },
+  "krw_Latn": {
+    "name": "Western Krahn",
+    "script": "Latn",
+    "population": 97800
+  },
+  "ks_Arab": {
+    "name": "Kashmiri",
+    "script": "Arab",
+    "population": 5723030
+  },
+  "ksb_Latn": {
+    "name": "Shambala",
+    "script": "Latn",
+    "population": 995397
+  },
+  "ksf_Latn": {
+    "name": "Bafia",
+    "script": "Latn",
+    "population": 88784
+  },
+  "ksh_Latn": {
+    "name": "Colognian",
+    "script": "Latn",
+    "population": 240479
+  },
+  "ksp_Latn": {
+    "name": "Kabba",
+    "script": "Latn",
+    "population": 83000
+  },
+  "kss_Latn": {
+    "name": "Southern Kisi",
+    "script": "Latn",
+    "population": 360000
+  },
+  "kst_Latn": {
+    "name": "Winyé",
+    "script": "Latn",
+    "population": 20000
+  },
+  "ktj_Latn": {
+    "name": "Krumen, Plapo",
+    "script": "Latn",
+    "population": 200
+  },
+  "ktu_Latn": {
+    "name": "Kituba",
+    "script": "Latn",
+    "population": 12326000
+  },
+  "ktz_Latn": {
+    "name": "Juǀʼhoan",
+    "script": "Latn",
+    "population": 4000
+  },
+  "ku_Latn": {
+    "name": "Kurdish (Latin)",
+    "script": "Latn",
+    "population": 25000000
+  },
+  "kub_Latn": {
+    "name": "Kutep",
+    "script": "Latn",
+    "population": 46000
+  },
+  "kuj_Latn": {
+    "name": "Kuria",
+    "script": "Latn",
+    "population": 690000
+  },
+  "kum_Cyrl": {
+    "name": "Kumyk",
+    "script": "Cyrl",
+    "population": 283444
+  },
+  "kun_Latn": {
+    "name": "Kunama",
+    "script": "Latn",
+    "population": 240000
+  },
+  "kus_Latn": {
+    "name": "Kusaal",
+    "script": "Latn",
+    "population": 549000
+  },
+  "kut_Latn": {
+    "name": "Kutenai",
+    "script": "Latn",
+    "population": 345
+  },
+  "kv_Cyrl": {
+    "name": "Komi",
+    "script": "Cyrl",
+    "population": 255099
+  },
+  "kvf_Latn": {
+    "name": "Kabalai",
+    "script": "Latn",
+    "population": 18000
+  },
+  "kw_Latn": {
+    "name": "Cornish",
+    "script": "Latn",
+    "population": 1972
+  },
+  "kwk_Latn": {
+    "name": "Kwak’wala",
+    "script": "Latn",
+    "population": 450
+  },
+  "ky_Cyrl": {
+    "name": "Kyrgyz",
+    "script": "Cyrl",
+    "population": 2863152
+  },
+  "kye_Latn": {
+    "name": "Krache",
+    "script": "Latn",
+    "population": 83000
+  },
+  "kyf_Latn": {
+    "name": "Kouya",
+    "script": "Latn",
+    "population": 10100
+  },
+  "kyq_Latn": {
+    "name": "Kenga",
+    "script": "Latn",
+    "population": 125000
+  },
+  "kyu_Latn": {
+    "name": "Western Kayah (Latin)",
+    "script": "Latn",
+    "population": 186000
+  },
+  "kzc_Latn": {
+    "name": "Bondoukou Kulango",
+    "script": "Latn",
+    "population": 204000
+  },
+  "kzr_Latn": {
+    "name": "Karang",
+    "script": "Latn",
+    "population": 17000
+  },
+  "la_Latn": {
+    "name": "Latin",
+    "script": "Latn",
+    "population": 820
+  },
+  "lad_Hebr": {
+    "name": "Ladino",
+    "script": "Hebr",
+    "population": 112781
+  },
+  "lag_Latn": {
+    "name": "Langi",
+    "script": "Latn",
+    "population": 509409
+  },
+  "laj_Latn": {
+    "name": "Lango, Uganda",
+    "script": "Latn",
+    "population": 1643614
+  },
+  "lam_Latn": {
+    "name": "Lamba",
+    "script": "Latn",
+    "population": 200000
+  },
+  "las_Latn": {
+    "name": "Lama, Togo",
+    "script": "Latn",
+    "population": 260000
+  },
+  "lb_Latn": {
+    "name": "Luxembourgish",
+    "script": "Latn",
+    "population": 421015
+  },
+  "lbe_Cyrl": {
+    "name": "Lak",
+    "script": "Cyrl",
+    "population": 110543
+  },
+  "ldb_Latn": {
+    "name": "Duya",
+    "script": "Latn",
+    "population": 78000
+  },
+  "led_Latn": {
+    "name": "Lendu",
+    "script": "Latn",
+    "population": 750000
+  },
+  "lee_Latn": {
+    "name": "Lyélé",
+    "script": "Latn",
+    "population": 130000
+  },
+  "lem_Latn": {
+    "name": "Nomaande",
+    "script": "Latn",
+    "population": 19000
+  },
+  "les_Latn": {
+    "name": "Lese",
+    "script": "Latn",
+    "population": 70000
+  },
+  "lez_Cyrl": {
+    "name": "Lezghian",
+    "script": "Cyrl",
+    "population": 255099
+  },
+  "lg_Latn": {
+    "name": "Ganda",
+    "script": "Latn",
+    "population": 5622890
+  },
+  "lgg_Latn": {
+    "name": "Lugbara",
+    "script": "Latn",
+    "population": 2200000
+  },
+  "lia_Latn": {
+    "name": "Limba, West-Central",
+    "script": "Latn",
+    "population": 446000
+  },
+  "lig_Latn": {
+    "name": "Ligbi",
+    "script": "Latn",
+    "population": 19000
+  },
+  "lij_Latn": {
+    "name": "Ligurian",
+    "script": "Latn",
+    "population": 536663
+  },
+  "lip_Latn": {
+    "name": "Sekpele",
+    "script": "Latn",
+    "population": 23000
+  },
+  "lkt_Latn": {
+    "name": "Lakota",
+    "script": "Latn",
+    "population": 8315
+  },
+  "lln_Latn": {
+    "name": "Lele",
+    "script": "Latn",
+    "population": 26000
+  },
+  "lmo_Latn": {
+    "name": "Lombard",
+    "script": "Latn",
+    "population": 363284
+  },
+  "lmp_Latn": {
+    "name": "Limbum",
+    "script": "Latn",
+    "population": 130000
+  },
+  "ln_Latn": {
+    "name": "Lingala",
+    "script": "Latn",
+    "population": 3514491
+  },
+  "lnl_Latn": {
+    "name": "South Central Banda",
+    "script": "Latn",
+    "population": 244000
+  },
+  "lns_Latn": {
+    "name": "Lamnso’",
+    "script": "Latn",
+    "population": 396000
+  },
+  "lnu_Latn": {
+    "name": "Longuda",
+    "script": "Latn",
+    "population": 40000
+  },
+  "lo_Laoo": {
+    "name": "Lao",
+    "script": "Laoo",
+    "population": 5138706
+  },
+  "lob_Latn": {
+    "name": "Lobi",
+    "script": "Latn",
+    "population": 723000
+  },
+  "log_Latn": {
+    "name": "Logo",
+    "script": "Latn",
+    "population": 210000
+  },
+  "lok_Latn": {
+    "name": "Loko",
+    "script": "Latn",
+    "population": 140000
+  },
+  "lol_Latn": {
+    "name": "Mongo",
+    "script": "Latn",
+    "population": 620858
+  },
+  "lom_Latn": {
+    "name": "Loma, Liberia",
+    "script": "Latn",
+    "population": 320000
+  },
+  "loq_Latn": {
+    "name": "Lobala",
+    "script": "Latn",
+    "population": 159000
+  },
+  "lor_Latn": {
+    "name": "Téén",
+    "script": "Latn",
+    "population": 8000
+  },
+  "lot_Latn": {
+    "name": "Otuho",
+    "script": "Latn",
+    "population": 274000
+  },
+  "loz_Latn": {
+    "name": "Lozi",
+    "script": "Latn",
+    "population": 1045596
+  },
+  "lrc_Arab": {
+    "name": "Northern Luri",
+    "script": "Arab",
+    "population": 2020512
+  },
+  "lt_Latn": {
+    "name": "Lithuanian",
+    "script": "Latn",
+    "population": 2357094
+  },
+  "ltg_Latn": {
+    "name": "Latgalian",
+    "script": "Latn",
+    "population": 167429
+  },
+  "lu_Latn": {
+    "name": "Luba-Katanga",
+    "script": "Latn",
+    "population": 2340939
+  },
+  "lua_Latn": {
+    "name": "Luba-Lulua",
+    "script": "Latn",
+    "population": 9770880
+  },
+  "lue_Latn": {
+    "name": "Luvale",
+    "script": "Latn",
+    "population": 970000
+  },
+  "lui_Latn": {
+    "name": "Luiseno",
+    "script": "Latn",
+    "population": 0
+  },
+  "lun_Latn": {
+    "name": "Lunda",
+    "script": "Latn",
+    "population": 1115000
+  },
+  "luo_Latn": {
+    "name": "Luo",
+    "script": "Latn",
+    "population": 5245734
+  },
+  "luy_Latn": {
+    "name": "Luyia",
+    "script": "Latn",
+    "population": 5888069
+  },
+  "lv_Latn": {
+    "name": "Latvian",
+    "script": "Latn",
+    "population": 1147550
+  },
+  "lwo_Latn": {
+    "name": "Luwo",
+    "script": "Latn",
+    "population": 260000
+  },
+  "lzz_Latn": {
+    "name": "Laz (Latin)",
+    "script": "Latn",
+    "population": 22000
+  },
+  "mad_Latn": {
+    "name": "Madurese",
+    "script": "Latn",
+    "population": 16822638
+  },
+  "maf_Latn": {
+    "name": "Mafa",
+    "script": "Latn",
+    "population": 1036000
+  },
+  "mag_Deva": {
+    "name": "Magahi",
+    "script": "Deva",
+    "population": 15913080
+  },
+  "mai_Deva": {
+    "name": "Maithili",
+    "script": "Deva",
+    "population": 19249149
+  },
+  "mam_Latn": {
+    "name": "Mam",
+    "script": "Latn",
+    "population": 600000
+  },
+  "mam_Latn_MX": {
+    "name": "Mexican Mam",
+    "script": "Latn",
+    "population": 0
+  },
+  "man_Latn": {
+    "name": "Mandingo",
+    "script": "Latn",
+    "population": 630460
+  },
+  "mas_Latn": {
+    "name": "Masai",
+    "script": "Latn",
+    "population": 1734738
+  },
+  "maw_Latn": {
+    "name": "Mampruli",
+    "script": "Latn",
+    "population": 230000
+  },
+  "maz_Latn": {
+    "name": "Central Mazahua",
+    "script": "Latn",
+    "population": 437410
+  },
+  "mbo_Latn": {
+    "name": "Mbo",
+    "script": "Latn",
+    "population": 99000
+  },
+  "mbu_Latn": {
+    "name": "Mbula-Bwazza",
+    "script": "Latn",
+    "population": 100000
+  },
+  "mcn_Latn": {
+    "name": "Masana",
+    "script": "Latn",
+    "population": 230000
+  },
+  "mcp_Latn": {
+    "name": "Makaa",
+    "script": "Latn",
+    "population": 221000
+  },
+  "mcu_Latn": {
+    "name": "Mambila, Cameroon",
+    "script": "Latn",
+    "population": 70000
+  },
+  "mda_Latn": {
+    "name": "Mada",
+    "script": "Latn",
+    "population": 100000
+  },
+  "mdf_Cyrl": {
+    "name": "Moksha",
+    "script": "Cyrl",
+    "population": 297616
+  },
+  "mdj_Latn": {
+    "name": "Mangbetu",
+    "script": "Latn",
+    "population": 650000
+  },
+  "mdt_Latn": {
+    "name": "Mbere",
+    "script": "Latn",
+    "population": 237000
+  },
+  "men_Latn": {
+    "name": "Mende",
+    "script": "Latn",
+    "population": 1813082
+  },
+  "meq_Latn": {
+    "name": "Merey",
+    "script": "Latn",
+    "population": 10000
+  },
+  "mer_Latn": {
+    "name": "Meru",
+    "script": "Latn",
+    "population": 2141116
+  },
+  "mev_Latn": {
+    "name": "Mano",
+    "script": "Latn",
+    "population": 430000
+  },
+  "mey_Latn": {
+    "name": "Hassaniyya",
+    "script": "Latn",
+    "population": 7238
+  },
+  "mfd_Latn": {
+    "name": "Mendankwe-Nkwen",
+    "script": "Latn",
+    "population": 28000
+  },
+  "mfe_Latn": {
+    "name": "Morisyen",
+    "script": "Latn",
+    "population": 1241433
+  },
+  "mfi_Latn": {
+    "name": "Wandala",
+    "script": "Latn",
+    "population": 44000
+  },
+  "mfn_Latn": {
+    "name": "Mbembe, Cross River",
+    "script": "Latn",
+    "population": 257000
+  },
+  "mfo_Latn": {
+    "name": "Mbe",
+    "script": "Latn",
+    "population": 65000
+  },
+  "mfq_Latn": {
+    "name": "Moba",
+    "script": "Latn",
+    "population": 504000
+  },
+  "mfv_Latn": {
+    "name": "Mandjak",
+    "script": "Latn",
+    "population": 121170
+  },
+  "mg_Latn": {
+    "name": "Malagasy",
+    "script": "Latn",
+    "population": 24260130
+  },
+  "mgc_Latn": {
+    "name": "Morokodo",
+    "script": "Latn",
+    "population": 50000
+  },
+  "mgd_Latn": {
+    "name": "Moru",
+    "script": "Latn",
+    "population": 214000
+  },
+  "mge_Latn": {
+    "name": "Mango",
+    "script": "Latn",
+    "population": 77000
+  },
+  "mgh_Latn": {
+    "name": "Makhuwa-Meetto",
+    "script": "Latn",
+    "population": 1354419
+  },
+  "mgo_Latn": {
+    "name": "Metaʼ",
+    "script": "Latn",
+    "population": 130401
+  },
+  "mgz_Latn": {
+    "name": "Mbugwe",
+    "script": "Latn",
+    "population": 50000
+  },
+  "mh_Latn": {
+    "name": "Marshallese",
+    "script": "Latn",
+    "population": 56879
+  },
+  "mhi_Latn": {
+    "name": "Ma’di",
+    "script": "Latn",
+    "population": 584000
+  },
+  "mi_Latn": {
+    "name": "Maori",
+    "script": "Latn",
+    "population": 137913
+  },
+  "mic_Latn": {
+    "name": "Mi'kmaq",
+    "script": "Latn",
+    "population": 7140
+  },
+  "min_Latn": {
+    "name": "Minangkabau",
+    "script": "Latn",
+    "population": 8010780
+  },
+  "mk_Cyrl": {
+    "name": "Macedonian",
+    "script": "Cyrl",
+    "population": 1608564
+  },
+  "mkl_Latn": {
+    "name": "Mokole",
+    "script": "Latn",
+    "population": 36000
+  },
+  "ml_Mlym": {
+    "name": "Malayalam",
+    "script": "Mlym",
+    "population": 43280501
+  },
+  "mls_Latn": {
+    "name": "Masalit",
+    "script": "Latn",
+    "population": 451059
+  },
+  "mmu_Latn": {
+    "name": "Mmaala",
+    "script": "Latn",
+    "population": 9500
+  },
+  "mn_Cyrl": {
+    "name": "Mongolian",
+    "script": "Cyrl",
+    "population": 2948393
+  },
+  "mne_Latn": {
+    "name": "Naba",
+    "script": "Latn",
+    "population": 477000
+  },
+  "mnf_Latn": {
+    "name": "Mundani",
+    "script": "Latn",
+    "population": 34000
+  },
+  "mni_Beng": {
+    "name": "Manipuri",
+    "script": "Beng",
+    "population": 1476590
+  },
+  "mnk_Latn": {
+    "name": "Mandinka",
+    "script": "Latn",
+    "population": 1300000
+  },
+  "mns_Cyrl": {
+    "name": "Mansi",
+    "script": "Cyrl",
+    "population": 2229
+  },
+  "moa_Latn": {
+    "name": "Mwan",
+    "script": "Latn",
+    "population": 20000
+  },
+  "moe_Latn": {
+    "name": "Innu",
+    "script": "Latn",
+    "population": 12439
+  },
+  "moh_Latn": {
+    "name": "Mohawk",
+    "script": "Latn",
+    "population": 3505
+  },
+  "mor_Latn": {
+    "name": "Moro",
+    "script": "Latn",
+    "population": 86000
+  },
+  "mos_Latn": {
+    "name": "Mossi",
+    "script": "Latn",
+    "population": 8334160
+  },
+  "mqb_Latn": {
+    "name": "Mbuko",
+    "script": "Latn",
+    "population": 15000
+  },
+  "mql_Latn": {
+    "name": "Mbelime",
+    "script": "Latn",
+    "population": 37600
+  },
+  "mr_Deva": {
+    "name": "Marathi",
+    "script": "Deva",
+    "population": 92826300
+  },
+  "mrj_Cyrl": {
+    "name": "Western Mari",
+    "script": "Cyrl",
+    "population": 29761
+  },
+  "msc_Latn": {
+    "name": "Maninka, Sankaran",
+    "script": "Latn",
+    "population": 110000
+  },
+  "mt_Latn": {
+    "name": "Maltese",
+    "script": "Latn",
+    "population": 457267
+  },
+  "mua_Latn": {
+    "name": "Mundang",
+    "script": "Latn",
+    "population": 277450
+  },
+  "muh_Latn": {
+    "name": "Mündü",
+    "script": "Latn",
+    "population": 26000
+  },
+  "mur_Latn": {
+    "name": "Murle",
+    "script": "Latn",
+    "population": 196000
+  },
+  "mus_Latn": {
+    "name": "Muscogee",
+    "script": "Latn",
+    "population": 3991
+  },
+  "muy_Latn": {
+    "name": "Muyang",
+    "script": "Latn",
+    "population": 30000
+  },
+  "mwk_Latn": {
+    "name": "Kita Maninkakan",
+    "script": "Latn",
+    "population": 977670
+  },
+  "mwl_Latn": {
+    "name": "Mirandese",
+    "script": "Latn",
+    "population": 15000
+  },
+  "mwm_Latn": {
+    "name": "Sar",
+    "script": "Latn",
+    "population": 500000
+  },
+  "mxc_Latn": {
+    "name": "Manyika",
+    "script": "Latn",
+    "population": 945509
+  },
+  "my_Mymr": {
+    "name": "Burmese",
+    "script": "Mymr",
+    "population": 36559231
+  },
+  "myk_Latn": {
+    "name": "Mamara Senoufo",
+    "script": "Latn",
+    "population": 740000
+  },
+  "mym_Latn": {
+    "name": "Me’en",
+    "script": "Latn",
+    "population": 150000
+  },
+  "myv_Cyrl": {
+    "name": "Erzya",
+    "script": "Cyrl",
+    "population": 439338
+  },
+  "myx_Latn": {
+    "name": "Masaaba",
+    "script": "Latn",
+    "population": 1254337
+  },
+  "mzk_Latn": {
+    "name": "Mambila, Nigeria",
+    "script": "Latn",
+    "population": 206000
+  },
+  "mzm_Latn": {
+    "name": "Mumuye",
+    "script": "Latn",
+    "population": 400000
+  },
+  "mzn_Arab": {
+    "name": "Mazanderani",
+    "script": "Arab",
+    "population": 4246165
+  },
+  "mzw_Latn": {
+    "name": "Deg",
+    "script": "Latn",
+    "population": 27500
+  },
+  "nap_Latn": {
+    "name": "Neapolitan",
+    "script": "Latn",
+    "population": 605306
+  },
+  "naq_Latn": {
+    "name": "Nama",
+    "script": "Latn",
+    "population": 289307
+  },
+  "nat_Latn": {
+    "name": "Cahungwarya",
+    "script": "Latn",
+    "population": 20000
+  },
+  "naw_Latn": {
+    "name": "Nawuri",
+    "script": "Latn",
+    "population": 14000
+  },
+  "nb_Latn": {
+    "name": "Norwegian Bokmål",
+    "script": "Latn",
+    "population": 5468932
+  },
+  "nba_Latn": {
+    "name": "Nyemba",
+    "script": "Latn",
+    "population": 1135000
+  },
+  "ncu_Latn": {
+    "name": "Chumburung",
+    "script": "Latn",
+    "population": 69000
+  },
+  "nd_Latn": {
+    "name": "North Ndebele",
+    "script": "Latn",
+    "population": 1745556
+  },
+  "ndc_Latn": {
+    "name": "Ndau",
+    "script": "Latn",
+    "population": 3867046
+  },
+  "ndj_Latn": {
+    "name": "Ndamba",
+    "script": "Latn",
+    "population": 55000
+  },
+  "nds_Latn": {
+    "name": "Low German",
+    "script": "Latn",
+    "population": 11520008
+  },
+  "ndv_Latn": {
+    "name": "Ndut",
+    "script": "Latn",
+    "population": 60000
+  },
+  "ndz_Latn": {
+    "name": "Ndogo",
+    "script": "Latn",
+    "population": 48000
+  },
+  "ne_Deva": {
+    "name": "Nepali",
+    "script": "Deva",
+    "population": 20903374
+  },
+  "neb_Latn": {
+    "name": "Toura",
+    "script": "Latn",
+    "population": 80000
+  },
+  "nfr_Latn": {
+    "name": "Nafaanra",
+    "script": "Latn",
+    "population": 89000
+  },
+  "nfu_Latn": {
+    "name": "Mfumte",
+    "script": "Latn",
+    "population": 79000
+  },
+  "ng_Latn": {
+    "name": "Ndonga",
+    "script": "Latn",
+    "population": 552314
+  },
+  "nga_Latn": {
+    "name": "Ngbaka",
+    "script": "Latn",
+    "population": 1020000
+  },
+  "ngb_Latn": {
+    "name": "Ngbandi, Northern",
+    "script": "Latn",
+    "population": 250000
+  },
+  "ngh_Latn": {
+    "name": "Nǁng",
+    "script": "Latn",
+    "population": 1
+  },
+  "ngl_Latn": {
+    "name": "Lomwe",
+    "script": "Latn",
+    "population": 2046677
+  },
+  "ngp_Latn": {
+    "name": "Ngulu",
+    "script": "Latn",
+    "population": 130000
+  },
+  "nhb_Latn": {
+    "name": "Beng",
+    "script": "Latn",
+    "population": 35000
+  },
+  "nhu_Latn": {
+    "name": "Noone",
+    "script": "Latn",
+    "population": 50000
+  },
+  "nin_Latn": {
+    "name": "Ninzo",
+    "script": "Latn",
+    "population": 35000
+  },
+  "niu_Latn": {
+    "name": "Niuean",
+    "script": "Latn",
+    "population": 1120
+  },
+  "niy_Latn": {
+    "name": "Ngiti",
+    "script": "Latn",
+    "population": 100000
+  },
+  "njo_Latn": {
+    "name": "Ao Naga",
+    "script": "Latn",
+    "population": 305000
+  },
+  "nko_Latn": {
+    "name": "Nkonya",
+    "script": "Latn",
+    "population": 20000
+  },
+  "nku_Latn": {
+    "name": "Kulango, Bouna",
+    "script": "Latn",
+    "population": 325000
+  },
+  "nl_Latn": {
+    "name": "Dutch",
+    "script": "Latn",
+    "population": 31709104
+  },
+  "nmg_Latn": {
+    "name": "Kwasio",
+    "script": "Latn",
+    "population": 8878
+  },
+  "nmn_Latn": {
+    "name": "ǃXoon",
+    "script": "Latn",
+    "population": 3600
+  },
+  "nmz_Latn": {
+    "name": "Nawdm",
+    "script": "Latn",
+    "population": 150000
+  },
+  "nn_Latn": {
+    "name": "Norwegian Nynorsk",
+    "script": "Latn",
+    "population": 1366860
+  },
+  "nnh_Latn": {
+    "name": "Ngiemboon",
+    "script": "Latn",
+    "population": 388430
+  },
+  "nnq_Latn": {
+    "name": "Ngindo",
+    "script": "Latn",
+    "population": 220000
+  },
+  "nnw_Latn": {
+    "name": "Southern Nuni",
+    "script": "Latn",
+    "population": 147000
+  },
+  "no_Latn": {
+    "name": "Norwegian",
+    "script": "Latn",
+    "population": 4320000
+  },
+  "nog_Cyrl": {
+    "name": "Nogai",
+    "script": "Cyrl",
+    "population": 86000
+  },
+  "nov_Latn": {
+    "name": "Novial",
+    "script": "Latn",
+    "population": 0
+  },
+  "nr_Latn": {
+    "name": "South Ndebele",
+    "script": "Latn",
+    "population": 903417
+  },
+  "nrb_Latn": {
+    "name": "Nara",
+    "script": "Latn",
+    "population": 81000
+  },
+  "nso_Latn": {
+    "name": "Northern Sotho",
+    "script": "Latn",
+    "population": 5307578
+  },
+  "nst_Tnsa": {
+    "name": "Tangsa",
+    "script": "Tnsa",
+    "population": 108624
+  },
+  "ntm_Latn": {
+    "name": "Nateni",
+    "script": "Latn",
+    "population": 100000
+  },
+  "ntr_Latn": {
+    "name": "Delo",
+    "script": "Latn",
+    "population": 18000
+  },
+  "nui_Latn": {
+    "name": "Kombe",
+    "script": "Latn",
+    "population": 9200
+  },
+  "nuk_Latn": {
+    "name": "Nuuchahnulth",
+    "script": "Latn",
+    "population": 800
+  },
+  "nup_Latn": {
+    "name": "Nupe-Nupe-Tako",
+    "script": "Latn",
+    "population": 2025000
+  },
+  "nus_Latn": {
+    "name": "Nuer",
+    "script": "Latn",
+    "population": 1021000
+  },
+  "nuv_Latn": {
+    "name": "Nuni, Northern",
+    "script": "Latn",
+    "population": 213000
+  },
+  "nv_Latn": {
+    "name": "Navajo",
+    "script": "Latn",
+    "population": 166319
+  },
+  "nwb_Latn": {
+    "name": "Nyabwa",
+    "script": "Latn",
+    "population": 72000
+  },
+  "ny_Latn": {
+    "name": "Nyanja",
+    "script": "Latn",
+    "population": 17026780
+  },
+  "nyb_Latn": {
+    "name": "Nyangbo",
+    "script": "Latn",
+    "population": 11000
+  },
+  "nym_Latn": {
+    "name": "Nyamwezi",
+    "script": "Latn",
+    "population": 1932242
+  },
+  "nyn_Latn": {
+    "name": "Nyankole",
+    "script": "Latn",
+    "population": 2724939
+  },
+  "nyo_Latn": {
+    "name": "Nyoro",
+    "script": "Latn",
+    "population": 670000
+  },
+  "nza_Latn": {
+    "name": "Tigon Mbembe",
+    "script": "Latn",
+    "population": 60000
+  },
+  "nzi_Latn": {
+    "name": "Nzima",
+    "script": "Latn",
+    "population": 293402
+  },
+  "nzk_Latn": {
+    "name": "Nzakara",
+    "script": "Latn",
+    "population": 50000
+  },
+  "oc_Latn": {
+    "name": "Occitan",
+    "script": "Latn",
+    "population": 2035446
+  },
+  "ogc_Latn": {
+    "name": "Ogbah",
+    "script": "Latn",
+    "population": 334000
+  },
+  "oki_Latn": {
+    "name": "Okiek",
+    "script": "Latn",
+    "population": 79000
+  },
+  "okr_Latn": {
+    "name": "Kirike",
+    "script": "Latn",
+    "population": 570000
+  },
+  "om_Latn": {
+    "name": "Oromo",
+    "script": "Latn",
+    "population": 34897120
+  },
+  "oma_Latn": {
+    "name": "Omaha-Ponca",
+    "script": "Latn",
+    "population": 85
+  },
+  "one_Latn": {
+    "name": "Oneida",
+    "script": "Latn",
+    "population": 250
+  },
+  "or_Orya": {
+    "name": "Odia",
+    "script": "Orya",
+    "population": 42434880
+  },
+  "os_Cyrl": {
+    "name": "Ossetic",
+    "script": "Cyrl",
+    "population": 616987
+  },
+  "ovd_Latn": {
+    "name": "Elfdalian",
+    "script": "Latn",
+    "population": 0
+  },
+  "ozm_Latn": {
+    "name": "Koonzime",
+    "script": "Latn",
+    "population": 40000
+  },
+  "pa_Arab": {
+    "name": "Punjabi (Arabic)",
+    "script": "Arab",
+    "population": 163450700
+  },
+  "pa_Guru": {
+    "name": "Punjabi",
+    "script": "Guru",
+    "population": 37669517
+  },
+  "pam_Latn": {
+    "name": "Pampanga",
+    "script": "Latn",
+    "population": 2511162
+  },
+  "pap_Latn": {
+    "name": "Papiamento",
+    "script": "Latn",
+    "population": 211640
+  },
+  "pau_Latn": {
+    "name": "Palauan",
+    "script": "Latn",
+    "population": 16046
+  },
+  "pbi_Latn": {
+    "name": "Parkwa",
+    "script": "Latn",
+    "population": 30000
+  },
+  "pcd_Latn": {
+    "name": "Picard",
+    "script": "Latn",
+    "population": 746330
+  },
+  "pcm_Latn": {
+    "name": "Nigerian Pidgin",
+    "script": "Latn",
+    "population": 44945880
+  },
+  "pid_Latn": {
+    "name": "Piaroa",
+    "script": "Latn",
+    "population": 13770
+  },
+  "pil_Latn": {
+    "name": "Yom",
+    "script": "Latn",
+    "population": 300000
+  },
+  "pip_Latn": {
+    "name": "Pero",
+    "script": "Latn",
+    "population": 25000
+  },
+  "pkb_Latn": {
+    "name": "Pokomo",
+    "script": "Latn",
+    "population": 117000
+  },
+  "pko_Latn": {
+    "name": "Pökoot",
+    "script": "Latn",
+    "population": 369342
+  },
+  "pl_Latn": {
+    "name": "Polish",
+    "script": "Latn",
+    "population": 38273562
+  },
+  "pms_Latn": {
+    "name": "Piedmontese",
+    "script": "Latn",
+    "population": 6177
+  },
+  "png_Latn": {
+    "name": "Pangu",
+    "script": "Latn",
+    "population": 30000
+  },
+  "pnz_Latn": {
+    "name": "Pana, Central African Republic",
+    "script": "Latn",
+    "population": 153000
+  },
+  "pon_Latn": {
+    "name": "Pohnpeian",
+    "script": "Latn",
+    "population": 23560
+  },
+  "pov_Latn": {
+    "name": "Crioulo, Upper Guinea",
+    "script": "Latn",
+    "population": 541000
+  },
+  "poy_Latn": {
+    "name": "Pogolo",
+    "script": "Latn",
+    "population": 180000
+  },
+  "prg_Latn": {
+    "name": "Prussian",
+    "script": "Latn",
+    "population": 0
+  },
+  "prs_Arab": {
+    "name": "Dari",
+    "script": "Arab",
+    "population": 10000000
+  },
+  "ps_Arab": {
+    "name": "Pashto",
+    "script": "Arab",
+    "population": 51207631
+  },
+  "pt_Latn": {
+    "name": "Portuguese",
+    "script": "Latn",
+    "population": 237135427
+  },
+  "pug_Latn": {
+    "name": "Phuie",
+    "script": "Latn",
+    "population": 14000
+  },
+  "puu_Latn": {
+    "name": "Punu",
+    "script": "Latn",
+    "population": 200781
+  },
+  "pym_Latn": {
+    "name": "Pyam",
+    "script": "Latn",
+    "population": 31000
+  },
+  "qu_Latn": {
+    "name": "Quechua",
+    "script": "Latn",
+    "population": 11385851
+  },
+  "quc_Latn": {
+    "name": "Kʼicheʼ",
+    "script": "Latn",
+    "population": 1200731
+  },
+  "qug_Latn": {
+    "name": "Chimborazo Highland Quichua",
+    "script": "Latn",
+    "population": 963579
+  },
+  "rar_Latn": {
+    "name": "Rarotongan",
+    "script": "Latn",
+    "population": 0
+  },
+  "rcf_Latn": {
+    "name": "Réunion Creole French",
+    "script": "Latn",
+    "population": 559184
+  },
+  "rel_Latn": {
+    "name": "Rendille",
+    "script": "Latn",
+    "population": 96300
+  },
+  "res_Latn": {
+    "name": "Reshe",
+    "script": "Latn",
+    "population": 44000
+  },
+  "rif_Latn": {
+    "name": "Riffian (Latin)",
+    "script": "Latn",
+    "population": 1949888
+  },
+  "rkt_Beng": {
+    "name": "Rangpuri",
+    "script": "Beng",
+    "population": 16274502
+  },
+  "rm_Latn": {
+    "name": "Romansh",
+    "script": "Latn",
+    "population": 42019
+  },
+  "rn_Latn": {
+    "name": "Rundi",
+    "script": "Latn",
+    "population": 7475454
+  },
+  "rng_Latn": {
+    "name": "Ronga",
+    "script": "Latn",
+    "population": 1023338
+  },
+  "ro_Cyrl": {
+    "name": "Romanian (Cyrillic)",
+    "script": "Cyrl",
+    "population": 0
+  },
+  "ro_Latn": {
+    "name": "Romanian",
+    "script": "Latn",
+    "population": 22085633
+  },
+  "rof_Latn": {
+    "name": "Rombo",
+    "script": "Latn",
+    "population": 433290
+  },
+  "rom_Latn": {
+    "name": "Romany",
+    "script": "Latn",
+    "population": 4800000
+  },
+  "ru_Cyrl": {
+    "name": "Russian",
+    "script": "Cyrl",
+    "population": 195630064
+  },
+  "rub_Latn": {
+    "name": "Gungu",
+    "script": "Latn",
+    "population": 49000
+  },
+  "rue_Cyrl": {
+    "name": "Rusyn",
+    "script": "Cyrl",
+    "population": 527074
+  },
+  "ruf_Latn": {
+    "name": "Luguru",
+    "script": "Latn",
+    "population": 690000
+  },
+  "rup_Latn": {
+    "name": "Aromanian",
+    "script": "Latn",
+    "population": 210000
+  },
+  "rw_Latn": {
+    "name": "Kinyarwanda",
+    "script": "Latn",
+    "population": 11083625
+  },
+  "rwk_Latn": {
+    "name": "Rwa",
+    "script": "Latn",
+    "population": 128816
+  },
+  "sa_Deva": {
+    "name": "Sanskrit",
+    "script": "Deva",
+    "population": 15913
+  },
+  "sa_Nand": {
+    "name": "Sanskrit (Nandinagari)",
+    "script": "Nand",
+    "population": 0
+  },
+  "sad_Latn": {
+    "name": "Sandawe",
+    "script": "Latn",
+    "population": 60000
+  },
+  "saf_Latn": {
+    "name": "Safaliba",
+    "script": "Latn",
+    "population": 4107
+  },
+  "sah_Cyrl": {
+    "name": "Sakha",
+    "script": "Cyrl",
+    "population": 453510
+  },
+  "saq_Latn": {
+    "name": "Samburu",
+    "script": "Latn",
+    "population": 246228
+  },
+  "sat_Olck": {
+    "name": "Santali, Ol Chiki",
+    "script": "Olck",
+    "population": 7293495
+  },
+  "sav_Latn": {
+    "name": "Saafi-Saafi",
+    "script": "Latn",
+    "population": 236046
+  },
+  "sba_Latn": {
+    "name": "Ngambay",
+    "script": "Latn",
+    "population": 1000000
+  },
+  "sbd_Latn": {
+    "name": "Southern Samo",
+    "script": "Latn",
+    "population": 85000
+  },
+  "sbp_Latn": {
+    "name": "Sangu",
+    "script": "Latn",
+    "population": 117105
+  },
+  "sc_Latn": {
+    "name": "Sardinian",
+    "script": "Latn",
+    "population": 1060845
+  },
+  "scn_Latn": {
+    "name": "Sicilian",
+    "script": "Latn",
+    "population": 4700000
+  },
+  "sco_Latn": {
+    "name": "Scots",
+    "script": "Latn",
+    "population": 1775549
+  },
+  "sd_Arab": {
+    "name": "Sindhi",
+    "script": "Arab",
+    "population": 31467954
+  },
+  "sd_Deva": {
+    "name": "Sindhi (Devanagari)",
+    "script": "Deva",
+    "population": 344783
+  },
+  "sdc_Latn": {
+    "name": "Sassarese Sardinian",
+    "script": "Latn",
+    "population": 106084
+  },
+  "se_Latn": {
+    "name": "Northern Sami",
+    "script": "Latn",
+    "population": 51529
+  },
+  "sef_Latn": {
+    "name": "Cebaara Senoufo",
+    "script": "Latn",
+    "population": 1181687
+  },
+  "seh_Latn": {
+    "name": "Sena",
+    "script": "Latn",
+    "population": 1384517
+  },
+  "sei_Latn": {
+    "name": "Seri",
+    "script": "Latn",
+    "population": 900
+  },
+  "sel_Cyrl": {
+    "name": "Selkup",
+    "script": "Cyrl",
+    "population": 0
+  },
+  "ses_Latn": {
+    "name": "Koyraboro Senni",
+    "script": "Latn",
+    "population": 664815
+  },
+  "sg_Latn": {
+    "name": "Sango",
+    "script": "Latn",
+    "population": 2935521
+  },
+  "she_Latn": {
+    "name": "Sheko",
+    "script": "Latn",
+    "population": 39000
+  },
+  "shi_Latn": {
+    "name": "Tachelhit (Latin)",
+    "script": "Latn",
+    "population": 3093867
+  },
+  "shi_Tfng": {
+    "name": "Tachelhit (Tifinagh)",
+    "script": "Tfng",
+    "population": 0
+  },
+  "shk_Latn": {
+    "name": "Shilluk",
+    "script": "Latn",
+    "population": 570000
+  },
+  "shu_Latn": {
+    "name": "Arabic, Chadian Spoken",
+    "script": "Latn",
+    "population": 2000000
+  },
+  "shz_Latn": {
+    "name": "Syenara Senoufo",
+    "script": "Latn",
+    "population": 210000
+  },
+  "si_Sinh": {
+    "name": "Sinhala",
+    "script": "Sinh",
+    "population": 15564656
+  },
+  "sid_Latn": {
+    "name": "Sidamo",
+    "script": "Latn",
+    "population": 3783955
+  },
+  "sig_Latn": {
+    "name": "Paasaal",
+    "script": "Latn",
+    "population": 53000
+  },
+  "sil_Latn": {
+    "name": "Sisaala, Tumulung",
+    "script": "Latn",
+    "population": 180000
+  },
+  "sk_Latn": {
+    "name": "Slovak",
+    "script": "Latn",
+    "population": 6680269
+  },
+  "sl_Latn": {
+    "name": "Slovenian",
+    "script": "Latn",
+    "population": 1973179
+  },
+  "sld_Latn": {
+    "name": "Sissala",
+    "script": "Latn",
+    "population": 13000
+  },
+  "sm_Latn": {
+    "name": "Samoan",
+    "script": "Latn",
+    "population": 252716
+  },
+  "sma_Latn": {
+    "name": "Southern Sami",
+    "script": "Latn",
+    "population": 295
+  },
+  "smj_Latn": {
+    "name": "Lule Sami",
+    "script": "Latn",
+    "population": 1530
+  },
+  "smn_Latn": {
+    "name": "Inari Sami",
+    "script": "Latn",
+    "population": 612
+  },
+  "sms_Latn": {
+    "name": "Skolt Sami",
+    "script": "Latn",
+    "population": 612
+  },
+  "sn_Latn": {
+    "name": "Shona",
+    "script": "Latn",
+    "population": 11782503
+  },
+  "snf_Latn": {
+    "name": "Noon",
+    "script": "Latn",
+    "population": 37767
+  },
+  "snk_Latn": {
+    "name": "Soninke",
+    "script": "Latn",
+    "population": 1153650
+  },
+  "snw_Latn": {
+    "name": "Selee",
+    "script": "Latn",
+    "population": 11000
+  },
+  "so_Arab": {
+    "name": "Somali (Arabic)",
+    "script": "Arab",
+    "population": 24000000
+  },
+  "so_Latn": {
+    "name": "Somali",
+    "script": "Latn",
+    "population": 16731120
+  },
+  "sok_Latn": {
+    "name": "Sokoro",
+    "script": "Latn",
+    "population": 5000
+  },
+  "soy_Latn": {
+    "name": "Miyobe",
+    "script": "Latn",
+    "population": 22000
+  },
+  "spp_Latn": {
+    "name": "Sénoufo, Supyire",
+    "script": "Latn",
+    "population": 691000
+  },
+  "sq_Latn": {
+    "name": "Albanian",
+    "script": "Latn",
+    "population": 6791906
+  },
+  "sr_Cyrl": {
+    "name": "Serbian",
+    "script": "Cyrl",
+    "population": 7452738
+  },
+  "sr_Latn": {
+    "name": "Serbian (Latin)",
+    "script": "Latn",
+    "population": 8085593
+  },
+  "srn_Latn": {
+    "name": "Sranan Tongo",
+    "script": "Latn",
+    "population": 414506
+  },
+  "srr_Latn": {
+    "name": "Serer",
+    "script": "Latn",
+    "population": 1731004
+  },
+  "ss_Latn": {
+    "name": "Swati",
+    "script": "Latn",
+    "population": 2212379
+  },
+  "ssy_Latn": {
+    "name": "Saho",
+    "script": "Latn",
+    "population": 218923
+  },
+  "st_Latn": {
+    "name": "Southern Sotho",
+    "script": "Latn",
+    "population": 6390567
+  },
+  "str_Latn": {
+    "name": "Straits Salish, Latin",
+    "script": "Latn",
+    "population": 7
+  },
+  "su_Latn": {
+    "name": "Sundanese",
+    "script": "Latn",
+    "population": 32043120
+  },
+  "su_Sund": {
+    "name": "Sundanese (Sundanese)",
+    "script": "Sund",
+    "population": 0
+  },
+  "suk_Latn": {
+    "name": "Sukuma",
+    "script": "Latn",
+    "population": 5094093
+  },
+  "suq_Latn": {
+    "name": "Suri, Tirmaga-Chai",
+    "script": "Latn",
+    "population": 27000
+  },
+  "sur_Latn": {
+    "name": "Mwaghavul",
+    "script": "Latn",
+    "population": 150000
+  },
+  "sus_Latn": {
+    "name": "Susu",
+    "script": "Latn",
+    "population": 1378014
+  },
+  "suz_Sunu": {
+    "name": "Sunwar",
+    "script": "Sunu",
+    "population": 26611
+  },
+  "sv_Latn": {
+    "name": "Swedish",
+    "script": "Latn",
+    "population": 12932871
+  },
+  "sw_Latn": {
+    "name": "Swahili",
+    "script": "Latn",
+    "population": 171610296
+  },
+  "swb_Latn": {
+    "name": "Maore Comorian, Latin",
+    "script": "Latn",
+    "population": 322000
+  },
+  "swc_Latn": {
+    "name": "Swahili, Congo",
+    "script": "Latn",
+    "population": 11000000
+  },
+  "sxb_Latn": {
+    "name": "Suba",
+    "script": "Latn",
+    "population": 140000
+  },
+  "sxw_Latn": {
+    "name": "Saxwe Gbe",
+    "script": "Latn",
+    "population": 170000
+  },
+  "szl_Latn": {
+    "name": "Silesian",
+    "script": "Latn",
+    "population": 497669
+  },
+  "ta_Taml": {
+    "name": "Tamil",
+    "script": "Taml",
+    "population": 83327102
+  },
+  "tab_Cyrl": {
+    "name": "Tabassaran",
+    "script": "Cyrl",
+    "population": 126900
+  },
+  "taj_Deva": {
+    "name": "Eastern Tamang",
+    "script": "Deva",
+    "population": 130409
+  },
+  "taj_Tibt": {
+    "name": "Eastern Tamang, Tibetan",
+    "script": "Tibt",
+    "population": 0
+  },
+  "tal_Latn": {
+    "name": "Tal",
+    "script": "Latn",
+    "population": 10000
+  },
+  "tan_Latn": {
+    "name": "Tangale",
+    "script": "Latn",
+    "population": 200000
+  },
+  "taq_Latn": {
+    "name": "Tamasheq (Latin)",
+    "script": "Latn",
+    "population": 914000
+  },
+  "tbz_Latn": {
+    "name": "Ditammari",
+    "script": "Latn",
+    "population": 211000
+  },
+  "tcd_Latn": {
+    "name": "Tafi",
+    "script": "Latn",
+    "population": 7600
+  },
+  "tce_Latn": {
+    "name": "Southern Tutchone",
+    "script": "Latn",
+    "population": 65
+  },
+  "tda_Latn": {
+    "name": "Tagdal",
+    "script": "Latn",
+    "population": 65000
+  },
+  "te_Telu": {
+    "name": "Telugu",
+    "script": "Telu",
+    "population": 95478480
+  },
+  "ted_Latn": {
+    "name": "Krumen, Tepo",
+    "script": "Latn",
+    "population": 64000
+  },
+  "tem_Latn": {
+    "name": "Timne",
+    "script": "Latn",
+    "population": 1722481
+  },
+  "teo_Latn": {
+    "name": "Teso",
+    "script": "Latn",
+    "population": 2082973
+  },
+  "tet_Latn": {
+    "name": "Tetum",
+    "script": "Latn",
+    "population": 816394
+  },
+  "tfi_Latn": {
+    "name": "Gbe, Tofin",
+    "script": "Latn",
+    "population": 66000
+  },
+  "tg_Cyrl": {
+    "name": "Tajik",
+    "script": "Cyrl",
+    "population": 8873670
+  },
+  "th_Thai": {
+    "name": "Thai",
+    "script": "Thai",
+    "population": 55181920
+  },
+  "thp_Latn": {
+    "name": "Thompson",
+    "script": "Latn",
+    "population": 600
+  },
+  "ti_Ethi": {
+    "name": "Tigrinya",
+    "script": "Ethi",
+    "population": 10145910
+  },
+  "tik_Latn": {
+    "name": "Tikar",
+    "script": "Latn",
+    "population": 110000
+  },
+  "tiv_Latn": {
+    "name": "Tiv",
+    "script": "Latn",
+    "population": 3424448
+  },
+  "tk_Cyrl": {
+    "name": "Turkmen (Cyrillic)",
+    "script": "Cyrl",
+    "population": 0
+  },
+  "tk_Latn": {
+    "name": "Turkmen (Latin)",
+    "script": "Latn",
+    "population": 11000000
+  },
+  "tke_Latn": {
+    "name": "Takwane",
+    "script": "Latn",
+    "population": 387000
+  },
+  "tkl_Latn": {
+    "name": "Tokelau",
+    "script": "Latn",
+    "population": 1284
+  },
+  "tkr_Cyrl": {
+    "name": "Tsakhur",
+    "script": "Cyrl",
+    "population": 16329
+  },
+  "tkr_Latn": {
+    "name": "Tsakhur (Latin)",
+    "script": "Latn",
+    "population": 22300
+  },
+  "tlj_Latn": {
+    "name": "Talinga-Bwisi",
+    "script": "Latn",
+    "population": 99000
+  },
+  "tly_Cyrl": {
+    "name": "Talysh (Cyrillic)",
+    "script": "Cyrl",
+    "population": 229590
+  },
+  "tly_Latn": {
+    "name": "Talysh (Latin)",
+    "script": "Latn",
+    "population": 229590
+  },
+  "tmh_Latn": {
+    "name": "Tamashek",
+    "script": "Latn",
+    "population": 1776965
+  },
+  "tn_Latn": {
+    "name": "Tswana",
+    "script": "Latn",
+    "population": 6113428
+  },
+  "tnr_Latn": {
+    "name": "Ménik",
+    "script": "Latn",
+    "population": 3304
+  },
+  "to_Latn": {
+    "name": "Tongan",
+    "script": "Latn",
+    "population": 100790
+  },
+  "tod_Latn": {
+    "name": "Toma",
+    "script": "Latn",
+    "population": 420000
+  },
+  "tog_Latn": {
+    "name": "Nyasa Tonga",
+    "script": "Latn",
+    "population": 207726
+  },
+  "toi_Latn": {
+    "name": "Tonga",
+    "script": "Latn",
+    "population": 3075000
+  },
+  "toq_Latn": {
+    "name": "Toposa",
+    "script": "Latn",
+    "population": 320000
+  },
+  "tpi_Latn": {
+    "name": "Tok Pisin",
+    "script": "Latn",
+    "population": 5154216
+  },
+  "tpm_Latn": {
+    "name": "Tampulma",
+    "script": "Latn",
+    "population": 16000
+  },
+  "tr_Latn": {
+    "name": "Turkish",
+    "script": "Latn",
+    "population": 80191488
+  },
+  "ts_Latn": {
+    "name": "Tsonga",
+    "script": "Latn",
+    "population": 4880932
+  },
+  "tsb_Latn": {
+    "name": "Tsamai",
+    "script": "Latn",
+    "population": 51000
+  },
+  "tsw_Latn": {
+    "name": "Tsishingini",
+    "script": "Latn",
+    "population": 172000
+  },
+  "tt_Cyrl": {
+    "name": "Tatar",
+    "script": "Cyrl",
+    "population": 1984108
+  },
+  "ttj_Latn": {
+    "name": "Tooro",
+    "script": "Latn",
+    "population": 821807
+  },
+  "ttm_Latn": {
+    "name": "Northern Tutchone",
+    "script": "Latn",
+    "population": 85
+  },
+  "ttq_Latn": {
+    "name": "Tawallammat Tamajaq",
+    "script": "Latn",
+    "population": 810000
+  },
+  "ttr_Latn": {
+    "name": "Tera",
+    "script": "Latn",
+    "population": 101000
+  },
+  "ttt_Cyrl": {
+    "name": "Muslim Tat",
+    "script": "Cyrl",
+    "population": 22452
+  },
+  "ttt_Latn": {
+    "name": "Muslim Tat, Latin",
+    "script": "Latn",
+    "population": 33000
+  },
+  "tul_Latn": {
+    "name": "Tula",
+    "script": "Latn",
+    "population": 30000
+  },
+  "tum_Latn": {
+    "name": "Tumbuka",
+    "script": "Latn",
+    "population": 2170000
+  },
+  "tuq_Latn": {
+    "name": "Tedaga",
+    "script": "Latn",
+    "population": 60000
+  },
+  "tuz_Latn": {
+    "name": "Turka",
+    "script": "Latn",
+    "population": 37000
+  },
+  "tvd_Latn": {
+    "name": "Tsuvadi",
+    "script": "Latn",
+    "population": 130000
+  },
+  "tvl_Latn": {
+    "name": "Tuvalu",
+    "script": "Latn",
+    "population": 9867
+  },
+  "tvu_Latn": {
+    "name": "Tunen",
+    "script": "Latn",
+    "population": 100000
+  },
+  "tw_akuapem_Latn": {
+    "name": "Akuapem Twi",
+    "script": "Latn",
+    "population": 837000
+  },
+  "twq_Latn": {
+    "name": "Tasawaq",
+    "script": "Latn",
+    "population": 7970
+  },
+  "txo_Toto": {
+    "name": "Toto",
+    "script": "Toto",
+    "population": 1411
+  },
+  "ty_Latn": {
+    "name": "Tahitian",
+    "script": "Latn",
+    "population": 91487
+  },
+  "tyv_Cyrl": {
+    "name": "Tuvinian",
+    "script": "Cyrl",
+    "population": 184238
+  },
+  "tzm_Latn": {
+    "name": "Central Atlas Tamazight",
+    "script": "Latn",
+    "population": 3485046
+  },
+  "udm_Cyrl": {
+    "name": "Udmurt",
+    "script": "Cyrl",
+    "population": 538543
+  },
+  "udu_Latn": {
+    "name": "Uduk",
+    "script": "Latn",
+    "population": 22000
+  },
+  "ug_Arab": {
+    "name": "Uyghur",
+    "script": "Arab",
+    "population": 7670114
+  },
+  "ug_Cyrl": {
+    "name": "Uyghur (Cyrillic)",
+    "script": "Cyrl",
+    "population": 382851
+  },
+  "ug_Latn": {
+    "name": "Uyghur (Latin)",
+    "script": "Latn",
+    "population": 0
+  },
+  "uk_Cyrl": {
+    "name": "Ukrainian",
+    "script": "Cyrl",
+    "population": 29273587
+  },
+  "uma_Latn": {
+    "name": "Umatilla",
+    "script": "Latn",
+    "population": 25
+  },
+  "umb_Latn": {
+    "name": "Umbundu",
+    "script": "Latn",
+    "population": 9431467
+  },
+  "ur_Arab": {
+    "name": "Urdu",
+    "script": "Arab",
+    "population": 288202177
+  },
+  "uth_Latn": {
+    "name": "ut-Hun",
+    "script": "Latn",
+    "population": 50000
+  },
+  "utr_Latn": {
+    "name": "Etulo",
+    "script": "Latn",
+    "population": 10000
+  },
+  "uz_Arab": {
+    "name": "Uzbek (Arabic)",
+    "script": "Arab",
+    "population": 1722258
+  },
+  "uz_Cyrl": {
+    "name": "Uzbek (Cyrillic)",
+    "script": "Cyrl",
+    "population": 4590386
+  },
+  "uz_Latn": {
+    "name": "Uzbek",
+    "script": "Latn",
+    "population": 26480135
+  },
+  "vag_Latn": {
+    "name": "Vagla",
+    "script": "Latn",
+    "population": 14000
+  },
+  "vai_Latn": {
+    "name": "Vai (Latin)",
+    "script": "Latn",
+    "population": 131905
+  },
+  "vai_Vaii": {
+    "name": "Vai",
+    "script": "Vaii",
+    "population": 131905
+  },
+  "ve_Latn": {
+    "name": "Venda",
+    "script": "Latn",
+    "population": 1391759
+  },
+  "vec_Latn": {
+    "name": "Venetian",
+    "script": "Latn",
+    "population": 811235
+  },
+  "vep_Latn": {
+    "name": "Veps",
+    "script": "Latn",
+    "population": 3543
+  },
+  "vi_Latn": {
+    "name": "Vietnamese",
+    "script": "Latn",
+    "population": 86038260
+  },
+  "vid_Latn": {
+    "name": "Vidunda",
+    "script": "Latn",
+    "population": 32000
+  },
+  "vmw_Latn": {
+    "name": "Makhuwa",
+    "script": "Latn",
+    "population": 3912766
+  },
+  "vo_Latn": {
+    "name": "Volapük",
+    "script": "Latn",
+    "population": 0
+  },
+  "vro_Latn": {
+    "name": "Võro",
+    "script": "Latn",
+    "population": 70031
+  },
+  "vun_Latn": {
+    "name": "Vunjo",
+    "script": "Latn",
+    "population": 433290
+  },
+  "vut_Latn": {
+    "name": "Vute",
+    "script": "Latn",
+    "population": 21000
+  },
+  "wa_Latn": {
+    "name": "Walloon",
+    "script": "Latn",
+    "population": 679800
+  },
+  "wae_Latn": {
+    "name": "Walser",
+    "script": "Latn",
+    "population": 11376
+  },
+  "wal_Latn": {
+    "name": "Wolaytta (Latin)",
+    "script": "Latn",
+    "population": 7000000
+  },
+  "wan_Latn": {
+    "name": "Wan",
+    "script": "Latn",
+    "population": 22000
+  },
+  "war_Latn": {
+    "name": "Waray",
+    "script": "Latn",
+    "population": 3166249
+  },
+  "wbp_Latn": {
+    "name": "Warlpiri",
+    "script": "Latn",
+    "population": 2495
+  },
+  "wci_Latn": {
+    "name": "Gbe, Waci",
+    "script": "Latn",
+    "population": 915000
+  },
+  "wdt_Latn": {
+    "name": "Wendat",
+    "script": "Latn",
+    "population": 0
+  },
+  "wib_Latn": {
+    "name": "Toussian, Southern",
+    "script": "Latn",
+    "population": 39000
+  },
+  "wja_Latn": {
+    "name": "Waja",
+    "script": "Latn",
+    "population": 60000
+  },
+  "wji_Latn": {
+    "name": "Warji",
+    "script": "Latn",
+    "population": 78000
+  },
+  "wls_Latn": {
+    "name": "Wallisian",
+    "script": "Latn",
+    "population": 9512
+  },
+  "wmw_Latn": {
+    "name": "Mwani",
+    "script": "Latn",
+    "population": 100000
+  },
+  "wo_Latn": {
+    "name": "Wolof",
+    "script": "Latn",
+    "population": 11025493
+  },
+  "wob_Latn": {
+    "name": "Wè Northern",
+    "script": "Latn",
+    "population": 160000
+  },
+  "wok_Latn": {
+    "name": "Longto",
+    "script": "Latn",
+    "population": 5000
+  },
+  "wwa_Latn": {
+    "name": "Waama",
+    "script": "Latn",
+    "population": 153000
+  },
+  "xal_Cyrl": {
+    "name": "Kalmyk",
+    "script": "Cyrl",
+    "population": 110000
+  },
+  "xav_Latn": {
+    "name": "Xavánte",
+    "script": "Latn",
+    "population": 9950
+  },
+  "xed_Latn": {
+    "name": "Hdi",
+    "script": "Latn",
+    "population": 29000
+  },
+  "xh_Latn": {
+    "name": "Xhosa",
+    "script": "Latn",
+    "population": 10182944
+  },
+  "xnr_Deva": {
+    "name": "Kangri",
+    "script": "Deva",
+    "population": 2121744
+  },
+  "xog_Latn": {
+    "name": "Soga",
+    "script": "Latn",
+    "population": 2292409
+  },
+  "xon_Latn": {
+    "name": "Konkomba",
+    "script": "Latn",
+    "population": 920000
+  },
+  "xrb_Latn": {
+    "name": "Karaboro, Eastern",
+    "script": "Latn",
+    "population": 40610
+  },
+  "xsm_Latn": {
+    "name": "Kasem",
+    "script": "Latn",
+    "population": 250000
+  },
+  "xsm_Latn_BF": {
+    "name": "Kasem, Burkina Faso",
+    "script": "Latn",
+    "population": 250000
+  },
+  "xuo_Latn": {
+    "name": "Kuo",
+    "script": "Latn",
+    "population": 20000
+  },
+  "xwe_Latn": {
+    "name": "Gbe, Xwela",
+    "script": "Latn",
+    "population": 85000
+  },
+  "yal_Latn": {
+    "name": "Yalunka",
+    "script": "Latn",
+    "population": 105000
+  },
+  "yam_Latn": {
+    "name": "Yamba",
+    "script": "Latn",
+    "population": 80000
+  },
+  "yao_Latn": {
+    "name": "Yao",
+    "script": "Latn",
+    "population": 722356
+  },
+  "yap_Latn": {
+    "name": "Yapese",
+    "script": "Latn",
+    "population": 6555
+  },
+  "yas_Latn": {
+    "name": "Nugunu",
+    "script": "Latn",
+    "population": 35000
+  },
+  "yat_Latn": {
+    "name": "Yambeta",
+    "script": "Latn",
+    "population": 3700
+  },
+  "yav_Latn": {
+    "name": "Yangben",
+    "script": "Latn",
+    "population": 2302
+  },
+  "yay_Latn": {
+    "name": "Agwagwune",
+    "script": "Latn",
+    "population": 20000
+  },
+  "yaz_Latn": {
+    "name": "Lokaa",
+    "script": "Latn",
+    "population": 120000
+  },
+  "yba_Latn": {
+    "name": "Yala",
+    "script": "Latn",
+    "population": 200000
+  },
+  "ybb_Latn": {
+    "name": "Yemba",
+    "script": "Latn",
+    "population": 443920
+  },
+  "yer_Latn": {
+    "name": "Tarok",
+    "script": "Latn",
+    "population": 300000
+  },
+  "yi_Hebr": {
+    "name": "Yiddish",
+    "script": "Hebr",
+    "population": 1046399
+  },
+  "yko_Latn": {
+    "name": "Yasa",
+    "script": "Latn",
+    "population": 2400
+  },
+  "yo_Latn": {
+    "name": "Yoruba",
+    "script": "Latn",
+    "population": 28685568
+  },
+  "yo_Latn_BJ": {
+    "name": "Yoruba, Benin",
+    "script": "Latn",
+    "population": 200000
+  },
+  "yre_Latn": {
+    "name": "Yaouré",
+    "script": "Latn",
+    "population": 40000
+  },
+  "yrk_Cyrl": {
+    "name": "Nenets",
+    "script": "Cyrl",
+    "population": 0
+  },
+  "yua_Latn": {
+    "name": "Yucateco",
+    "script": "Latn",
+    "population": 861955
+  },
+  "zag_Latn": {
+    "name": "Zaghawa",
+    "script": "Latn",
+    "population": 350000
+  },
+  "zap_Latn": {
+    "name": "Zapotec",
+    "script": "Latn",
+    "population": 490000
+  },
+  "zay_Latn": {
+    "name": "Zayse",
+    "script": "Latn",
+    "population": 19000
+  },
+  "zdj_Latn": {
+    "name": "Comorian, Ngazidja",
+    "script": "Latn",
+    "population": 424000
+  },
+  "zen_Latn": {
+    "name": "Zenaga (Latin)",
+    "script": "Latn",
+    "population": 2700
+  },
+  "zgh_Tfng": {
+    "name": "Standard Moroccan Tamazight",
+    "script": "Tfng",
+    "population": 7823574
+  },
+  "zh_Hans": {
+    "name": "Chinese (Simplified)",
+    "script": "Hans",
+    "population": 1265387866
+  },
+  "zh_Hant": {
+    "name": "Chinese (Traditional)",
+    "script": "Hant",
+    "population": 38770383
+  },
+  "ziw_Latn": {
+    "name": "Zigula",
+    "script": "Latn",
+    "population": 442000
+  },
+  "zlm_Latn": {
+    "name": "Malay (Latin)",
+    "script": "Latn",
+    "population": 24170000
+  },
+  "zne_Latn": {
+    "name": "Zande",
+    "script": "Latn",
+    "population": 1800000
+  },
+  "zu_Latn": {
+    "name": "Zulu",
+    "script": "Latn",
+    "population": 16000000
+  },
+  "zun_Latn": {
+    "name": "Zuni",
+    "script": "Latn",
+    "population": 9620
+  },
+  "zza_Latn": {
+    "name": "Zaza",
+    "script": "Latn",
+    "population": 1148245
+  }
+}
