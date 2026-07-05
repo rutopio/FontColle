@@ -39,46 +39,37 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
     <aside className="sticky top-6 flex h-[calc(100svh-3rem)] w-80 shrink-0 flex-col rounded-lg border border-sidebar-border bg-background text-sidebar-foreground shadow-sm">
       <ScrollArea className="min-h-0 flex-1">
         <div className="flex flex-col gap-8 p-4">
-          <Section title="Category">
-            <Pills
-              items={index.classes}
-              selected={filter.classes}
-              onToggle={(v) => toggle("classes", v)}
-            />
-          </Section>
-
-          <Section title="Properties">
-            <Pills
-              items={index.facets}
-              selected={filter.facets}
-              onToggle={(v) => toggle("facets", v)}
-            />
-          </Section>
-
-          <Section title="Subsets">
-            <Pills
-              items={index.scripts}
-              selected={filter.facets}
-              onToggle={(v) => toggle("facets", v)}
-            />
-          </Section>
-
-          <Section title="Variable axes">
-            <Pills
-              items={index.axes}
-              selected={filter.axes}
-              onToggle={(v) => toggle("axes", v)}
-            />
-          </Section>
-
-          <Section title="OpenType features">
-            <Pills
-              items={index.features}
-              selected={filter.features}
-              onToggle={(v) => toggle("features", v)}
-              mono
-            />
-          </Section>
+          <Section
+            title="Category"
+            items={index.classes}
+            selected={filter.classes}
+            onToggle={(v) => toggle("classes", v)}
+          />
+          <Section
+            title="Properties"
+            items={index.facets}
+            selected={filter.facets}
+            onToggle={(v) => toggle("facets", v)}
+          />
+          <Section
+            title="Subsets"
+            items={index.scripts}
+            selected={filter.facets}
+            onToggle={(v) => toggle("facets", v)}
+          />
+          <Section
+            title="Variable axes"
+            items={index.axes}
+            selected={filter.axes}
+            onToggle={(v) => toggle("axes", v)}
+          />
+          <Section
+            title="OpenType features"
+            items={index.features}
+            selected={filter.features}
+            onToggle={(v) => toggle("features", v)}
+            mono
+          />
         </div>
       </ScrollArea>
     </aside>
@@ -87,17 +78,53 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
 
 function Section({
   title,
-  children,
+  items,
+  selected,
+  onToggle,
+  mono,
 }: {
   title: string;
-  children: React.ReactNode;
+  items: [string, number][];
+  selected: string[];
+  onToggle: (v: string) => void;
+  mono?: boolean;
 }) {
+  const [sort, setSort] = useState<SortMode>("count");
+
+  // `items` arrives count-sorted from the index; re-sort alphabetically when
+  // asked. Copy first so we don't mutate the shared index array.
+  const sorted = useMemo(() => {
+    if (sort === "alpha") {
+      return [...items].sort((a, b) => a[0].localeCompare(b[0]));
+    }
+    return items;
+  }, [items, sort]);
+
   return (
     <div className="flex flex-col gap-2">
-      <h2 className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
-        {title}
-      </h2>
-      {children}
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+          {title}
+        </h2>
+        {items.length > 1 && (
+          <Tabs value={sort} onValueChange={(v) => setSort(v as SortMode)}>
+            <TabsList variant="underline">
+              <TabsTrigger value="count" className="text-xs">
+                Count
+              </TabsTrigger>
+              <TabsTrigger value="alpha" className="text-xs">
+                A–Z
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        )}
+      </div>
+      <Pills
+        items={sorted}
+        selected={selected}
+        onToggle={onToggle}
+        mono={mono}
+      />
     </div>
   );
 }
@@ -114,23 +141,13 @@ function Pills({
   mono?: boolean;
 }) {
   const [showRare, setShowRare] = useState(false);
-  const [sort, setSort] = useState<SortMode>("count");
-
-  // `items` arrives count-sorted from the index; re-sort alphabetically when
-  // asked. Copy first so we don't mutate the shared index array.
-  const sorted = useMemo(() => {
-    if (sort === "alpha") {
-      return [...items].sort((a, b) => a[0].localeCompare(b[0]));
-    }
-    return items;
-  }, [items, sort]);
 
   // Rare (count < threshold) pills hide by default, but a selected one always
   // shows so the user can see and clear it.
-  const common = sorted.filter(
+  const common = items.filter(
     ([value, count]) => count >= RARE_THRESHOLD || selected.includes(value)
   );
-  const rare = sorted.filter(
+  const rare = items.filter(
     ([value, count]) => count < RARE_THRESHOLD && !selected.includes(value)
   );
 
@@ -177,22 +194,6 @@ function Pills({
             {showRare ? "Show less" : `${rare.length} more`}
           </button>
         </>
-      )}
-      {items.length > 1 && (
-        <Tabs
-          value={sort}
-          onValueChange={(v) => setSort(v as SortMode)}
-          className="self-end"
-        >
-          <TabsList variant="underline">
-            <TabsTrigger value="count" className="text-xs">
-              Count
-            </TabsTrigger>
-            <TabsTrigger value="alpha" className="text-xs">
-              A–Z
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
       )}
     </div>
   );
