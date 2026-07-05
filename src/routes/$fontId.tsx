@@ -1,7 +1,16 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { ArrowLeft } from "@phosphor-icons/react";
+import {
+  createFileRoute,
+  Link,
+  notFound,
+  useCanGoBack,
+  useRouter,
+} from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Column, ColumnHeader, FilterLayout } from "@/components/filter-layout";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useFilter } from "@/lib/filter/context";
 import { buildFacetIndex } from "@/lib/fonts/data";
 import { withFacets } from "@/lib/fonts/facets";
 import {
@@ -9,11 +18,7 @@ import {
   DEFAULT_ON,
   featureName,
 } from "@/lib/fonts/features";
-import {
-  emptyFilter,
-  type FilterState,
-  filterToSearch,
-} from "@/lib/fonts/filter";
+import { type FilterState, filterToSearch } from "@/lib/fonts/filter";
 import { ensureFontRangeLoaded, previewFontFamily } from "@/lib/fonts/loader";
 import { getAllFonts } from "@/lib/fonts/queries";
 import type { FontRecord } from "@/lib/fonts/types";
@@ -45,17 +50,14 @@ export const Route = createFileRoute("/$fontId")({
 function DetailPage() {
   const { font, facetIndex } = Route.useLoaderData();
   const navigate = Route.useNavigate();
-  // Sidebar on the detail page is pure navigation: any pill click goes back to
-  // the list with that filter applied (todo §8b).
+  // Sidebar reflects the filter selected on the list (shared via context), and
+  // any pill click navigates to the list with the updated filter applied.
+  const { filter } = useFilter();
   const goToList = (next: FilterState) => {
     navigate({ to: "/", search: filterToSearch(next) });
   };
   return (
-    <FilterLayout
-      index={facetIndex}
-      filter={emptyFilter}
-      onFilterChange={goToList}
-    >
+    <FilterLayout index={facetIndex} filter={filter} onFilterChange={goToList}>
       <Detail font={font} />
     </FilterLayout>
   );
@@ -63,6 +65,8 @@ function DetailPage() {
 
 function Detail({ font }: { font: FontRecord }) {
   const { text } = usePreview();
+  const router = useRouter();
+  const canGoBack = useCanGoBack();
   const [size, setSize] = useState(72);
   const specimen = text || "The quick brown fox jumps over 1234567890";
 
@@ -105,13 +109,28 @@ function Detail({ font }: { font: FontRecord }) {
   return (
     <Column>
       <ColumnHeader className="justify-between">
-        <div className="flex min-w-0 flex-col">
-          <Link
-            to="/"
-            className="w-fit text-muted-foreground text-xs hover:text-foreground"
-          >
-            ← All fonts
-          </Link>
+        <div className="flex min-w-0 items-center gap-3">
+          {/* Going back (not a fresh /) lets the router restore the list's
+              scroll position and filter URL. Fall back to / on deep links. */}
+          {canGoBack ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="All fonts"
+              onClick={() => router.history.back()}
+            >
+              <ArrowLeft />
+            </Button>
+          ) : (
+            <Button
+              render={<Link to="/" />}
+              variant="ghost"
+              size="icon"
+              aria-label="All fonts"
+            >
+              <ArrowLeft />
+            </Button>
+          )}
           <h1
             className="truncate font-semibold text-2xl leading-tight"
             style={{ fontFamily: `"${font.name}", sans-serif` }}

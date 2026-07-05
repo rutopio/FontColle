@@ -1,6 +1,6 @@
 import { Rows, SquaresFour } from "@phosphor-icons/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { Column, ColumnHeader, FilterLayout } from "@/components/filter-layout";
 import { FontGrid, type ViewMode } from "@/components/font-grid";
 import {
@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useFilter } from "@/lib/filter/context";
 import { buildFacetIndex } from "@/lib/fonts/data";
 import { withFacets } from "@/lib/fonts/facets";
 import { useFavorites } from "@/lib/fonts/favorites";
@@ -47,8 +48,15 @@ function App() {
   const { text: previewText } = usePreview();
   const { favorites, toggle } = useFavorites();
 
+  const { setFilter: setSharedFilter } = useFilter();
   const facetIndex = useMemo(() => buildFacetIndex(fonts), [fonts]);
   const filter = useMemo(() => searchToFilter(search), [search]);
+
+  // Mirror the URL-derived filter into shared context so the detail page's
+  // sidebar can reflect what's selected on the list.
+  useEffect(() => {
+    setSharedFilter(filter);
+  }, [filter, setSharedFilter]);
   const view: ViewMode = search.view === "row" ? "row" : "grid";
   const sort = (search.sort as SortKey) ?? DEFAULT_SORT;
 
