@@ -4,9 +4,6 @@ import type * as React from "react";
 import { FilterSidebar } from "@/components/filter-sidebar";
 import {
   Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -59,22 +56,18 @@ export function AppSidebar({
         </SidebarHeader>
       </Sidebar>
 
-      {/* Second sidebar: the filters, filling the remaining width. */}
+      {/* Second sidebar: the filters, filling the remaining width. Render
+          FilterSidebar directly so its own ScrollArea owns the scrolling — the
+          Sidebar's flex-col h-full gives it a bounded height to scroll within. */}
       <Sidebar
         collapsible="none"
         className="hidden flex-1 bg-background md:flex"
       >
-        <SidebarContent>
-          <SidebarGroup className="p-0">
-            <SidebarGroupContent>
-              <FilterSidebar
-                index={index}
-                filter={filter}
-                onChange={onFilterChange}
-              />
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </SidebarContent>
+        <FilterSidebar
+          index={index}
+          filter={filter}
+          onChange={onFilterChange}
+        />
       </Sidebar>
     </Sidebar>
   );
