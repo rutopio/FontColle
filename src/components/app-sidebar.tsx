@@ -60,7 +60,10 @@ export function AppSidebar({
       </Sidebar>
 
       {/* Second sidebar: the filters, filling the remaining width. */}
-      <Sidebar collapsible="none" className="hidden flex-1 md:flex">
+      <Sidebar
+        collapsible="none"
+        className="hidden flex-1 bg-background md:flex"
+      >
         <SidebarContent>
           <SidebarGroup className="p-0">
             <SidebarGroupContent>
