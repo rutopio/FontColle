@@ -1,7 +1,7 @@
 import { Rows, SquaresFour } from "@phosphor-icons/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo } from "react";
-import { Column, ColumnHeader, FilterLayout } from "@/components/filter-layout";
+import { Column, FilterLayout } from "@/components/filter-layout";
 import { FontGrid, type ViewMode } from "@/components/font-grid";
 import {
   Select,
@@ -133,60 +133,62 @@ function App() {
 
   return (
     <FilterLayout index={facetIndex} filter={filter} onFilterChange={setFilter}>
-      <Column>
-        <ColumnHeader>
-          <div className="flex items-center gap-3 text-muted-foreground text-sm">
-            <span>{results.length} fonts</span>
-            {activeCount > 0 && (
-              <button
-                type="button"
-                onClick={() =>
-                  navigate({
-                    search: { view: search.view, sort: search.sort },
-                    replace: true,
-                  })
-                }
-                className="underline underline-offset-2 hover:text-foreground"
-              >
-                Clear {activeCount} filters
-              </button>
-            )}
-          </div>
+      <Column
+        header={
+          <>
+            <div className="flex items-center gap-3 text-muted-foreground text-sm">
+              <span>{results.length} fonts</span>
+              {activeCount > 0 && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    navigate({
+                      search: { view: search.view, sort: search.sort },
+                      replace: true,
+                    })
+                  }
+                  className="underline underline-offset-2 hover:text-foreground"
+                >
+                  Clear {activeCount} filters
+                </button>
+              )}
+            </div>
 
-          <div className="ml-auto flex items-center gap-2">
-            <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
-              <SelectTrigger className="h-9 w-[176px]" aria-label="Sort by">
-                <SelectValue placeholder="Sort">
-                  {SORT_LABELS[sort]}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {SORT_OPTIONS.map((g) => (
-                  <SelectGroup key={g.group}>
-                    <SelectLabel>{g.group}</SelectLabel>
-                    {g.items.map(([key, label]) => (
-                      <SelectItem key={key} value={key}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="ml-auto flex items-center gap-2">
+              <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
+                <SelectTrigger className="h-9 w-[176px]" aria-label="Sort by">
+                  <SelectValue placeholder="Sort">
+                    {SORT_LABELS[sort]}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {SORT_OPTIONS.map((g) => (
+                    <SelectGroup key={g.group}>
+                      <SelectLabel>{g.group}</SelectLabel>
+                      {g.items.map(([key, label]) => (
+                        <SelectItem key={key} value={key}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  ))}
+                </SelectContent>
+              </Select>
 
-            <Tabs value={view} onValueChange={(v) => setView(v as ViewMode)}>
-              <TabsList>
-                <TabsTrigger value="grid" aria-label="Grid view">
-                  <SquaresFour className="size-4" />
-                </TabsTrigger>
-                <TabsTrigger value="row" aria-label="Row view">
-                  <Rows className="size-4" />
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-        </ColumnHeader>
-
+              <Tabs value={view} onValueChange={(v) => setView(v as ViewMode)}>
+                <TabsList>
+                  <TabsTrigger value="grid" aria-label="Grid view">
+                    <SquaresFour className="size-4" />
+                  </TabsTrigger>
+                  <TabsTrigger value="row" aria-label="Row view">
+                    <Rows className="size-4" />
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+          </>
+        }
+      >
         {results.length === 0 ? (
           <p className="py-16 text-center text-muted-foreground text-sm">
             No fonts match these filters.

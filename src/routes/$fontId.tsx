@@ -7,7 +7,7 @@ import {
   useRouter,
 } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Column, ColumnHeader, FilterLayout } from "@/components/filter-layout";
+import { Column, FilterLayout } from "@/components/filter-layout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useFilter } from "@/lib/filter/context";
@@ -114,47 +114,50 @@ function Detail({ font }: { font: FontRecord }) {
   };
 
   return (
-    <Column>
-      <ColumnHeader className="justify-between">
-        <div className="flex min-w-0 items-center gap-3">
-          {/* Going back (not a fresh /) lets the router restore the list's
-              scroll position and filter URL. Fall back to / on deep links. */}
-          {canGoBack ? (
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="All fonts"
-              onClick={() => router.history.back()}
+    <Column
+      headerClassName="justify-between"
+      header={
+        <>
+          <div className="flex min-w-0 items-center gap-3">
+            {/* Going back (not a fresh /) lets the router restore the list's
+                scroll position and filter URL. Fall back to / on deep links. */}
+            {canGoBack ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="All fonts"
+                onClick={() => router.history.back()}
+              >
+                <ArrowLeft />
+              </Button>
+            ) : (
+              <Button
+                render={<Link to="/" />}
+                variant="ghost"
+                size="icon"
+                aria-label="All fonts"
+              >
+                <ArrowLeft />
+              </Button>
+            )}
+            <h1
+              className="truncate font-semibold text-2xl leading-tight"
+              style={{ fontFamily: `"${font.name}", sans-serif` }}
             >
-              <ArrowLeft />
-            </Button>
-          ) : (
-            <Button
-              render={<Link to="/" />}
-              variant="ghost"
-              size="icon"
-              aria-label="All fonts"
-            >
-              <ArrowLeft />
-            </Button>
-          )}
-          <h1
-            className="truncate font-semibold text-2xl leading-tight"
-            style={{ fontFamily: `"${font.name}", sans-serif` }}
+              {font.name}
+            </h1>
+          </div>
+          <a
+            href={`https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`}
+            target="_blank"
+            rel="noreferrer"
+            className="shrink-0 rounded-lg border border-foreground bg-foreground px-4 py-2 font-medium text-background text-sm"
           >
-            {font.name}
-          </h1>
-        </div>
-        <a
-          href={`https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`}
-          target="_blank"
-          rel="noreferrer"
-          className="shrink-0 rounded-lg border border-foreground bg-foreground px-4 py-2 font-medium text-background text-sm"
-        >
-          Download ↗
-        </a>
-      </ColumnHeader>
-
+            Download ↗
+          </a>
+        </>
+      }
+    >
       {(font.designer || font.class) && (
         <div className="flex flex-wrap items-center gap-2">
           {font.designer && (

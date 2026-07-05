@@ -37,40 +37,36 @@ export function FilterLayout({
         filter={filter}
         onFilterChange={onFilterChange}
       />
-      <SidebarInset>
-        <div className="mx-auto flex w-full max-w-(--breakpoint-2xl) flex-1 flex-col gap-6 p-6">
-          {children}
-        </div>
-      </SidebarInset>
+      <SidebarInset>{children}</SidebarInset>
     </SidebarProvider>
   );
 }
 
-// Right column of both pages: a sticky header pinned to the top, then the
-// scrolling body under it. The header stays a fixed height on both pages so the
-// two layouts line up.
-export function Column({ children }: { children: React.ReactNode }) {
-  return <div className="flex min-w-0 flex-1 flex-col gap-6">{children}</div>;
-}
-
-// sidebar-09 main header: a SidebarTrigger (collapses the sidebar) and a
-// vertical separator, then the page's own header content. `className` styles
-// the content row (e.g. justify-between on the detail page).
-export function ColumnHeader({
-  className,
+// Right side of both pages, matching sidebar-09: a full-width sticky header
+// flush to the inset edge (SidebarTrigger + separator + the page's header
+// content), then the page body constrained to max-w below it.
+export function Column({
+  header,
+  headerClassName,
   children,
 }: {
-  className?: string;
+  header: React.ReactNode;
+  headerClassName?: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className="sticky top-0 z-10 -mt-6 flex h-20 items-center gap-3 border-border border-b bg-background pt-6">
-      <SidebarTrigger className="-ml-1" />
-      <Separator
-        orientation="vertical"
-        className="mr-1 data-[orientation=vertical]:h-4"
-      />
-      <div className={cn("flex flex-1 items-center gap-3", className)}>
+    <div className="flex min-w-0 flex-1 flex-col">
+      <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-border border-b bg-background px-4">
+        <SidebarTrigger className="-ml-1" />
+        <Separator
+          orientation="vertical"
+          className="mr-1 data-[orientation=vertical]:h-4"
+        />
+        <div className={cn("flex flex-1 items-center gap-3", headerClassName)}>
+          {header}
+        </div>
+      </header>
+      <div className="mx-auto flex w-full max-w-(--breakpoint-2xl) flex-1 flex-col gap-6 p-6">
         {children}
       </div>
     </div>
