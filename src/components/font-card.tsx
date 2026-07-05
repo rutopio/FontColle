@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { ensureFontLoaded, previewFontFamily } from "@/lib/fonts/loader";
+import { specimenFor } from "@/lib/fonts/specimen";
 import type { FontRecord } from "@/lib/fonts/types";
 import { cn } from "@/lib/utils";
 
@@ -99,7 +100,7 @@ export function FontCard({
         style={previewStyle}
         className="min-h-16 break-words text-2xl leading-snug"
       >
-        {previewText || "The quick brown fox"}
+        {previewText || specimenFor(font)}
       </p>
 
       {weightOptions.length > 1 && (

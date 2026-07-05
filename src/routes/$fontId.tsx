@@ -21,6 +21,7 @@ import {
 import { type FilterState, filterToSearch } from "@/lib/fonts/filter";
 import { ensureFontRangeLoaded, previewFontFamily } from "@/lib/fonts/loader";
 import { getAllFonts } from "@/lib/fonts/queries";
+import { specimenFor } from "@/lib/fonts/specimen";
 import type { FontRecord } from "@/lib/fonts/types";
 import { usePreview } from "@/lib/preview/context";
 
@@ -68,7 +69,7 @@ function Detail({ font }: { font: FontRecord }) {
   const router = useRouter();
   const canGoBack = useCanGoBack();
   const [size, setSize] = useState(72);
-  const specimen = text || "The quick brown fox jumps over 1234567890";
+  const specimen = text || specimenFor(font);
 
   // Axis state: tag -> current value, seeded from each axis default.
   const [axisState, setAxisState] = useState<Record<string, number>>(() =>

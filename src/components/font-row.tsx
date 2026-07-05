@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { ensureFontLoaded, previewFontFamily } from "@/lib/fonts/loader";
+import { specimenFor } from "@/lib/fonts/specimen";
 import type { FontRecord } from "@/lib/fonts/types";
 import { cn } from "@/lib/utils";
 
@@ -67,7 +68,7 @@ export function FontRow({
         style={{ fontFamily: previewFontFamily(font.name) }}
         className="truncate text-3xl leading-tight"
       >
-        {previewText || "The quick brown fox jumps over the lazy dog"}
+        {previewText || specimenFor(font)}
       </p>
     </Link>
   );
