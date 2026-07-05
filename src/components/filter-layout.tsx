@@ -18,7 +18,7 @@ export function FilterLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="container flex min-h-svh flex-col gap-6 p-6">
+    <div className="mx-auto flex min-h-svh w-full max-w-(--breakpoint-2xl) flex-col gap-6 p-6">
       <div className="flex gap-6">
         <FilterSidebar
           index={index}

@@ -40,7 +40,7 @@ export const Route = createFileRoute("/$fontId")({
     return { font, facetIndex: buildFacetIndex(all) };
   },
   notFoundComponent: () => (
-    <div className="container p-6">
+    <div className="mx-auto w-full max-w-(--breakpoint-2xl) p-6">
       <Link
         to="/"
         className="text-muted-foreground text-sm hover:text-foreground"
