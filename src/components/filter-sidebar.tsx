@@ -1,12 +1,16 @@
 import { CaretDown } from "@phosphor-icons/react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { FilterState } from "@/lib/fonts/filter";
 import { cn } from "@/lib/utils";
 
 // Pills for facets with fewer than this many fonts stay hidden behind a
 // collapsible until the user opens it, unless they're already selected.
 const RARE_THRESHOLD = 5;
+
+// Per-section pill ordering: by font count (default) or alphabetically.
+type SortMode = "count" | "alpha";
 
 interface FacetIndex {
   classes: [string, number][];
@@ -34,7 +38,7 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
   return (
     <aside className="sticky top-6 flex h-[calc(100svh-3rem)] w-80 shrink-0 flex-col rounded-lg border border-sidebar-border bg-background text-sidebar-foreground shadow-sm">
       <ScrollArea className="min-h-0 flex-1">
-        <div className="flex flex-col gap-4 p-3">
+        <div className="flex flex-col gap-8 p-4">
           <Section title="Category">
             <Pills
               items={index.classes}
@@ -110,13 +114,23 @@ function Pills({
   mono?: boolean;
 }) {
   const [showRare, setShowRare] = useState(false);
+  const [sort, setSort] = useState<SortMode>("count");
+
+  // `items` arrives count-sorted from the index; re-sort alphabetically when
+  // asked. Copy first so we don't mutate the shared index array.
+  const sorted = useMemo(() => {
+    if (sort === "alpha") {
+      return [...items].sort((a, b) => a[0].localeCompare(b[0]));
+    }
+    return items;
+  }, [items, sort]);
 
   // Rare (count < threshold) pills hide by default, but a selected one always
   // shows so the user can see and clear it.
-  const common = items.filter(
+  const common = sorted.filter(
     ([value, count]) => count >= RARE_THRESHOLD || selected.includes(value)
   );
-  const rare = items.filter(
+  const rare = sorted.filter(
     ([value, count]) => count < RARE_THRESHOLD && !selected.includes(value)
   );
 
@@ -163,6 +177,22 @@ function Pills({
             {showRare ? "Show less" : `${rare.length} more`}
           </button>
         </>
+      )}
+      {items.length > 1 && (
+        <Tabs
+          value={sort}
+          onValueChange={(v) => setSort(v as SortMode)}
+          className="self-end"
+        >
+          <TabsList variant="underline">
+            <TabsTrigger value="count" className="text-xs">
+              Count
+            </TabsTrigger>
+            <TabsTrigger value="alpha" className="text-xs">
+              A–Z
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
       )}
     </div>
   );
