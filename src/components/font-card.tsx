@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { WIDTH_STEP_PCT } from "@/lib/fonts/filter";
 import {
   ensureFontLoaded,
+  ensureFontRangeLoaded,
   previewFontFamily,
   useFontLoaded,
 } from "@/lib/fonts/loader";
@@ -46,9 +47,17 @@ export function FontCard({
     return Math.min(wdth.max, Math.max(wdth.min, pct));
   }, [font.axes, selectedWidths]);
 
+  // Variable fonts: load the full axis range once so any weight/width the user
+  // picks renders from a single variable file. Static fonts: request the actual
+  // selected weight cut (appended on each switch) so it doesn't stay on an old
+  // one for lack of that file.
   useEffect(() => {
-    ensureFontLoaded(font.name, [activeWeight]);
-  }, [font.name, activeWeight]);
+    if (font.isVariable) {
+      ensureFontRangeLoaded(font.name, font.axes);
+    } else {
+      ensureFontLoaded(font.name, [activeWeight]);
+    }
+  }, [font.name, font.isVariable, font.axes, activeWeight]);
 
   const fontLoaded = useFontLoaded(font.name);
   const previewStyle: React.CSSProperties = {
