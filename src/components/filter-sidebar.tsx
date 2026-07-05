@@ -1,6 +1,6 @@
 import {
   ArrowsDownUpIcon,
-  ArrowsHorizontalIcon,
+  ArrowsOutLineHorizontalIcon,
   BookmarkSimpleIcon,
   CaretDownIcon,
   type Icon,
@@ -9,6 +9,7 @@ import {
   TextAaIcon,
   ToggleRightIcon,
   TranslateIcon,
+  XIcon,
 } from "@phosphor-icons/react";
 import { useEffect, useMemo, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -122,15 +123,17 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
             items={index.weights}
             selected={filter.weights}
             onToggle={(v) => select("weights", v)}
+            onReset={() => onChange({ ...filter, weights: [] })}
             label={weightLabel}
             axis="wght"
           />
           <CardGrid
             title="Width"
-            icon={ArrowsHorizontalIcon}
+            icon={ArrowsOutLineHorizontalIcon}
             items={index.widths}
             selected={filter.widths}
             onToggle={(v) => select("widths", v)}
+            onReset={() => onChange({ ...filter, widths: [] })}
             label={widthLabel}
             axis="wdth"
           />
@@ -249,6 +252,7 @@ function CardGrid({
   items,
   selected,
   onToggle,
+  onReset,
   label,
   axis,
 }: {
@@ -257,6 +261,8 @@ function CardGrid({
   items: [string, number][];
   selected: string[];
   onToggle: (v: string) => void;
+  // Clear this section's selection (single-select, so this section only).
+  onReset: () => void;
   // Map a raw value to a display label (e.g. "700" -> "Bold").
   label: (value: string) => string;
   // Which axis the card value drives on the "Aa" specimen.
@@ -283,10 +289,24 @@ function CardGrid({
 
   return (
     <div className="flex flex-col gap-2">
-      <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase tracking-wide">
-        <Icon className="size-4" />
-        {title}
-      </h2>
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase tracking-wide">
+          <Icon className="size-4" />
+          {title}
+        </h2>
+        {selected.length > 0 && (
+          // Ghost button in the same slot as the sort toggle on other sections.
+          <button
+            type="button"
+            onClick={onReset}
+            aria-label={`Reset ${title}`}
+            className="flex items-center gap-1 rounded-md px-2 py-1 font-mono text-muted-foreground text-xs transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted/50"
+          >
+            <XIcon className="size-3" />
+            Reset
+          </button>
+        )}
+      </div>
       {/* At most one value per section (enforced by the handler). */}
       <div className="grid grid-cols-3 gap-3">
         {items.map(([value, count]) => {
