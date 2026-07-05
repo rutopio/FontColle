@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 
 // Pills for facets with fewer than this many fonts stay hidden behind a
 // collapsible until the user opens it, unless they're already selected.
-const RARE_THRESHOLD = 5;
+const RARE_THRESHOLD = 10;
 
 // A representative Google Font per category, used to render "Aa" on each
 // Category card in a typeface typical of that class.
@@ -61,7 +61,7 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
     return (
         <aside className="flex h-full w-full min-w-0 flex-col text-sidebar-foreground">
             <ScrollArea className="min-h-0 flex-1">
-                <div className="flex flex-col gap-8 p-4">
+                <div className="flex flex-col gap-12 p-4">
                     <CategoryCards
                         items={index.classes}
                         selected={filter.classes}
@@ -222,7 +222,7 @@ function Section({
     }, [items, sort]);
 
     return (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between gap-2">
                 <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase tracking-wide">
                     <Icon className="size-4" />
@@ -309,7 +309,19 @@ function Pills({
             <div className={rowClass}>{common.map(renderPill)}</div>
             {rare.length > 0 && (
                 <>
-                    {showRare && <div className={rowClass}>{rare.map(renderPill)}</div>}
+                    {/* Animate the rare row open/closed by transitioning grid rows
+                        0fr -> 1fr. The inner wrapper needs overflow-hidden so the
+                        collapsed content is clipped rather than spilling out. */}
+                    <div
+                        className={cn(
+                            "grid transition-[grid-template-rows] duration-200 ease-out",
+                            showRare ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                        )}
+                    >
+                        <div className="min-h-0 overflow-hidden">
+                            <div className={rowClass}>{rare.map(renderPill)}</div>
+                        </div>
+                    </div>
                     <button
                         type="button"
                         onClick={() => setShowRare((v) => !v)}
