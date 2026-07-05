@@ -120,6 +120,9 @@ export function FontCard({
 
       {fontLoaded ? (
         <p
+          // Let the browser derive writing direction from the text so RTL
+          // scripts (Hebrew, Arabic) render right-to-left, LTR otherwise.
+          dir="auto"
           style={previewStyle}
           className="min-h-16 flex-1 overflow-hidden break-words text-2xl leading-snug"
         >
