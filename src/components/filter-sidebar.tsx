@@ -142,14 +142,14 @@ function Pills({
 }) {
   const [showRare, setShowRare] = useState(false);
 
-  // Rare (count < threshold) pills hide by default, but a selected one always
-  // shows so the user can see and clear it.
-  const common = items.filter(
-    ([value, count]) => count >= RARE_THRESHOLD || selected.includes(value)
-  );
-  const rare = items.filter(
-    ([value, count]) => count < RARE_THRESHOLD && !selected.includes(value)
-  );
+  // Rare = count below threshold. While collapsed, a selected rare pill is
+  // pulled up into `common` so it stays visible and clearable. While expanded
+  // the whole rare row is already shown, so leave selected pills in place —
+  // otherwise toggling one makes it jump up to the common row.
+  const isRare = ([value, count]: [string, number]) =>
+    count < RARE_THRESHOLD && (showRare || !selected.includes(value));
+  const common = items.filter((it) => !isRare(it));
+  const rare = items.filter(isRare);
 
   const renderPill = ([value, count]: [string, number]) => {
     const on = selected.includes(value);
