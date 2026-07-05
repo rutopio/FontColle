@@ -92,6 +92,16 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
     onChange({ ...filter, [key]: next });
   };
 
+  // Clear only the values a given section shows (Properties/Subsets share the
+  // facets key, so scope the reset to that section's own items).
+  const clearSection = (
+    key: keyof Omit<FilterState, "query">,
+    items: [string, number][]
+  ) => {
+    const own = new Set(items.map(([v]) => v));
+    onChange({ ...filter, [key]: filter[key].filter((v) => !own.has(v)) });
+  };
+
   return (
     <aside className="flex h-full w-full min-w-0 flex-col text-sidebar-foreground">
       <ScrollArea className="min-h-0 flex-1">
@@ -107,6 +117,7 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
             items={index.facets}
             selected={filter.facets}
             onToggle={(v) => toggle("facets", v)}
+            onReset={() => clearSection("facets", index.facets)}
           />
           <Section
             title="Subsets"
@@ -143,6 +154,7 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
             items={index.axes}
             selected={filter.axes}
             onToggle={(v) => toggle("axes", v)}
+            onReset={() => clearSection("axes", index.axes)}
             grid
             spread
           />
@@ -152,6 +164,7 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
             items={index.features}
             selected={filter.features}
             onToggle={(v) => toggle("features", v)}
+            onReset={() => clearSection("features", index.features)}
             grid
             spread
           />
@@ -232,7 +245,7 @@ function CategoryCard({
       >
         Aa
       </span>
-      <span className="font-medium text-foreground text-xs leading-none">
+      <span className="font-medium text-muted-foreground text-xs leading-none">
         {value}
       </span>
       <span className="font-mono text-muted-foreground text-xs leading-none">
@@ -335,7 +348,7 @@ function CardGrid({
               >
                 Aa
               </span>
-              <span className="w-full truncate font-medium text-foreground text-xs leading-none">
+              <span className="w-full truncate font-medium text-muted-foreground text-xs leading-none">
                 {label(value)}
               </span>
               <span className="font-mono text-muted-foreground text-xs leading-none">
@@ -355,6 +368,7 @@ function Section({
   items,
   selected,
   onToggle,
+  onReset,
   sortable = true,
   grid,
   spread,
@@ -364,6 +378,9 @@ function Section({
   items: [string, number][];
   selected: string[];
   onToggle: (v: string) => void;
+  // Clear this section's own selection. When any of the section's values are
+  // selected, the header's sort toggle turns into a Reset.
+  onReset?: () => void;
   // When false, hide the Count/A–Z tabs and keep the default count order.
   sortable?: boolean;
   // When true, lay pills out three-per-row at equal width instead of wrapping.
@@ -382,6 +399,11 @@ function Section({
     return items;
   }, [items, sort]);
 
+  // This section's own selected values (Properties/Subsets share filter.facets,
+  // so scope the Reset to the values this section actually shows).
+  const hasSelection =
+    !!onReset && items.some(([value]) => selected.includes(value));
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
@@ -389,17 +411,33 @@ function Section({
           <Icon className="size-4" />
           {title}
         </h2>
-        {sortable && items.length > 1 && (
-          // Single toggle showing the current order; click flips count <-> alpha.
+        {hasSelection ? (
+          // Any value selected -> the sort slot becomes a Reset.
           <button
             type="button"
-            onClick={() => setSort((s) => (s === "count" ? "alpha" : "count"))}
-            aria-label={`Sort by ${sort === "count" ? "count" : "name"}, click to change`}
+            onClick={onReset}
+            aria-label={`Reset ${title}`}
             className="flex items-center gap-1 rounded-md px-2 py-1 font-mono text-muted-foreground text-xs transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted/50"
           >
-            <ArrowsDownUpIcon className="size-3" />
-            {sort === "count" ? "123" : "A–Z"}
+            <XIcon className="size-3" />
+            Reset
           </button>
+        ) : (
+          sortable &&
+          items.length > 1 && (
+            // Single toggle showing the current order; click flips count <-> alpha.
+            <button
+              type="button"
+              onClick={() =>
+                setSort((s) => (s === "count" ? "alpha" : "count"))
+              }
+              aria-label={`Sort by ${sort === "count" ? "count" : "name"}, click to change`}
+              className="flex items-center gap-1 rounded-md px-2 py-1 font-mono text-muted-foreground text-xs transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted/50"
+            >
+              <ArrowsDownUpIcon className="size-3" />
+              {sort === "count" ? "123" : "A–Z"}
+            </button>
+          )
         )}
       </div>
       <Pills
