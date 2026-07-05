@@ -130,9 +130,17 @@ export function FontGrid({
         {items.map((row) => {
           const start = row.index * cols;
           const rowFonts = fonts.slice(start, start + cols);
+          // Guard the frame where `cols` and the virtualizer's row `count` are
+          // briefly out of sync (a row.index can point past the new slice).
+          if (rowFonts.length === 0) return null;
+          // Key by the row's contents, not its position. When `cols` changes
+          // (measure after mount, resize) each index maps to a different slice
+          // of fonts; a positional key (row.index) makes React reuse the old
+          // row's DOM and cells get stranded in the wrong cells. Keying by the
+          // first font's id forces a correct remount.
           return (
             <div
-              key={row.key}
+              key={rowFonts[0]?.id ?? row.key}
               data-index={row.index}
               style={{
                 position: "absolute",
