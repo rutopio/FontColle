@@ -7,6 +7,14 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo } from "react";
 import { Column, FilterLayout } from "@/components/filter-layout";
 import { FontGrid, type ViewMode } from "@/components/font-grid";
+import { Button } from "@/components/ui/button";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -130,6 +138,13 @@ function App() {
     });
   };
 
+  // Clear every filter and the search query, keeping only display prefs.
+  const reset = () =>
+    navigate({
+      search: { view: search.view, sort: search.sort },
+      replace: true,
+    });
+
   const activeCount =
     filter.classes.length +
     filter.facets.length +
@@ -160,12 +175,7 @@ function App() {
               {activeCount > 0 && (
                 <button
                   type="button"
-                  onClick={() =>
-                    navigate({
-                      search: { view: search.view, sort: search.sort },
-                      replace: true,
-                    })
-                  }
+                  onClick={reset}
                   className="underline underline-offset-2 hover:text-foreground"
                 >
                   Clear {activeCount} filters
@@ -209,9 +219,20 @@ function App() {
         }
       >
         {results.length === 0 ? (
-          <p className="py-16 text-center text-muted-foreground text-sm">
-            No fonts match these filters.
-          </p>
+          <Empty className="py-16">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <MagnifyingGlassIcon />
+              </EmptyMedia>
+              <EmptyTitle>No fonts found</EmptyTitle>
+              <EmptyDescription>
+                No fonts match your filters and search. Try broadening them.
+              </EmptyDescription>
+            </EmptyHeader>
+            <Button variant="outline" onClick={reset}>
+              Reset
+            </Button>
+          </Empty>
         ) : (
           <FontGrid
             fonts={results}
