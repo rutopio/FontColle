@@ -6,6 +6,7 @@ import {
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Column, FilterLayout } from "@/components/filter-layout";
+import { FilterSidebar } from "@/components/filter-sidebar";
 import { FontGrid, type ViewMode } from "@/components/font-grid";
 import { Button } from "@/components/ui/button";
 import {
@@ -154,7 +155,15 @@ function App() {
     filter.widths.length;
 
   return (
-    <FilterLayout index={facetIndex} filter={filter} onFilterChange={setFilter}>
+    <FilterLayout
+      sidebar={
+        <FilterSidebar
+          index={facetIndex}
+          filter={filter}
+          onChange={setFilter}
+        />
+      }
+    >
       <Column
         header={
           <>

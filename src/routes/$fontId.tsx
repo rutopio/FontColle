@@ -1,4 +1,4 @@
-import { ArrowLeftIcon } from "@phosphor-icons/react";
+import { ArrowLeftIcon, ToggleRightIcon } from "@phosphor-icons/react";
 import {
   createFileRoute,
   Link,
@@ -10,15 +10,13 @@ import { useEffect, useMemo, useState } from "react";
 import { Column, FilterLayout } from "@/components/filter-layout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useFilter } from "@/lib/filter/context";
-import { buildFacetIndex } from "@/lib/fonts/data";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { withFacets } from "@/lib/fonts/facets";
 import {
   buildFeatureSettings,
   DEFAULT_ON,
   featureName,
 } from "@/lib/fonts/features";
-import { type FilterState, filterToSearch } from "@/lib/fonts/filter";
 import {
   ensureFontRangeLoaded,
   previewFontFamily,
@@ -32,12 +30,12 @@ import { usePreview } from "@/lib/preview/context";
 export const Route = createFileRoute("/$fontId")({
   component: DetailPage,
   loader: async ({ params }) => {
-    // One catalog fetch: the detail body needs the font, the sidebar needs the
-    // facet index for its counts (todo §8b: pure-navigation sidebar).
+    // The detail page needs only the one font; its sidebar shows that font's
+    // OpenType features, not the catalog-wide filter facets.
     const all = withFacets(await getAllFonts());
     const font = all.find((f) => f.id === params.fontId);
     if (!font) throw notFound();
-    return { font, facetIndex: buildFacetIndex(all) };
+    return { font };
   },
   notFoundComponent: () => (
     <div className="mx-auto w-full max-w-(--breakpoint-2xl) p-6">
@@ -53,22 +51,40 @@ export const Route = createFileRoute("/$fontId")({
 });
 
 function DetailPage() {
-  const { font, facetIndex } = Route.useLoaderData();
-  const navigate = Route.useNavigate();
-  // Sidebar reflects the filter selected on the list (shared via context), and
-  // any pill click navigates to the list with the updated filter applied.
-  const { filter } = useFilter();
-  const goToList = (next: FilterState) => {
-    navigate({ to: "/", search: filterToSearch(next) });
-  };
+  const { font } = Route.useLoaderData();
+
+  // Feature overrides live at the page level so the sidebar toggles and the
+  // type tester share one source of truth. Seed default-on features as ON so
+  // the UI matches what the browser renders (todo §8b).
+  const [featureState, setFeatureState] = useState<Record<string, boolean>>(
+    () =>
+      Object.fromEntries(font.features.map((tag) => [tag, DEFAULT_ON.has(tag)]))
+  );
+  const toggleFeature = (tag: string) =>
+    setFeatureState((p) => ({ ...p, [tag]: !p[tag] }));
+
   return (
-    <FilterLayout index={facetIndex} filter={filter} onFilterChange={goToList}>
-      <Detail font={font} />
+    <FilterLayout
+      sidebar={
+        <FeatureSidebar
+          features={font.features}
+          state={featureState}
+          onToggle={toggleFeature}
+        />
+      }
+    >
+      <Detail font={font} featureState={featureState} />
     </FilterLayout>
   );
 }
 
-function Detail({ font }: { font: FontRecord }) {
+function Detail({
+  font,
+  featureState,
+}: {
+  font: FontRecord;
+  featureState: Record<string, boolean>;
+}) {
   const { text } = usePreview();
   const router = useRouter();
   const canGoBack = useCanGoBack();
@@ -78,13 +94,6 @@ function Detail({ font }: { font: FontRecord }) {
   // Axis state: tag -> current value, seeded from each axis default.
   const [axisState, setAxisState] = useState<Record<string, number>>(() =>
     Object.fromEntries(font.axes.map((a) => [a.tag, a.default ?? a.min ?? 0]))
-  );
-
-  // Feature overrides: tag -> on/off. Seed default-on features as ON so the UI
-  // matches what the browser renders (todo §8b).
-  const [featureState, setFeatureState] = useState<Record<string, boolean>>(
-    () =>
-      Object.fromEntries(font.features.map((tag) => [tag, DEFAULT_ON.has(tag)]))
   );
 
   useEffect(() => {
@@ -105,9 +114,6 @@ function Detail({ font }: { font: FontRecord }) {
       fontFeatureSettings: buildFeatureSettings(featureState),
     };
   }, [font.name, font.axes, axisState, size, featureState, fontLoaded]);
-
-  const gsub = font.features.filter((t) => !GPOS_TAGS.has(t));
-  const gpos = font.features.filter((t) => GPOS_TAGS.has(t));
 
   const loadInstance = (coords: Record<string, number>) => {
     setAxisState((prev) => ({ ...prev, ...coords }));
@@ -274,32 +280,6 @@ function Detail({ font }: { font: FontRecord }) {
         </Panel>
       )}
 
-      {/* OPENTYPE FEATURES */}
-      {font.features.length > 0 && (
-        <Panel label="OpenType features" count={font.features.length}>
-          {gsub.length > 0 && (
-            <FeatureGroup
-              title="Substitution (GSUB)"
-              tags={gsub}
-              state={featureState}
-              onToggle={(tag) =>
-                setFeatureState((p) => ({ ...p, [tag]: !p[tag] }))
-              }
-            />
-          )}
-          {gpos.length > 0 && (
-            <FeatureGroup
-              title="Positioning (GPOS)"
-              tags={gpos}
-              state={featureState}
-              onToggle={(tag) =>
-                setFeatureState((p) => ({ ...p, [tag]: !p[tag] }))
-              }
-            />
-          )}
-        </Panel>
-      )}
-
       {/* SPECS + SUBSETS */}
       <div className="grid gap-4 md:grid-cols-2">
         <Panel label="Specs">
@@ -338,16 +318,68 @@ function Detail({ font }: { font: FontRecord }) {
   );
 }
 
-// Registered GPOS features we surface; everything else is treated as GSUB.
-const GPOS_TAGS = new Set([
-  "kern",
-  "mark",
-  "mkmk",
-  "cpsp",
-  "size",
-  "palt",
-  "vhal",
-]);
+// Detail-page side panel: the font's OpenType features as toggle pills, one per
+// row, mono tag on the left and full name on the right. Defaults follow the
+// browser/W3C behavior (default-on features start ON) via the seeded state.
+function FeatureSidebar({
+  features,
+  state,
+  onToggle,
+}: {
+  features: string[];
+  state: Record<string, boolean>;
+  onToggle: (tag: string) => void;
+}) {
+  return (
+    <aside className="flex h-full w-full min-w-0 flex-col text-sidebar-foreground">
+      <ScrollArea className="min-h-0 flex-1">
+        <div className="flex flex-col gap-4 p-4">
+          <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase tracking-wide">
+            <ToggleRightIcon className="size-4" />
+            OpenType features
+          </h2>
+          {features.length === 0 ? (
+            <p className="text-muted-foreground text-sm">
+              This font exposes no OpenType features.
+            </p>
+          ) : (
+            <div className="flex flex-col gap-1.5">
+              {features.map((tag) => {
+                const on = state[tag];
+                return (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => onToggle(tag)}
+                    aria-pressed={on}
+                    className={cnFeature(on)}
+                  >
+                    <span className="font-mono text-xs">{tag}</span>
+                    <span className="flex-1 truncate text-right text-[11px] text-muted-foreground">
+                      {featureName(tag)}
+                    </span>
+                    <span
+                      className={
+                        on
+                          ? "relative h-3.5 w-6 shrink-0 rounded-full bg-foreground"
+                          : "relative h-3.5 w-6 shrink-0 rounded-full bg-border"
+                      }
+                    >
+                      <span
+                        className="absolute top-0.5 size-2.5 rounded-full bg-background transition-all"
+                        style={{ left: on ? "0.875rem" : "0.125rem" }}
+                      />
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </ScrollArea>
+    </aside>
+  );
+}
 
 function Panel({
   label,
@@ -372,56 +404,6 @@ function Panel({
       </div>
       {children}
     </section>
-  );
-}
-
-function FeatureGroup({
-  title,
-  tags,
-  state,
-  onToggle,
-}: {
-  title: string;
-  tags: string[];
-  state: Record<string, boolean>;
-  onToggle: (tag: string) => void;
-}) {
-  return (
-    <div className="mb-3 last:mb-0">
-      <p className="mb-2 text-[10px] text-muted-foreground uppercase tracking-wide">
-        {title}
-      </p>
-      <div className="grid gap-1.5 sm:grid-cols-2">
-        {tags.map((tag) => {
-          const on = state[tag];
-          return (
-            <button
-              key={tag}
-              type="button"
-              onClick={() => onToggle(tag)}
-              className={cnFeature(on)}
-            >
-              <span className="font-mono text-xs">{tag}</span>
-              <span className="flex-1 truncate text-right text-[11px] text-muted-foreground">
-                {featureName(tag)}
-              </span>
-              <span
-                className={
-                  on
-                    ? "relative h-3.5 w-6 shrink-0 rounded-full bg-foreground"
-                    : "relative h-3.5 w-6 shrink-0 rounded-full bg-border"
-                }
-              >
-                <span
-                  className="absolute top-0.5 size-2.5 rounded-full bg-background transition-all"
-                  style={{ left: on ? "0.875rem" : "0.125rem" }}
-                />
-              </span>
-            </button>
-          );
-        })}
-      </div>
-    </div>
   );
 }
 
