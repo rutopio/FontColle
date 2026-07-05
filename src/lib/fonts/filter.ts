@@ -53,16 +53,18 @@ export const WEIGHT_LABELS: Record<number, string> = {
 // usWidthClass steps (1..9) and their nominal percentage, used to map a variable
 // wdth axis range (expressed in percent) onto the discrete width pills.
 export const WIDTH_STEPS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+// Plain Condensed/Expanded/Normal stay spelled out; the compound widths are
+// abbreviated (Cond./Expd.) so they fit the small width pills.
 export const WIDTH_LABELS: Record<number, string> = {
-  1: "UltraCondensed",
-  2: "ExtraCondensed",
+  1: "Ultra Cond.",
+  2: "Extra Cond.",
   3: "Condensed",
-  4: "SemiCondensed",
+  4: "Semi Cond.",
   5: "Normal",
-  6: "SemiExpanded",
+  6: "Semi Expd.",
   7: "Expanded",
-  8: "ExtraExpanded",
-  9: "UltraExpanded",
+  8: "Extra Expd.",
+  9: "Ultra Expd.",
 };
 export const WIDTH_STEP_PCT: Record<number, number> = {
   1: 50,
