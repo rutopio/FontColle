@@ -86,7 +86,13 @@ export function applyFilters(
 ): FontRecord[] {
   const q = f.query.trim().toLowerCase();
   return fonts.filter((font) => {
-    if (q && !font.name.toLowerCase().includes(q)) return false;
+    // Match the family name or the designer/creator.
+    if (
+      q &&
+      !font.name.toLowerCase().includes(q) &&
+      !font.designer?.toLowerCase().includes(q)
+    )
+      return false;
     if (f.classes.length && !f.classes.includes(font.class)) return false;
     if (f.facets.length && !f.facets.every((x) => font.facets.includes(x)))
       return false;

@@ -1,8 +1,13 @@
-import { RowsIcon, SquaresFourIcon } from "@phosphor-icons/react";
+import {
+  MagnifyingGlassIcon,
+  RowsIcon,
+  SquaresFourIcon,
+} from "@phosphor-icons/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo } from "react";
 import { Column, FilterLayout } from "@/components/filter-layout";
 import { FontGrid, type ViewMode } from "@/components/font-grid";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -136,6 +141,20 @@ function App() {
       <Column
         header={
           <>
+            <div className="relative w-56">
+              <MagnifyingGlassIcon className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                type="search"
+                value={filter.query}
+                onChange={(e) =>
+                  setFilter({ ...filter, query: e.target.value })
+                }
+                placeholder="Search family or creator"
+                aria-label="Search fonts by family or creator"
+                className="h-9 pl-8"
+              />
+            </div>
+
             <div className="flex items-center gap-3 text-muted-foreground text-sm">
               <span>{results.length} fonts</span>
               {activeCount > 0 && (
