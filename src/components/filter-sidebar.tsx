@@ -3,6 +3,7 @@ import {
   ArrowsOutLineHorizontalIcon,
   BookmarkSimpleIcon,
   CaretDownIcon,
+  CheckIcon,
   GlobeHemisphereWestIcon,
   type Icon,
   MagnifyingGlassIcon,
@@ -14,6 +15,14 @@ import {
   XIcon,
 } from "@phosphor-icons/react";
 import { useEffect, useMemo, useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   type FilterState,
@@ -487,6 +496,11 @@ function WritingSystemSection({
             </button>
           );
         })}
+        <ScriptPickerDialog
+          scripts={scriptItems}
+          selected={selectedScripts}
+          onToggle={onToggleScript}
+        />
       </div>
 
       {/* Language search + list. */}
@@ -541,6 +555,122 @@ function WritingSystemSection({
         </div>
       )}
     </div>
+  );
+}
+
+// A dialog for picking writing systems from a searchable, scrollable list.
+// Opened from the Writing system section's script row; each row is a toggle
+// that writes straight to the script filter, so changes reflect live behind
+// the dialog. The trigger sits inline with the pills.
+function ScriptPickerDialog({
+  scripts,
+  selected,
+  onToggle,
+}: {
+  scripts: readonly (readonly [string, number, string])[];
+  selected: string[];
+  onToggle: (v: string) => void;
+}) {
+  const [query, setQuery] = useState("");
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return scripts;
+    return scripts.filter(
+      ([code, , label]) =>
+        label.toLowerCase().includes(q) || code.toLowerCase().includes(q)
+    );
+  }, [scripts, query]);
+
+  return (
+    <Dialog>
+      <DialogTrigger
+        render={
+          <button
+            type="button"
+            className="flex items-center gap-1 rounded-md border border-dashed px-2.5 py-1 text-muted-foreground text-xs transition-colors hover:border-foreground hover:text-foreground"
+          >
+            <MagnifyingGlassIcon className="size-3" />
+            Browse all
+          </button>
+        }
+      />
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Writing systems</DialogTitle>
+          <DialogDescription>
+            Filter fonts by the scripts they support.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="relative">
+          <MagnifyingGlassIcon className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search writing systems"
+            autoFocus
+            className="w-full rounded-md border bg-transparent py-2 pr-2 pl-8 text-sm outline-none focus:border-foreground"
+          />
+        </div>
+
+        <div className="-mr-1 max-h-80 overflow-y-auto pr-1">
+          <div className="flex flex-col gap-0.5">
+            {filtered.length === 0 && (
+              <p className="py-6 text-center text-muted-foreground text-sm">
+                No writing systems match “{query}”.
+              </p>
+            )}
+            {filtered.map(([code, count, label]) => {
+              const on = selected.includes(code);
+              return (
+                <button
+                  key={code}
+                  type="button"
+                  onClick={() => onToggle(code)}
+                  aria-pressed={on}
+                  className={cn(
+                    "flex items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors",
+                    on
+                      ? "bg-foreground text-background"
+                      : "hover:bg-muted dark:hover:bg-muted/50"
+                  )}
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    <span
+                      className={cn(
+                        "flex size-4 shrink-0 items-center justify-center rounded-[4px] border",
+                        on ? "border-background" : "border-muted-foreground/50"
+                      )}
+                    >
+                      {on && <CheckIcon className="size-3" weight="bold" />}
+                    </span>
+                    <span className="truncate">{label}</span>
+                    <span
+                      className={cn(
+                        "font-mono text-xs",
+                        on ? "opacity-70" : "text-muted-foreground"
+                      )}
+                    >
+                      {code}
+                    </span>
+                  </span>
+                  <span
+                    className={cn(
+                      "font-mono text-xs",
+                      on ? "opacity-70" : "text-muted-foreground"
+                    )}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
