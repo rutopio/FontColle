@@ -18,6 +18,19 @@
   font-display: block;
 }
 
+/* Adobe Blank (OFL 1.1): maps every codepoint to an empty, zero-width glyph.
+   Used as the fallback only while a preview family is still loading, so the
+   text stays blank instead of flashing NotDef boxes. Once the family loads we
+   switch the chain to Adobe NotDef, which surfaces genuine missing glyphs. */
+@font-face {
+  font-family: "Adobe Blank";
+  src: url("/fonts/adobe-blank.woff") format("woff");
+  font-weight: 100 1000;
+  font-style: normal;
+  size-adjust: 100%;
+  font-display: block;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

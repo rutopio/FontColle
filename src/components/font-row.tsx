@@ -2,7 +2,11 @@ import { Heart } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
-import { ensureFontLoaded, previewFontFamily } from "@/lib/fonts/loader";
+import {
+  ensureFontLoaded,
+  previewFontFamily,
+  useFontLoaded,
+} from "@/lib/fonts/loader";
 import { specimenFor } from "@/lib/fonts/specimen";
 import type { FontRecord } from "@/lib/fonts/types";
 import { cn } from "@/lib/utils";
@@ -26,6 +30,8 @@ export function FontRow({
     const weights = font.instances.map((i) => i.coords.wght ?? 400);
     ensureFontLoaded(font.name, weights.length ? weights : [400]);
   }, [font.name, font.instances]);
+
+  const fontLoaded = useFontLoaded(font.name);
 
   return (
     <Link
@@ -65,7 +71,7 @@ export function FontRow({
       </div>
 
       <p
-        style={{ fontFamily: previewFontFamily(font.name) }}
+        style={{ fontFamily: previewFontFamily(font.name, fontLoaded) }}
         className="truncate text-3xl leading-tight"
       >
         {previewText || specimenFor(font)}
