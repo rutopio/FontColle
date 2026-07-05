@@ -107,15 +107,24 @@ export function FontGrid({
     );
 
   if (!mounted) {
-    // SSR / first paint: render a small static batch.
-    const initial = fonts.slice(0, view === "row" ? 8 : cols * 2);
+    // SSR / first paint, before the virtualizer measures. Render a clean grid
+    // of skeleton placeholders (not real cards) so the first frame is regular
+    // instead of showing half-streamed cards jumping around. The virtualizer
+    // takes over with real cards once mounted.
+    const count = view === "row" ? 8 : 9;
     return (
       <div ref={listRef} className="flex-1">
         {view === "row" ? (
-          <div>{initial.map(renderCell)}</div>
+          <div className="flex flex-col">
+            {Array.from({ length: count }, (_, i) => (
+              <SkeletonLine key={i} />
+            ))}
+          </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {initial.map(renderCell)}
+            {Array.from({ length: count }, (_, i) => (
+              <SkeletonCard key={i} />
+            ))}
           </div>
         )}
       </div>
@@ -168,6 +177,31 @@ export function FontGrid({
           );
         })}
       </div>
+    </div>
+  );
+}
+
+// Loading placeholders for the pre-mount frame. Match the real card/line
+// heights (h-72 / h-28) so nothing jumps when the virtualizer takes over.
+function SkeletonCard() {
+  return (
+    <div className="flex h-72 flex-col gap-4 rounded-lg border bg-card p-5">
+      <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
+      <div className="flex flex-1 flex-col gap-2.5">
+        <div className="h-4 w-[85%] animate-pulse rounded bg-muted" />
+        <div className="h-4 w-[70%] animate-pulse rounded bg-muted" />
+        <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
+      </div>
+      <div className="mt-auto h-3 w-1/3 animate-pulse rounded bg-muted" />
+    </div>
+  );
+}
+
+function SkeletonLine() {
+  return (
+    <div className="flex h-28 flex-col justify-center gap-3 border-b">
+      <div className="h-3 w-40 animate-pulse rounded bg-muted" />
+      <div className="h-7 w-2/3 animate-pulse rounded bg-muted" />
     </div>
   );
 }
