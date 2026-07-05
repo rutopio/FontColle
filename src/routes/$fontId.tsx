@@ -318,6 +318,73 @@ function ResetButton({
   );
 }
 
+// A slider's numeric readout that doubles as a manual input: a dotted underline
+// hints it's clickable; clicking swaps it for a number field that commits on
+// blur/Enter (clamped to [min, max]) and cancels on Escape.
+function EditableValue({
+  value,
+  min,
+  max,
+  step = 1,
+  suffix,
+  onChange,
+  ariaLabel,
+}: {
+  value: number;
+  min: number;
+  max: number;
+  step?: number;
+  suffix?: string;
+  onChange: (v: number) => void;
+  ariaLabel: string;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+
+  const commit = () => {
+    const n = Number(draft);
+    if (Number.isFinite(n)) onChange(Math.min(max, Math.max(min, n)));
+    setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <input
+        type="number"
+        min={min}
+        max={max}
+        step={step}
+        value={draft}
+        // biome-ignore lint/a11y/noAutofocus: focus the field the user just opened.
+        autoFocus
+        aria-label={ariaLabel}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") commit();
+          if (e.key === "Escape") setEditing(false);
+        }}
+        className="w-14 rounded border bg-transparent px-1 text-right font-mono text-foreground text-xs outline-none focus:border-foreground"
+      />
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        setDraft(String(value));
+        setEditing(true);
+      }}
+      aria-label={`${ariaLabel} (click to edit)`}
+      className="font-mono text-muted-foreground text-xs underline decoration-dotted underline-offset-2 transition-colors hover:text-foreground"
+    >
+      {value}
+      {suffix}
+    </button>
+  );
+}
+
 // Detail-page side panel: the font's variable-axis sliders first (if any), then
 // its OpenType features as toggle pills. Both drive the type tester via shared
 // page state; feature defaults follow the browser/W3C behavior (todo §8b).
@@ -374,9 +441,14 @@ function DetailSidebar({
                 <TextAaIcon className="size-4" />
                 Size
               </h2>
-              <span className="font-mono text-muted-foreground text-xs">
-                {size}px
-              </span>
+              <EditableValue
+                value={size}
+                min={16}
+                max={200}
+                suffix="px"
+                onChange={onSizeChange}
+                ariaLabel="Preview font size"
+              />
             </div>
             <input
               type="range"
@@ -411,9 +483,14 @@ function DetailSidebar({
                           {a.tag}
                         </span>
                       </span>
-                      <span className="font-mono text-muted-foreground text-xs">
-                        {Math.round(axisState[a.tag])}
-                      </span>
+                      <EditableValue
+                        value={Math.round(axisState[a.tag])}
+                        min={a.min ?? 0}
+                        max={a.max ?? 100}
+                        step={0.5}
+                        onChange={(v) => onAxisChange(a.tag, v)}
+                        ariaLabel={`${a.name ?? a.tag} value`}
+                      />
                     </div>
                     <input
                       type="range"
