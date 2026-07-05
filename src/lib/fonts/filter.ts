@@ -1,19 +1,5 @@
 import type { FontRecord } from "./types";
 
-// Script/language facets, split out of Properties into their own sidebar
-// section. They still live in `filter.facets` (AND-combined), so this is a
-// display grouping, not a new filter dimension.
-export const SCRIPT_FACETS = new Set([
-  "latin",
-  "cjk",
-  "arabic",
-  "cyrillic",
-  "greek",
-  "hebrew",
-  "thai",
-  "devanagari",
-]);
-
 export interface FilterState {
   query: string;
   classes: string[]; // primary class, OR within
@@ -234,7 +220,6 @@ export function applyFilters(
 export function buildFacetIndex(fonts: FontRecord[]) {
   const classes = new Map<string, number>();
   const facets = new Map<string, number>();
-  const subsetScripts = new Map<string, number>();
   const features = new Map<string, number>();
   const axes = new Map<string, number>();
   const weights = new Map<string, number>();
@@ -246,8 +231,7 @@ export function buildFacetIndex(fonts: FontRecord[]) {
 
   for (const font of fonts) {
     bump(classes, font.class);
-    for (const x of font.facets)
-      bump(SCRIPT_FACETS.has(x) ? subsetScripts : facets, x);
+    for (const x of font.facets) bump(facets, x);
     for (const x of font.features) bump(features, x);
     for (const a of font.axes) bump(axes, a.tag);
     for (const w of familyWeightSet(font)) bump(weights, String(w));
@@ -263,8 +247,6 @@ export function buildFacetIndex(fonts: FontRecord[]) {
   return {
     classes: sorted(classes),
     facets: sorted(facets),
-    // subset-derived script facets (latin/cjk/…), shown in the Subsets section
-    subsetScripts: sorted(subsetScripts),
     features: sorted(features),
     axes: sorted(axes),
     weights: byStep(weights),
