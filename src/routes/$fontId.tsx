@@ -1,6 +1,7 @@
 import {
   ArrowLeftIcon,
   SlidersHorizontalIcon,
+  TextAaIcon,
   ToggleRightIcon,
   XIcon,
 } from "@phosphor-icons/react";
@@ -80,10 +81,15 @@ function DetailPage() {
   const loadInstance = (coords: Record<string, number>) =>
     setAxisState((prev) => ({ ...prev, ...coords }));
 
+  // Preview font size lives here too, since its control is in the sidebar.
+  const [size, setSize] = useState(72);
+
   return (
     <FilterLayout
       sidebar={
         <DetailSidebar
+          size={size}
+          onSizeChange={setSize}
           axes={font.axes}
           axisState={axisState}
           onAxisChange={setAxis}
@@ -97,6 +103,7 @@ function DetailPage() {
     >
       <Detail
         font={font}
+        size={size}
         axisState={axisState}
         onLoadInstance={loadInstance}
         featureState={featureState}
@@ -107,11 +114,13 @@ function DetailPage() {
 
 function Detail({
   font,
+  size,
   axisState,
   onLoadInstance,
   featureState,
 }: {
   font: FontRecord;
+  size: number;
   axisState: Record<string, number>;
   onLoadInstance: (coords: Record<string, number>) => void;
   featureState: Record<string, boolean>;
@@ -119,7 +128,6 @@ function Detail({
   const { text } = usePreview();
   const router = useRouter();
   const canGoBack = useCanGoBack();
-  const [size, setSize] = useState(72);
   const specimen = text || specimenFor(font);
 
   useEffect(() => {
@@ -201,20 +209,6 @@ function Detail({
 
       {/* TYPE TESTER */}
       <Panel label="Type tester">
-        <div className="mb-4 flex items-center justify-end gap-2 text-muted-foreground text-xs">
-          Size
-          <input
-            type="range"
-            min={16}
-            max={200}
-            value={size}
-            onChange={(e) => setSize(Number(e.target.value))}
-            className="accent-foreground"
-          />
-          <span className="w-12 text-right font-mono text-foreground">
-            {size}px
-          </span>
-        </div>
         <p
           dir="auto"
           style={specimenStyle}
@@ -328,6 +322,8 @@ function ResetButton({
 // its OpenType features as toggle pills. Both drive the type tester via shared
 // page state; feature defaults follow the browser/W3C behavior (todo §8b).
 function DetailSidebar({
+  size,
+  onSizeChange,
   axes,
   axisState,
   onAxisChange,
@@ -337,6 +333,8 @@ function DetailSidebar({
   onToggleFeature,
   onResetFeatures,
 }: {
+  size: number;
+  onSizeChange: (value: number) => void;
   axes: FontRecord["axes"];
   axisState: Record<string, number>;
   onAxisChange: (tag: string, value: number) => void;
@@ -370,6 +368,26 @@ function DetailSidebar({
     <aside className="flex h-full w-full min-w-0 flex-col text-sidebar-foreground">
       <ScrollArea className="min-h-0 flex-1">
         <div className="flex flex-col gap-8 p-4">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase tracking-wide">
+                <TextAaIcon className="size-4" />
+                Size
+              </h2>
+              <span className="font-mono text-muted-foreground text-xs">
+                {size}px
+              </span>
+            </div>
+            <input
+              type="range"
+              min={16}
+              max={200}
+              value={size}
+              onChange={(e) => onSizeChange(Number(e.target.value))}
+              aria-label="Preview font size"
+              className="w-full accent-foreground"
+            />
+          </div>
           {axes.length > 0 && (
             <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between gap-2">
