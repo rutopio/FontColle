@@ -1,4 +1,4 @@
-import { Heart } from "@phosphor-icons/react";
+import { DownloadSimple, Heart } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -78,6 +78,9 @@ export function FontCard({
             <Badge variant="secondary" className="shrink-0 text-[10px]">
               {font.class}
             </Badge>
+            <span className="shrink-0 text-muted-foreground text-xs">
+              {font.features.length} features
+            </span>
           </div>
           {font.designer && (
             <p className="truncate text-muted-foreground text-xs">
@@ -85,20 +88,34 @@ export function FontCard({
             </p>
           )}
         </div>
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            onToggleFavorite(font.id);
-          }}
-          aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
-          className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <Heart
-            weight={isFavorite ? "fill" : "regular"}
-            className={cn("size-5", isFavorite && "text-red-500")}
-          />
-        </button>
+        <div className="flex shrink-0 items-center gap-1">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              onToggleFavorite(font.id);
+            }}
+            aria-label={
+              isFavorite ? "Remove from favorites" : "Add to favorites"
+            }
+            className="text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <Heart
+              weight={isFavorite ? "fill" : "regular"}
+              className={cn("size-5", isFavorite && "text-red-500")}
+            />
+          </button>
+          <a
+            href={`https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`}
+            target="_blank"
+            rel="noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            aria-label="Download on Google Fonts"
+            className="text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <DownloadSimple className="size-5" />
+          </a>
+        </div>
       </div>
 
       {fontLoaded ? (
@@ -152,21 +169,6 @@ export function FontCard({
             {a.name ?? a.tag}
           </Badge>
         ))}
-      </div>
-
-      <div className="mt-auto flex items-center justify-between border-t pt-3">
-        <span className="text-muted-foreground text-xs">
-          {font.features.length} features
-        </span>
-        <a
-          href={`https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`}
-          target="_blank"
-          rel="noreferrer"
-          onClick={(e) => e.stopPropagation()}
-          className="text-xs underline underline-offset-2 hover:text-foreground"
-        >
-          Download ↗
-        </a>
       </div>
     </Link>
   );
