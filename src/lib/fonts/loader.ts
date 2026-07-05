@@ -4,6 +4,9 @@
 import { useEffect, useState } from "react";
 
 const loaded = new Set<string>();
+// Which concrete weights we've already requested per static family, so a later
+// weight switch appends the missing cut instead of being skipped by the guard.
+const loadedWeights = new Map<string, Set<number>>();
 
 /**
  * Preview font-family chain. The second slot switches on load state so the two
@@ -67,10 +70,23 @@ export function useFontLoaded(name: string): boolean {
  */
 export function ensureFontLoaded(family: string, weights: number[]) {
   if (typeof document === "undefined") return;
-  if (loaded.has(family)) return;
-  loaded.add(family);
 
-  const uniq = [...new Set(weights.filter((w) => w > 0))].sort((a, b) => a - b);
+  // Only request weights we haven't already loaded for this family. Without this
+  // the per-family guard would skip a later weight switch, so the new cut never
+  // arrives and the browser stays on the previously loaded weight.
+  const seen = loadedWeights.get(family) ?? new Set<number>();
+  const missing = [...new Set(weights.filter((w) => w > 0))]
+    .filter((w) => !seen.has(w))
+    .sort((a, b) => a - b);
+
+  // Nothing new to fetch, and the family (or a prior weight) is already loaded.
+  if (!missing.length && (loaded.has(family) || seen.size > 0)) return;
+
+  loaded.add(family);
+  for (const w of missing) seen.add(w);
+  loadedWeights.set(family, seen);
+
+  const uniq = [...seen].sort((a, b) => a - b);
   const spec =
     uniq.length > 0
       ? `${encodeFamily(family)}:wght@${uniq.join(";")}`
