@@ -1,7 +1,6 @@
 import { TextAaIcon } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import type * as React from "react";
-import { FilterSidebar } from "@/components/filter-sidebar";
 import {
   Sidebar,
   SidebarHeader,
@@ -9,23 +8,15 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import type { FacetIndex } from "@/lib/fonts/data";
-import type { FilterState } from "@/lib/fonts/filter";
 
 // sidebar-09 layout: a parent icon-collapsible sidebar holding two child
 // sidebars side by side. First child is the icon rail (one link home, for now),
-// second child is the filter sidebar. Wired for font-finder's data instead of
-// the demo's mail list.
+// second child is the page's own panel (list filters / detail features), passed
+// in as children.
 export function AppSidebar({
-  index,
-  filter,
-  onFilterChange,
+  children,
   ...props
-}: React.ComponentProps<typeof Sidebar> & {
-  index: FacetIndex;
-  filter: FilterState;
-  onFilterChange: (next: FilterState) => void;
-}) {
+}: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar
       collapsible="icon"
@@ -56,18 +47,14 @@ export function AppSidebar({
         </SidebarHeader>
       </Sidebar>
 
-      {/* Second sidebar: the filters, filling the remaining width. Render
-          FilterSidebar directly so its own ScrollArea owns the scrolling — the
-          Sidebar's flex-col h-full gives it a bounded height to scroll within. */}
+      {/* Second sidebar: the page's own panel, filling the remaining width. The
+          panel provides its own ScrollArea for scrolling — the Sidebar's
+          flex-col h-full gives it a bounded height to scroll within. */}
       <Sidebar
         collapsible="none"
         className="hidden flex-1 bg-background md:flex"
       >
-        <FilterSidebar
-          index={index}
-          filter={filter}
-          onChange={onFilterChange}
-        />
+        {children}
       </Sidebar>
     </Sidebar>
   );
