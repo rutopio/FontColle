@@ -53,6 +53,7 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
             items={index.classes}
             selected={filter.classes}
             onToggle={(v) => toggle("classes", v)}
+            sortable={false}
           />
           <Section
             title="Properties"
@@ -67,6 +68,7 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
             items={index.scripts}
             selected={filter.facets}
             onToggle={(v) => toggle("facets", v)}
+            sortable={false}
           />
           <Section
             title="Variable axes"
@@ -96,6 +98,7 @@ function Section({
   selected,
   onToggle,
   mono,
+  sortable = true,
 }: {
   title: string;
   icon: Icon;
@@ -103,6 +106,8 @@ function Section({
   selected: string[];
   onToggle: (v: string) => void;
   mono?: boolean;
+  // When false, hide the Count/A–Z tabs and keep the default count order.
+  sortable?: boolean;
 }) {
   const [sort, setSort] = useState<SortMode>("count");
 
@@ -122,7 +127,7 @@ function Section({
           <Icon className="size-4" />
           {title}
         </h2>
-        {items.length > 1 && (
+        {sortable && items.length > 1 && (
           <Tabs value={sort} onValueChange={(v) => setSort(v as SortMode)}>
             <TabsList>
               <TabsTrigger value="count" className="text-xs">
