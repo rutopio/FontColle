@@ -637,38 +637,25 @@ function FacetPickerDialog({
                   type="button"
                   onClick={() => onToggle(value)}
                   aria-pressed={on}
-                  className={cn(
-                    "flex items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors",
-                    on
-                      ? "bg-foreground text-background"
-                      : "hover:bg-muted dark:hover:bg-muted/50"
-                  )}
+                  className="flex items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-muted dark:hover:bg-muted/50"
                 >
                   <span className="flex min-w-0 items-center gap-2">
                     <span
                       className={cn(
                         "flex size-4 shrink-0 items-center justify-center rounded-[4px] border",
-                        on ? "border-background" : "border-muted-foreground/50"
+                        on
+                          ? "border-foreground bg-foreground text-background"
+                          : "border-muted-foreground/50"
                       )}
                     >
                       {on && <CheckIcon className="size-3" weight="bold" />}
                     </span>
                     <span className="truncate">{label}</span>
-                    <span
-                      className={cn(
-                        "font-mono text-xs",
-                        on ? "opacity-70" : "text-muted-foreground"
-                      )}
-                    >
+                    <span className="font-mono text-muted-foreground text-xs">
                       {value}
                     </span>
                   </span>
-                  <span
-                    className={cn(
-                      "font-mono text-xs",
-                      on ? "opacity-70" : "text-muted-foreground"
-                    )}
-                  >
+                  <span className="font-mono text-muted-foreground text-xs">
                     {count}
                   </span>
                 </button>
