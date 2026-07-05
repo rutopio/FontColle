@@ -1,4 +1,9 @@
-import { ArrowLeftIcon, ToggleRightIcon, XIcon } from "@phosphor-icons/react";
+import {
+  ArrowLeftIcon,
+  SlidersHorizontalIcon,
+  ToggleRightIcon,
+  XIcon,
+} from "@phosphor-icons/react";
 import {
   createFileRoute,
   Link,
@@ -53,7 +58,7 @@ export const Route = createFileRoute("/$fontId")({
 function DetailPage() {
   const { font } = Route.useLoaderData();
 
-  // Feature overrides live at the page level so the sidebar toggles and the
+  // Feature/axis state live at the page level so the sidebar controls and the
   // type tester share one source of truth. The W3C default state seeds default-on
   // features as ON so the UI matches what the browser renders (todo §8b).
   const w3cDefaults = () =>
@@ -64,27 +69,51 @@ function DetailPage() {
     setFeatureState((p) => ({ ...p, [tag]: !p[tag] }));
   const resetFeatures = () => setFeatureState(w3cDefaults());
 
+  // Axis state: tag -> current value, seeded from each axis default.
+  const axisDefaults = () =>
+    Object.fromEntries(font.axes.map((a) => [a.tag, a.default ?? a.min ?? 0]));
+  const [axisState, setAxisState] =
+    useState<Record<string, number>>(axisDefaults);
+  const setAxis = (tag: string, value: number) =>
+    setAxisState((prev) => ({ ...prev, [tag]: value }));
+  const resetAxes = () => setAxisState(axisDefaults());
+  const loadInstance = (coords: Record<string, number>) =>
+    setAxisState((prev) => ({ ...prev, ...coords }));
+
   return (
     <FilterLayout
       sidebar={
-        <FeatureSidebar
+        <DetailSidebar
+          axes={font.axes}
+          axisState={axisState}
+          onAxisChange={setAxis}
+          onResetAxes={resetAxes}
           features={font.features}
-          state={featureState}
-          onToggle={toggleFeature}
-          onReset={resetFeatures}
+          featureState={featureState}
+          onToggleFeature={toggleFeature}
+          onResetFeatures={resetFeatures}
         />
       }
     >
-      <Detail font={font} featureState={featureState} />
+      <Detail
+        font={font}
+        axisState={axisState}
+        onLoadInstance={loadInstance}
+        featureState={featureState}
+      />
     </FilterLayout>
   );
 }
 
 function Detail({
   font,
+  axisState,
+  onLoadInstance,
   featureState,
 }: {
   font: FontRecord;
+  axisState: Record<string, number>;
+  onLoadInstance: (coords: Record<string, number>) => void;
   featureState: Record<string, boolean>;
 }) {
   const { text } = usePreview();
@@ -92,11 +121,6 @@ function Detail({
   const canGoBack = useCanGoBack();
   const [size, setSize] = useState(72);
   const specimen = text || specimenFor(font);
-
-  // Axis state: tag -> current value, seeded from each axis default.
-  const [axisState, setAxisState] = useState<Record<string, number>>(() =>
-    Object.fromEntries(font.axes.map((a) => [a.tag, a.default ?? a.min ?? 0]))
-  );
 
   useEffect(() => {
     ensureFontRangeLoaded(font.name, font.axes);
@@ -116,10 +140,6 @@ function Detail({
       fontFeatureSettings: buildFeatureSettings(featureState),
     };
   }, [font.name, font.axes, axisState, size, featureState, fontLoaded]);
-
-  const loadInstance = (coords: Record<string, number>) => {
-    setAxisState((prev) => ({ ...prev, ...coords }));
-  };
 
   return (
     <Column
@@ -204,50 +224,6 @@ function Detail({
         </p>
       </Panel>
 
-      {/* VARIABLE AXES */}
-      {font.axes.length > 0 && (
-        <Panel label="Variable axes" count={font.axes.length}>
-          <div className="flex flex-col">
-            {font.axes.map((a) => (
-              <div
-                key={a.tag}
-                className="grid grid-cols-[130px_1fr_56px] items-center gap-3 border-border border-t py-2 first:border-t-0"
-              >
-                <div className="text-sm">
-                  {a.name ?? a.tag}
-                  <span className="ml-1.5 font-mono text-muted-foreground text-xs">
-                    {a.tag}
-                  </span>
-                </div>
-                <div>
-                  <input
-                    type="range"
-                    min={a.min ?? 0}
-                    max={a.max ?? 100}
-                    value={axisState[a.tag]}
-                    step={0.5}
-                    onChange={(e) =>
-                      setAxisState((prev) => ({
-                        ...prev,
-                        [a.tag]: Number(e.target.value),
-                      }))
-                    }
-                    className="w-full accent-foreground"
-                  />
-                  <div className="flex justify-between font-mono text-[10px] text-muted-foreground">
-                    <span>{a.min}</span>
-                    <span>{a.max}</span>
-                  </div>
-                </div>
-                <span className="text-right font-mono text-xs">
-                  {Math.round(axisState[a.tag])}
-                </span>
-              </div>
-            ))}
-          </div>
-        </Panel>
-      )}
-
       {/* NAMED INSTANCES */}
       {font.instances.length > 0 && (
         <Panel label="Named instances" count={font.instances.length}>
@@ -256,7 +232,7 @@ function Detail({
               <button
                 key={inst.name}
                 type="button"
-                onClick={() => loadInstance(inst.coords)}
+                onClick={() => onLoadInstance(inst.coords)}
                 className="rounded-md border p-3 text-left transition-colors hover:border-foreground"
               >
                 <span
@@ -320,20 +296,60 @@ function Detail({
   );
 }
 
-// Detail-page side panel: the font's OpenType features as toggle pills, one per
-// row, mono tag on the left and full name on the right. Defaults follow the
-// browser/W3C behavior (default-on features start ON) via the seeded state.
-function FeatureSidebar({
-  features,
-  state,
-  onToggle,
-  onReset,
+// A ghost Reset button for a sidebar section title. Always rendered (hidden via
+// invisible+disabled while inactive) so the title row height stays constant.
+function ResetButton({
+  active,
+  onClick,
+  label,
 }: {
-  features: string[];
-  state: Record<string, boolean>;
-  onToggle: (tag: string) => void;
-  onReset: () => void;
+  active: boolean;
+  onClick: () => void;
+  label: string;
 }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      disabled={!active}
+      aria-hidden={!active}
+      className={`flex items-center gap-1 rounded-md px-2 py-1 font-mono text-muted-foreground text-xs transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted/50 ${
+        active ? "" : "invisible"
+      }`}
+    >
+      <XIcon className="size-3" />
+      Reset
+    </button>
+  );
+}
+
+// Detail-page side panel: the font's variable-axis sliders first (if any), then
+// its OpenType features as toggle pills. Both drive the type tester via shared
+// page state; feature defaults follow the browser/W3C behavior (todo §8b).
+function DetailSidebar({
+  axes,
+  axisState,
+  onAxisChange,
+  onResetAxes,
+  features,
+  featureState,
+  onToggleFeature,
+  onResetFeatures,
+}: {
+  axes: FontRecord["axes"];
+  axisState: Record<string, number>;
+  onAxisChange: (tag: string, value: number) => void;
+  onResetAxes: () => void;
+  features: string[];
+  featureState: Record<string, boolean>;
+  onToggleFeature: (tag: string) => void;
+  onResetFeatures: () => void;
+}) {
+  // Axes Reset is offered only when an axis differs from its default value.
+  const axesDirty = axes.some(
+    (a) => axisState[a.tag] !== (a.default ?? a.min ?? 0)
+  );
   // Order: W3C default-on features first, then alphabetical within each group.
   const sorted = useMemo(
     () =>
@@ -346,58 +362,95 @@ function FeatureSidebar({
   );
 
   // Reset is offered only when some feature deviates from its W3C default.
-  const dirty = features.some((tag) => state[tag] !== DEFAULT_ON.has(tag));
+  const dirty = features.some(
+    (tag) => featureState[tag] !== DEFAULT_ON.has(tag)
+  );
 
   return (
     <aside className="flex h-full w-full min-w-0 flex-col text-sidebar-foreground">
       <ScrollArea className="min-h-0 flex-1">
-        <div className="flex flex-col gap-4 p-4">
-          <div className="flex items-center justify-between gap-2">
-            <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase tracking-wide">
-              <ToggleRightIcon className="size-4" />
-              OpenType features
-            </h2>
-            {/* Always rendered (hidden while at defaults) so the title row keeps
-                a constant height whether or not Reset is available. */}
-            <button
-              type="button"
-              onClick={onReset}
-              aria-label="Reset OpenType features to defaults"
-              disabled={!dirty}
-              aria-hidden={!dirty}
-              className={`flex items-center gap-1 rounded-md px-2 py-1 font-mono text-muted-foreground text-xs transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted/50 ${
-                dirty ? "" : "invisible"
-              }`}
-            >
-              <XIcon className="size-3" />
-              Reset
-            </button>
-          </div>
-          {features.length === 0 ? (
-            <p className="text-muted-foreground text-sm">
-              This font exposes no OpenType features.
-            </p>
-          ) : (
-            <div className="flex flex-col gap-1.5">
-              {sorted.map((tag) => {
-                const on = state[tag];
-                return (
-                  <button
-                    key={tag}
-                    type="button"
-                    onClick={() => onToggle(tag)}
-                    aria-pressed={on}
-                    className={cnFeature(on)}
-                  >
-                    <span className="font-mono text-xs">{tag}</span>
-                    <span className="flex-1 truncate text-right text-[11px] text-muted-foreground">
-                      {featureName(tag)}
-                    </span>
-                  </button>
-                );
-              })}
+        <div className="flex flex-col gap-8 p-4">
+          {axes.length > 0 && (
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase tracking-wide">
+                  <SlidersHorizontalIcon className="size-4" />
+                  Variable axes
+                </h2>
+                <ResetButton
+                  active={axesDirty}
+                  onClick={onResetAxes}
+                  label="Reset variable axes to defaults"
+                />
+              </div>
+              <div className="flex flex-col gap-3">
+                {axes.map((a) => (
+                  <div key={a.tag} className="flex flex-col gap-1">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <span className="text-sm">
+                        {a.name ?? a.tag}
+                        <span className="ml-1.5 font-mono text-muted-foreground text-xs">
+                          {a.tag}
+                        </span>
+                      </span>
+                      <span className="font-mono text-muted-foreground text-xs">
+                        {Math.round(axisState[a.tag])}
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={a.min ?? 0}
+                      max={a.max ?? 100}
+                      value={axisState[a.tag]}
+                      step={0.5}
+                      onChange={(e) =>
+                        onAxisChange(a.tag, Number(e.target.value))
+                      }
+                      className="w-full accent-foreground"
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           )}
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase tracking-wide">
+                <ToggleRightIcon className="size-4" />
+                OpenType features
+              </h2>
+              <ResetButton
+                active={dirty}
+                onClick={onResetFeatures}
+                label="Reset OpenType features to defaults"
+              />
+            </div>
+            {features.length === 0 ? (
+              <p className="text-muted-foreground text-sm">
+                This font exposes no OpenType features.
+              </p>
+            ) : (
+              <div className="flex flex-col gap-1.5">
+                {sorted.map((tag) => {
+                  const on = featureState[tag];
+                  return (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => onToggleFeature(tag)}
+                      aria-pressed={on}
+                      className={cnFeature(on)}
+                    >
+                      <span className="font-mono text-xs">{tag}</span>
+                      <span className="flex-1 truncate text-right text-[11px] text-muted-foreground">
+                        {featureName(tag)}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       </ScrollArea>
     </aside>
