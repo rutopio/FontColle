@@ -16,9 +16,11 @@ import {
   type FilterState,
   WEIGHT_LABELS,
   WIDTH_LABELS,
+  WIDTH_STEP_PCT,
 } from "@/lib/fonts/filter";
 import {
   ensureFontLoaded,
+  ensureFontRangeLoaded,
   previewFontFamily,
   useFontLoaded,
 } from "@/lib/fonts/loader";
@@ -55,6 +57,17 @@ interface FacetIndex {
 // numeric step, while the toggle value stays numeric.
 const weightLabel = (v: string) => WEIGHT_LABELS[Number(v)] ?? v;
 const widthLabel = (v: string) => WIDTH_LABELS[Number(v)] ?? v;
+
+// Inconsolata is a variable face with weight (200–900) and width (50–200) axes,
+// so its "Aa" specimen can render each Weight/Width card at the value it stands
+// for. We load its full range once and clamp per-card coords to these bounds.
+const SPECIMEN_FAMILY = "Inconsolata";
+const SPECIMEN_AXES = [
+  { tag: "wght", min: 200, max: 900 },
+  { tag: "wdth", min: 50, max: 200 },
+];
+const clamp = (v: number, lo: number, hi: number) =>
+  Math.min(hi, Math.max(lo, v));
 
 interface Props {
   index: FacetIndex;
@@ -110,6 +123,7 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
             selected={filter.weights}
             onToggle={(v) => select("weights", v)}
             label={weightLabel}
+            axis="wght"
           />
           <CardGrid
             title="Width"
@@ -118,6 +132,7 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
             selected={filter.widths}
             onToggle={(v) => select("widths", v)}
             label={widthLabel}
+            axis="wdth"
           />
           <Section
             title="Variable axes"
@@ -225,8 +240,9 @@ function CategoryCard({
 }
 
 // Big-button grid (same shape as CategoryCards) for value dimensions like Weight
-// and Width. No font specimen — the card shows its label plus family count. All
-// cards render at once (no rare collapse): the value sets are small and fixed.
+// and Width. Each card renders an Inconsolata "Aa" at the weight/width it stands
+// for, above its label + family count. All cards render at once (no rare
+// collapse): the value sets are small and fixed.
 function CardGrid({
   title,
   icon: Icon,
@@ -234,6 +250,7 @@ function CardGrid({
   selected,
   onToggle,
   label,
+  axis,
 }: {
   title: string;
   icon: Icon;
@@ -242,7 +259,28 @@ function CardGrid({
   onToggle: (v: string) => void;
   // Map a raw value to a display label (e.g. "700" -> "Bold").
   label: (value: string) => string;
+  // Which axis the card value drives on the "Aa" specimen.
+  axis: "wght" | "wdth";
 }) {
+  const specimenLoaded = useFontLoaded(SPECIMEN_FAMILY);
+  useEffect(() => {
+    ensureFontRangeLoaded(SPECIMEN_FAMILY, SPECIMEN_AXES);
+  }, []);
+
+  // Style the "Aa" for a card: Weight cards vary font-weight; Width cards vary
+  // the wdth axis (value 1..9 -> percentage), clamped to Inconsolata's range.
+  const specimenStyle = (value: string): React.CSSProperties => {
+    const fontFamily = previewFontFamily(SPECIMEN_FAMILY, specimenLoaded);
+    if (axis === "wght") {
+      return { fontFamily, fontWeight: clamp(Number(value), 200, 900) };
+    }
+    const pct = WIDTH_STEP_PCT[Number(value)] ?? 100;
+    return {
+      fontFamily,
+      fontVariationSettings: `"wdth" ${clamp(pct, 50, 200)}`,
+    };
+  };
+
   return (
     <div className="flex flex-col gap-2">
       <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase tracking-wide">
@@ -266,6 +304,12 @@ function CardGrid({
                   : "border-input hover:border-foreground/40"
               )}
             >
+              <span
+                className="text-2xl leading-none"
+                style={specimenStyle(value)}
+              >
+                Aa
+              </span>
               <span className="w-full truncate font-medium text-foreground text-xs leading-none">
                 {label(value)}
               </span>
