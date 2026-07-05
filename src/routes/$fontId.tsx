@@ -357,17 +357,21 @@ function FeatureSidebar({
               <ToggleRightIcon className="size-4" />
               OpenType features
             </h2>
-            {dirty && (
-              <button
-                type="button"
-                onClick={onReset}
-                aria-label="Reset OpenType features to defaults"
-                className="flex items-center gap-1 rounded-md px-2 py-1 font-mono text-muted-foreground text-xs transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted/50"
-              >
-                <XIcon className="size-3" />
-                Reset
-              </button>
-            )}
+            {/* Always rendered (hidden while at defaults) so the title row keeps
+                a constant height whether or not Reset is available. */}
+            <button
+              type="button"
+              onClick={onReset}
+              aria-label="Reset OpenType features to defaults"
+              disabled={!dirty}
+              aria-hidden={!dirty}
+              className={`flex items-center gap-1 rounded-md px-2 py-1 font-mono text-muted-foreground text-xs transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted/50 ${
+                dirty ? "" : "invisible"
+              }`}
+            >
+              <XIcon className="size-3" />
+              Reset
+            </button>
           </div>
           {features.length === 0 ? (
             <p className="text-muted-foreground text-sm">
