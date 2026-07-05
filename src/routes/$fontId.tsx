@@ -1,4 +1,4 @@
-import { ArrowLeftIcon, ToggleRightIcon } from "@phosphor-icons/react";
+import { ArrowLeftIcon, ToggleRightIcon, XIcon } from "@phosphor-icons/react";
 import {
   createFileRoute,
   Link,
@@ -54,14 +54,15 @@ function DetailPage() {
   const { font } = Route.useLoaderData();
 
   // Feature overrides live at the page level so the sidebar toggles and the
-  // type tester share one source of truth. Seed default-on features as ON so
-  // the UI matches what the browser renders (todo §8b).
-  const [featureState, setFeatureState] = useState<Record<string, boolean>>(
-    () =>
-      Object.fromEntries(font.features.map((tag) => [tag, DEFAULT_ON.has(tag)]))
-  );
+  // type tester share one source of truth. The W3C default state seeds default-on
+  // features as ON so the UI matches what the browser renders (todo §8b).
+  const w3cDefaults = () =>
+    Object.fromEntries(font.features.map((tag) => [tag, DEFAULT_ON.has(tag)]));
+  const [featureState, setFeatureState] =
+    useState<Record<string, boolean>>(w3cDefaults);
   const toggleFeature = (tag: string) =>
     setFeatureState((p) => ({ ...p, [tag]: !p[tag] }));
+  const resetFeatures = () => setFeatureState(w3cDefaults());
 
   return (
     <FilterLayout
@@ -70,6 +71,7 @@ function DetailPage() {
           features={font.features}
           state={featureState}
           onToggle={toggleFeature}
+          onReset={resetFeatures}
         />
       }
     >
@@ -325,26 +327,55 @@ function FeatureSidebar({
   features,
   state,
   onToggle,
+  onReset,
 }: {
   features: string[];
   state: Record<string, boolean>;
   onToggle: (tag: string) => void;
+  onReset: () => void;
 }) {
+  // Order: W3C default-on features first, then alphabetical within each group.
+  const sorted = useMemo(
+    () =>
+      [...features].sort((a, b) => {
+        const da = DEFAULT_ON.has(a) ? 0 : 1;
+        const db = DEFAULT_ON.has(b) ? 0 : 1;
+        return da - db || a.localeCompare(b);
+      }),
+    [features]
+  );
+
+  // Reset is offered only when some feature deviates from its W3C default.
+  const dirty = features.some((tag) => state[tag] !== DEFAULT_ON.has(tag));
+
   return (
     <aside className="flex h-full w-full min-w-0 flex-col text-sidebar-foreground">
       <ScrollArea className="min-h-0 flex-1">
         <div className="flex flex-col gap-4 p-4">
-          <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase tracking-wide">
-            <ToggleRightIcon className="size-4" />
-            OpenType features
-          </h2>
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase tracking-wide">
+              <ToggleRightIcon className="size-4" />
+              OpenType features
+            </h2>
+            {dirty && (
+              <button
+                type="button"
+                onClick={onReset}
+                aria-label="Reset OpenType features to defaults"
+                className="flex items-center gap-1 rounded-md px-2 py-1 font-mono text-muted-foreground text-xs transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted/50"
+              >
+                <XIcon className="size-3" />
+                Reset
+              </button>
+            )}
+          </div>
           {features.length === 0 ? (
             <p className="text-muted-foreground text-sm">
               This font exposes no OpenType features.
             </p>
           ) : (
             <div className="flex flex-col gap-1.5">
-              {features.map((tag) => {
+              {sorted.map((tag) => {
                 const on = state[tag];
                 return (
                   <button
