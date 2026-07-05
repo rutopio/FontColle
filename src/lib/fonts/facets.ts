@@ -35,8 +35,10 @@ export function deriveFacets(font: FontRecord): string[] {
   const hasSlantOrItalAxis = font.axes.some(
     (a) => a.tag === "ital" || a.tag === "slnt"
   );
-  const hasItalicInstance = font.instances.some((i) =>
-    (i.name ?? "").toLowerCase().includes("ital")
+  // Instances now carry an explicit italic flag (separate-file italics), so use
+  // it directly and fall back to a name check for older records.
+  const hasItalicInstance = font.instances.some(
+    (i) => i.italic || (i.name ?? "").toLowerCase().includes("ital")
   );
   if (hasSlantOrItalAxis || hasItalicInstance) facets.add("has-italic");
 

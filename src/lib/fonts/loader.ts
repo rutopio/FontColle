@@ -104,7 +104,8 @@ export function ensureFontLoaded(family: string, weights: number[]) {
  */
 export function ensureFontRangeLoaded(
   family: string,
-  axes: { tag: string; min: number | null; max: number | null }[]
+  axes: { tag: string; min: number | null; max: number | null }[],
+  hasItalic = false
 ) {
   if (typeof document === "undefined") return;
   const key = `range:${family}`;
@@ -115,11 +116,34 @@ export function ensureFontRangeLoaded(
     .filter((a) => /^[a-z]{4}$/.test(a.tag) && a.min != null && a.max != null)
     .sort((a, b) => a.tag.localeCompare(b.tag));
 
+  // css2 wants the `ital` dimension expressed as a tuple prefix: with an italic
+  // cut we request both ital=0 (upright) and ital=1 so the tester can switch.
+  // Albert Sans-style families expose italic as a separate VF file, which css2
+  // still serves under ital=1. Tags must be listed alphabetically; `ital` sorts
+  // before the lowercase axes, so it leads the tuple.
   let spec = encodeFamily(family);
-  if (registered.length) {
-    const tags = registered.map((a) => a.tag).join(",");
-    const ranges = registered.map((a) => `${a.min}..${a.max}`).join(",");
-    spec = `${spec}:${tags}@${ranges}`;
+  if (hasItalic || registered.length) {
+    const dims = [
+      ...(hasItalic ? [{ tag: "ital", values: "0;1" }] : []),
+      ...registered.map((a) => ({ tag: a.tag, values: `${a.min}..${a.max}` })),
+    ];
+    if (hasItalic) {
+      // With ital present, every dimension becomes a tuple axis: css2 needs a
+      // cartesian list. Build `ital,<tags>@<t0>,<r0>...` by pairing ital's two
+      // states with the full axis ranges.
+      const tags = dims.map((d) => d.tag).join(",");
+      const upright = dims
+        .map((d) => (d.tag === "ital" ? "0" : d.values))
+        .join(",");
+      const italic = dims
+        .map((d) => (d.tag === "ital" ? "1" : d.values))
+        .join(",");
+      spec = `${spec}:${tags}@${upright};${italic}`;
+    } else {
+      const tags = registered.map((a) => a.tag).join(",");
+      const ranges = registered.map((a) => `${a.min}..${a.max}`).join(",");
+      spec = `${spec}:${tags}@${ranges}`;
+    }
   }
   appendLink(`https://fonts.googleapis.com/css2?family=${spec}&display=block`);
   // Plain fallback in case the range spec is rejected for some family.

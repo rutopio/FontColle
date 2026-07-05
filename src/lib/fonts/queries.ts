@@ -5,6 +5,8 @@ import {
   familyAxis,
   familyFeature,
   familyInstance,
+  familyLanguage,
+  familyScript,
 } from "@/lib/db/schema";
 import type { FontRecord } from "./types";
 
@@ -12,16 +14,21 @@ import type { FontRecord } from "./types";
 // client-side. We fetch each table in full and stitch the denormalized records
 // in memory — cheaper than N per-family joins for ~1700 families.
 async function loadAllFonts(): Promise<FontRecord[]> {
-  const [families, axes, features, instances] = await Promise.all([
-    db.select().from(family),
-    db.select().from(familyAxis),
-    db.select().from(familyFeature),
-    db.select().from(familyInstance),
-  ]);
+  const [families, axes, features, instances, languages, scripts] =
+    await Promise.all([
+      db.select().from(family),
+      db.select().from(familyAxis),
+      db.select().from(familyFeature),
+      db.select().from(familyInstance),
+      db.select().from(familyLanguage),
+      db.select().from(familyScript),
+    ]);
 
   const axesByFamily = groupBy(axes, (a) => a.familyId);
   const featsByFamily = groupBy(features, (f) => f.familyId);
   const instByFamily = groupBy(instances, (i) => i.familyId);
+  const langsByFamily = groupBy(languages, (l) => l.familyId);
+  const scriptsByFamily = groupBy(scripts, (s) => s.familyId);
 
   return families
     .map((f): FontRecord => {
@@ -44,11 +51,15 @@ async function loadAllFonts(): Promise<FontRecord[]> {
         instances: (instByFamily.get(f.id) ?? []).map((i) => ({
           name: i.name,
           coords: parseJson<Record<string, number>>(i.coords, {}),
+          italic: i.italic,
         })),
         features: (featsByFamily.get(f.id) ?? [])
           .map((x) => x.featureTag)
           .sort(),
         facets: [], // derived client-side from axes/features/subsets
+        languages: (langsByFamily.get(f.id) ?? []).map((l) => l.langId).sort(),
+        scripts: (scriptsByFamily.get(f.id) ?? []).map((s) => s.script).sort(),
+        cjkCoverage: parseJson<Record<string, number>>(f.cjkCoverage, {}),
         version: f.version,
         versionString: f.versionString,
         dateAdded: f.dateAdded,

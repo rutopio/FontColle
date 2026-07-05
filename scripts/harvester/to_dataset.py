@@ -126,12 +126,39 @@ def to_record(r):
             for a in axes
         ],
         "instances": [
-            {"name": i.get("name"), "coords": i.get("coords", {})}
+            {"name": i.get("name"), "coords": i.get("coords", {}),
+             "italic": bool(i.get("italic"))}
             for i in instances
         ],
         "features": sorted(gsub | set(ttf.get("gpos_features", []))),
         "facets": sorted(set(facets)),
+        # Writing-system / language coverage (computed in harvest via gflanguages).
+        "languages": r.get("languages", []) or [],
+        "scripts": r.get("scripts", []) or [],
+        "cjkCoverage": r.get("cjk_coverage", {}) or {},
     }
+
+def write_label_maps(records, out):
+    """Emit compact code->human-name maps for the scripts/languages the catalog
+    actually uses, so the frontend renders human labels without shipping
+    gflanguages. Written next to the dataset (scripts.json / languages.json)."""
+    import os
+
+    import langcov
+
+    used_scripts = {s for r in records for s in r.get("scripts", [])}
+    used_langs = {l for r in records for l in r.get("languages", [])}
+    smap = langcov.script_label_map()
+    lmap = langcov.language_label_map()
+    scripts_out = {c: smap.get(c, c) for c in sorted(used_scripts)}
+    langs_out = {l: lmap[l] for l in sorted(used_langs) if l in lmap}
+    d = os.path.dirname(out) or "."
+    json.dump(scripts_out, open(os.path.join(d, "scripts.json"), "w"),
+              indent=2, ensure_ascii=False)
+    json.dump(langs_out, open(os.path.join(d, "languages.json"), "w"),
+              indent=2, ensure_ascii=False)
+    print(f"wrote {len(scripts_out)} scripts, {len(langs_out)} languages to {d}")
+
 
 if __name__ == "__main__":
     src = sys.argv[1] if len(sys.argv) > 1 else "stress_output.json"
@@ -141,3 +168,4 @@ if __name__ == "__main__":
     records.sort(key=lambda x: x["name"].lower())
     json.dump(records, open(out, "w"), indent=2, ensure_ascii=False)
     print(f"wrote {len(records)} records to {out}")
+    write_label_maps(records, out)

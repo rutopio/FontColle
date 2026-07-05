@@ -16,3 +16,5 @@ tasks/
 *.tsbuildinfo
 scripts/harvester/*.log
 src/lib/db/seed.*.sql
+
+scripts/harvester/__pycache__/

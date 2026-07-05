@@ -9,8 +9,15 @@ Outputs one merged JSON record per family conforming to a stable schema.
 import json, re, sys, urllib.request, urllib.parse, io, time, resource
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from fontTools.ttLib import TTFont
+import langcov
 
 RAW = "https://raw.githubusercontent.com/google/fonts/main"
+
+# Human weight names for synthesizing static-family style names (Thin..Black).
+WEIGHT_NAMES = {
+    100: "Thin", 200: "ExtraLight", 300: "Light", 400: "Regular",
+    500: "Medium", 600: "SemiBold", 700: "Bold", 800: "ExtraBold", 900: "Black",
+}
 
 def fetch(url, binary=False, retries=3):
     last = None
@@ -109,6 +116,10 @@ def parse_ttf(raw_bytes):
     except Exception:
         pass
 
+    # Characters this file covers, for language-coverage math (kept out of the
+    # emitted record; the caller unions them across a family's files).
+    out["_cmap_chars"] = {chr(cp) for cp in cmap.keys()} if cmap else set()
+
     out["version"] = round(head.fontRevision, 4) if head else None
     out["version_string"] = nm.getDebugName(5)  # "Version 1.085"
     out["created_ms"] = _epoch_ms(head.created) if head else None
@@ -136,19 +147,32 @@ def parse_ttf(raw_bytes):
     f.close()
     return out
 
-def pick_primary_ttf(meta):
-    """Pick from METADATA fonts: prefer a VF file (has [ in name), else first.
+def _vf_files(meta):
+    """VF filenames from METADATA (name contains '['), in metadata order."""
+    return [f["filename"] for f in (meta.get("fonts") or [])
+            if f.get("filename") and "[" in f["filename"]]
 
-    Uses only METADATA (no per-family GitHub contents API, which is rate-limited
-    at 60 req/hr unauthenticated and would fail across 2000 families).
-    """
-    fonts = meta.get("fonts") or []
-    vf = [f["filename"] for f in fonts if f.get("filename") and "[" in f["filename"]]
-    if vf:
-        return vf[0]
-    if fonts and fonts[0].get("filename"):
-        return fonts[0]["filename"]
-    return None
+
+def _synth_static_instances(meta):
+    """Static family: its 'styles' ARE the METADATA fonts[] entries (static
+    files expose no fvar instances). Synthesize one instance per file with a
+    name from weight+style and an italic flag."""
+    out = []
+    for fo in meta.get("fonts") or []:
+        w = fo.get("weight")
+        italic = (fo.get("style") or "").lower() == "italic"
+        base = WEIGHT_NAMES.get(w, str(w) if w is not None else "Regular")
+        if italic:
+            name = "Italic" if base == "Regular" else f"{base} Italic"
+        else:
+            name = base
+        out.append({
+            "name": name,
+            "coords": {"wght": w} if w is not None else {},
+            "italic": bool(italic),
+        })
+    return out
+
 
 def harvest(entry):
     """entry is "license\tfamily_dir" (license in ofl/apache/ufl)."""
@@ -161,18 +185,82 @@ def harvest(entry):
     md_text = fetch(f"{base}/METADATA.pb")
     meta = parse_metadata_pb(md_text)
     rec.update(meta)
-    ttf_name = pick_primary_ttf(meta)
-    rec["primary_ttf"] = ttf_name
-    if ttf_name:
-        url = f"{base}/{urllib.parse.quote(ttf_name)}"
-        t0 = time.time()
-        raw = fetch(url, binary=True)
-        t_dl = time.time() - t0
-        t1 = time.time()
-        rec["ttf"] = parse_ttf(raw)
-        t_parse = time.time() - t1
-        rec["_stats"] = {"ttf_bytes": len(raw), "dl_s": round(t_dl, 2),
-                         "parse_s": round(t_parse, 2)}
+
+    vf_files = _vf_files(meta)
+    cmap_chars = set()          # union across all parsed files, for langcov
+    instances = []              # merged named instances, tagged italic
+    total_bytes = t_dl = t_parse = 0.0
+
+    if vf_files:
+        # Variable family: parse EVERY VF file (upright + italic + others).
+        # Family-level metadata (axes/features/OS2) comes from the FIRST file
+        # (the upright primary) to avoid double-counting; per-file named
+        # instances are merged, tagged with the file's style.
+        primary_ttf = vf_files[0]
+        rec["primary_ttf"] = primary_ttf
+        primary_parsed = None
+        for fname in vf_files:
+            is_italic = "italic" in fname.lower()
+            url = f"{base}/{urllib.parse.quote(fname)}"
+            t0 = time.time()
+            raw = fetch(url, binary=True)
+            t_dl += time.time() - t0
+            t1 = time.time()
+            parsed = parse_ttf(raw)
+            t_parse += time.time() - t1
+            total_bytes += len(raw)
+            cmap_chars |= parsed.pop("_cmap_chars", set())
+            for inst in parsed.get("named_instances", []):
+                instances.append({**inst, "italic": is_italic})
+            if fname == primary_ttf:
+                primary_parsed = parsed
+        # Family record uses the upright primary's axes/features/metrics.
+        primary_parsed["named_instances"] = instances
+        rec["ttf"] = primary_parsed
+    else:
+        # Static family: one file per cut; parse the primary for metadata and
+        # union all files' cmaps for language coverage. Styles are synthesized
+        # from METADATA fonts[] (static files have no fvar instances).
+        fonts = meta.get("fonts") or []
+        primary_ttf = fonts[0]["filename"] if fonts and fonts[0].get("filename") else None
+        rec["primary_ttf"] = primary_ttf
+        if primary_ttf:
+            for fo in fonts:
+                fname = fo.get("filename")
+                if not fname:
+                    continue
+                url = f"{base}/{urllib.parse.quote(fname)}"
+                t0 = time.time()
+                raw = fetch(url, binary=True)
+                t_dl += time.time() - t0
+                total_bytes += len(raw)
+                if fname == primary_ttf:
+                    t1 = time.time()
+                    parsed = parse_ttf(raw)
+                    t_parse += time.time() - t1
+                    cmap_chars |= parsed.pop("_cmap_chars", set())
+                    rec["ttf"] = parsed
+                else:
+                    # Non-primary static cuts: only union the cmap (cheap).
+                    try:
+                        tf = TTFont(io.BytesIO(raw), lazy=True)
+                        cm = tf.getBestCmap()
+                        cmap_chars |= {chr(cp) for cp in cm.keys()}
+                        tf.close()
+                    except Exception:
+                        pass
+            if "ttf" in rec:
+                rec["ttf"]["named_instances"] = _synth_static_instances(meta)
+
+    # Language / writing-system coverage over the family's union cmap.
+    langs, scripts, cjk_cov = langcov.coverage(cmap_chars, meta.get("subsets"))
+    rec["languages"] = langs
+    rec["scripts"] = scripts
+    rec["cjk_coverage"] = cjk_cov
+
+    rec["_stats"] = {"ttf_bytes": int(total_bytes), "dl_s": round(t_dl, 2),
+                     "parse_s": round(t_parse, 2),
+                     "files": (len(vf_files) or len(meta.get("fonts") or []))}
     return rec
 
 def peak_mem_mb():

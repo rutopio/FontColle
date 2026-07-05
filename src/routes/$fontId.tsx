@@ -23,6 +23,7 @@ import {
   DEFAULT_ON,
   featureName,
 } from "@/lib/fonts/features";
+import { languageLabel, scriptLabel, splitLanguages } from "@/lib/fonts/labels";
 import {
   ensureFontRangeLoaded,
   previewFontFamily,
@@ -89,8 +90,13 @@ function DetailPage() {
   const setAxis = (tag: string, value: number) =>
     setAxisState((prev) => ({ ...prev, [tag]: value }));
   const resetAxes = () => setAxisState(axisDefaults());
-  const loadInstance = (coords: Record<string, number>) =>
+  // Whether the tester currently renders an italic style. Set when an italic
+  // named instance is loaded; cleared for an upright one. Drives font-style.
+  const [italic, setItalic] = useState(false);
+  const loadInstance = (coords: Record<string, number>, isItalic = false) => {
     setAxisState((prev) => ({ ...prev, ...coords }));
+    setItalic(isItalic);
+  };
 
   // Preview font size lives here too, since its control is in the sidebar.
   const [size, setSize] = useState(72);
@@ -116,6 +122,7 @@ function DetailPage() {
         font={font}
         size={size}
         axisState={axisState}
+        italic={italic}
         onLoadInstance={loadInstance}
         featureState={featureState}
       />
@@ -127,23 +134,29 @@ function Detail({
   font,
   size,
   axisState,
+  italic,
   onLoadInstance,
   featureState,
 }: {
   font: FontRecord;
   size: number;
   axisState: Record<string, number>;
-  onLoadInstance: (coords: Record<string, number>) => void;
+  italic: boolean;
+  onLoadInstance: (coords: Record<string, number>, isItalic?: boolean) => void;
   featureState: Record<string, boolean>;
 }) {
   const { text } = usePreview();
   const router = useRouter();
   const canGoBack = useCanGoBack();
   const specimen = text || specimenFor(font);
+  const hasItalic = useMemo(
+    () => font.instances.some((i) => i.italic),
+    [font.instances]
+  );
 
   useEffect(() => {
-    ensureFontRangeLoaded(font.name, font.axes);
-  }, [font.name, font.axes]);
+    ensureFontRangeLoaded(font.name, font.axes, hasItalic);
+  }, [font.name, font.axes, hasItalic]);
 
   const fontLoaded = useFontLoaded(font.name);
 
@@ -155,10 +168,11 @@ function Detail({
       fontFamily: previewFontFamily(font.name, fontLoaded),
       fontSize: `${size}px`,
       fontWeight: axisState.wght ? Math.round(axisState.wght) : undefined,
+      fontStyle: italic ? "italic" : undefined,
       fontVariationSettings: varSettings || undefined,
       fontFeatureSettings: buildFeatureSettings(featureState),
     };
-  }, [font.name, font.axes, axisState, size, featureState, fontLoaded]);
+  }, [font.name, font.axes, axisState, size, italic, featureState, fontLoaded]);
 
   return (
     <Column
@@ -235,9 +249,9 @@ function Detail({
           <div className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-2.5">
             {font.instances.map((inst) => (
               <button
-                key={inst.name}
+                key={`${inst.italic ? "i" : "u"}:${inst.name}`}
                 type="button"
-                onClick={() => onLoadInstance(inst.coords)}
+                onClick={() => onLoadInstance(inst.coords, inst.italic)}
                 className="rounded-md border p-3 text-left transition-colors hover:border-foreground"
               >
                 <span
@@ -247,6 +261,7 @@ function Detail({
                     fontWeight: inst.coords.wght
                       ? Math.round(inst.coords.wght)
                       : undefined,
+                    fontStyle: inst.italic ? "italic" : undefined,
                     fontVariationSettings: Object.entries(inst.coords)
                       .map(([t, v]) => `"${t}" ${v}`)
                       .join(", "),
@@ -297,7 +312,60 @@ function Detail({
           </div>
         </Panel>
       </div>
+
+      {/* WRITING SYSTEMS + LANGUAGES */}
+      {(font.scripts.length > 0 || font.languages.length > 0) && (
+        <LanguageSupport font={font} />
+      )}
     </Column>
+  );
+}
+
+// Read-only writing-system + language support (todo: language-support task).
+// Scripts render as pills; languages default to the major set (>=5M speakers)
+// with a "show all" expander for the long tail, matching the GF website.
+function LanguageSupport({ font }: { font: FontRecord }) {
+  const [showAll, setShowAll] = useState(false);
+  const { major, minor } = useMemo(
+    () => splitLanguages(font.languages),
+    [font.languages]
+  );
+  const shown = showAll ? [...major, ...minor] : major;
+
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      {font.scripts.length > 0 && (
+        <Panel label="Writing systems" count={font.scripts.length}>
+          <div className="flex flex-wrap gap-1.5">
+            {font.scripts.map((s) => (
+              <Badge key={s} variant="secondary">
+                {scriptLabel(s)}
+              </Badge>
+            ))}
+          </div>
+        </Panel>
+      )}
+      {font.languages.length > 0 && (
+        <Panel label="Languages" count={font.languages.length}>
+          <div className="flex flex-wrap gap-1.5">
+            {shown.map((id) => (
+              <Badge key={id} variant="outline">
+                {languageLabel(id)}
+              </Badge>
+            ))}
+          </div>
+          {minor.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowAll((v) => !v)}
+              className="mt-2 font-mono text-muted-foreground text-xs hover:text-foreground"
+            >
+              {showAll ? "Show fewer" : `Show all ${font.languages.length}`}
+            </button>
+          )}
+        </Panel>
+      )}
+    </div>
   );
 }
 
