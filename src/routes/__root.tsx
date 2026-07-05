@@ -2,6 +2,7 @@ import { TanStackDevtools } from "@tanstack/react-devtools";
 import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { PreviewDock } from "@/components/preview-dock";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { FilterProvider } from "@/lib/filter/context";
 import { PreviewProvider } from "@/lib/preview/context";
 
@@ -44,12 +45,14 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <FilterProvider>
-          <PreviewProvider>
-            {children}
-            <PreviewDock />
-          </PreviewProvider>
-        </FilterProvider>
+        <TooltipProvider>
+          <FilterProvider>
+            <PreviewProvider>
+              {children}
+              <PreviewDock />
+            </PreviewProvider>
+          </FilterProvider>
+        </TooltipProvider>
         <TanStackDevtools
           config={{
             position: "bottom-right",

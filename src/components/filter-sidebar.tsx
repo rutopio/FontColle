@@ -44,7 +44,7 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
   };
 
   return (
-    <aside className="sticky top-6 flex h-[calc(100svh-3rem)] w-80 shrink-0 flex-col rounded-lg border border-sidebar-border bg-background text-sidebar-foreground shadow-sm">
+    <aside className="flex h-full w-full min-w-0 flex-col text-sidebar-foreground">
       <ScrollArea className="min-h-0 flex-1">
         <div className="flex flex-col gap-8 p-4">
           <Section
