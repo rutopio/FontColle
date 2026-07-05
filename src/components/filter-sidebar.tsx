@@ -15,6 +15,7 @@ import {
   XIcon,
 } from "@phosphor-icons/react";
 import { useEffect, useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -30,12 +31,7 @@ import {
   WIDTH_LABELS,
   WIDTH_STEP_PCT,
 } from "@/lib/fonts/filter";
-import {
-  languageLabel,
-  languagePopulation,
-  MAJOR_LANG_POPULATION,
-  scriptLabel,
-} from "@/lib/fonts/labels";
+import { languageLabel, scriptLabel } from "@/lib/fonts/labels";
 import {
   ensureFontLoaded,
   ensureFontRangeLoaded,
@@ -428,8 +424,8 @@ function WritingSystemSection({
   );
 }
 
-// Languages: a searchable list of hundreds of language ids. Pills show the
-// major languages (>=5M speakers); the Browse all dialog searches every one.
+// Languages: a searchable list of hundreds of language ids. The sidebar shows
+// only the selected ones as pills; the Browse all dialog searches every one.
 function LanguageSection({
   languages,
   selectedLanguages,
@@ -449,24 +445,12 @@ function LanguageSection({
         .sort((a, b) => a[2].localeCompare(b[2])),
     [languages]
   );
-  // Sidebar pills show only the major languages (plus any selected minor ones,
-  // so an active pill stays visible and clearable).
-  const pillItems = useMemo(
-    () =>
-      allItems.filter(
-        ([id]) =>
-          languagePopulation(id) >= MAJOR_LANG_POPULATION ||
-          selectedLanguages.includes(id)
-      ),
-    [allItems, selectedLanguages]
-  );
 
   return (
     <FacetPickerSection
       title="Language"
       icon={TranslateIcon}
       items={allItems}
-      pillItems={pillItems}
       selected={selectedLanguages}
       onToggle={onToggleLanguage}
       onReset={onResetLanguages}
@@ -477,15 +461,15 @@ function LanguageSection({
   );
 }
 
-// A sidebar section that shows selectable pills for a facet dimension plus a
-// "Browse all" dialog over the full searchable, scrollable list. Shared by the
-// Writing system and Language sections. Each item is [value, count, label].
+// A sidebar section for a facet dimension. Only the selected values appear as
+// pills; the rest are picked from a "Browse all" dialog over the full
+// searchable, scrollable list. Shared by the Writing system and Language
+// sections. Each item is [value, count, label].
 type FacetItem = readonly [string, number, string];
 function FacetPickerSection({
   title,
   icon: Icon,
   items,
-  pillItems,
   selected,
   onToggle,
   onReset,
@@ -496,8 +480,6 @@ function FacetPickerSection({
   title: string;
   icon: Icon;
   items: readonly FacetItem[];
-  // Which items to show as sidebar pills; defaults to all of `items`.
-  pillItems?: readonly FacetItem[];
   selected: string[];
   onToggle: (v: string) => void;
   onReset: () => void;
@@ -505,7 +487,15 @@ function FacetPickerSection({
   dialogDescription: string;
   searchPlaceholder: string;
 }) {
-  const pills = pillItems ?? items;
+  // Show a pill for each selected value (name-sorted), looked up from items.
+  const selectedItems = useMemo(() => {
+    const byValue = new Map(items.map((it) => [it[0], it]));
+    return selected
+      .map((v) => byValue.get(v))
+      .filter((it): it is FacetItem => it != null)
+      .sort((a, b) => a[2].localeCompare(b[2]));
+  }, [items, selected]);
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
@@ -527,25 +517,19 @@ function FacetPickerSection({
       </div>
 
       <div className="flex flex-wrap gap-1.5">
-        {pills.map(([value, count, label]) => {
-          const on = selected.includes(value);
-          return (
-            <button
-              key={value}
-              type="button"
-              onClick={() => onToggle(value)}
-              className={cn(
-                "flex items-center gap-1 rounded-md border px-2.5 py-1 text-xs transition-colors",
-                on
-                  ? "border-foreground bg-foreground text-background"
-                  : "text-muted-foreground hover:border-foreground hover:text-foreground"
-              )}
-            >
-              <span className="truncate">{label}</span>
-              <span className="font-mono opacity-60">{count}</span>
-            </button>
-          );
-        })}
+        {/* Only the selected values show as pills; click to remove. */}
+        {selectedItems.map(([value, count, label]) => (
+          <button
+            key={value}
+            type="button"
+            onClick={() => onToggle(value)}
+            className="flex items-center gap-1 rounded-md border border-foreground bg-foreground px-2.5 py-1 text-background text-xs transition-colors"
+          >
+            <span className="truncate">{label}</span>
+            <span className="font-mono opacity-60">{count}</span>
+            <XIcon className="size-3 opacity-70" />
+          </button>
+        ))}
         <FacetPickerDialog
           items={items}
           selected={selected}
@@ -577,15 +561,23 @@ function FacetPickerDialog({
   searchPlaceholder: string;
 }) {
   const [query, setQuery] = useState("");
+  // Row order inside the dialog: by family count (default) or alphabetically,
+  // mirroring the sort toggle on the plain sidebar sections.
+  const [sort, setSort] = useState<SortMode>("count");
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return items;
-    return items.filter(
-      ([value, , label]) =>
-        label.toLowerCase().includes(q) || value.toLowerCase().includes(q)
-    );
-  }, [items, query]);
+    const matched = q
+      ? items.filter(
+          ([value, , label]) =>
+            label.toLowerCase().includes(q) || value.toLowerCase().includes(q)
+        )
+      : items;
+    if (sort === "alpha") {
+      return [...matched].sort((a, b) => a[2].localeCompare(b[2]));
+    }
+    return [...matched].sort((a, b) => b[1] - a[1] || a[2].localeCompare(b[2]));
+  }, [items, query, sort]);
 
   return (
     <Dialog>
@@ -593,7 +585,7 @@ function FacetPickerDialog({
         render={
           <button
             type="button"
-            className="flex items-center gap-1 rounded-md border border-dashed px-2.5 py-1 text-muted-foreground text-xs transition-colors hover:border-foreground hover:text-foreground"
+            className="flex w-full items-center justify-center gap-1 rounded-md border border-dashed px-2.5 py-1.5 text-muted-foreground text-xs transition-colors hover:border-foreground hover:text-foreground"
           >
             <MagnifyingGlassIcon className="size-3" />
             Browse all
@@ -606,19 +598,31 @@ function FacetPickerDialog({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
-        <div className="relative">
-          <MagnifyingGlassIcon className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={searchPlaceholder}
-            autoFocus
-            className="w-full rounded-md border bg-transparent py-2 pr-2 pl-8 text-sm outline-none focus:border-foreground"
-          />
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <MagnifyingGlassIcon className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={searchPlaceholder}
+              autoFocus
+              className="w-full rounded-md border bg-transparent py-2 pr-2 pl-8 text-sm outline-none focus:border-foreground"
+            />
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSort((s) => (s === "count" ? "alpha" : "count"))}
+            aria-label={`Sort by ${sort === "count" ? "count" : "name"}, click to change`}
+            className="shrink-0 font-mono text-muted-foreground text-xs"
+          >
+            <ArrowsDownUpIcon className="size-3" />
+            {sort === "count" ? "123" : "A–Z"}
+          </Button>
         </div>
 
-        <div className="-mr-1 max-h-80 overflow-y-auto pr-1">
+        <ScrollArea className="-mr-1 h-80 pr-1">
           <div className="flex flex-col gap-0.5">
             {filtered.length === 0 && (
               <p className="py-6 text-center text-muted-foreground text-sm">
@@ -671,7 +675,7 @@ function FacetPickerDialog({
               );
             })}
           </div>
-        </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );
