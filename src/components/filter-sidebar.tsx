@@ -11,6 +11,7 @@ const RARE_THRESHOLD = 5;
 interface FacetIndex {
   classes: [string, number][];
   facets: [string, number][];
+  scripts: [string, number][];
   features: [string, number][];
   axes: [string, number][];
 }
@@ -31,7 +32,7 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
   };
 
   return (
-    <aside className="sticky top-6 flex h-[calc(100svh-3rem)] w-64 shrink-0 flex-col rounded-lg border border-sidebar-border bg-background text-sidebar-foreground shadow-sm">
+    <aside className="sticky top-6 flex h-[calc(100svh-3rem)] w-80 shrink-0 flex-col rounded-lg border border-sidebar-border bg-background text-sidebar-foreground shadow-sm">
       <ScrollArea className="min-h-0 flex-1">
         <div className="flex flex-col gap-4 p-3">
           <Section title="Category">
@@ -45,6 +46,14 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
           <Section title="Properties">
             <Pills
               items={index.facets}
+              selected={filter.facets}
+              onToggle={(v) => toggle("facets", v)}
+            />
+          </Section>
+
+          <Section title="Language">
+            <Pills
+              items={index.scripts}
               selected={filter.facets}
               onToggle={(v) => toggle("facets", v)}
             />
