@@ -29,6 +29,8 @@ export interface FontRecord {
   versionString: string | null;
   dateAdded: string | null;
   weightClass: number | null;
+  widthClass: number | null;
+  weights: number[];
   glyphCount: number | null;
   charCount: number | null;
   primaryScript: string | null;

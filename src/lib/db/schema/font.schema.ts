@@ -34,6 +34,9 @@ export const family = sqliteTable(
     // --- classification / metrics (from OS/2 + head + maxp + cmap) ---
     weightClass: integer("weight_class"), // OS/2 usWeightClass
     widthClass: integer("width_class"), // OS/2 usWidthClass
+    // JSON int array of the standard weight steps this family offers (static:
+    // per-file weights snapped to 100; variable: steps inside the wght axis).
+    weights: text("weights"),
     fsType: integer("fs_type"), // OS/2 embedding permission bits
     glyphCount: integer("glyph_count"), // maxp numGlyphs
     charCount: integer("char_count"), // cmap character count

@@ -53,6 +53,8 @@ async function loadAllFonts(): Promise<FontRecord[]> {
         versionString: f.versionString,
         dateAdded: f.dateAdded,
         weightClass: f.weightClass,
+        widthClass: f.widthClass,
+        weights: parseJson<number[]>(f.weights, []),
         glyphCount: f.glyphCount,
         charCount: f.charCount,
         primaryScript: f.primaryScript,

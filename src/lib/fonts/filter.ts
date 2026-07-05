@@ -20,6 +20,8 @@ export interface FilterState {
   facets: string[]; // facet tags, AND across
   features: string[]; // OpenType feature tags, AND across
   axes: string[]; // axis tags, AND across
+  weights: string[]; // standard weight steps ("100".."900"), OR within
+  widths: string[]; // usWidthClass steps ("1".."9"), OR within
 }
 
 export const emptyFilter: FilterState = {
@@ -28,7 +30,80 @@ export const emptyFilter: FilterState = {
   facets: [],
   features: [],
   axes: [],
+  weights: [],
+  widths: [],
 };
+
+// Standard weight steps we expose as pills. Mirrors the harvester's snapping.
+export const WEIGHT_STEPS = [100, 200, 300, 400, 500, 600, 700, 800, 900];
+
+// Human labels for the weight pills.
+export const WEIGHT_LABELS: Record<number, string> = {
+  100: "Thin",
+  200: "ExtraLight",
+  300: "Light",
+  400: "Regular",
+  500: "Medium",
+  600: "SemiBold",
+  700: "Bold",
+  800: "ExtraBold",
+  900: "Black",
+};
+
+// usWidthClass steps (1..9) and their nominal percentage, used to map a variable
+// wdth axis range (expressed in percent) onto the discrete width pills.
+export const WIDTH_STEPS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+export const WIDTH_LABELS: Record<number, string> = {
+  1: "UltraCondensed",
+  2: "ExtraCondensed",
+  3: "Condensed",
+  4: "SemiCondensed",
+  5: "Normal",
+  6: "SemiExpanded",
+  7: "Expanded",
+  8: "ExtraExpanded",
+  9: "UltraExpanded",
+};
+const WIDTH_STEP_PCT: Record<number, number> = {
+  1: 50,
+  2: 62.5,
+  3: 75,
+  4: 87.5,
+  5: 100,
+  6: 112.5,
+  7: 125,
+  8: 150,
+  9: 200,
+};
+
+/** Standard weight steps a family offers (already derived in the dataset). */
+export function familyWeightSet(font: FontRecord): number[] {
+  if (font.weights.length) return font.weights;
+  // Fallback for records without a derived list: snap the primary weightClass.
+  const wc = font.weightClass;
+  if (wc == null) return [];
+  const nearest = WEIGHT_STEPS.reduce((best, s) =>
+    Math.abs(s - wc) < Math.abs(best - wc) ? s : best
+  );
+  return [nearest];
+}
+
+/** usWidthClass steps a family covers: its static width, plus wdth-axis range. */
+export function familyWidthSet(font: FontRecord): number[] {
+  const steps = new Set<number>();
+  const wdth = font.axes.find((a) => a.tag === "wdth");
+  if (wdth && wdth.min != null && wdth.max != null) {
+    for (const step of WIDTH_STEPS) {
+      const pct = WIDTH_STEP_PCT[step];
+      if (pct >= wdth.min && pct <= wdth.max) steps.add(step);
+    }
+  }
+  // Static width (or the variable's default width class) as a discrete bucket.
+  if (font.widthClass != null && font.widthClass >= 1 && font.widthClass <= 9) {
+    steps.add(font.widthClass);
+  }
+  return [...steps].sort((a, b) => a - b);
+}
 
 // URL search-param shape. Filters live in the URL so they persist across
 // list <-> detail navigation, and the detail sidebar can link back to the list
@@ -39,6 +114,8 @@ export interface FilterSearch {
   facet?: string;
   feature?: string;
   axis?: string;
+  weight?: string;
+  width?: string;
   view?: "grid" | "row"; // display preference, not a filter
   sort?: string; // sort key, not a filter
 }
@@ -53,6 +130,8 @@ export function searchToFilter(s: FilterSearch): FilterState {
     facets: splitCsv(s.facet),
     features: splitCsv(s.feature),
     axes: splitCsv(s.axis),
+    weights: splitCsv(s.weight),
+    widths: splitCsv(s.width),
   };
 }
 
@@ -63,18 +142,26 @@ export function filterToSearch(f: FilterState): FilterSearch {
   if (f.facets.length) s.facet = f.facets.join(",");
   if (f.features.length) s.feature = f.features.join(",");
   if (f.axes.length) s.axis = f.axes.join(",");
+  if (f.weights.length) s.weight = f.weights.join(",");
+  if (f.widths.length) s.width = f.widths.join(",");
   return s;
 }
 
 /** Validate/coerce raw URL search into FilterSearch (drops unknown keys). */
 export function parseFilterSearch(raw: Record<string, unknown>): FilterSearch {
   const str = (v: unknown) => (typeof v === "string" ? v : undefined);
+  // Weight/width values are numeric, so a hand-typed ?weight=900 arrives as a
+  // number and a single ?weight=700 too; coerce numbers to strings so shared
+  // URLs parse the same as the pill-written "700,900".
+  const numCsv = (v: unknown) => (typeof v === "number" ? String(v) : str(v));
   return {
     q: str(raw.q),
     class: str(raw.class),
     facet: str(raw.facet),
-    feature: str(raw.feature),
     axis: str(raw.axis),
+    feature: str(raw.feature),
+    weight: numCsv(raw.weight),
+    width: numCsv(raw.width),
     view: raw.view === "row" ? "row" : undefined,
     sort: str(raw.sort),
   };
@@ -106,6 +193,16 @@ export function applyFilters(
       !f.axes.every((tag) => font.axes.some((a) => a.tag === tag))
     )
       return false;
+    // OR within weights: family must offer at least one selected weight step.
+    if (f.weights.length) {
+      const set = familyWeightSet(font);
+      if (!f.weights.some((w) => set.includes(Number(w)))) return false;
+    }
+    // OR within widths.
+    if (f.widths.length) {
+      const set = familyWidthSet(font);
+      if (!f.widths.some((w) => set.includes(Number(w)))) return false;
+    }
     return true;
   });
 }
@@ -117,6 +214,8 @@ export function buildFacetIndex(fonts: FontRecord[]) {
   const scripts = new Map<string, number>();
   const features = new Map<string, number>();
   const axes = new Map<string, number>();
+  const weights = new Map<string, number>();
+  const widths = new Map<string, number>();
   const bump = (m: Map<string, number>, k: string) =>
     m.set(k, (m.get(k) ?? 0) + 1);
 
@@ -126,14 +225,21 @@ export function buildFacetIndex(fonts: FontRecord[]) {
       bump(SCRIPT_FACETS.has(x) ? scripts : facets, x);
     for (const x of font.features) bump(features, x);
     for (const a of font.axes) bump(axes, a.tag);
+    for (const w of familyWeightSet(font)) bump(weights, String(w));
+    for (const w of familyWidthSet(font)) bump(widths, String(w));
   }
   const sorted = (m: Map<string, number>) =>
     [...m.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  // Weight/width pills read best in ascending numeric order, not by count.
+  const byStep = (m: Map<string, number>) =>
+    [...m.entries()].sort((a, b) => Number(a[0]) - Number(b[0]));
   return {
     classes: sorted(classes),
     facets: sorted(facets),
     scripts: sorted(scripts),
     features: sorted(features),
     axes: sorted(axes),
+    weights: byStep(weights),
+    widths: byStep(widths),
   };
 }
