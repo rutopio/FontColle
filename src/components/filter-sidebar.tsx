@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 
 // Pills for facets with fewer than this many fonts stay hidden behind a
 // collapsible until the user opens it, unless they're already selected.
-const RARE_THRESHOLD = 10;
+const RARE_THRESHOLD = 20;
 
 // A representative Google Font per category, used to render "Aa" on each
 // Category card in a typeface typical of that class.

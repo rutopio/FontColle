@@ -4,7 +4,7 @@ import {
   SquaresFourIcon,
 } from "@phosphor-icons/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Column, FilterLayout } from "@/components/filter-layout";
 import { FontGrid, type ViewMode } from "@/components/font-grid";
 import { Button } from "@/components/ui/button";
@@ -156,19 +156,10 @@ function App() {
       <Column
         header={
           <>
-            <div className="relative w-56">
-              <MagnifyingGlassIcon className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                type="search"
-                value={filter.query}
-                onChange={(e) =>
-                  setFilter({ ...filter, query: e.target.value })
-                }
-                placeholder="Search family or creator"
-                aria-label="Search fonts by family or creator"
-                className="h-9 pl-8"
-              />
-            </div>
+            <SearchInput
+              query={filter.query}
+              onQueryChange={(query) => setFilter({ ...filter, query })}
+            />
 
             <div className="flex items-center gap-3 text-muted-foreground text-sm">
               <span>{results.length} fonts</span>
@@ -246,5 +237,51 @@ function App() {
         )}
       </Column>
     </FilterLayout>
+  );
+}
+
+// Local draft state + IME composition guard so typing 注音/拼音 assembles a
+// character before it reaches the filter. Committing every keystroke to the URL
+// interrupts composition; we only commit once the IME finishes (or on plain
+// input for non-IME text).
+function SearchInput({
+  query,
+  onQueryChange,
+}: {
+  query: string;
+  onQueryChange: (query: string) => void;
+}) {
+  const [draft, setDraft] = useState(query);
+  const composing = useRef(false);
+
+  // Keep the draft in sync when the query changes from outside (e.g. reset).
+  useEffect(() => {
+    setDraft(query);
+  }, [query]);
+
+  const commit = (value: string) => {
+    setDraft(value);
+    if (!composing.current) onQueryChange(value);
+  };
+
+  return (
+    <div className="relative w-56">
+      <MagnifyingGlassIcon className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+      <Input
+        type="search"
+        value={draft}
+        onChange={(e) => commit(e.target.value)}
+        onCompositionStart={() => {
+          composing.current = true;
+        }}
+        onCompositionEnd={(e) => {
+          composing.current = false;
+          onQueryChange(e.currentTarget.value);
+        }}
+        placeholder="Search family or creator"
+        aria-label="Search fonts by family or creator"
+        className="h-9 pl-8"
+      />
+    </div>
   );
 }
