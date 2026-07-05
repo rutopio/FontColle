@@ -149,12 +149,14 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
           />
           <WritingSystemSection
             scripts={index.wsScripts}
-            languages={index.languages}
             selectedScripts={filter.scripts}
-            selectedLanguages={filter.languages}
             onToggleScript={(v) => toggle("scripts", v)}
-            onToggleLanguage={(v) => toggle("languages", v)}
             onResetScripts={() => onChange({ ...filter, scripts: [] })}
+          />
+          <LanguageSection
+            languages={index.languages}
+            selectedLanguages={filter.languages}
+            onToggleLanguage={(v) => toggle("languages", v)}
             onResetLanguages={() => onChange({ ...filter, languages: [] })}
           />
           <CardGrid
@@ -391,82 +393,131 @@ function CardGrid({
   );
 }
 
-// Writing systems (real scripts, Latn/Cyrl/…) + a searchable language list.
-// Scripts are the primary pills; languages are many, so they default to the
-// major set (>=5M speakers) with a search box and a "show all" expander,
-// mirroring the Google Fonts language picker (language-support task).
+// Writing systems (real scripts, Latn/Cyrl/…). Script pills for the common
+// ones, plus a Browse all dialog over the full searchable list.
 function WritingSystemSection({
   scripts,
-  languages,
   selectedScripts,
-  selectedLanguages,
   onToggleScript,
-  onToggleLanguage,
   onResetScripts,
-  onResetLanguages,
 }: {
   scripts: [string, number][];
-  languages: [string, number][];
   selectedScripts: string[];
-  selectedLanguages: string[];
   onToggleScript: (v: string) => void;
-  onToggleLanguage: (v: string) => void;
   onResetScripts: () => void;
-  onResetLanguages: () => void;
 }) {
-  const [query, setQuery] = useState("");
-  const [showAll, setShowAll] = useState(false);
-
-  // Label scripts with human names; keep counts. Sort by count desc.
-  const scriptItems = useMemo(
+  // Label scripts with human names; keep counts. Already count-sorted.
+  const items = useMemo(
     () =>
       scripts.map(([code, count]) => [code, count, scriptLabel(code)] as const),
     [scripts]
   );
 
-  const filteredLangs = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const withLabels = languages.map(
-      ([id, count]) => [id, count, languageLabel(id)] as const
-    );
-    const matched = q
-      ? withLabels.filter(
-          ([id, , label]) =>
-            label.toLowerCase().includes(q) || id.toLowerCase().includes(q)
-        )
-      : withLabels;
-    // Default view: major languages only, unless searching or expanded.
-    const visible =
-      q || showAll
-        ? matched
-        : matched.filter(
-            ([id]) => languagePopulation(id) >= MAJOR_LANG_POPULATION
-          );
-    // Selected-first, then by name, so active pills stay reachable.
-    return [...visible].sort((a, b) => {
-      const sa = selectedLanguages.includes(a[0]) ? 0 : 1;
-      const sb = selectedLanguages.includes(b[0]) ? 0 : 1;
-      return sa - sb || a[2].localeCompare(b[2]);
-    });
-  }, [languages, query, showAll, selectedLanguages]);
+  return (
+    <FacetPickerSection
+      title="Writing system"
+      icon={GlobeHemisphereWestIcon}
+      items={items}
+      selected={selectedScripts}
+      onToggle={onToggleScript}
+      onReset={onResetScripts}
+      dialogTitle="Writing systems"
+      dialogDescription="Filter fonts by the scripts they support."
+      searchPlaceholder="Search writing systems"
+    />
+  );
+}
 
-  const hiddenCount = languages.length - filteredLangs.length;
+// Languages: a searchable list of hundreds of language ids. Pills show the
+// major languages (>=5M speakers); the Browse all dialog searches every one.
+function LanguageSection({
+  languages,
+  selectedLanguages,
+  onToggleLanguage,
+  onResetLanguages,
+}: {
+  languages: [string, number][];
+  selectedLanguages: string[];
+  onToggleLanguage: (v: string) => void;
+  onResetLanguages: () => void;
+}) {
+  // Full labelled list for the dialog (name-sorted).
+  const allItems = useMemo(
+    () =>
+      languages
+        .map(([id, count]) => [id, count, languageLabel(id)] as const)
+        .sort((a, b) => a[2].localeCompare(b[2])),
+    [languages]
+  );
+  // Sidebar pills show only the major languages (plus any selected minor ones,
+  // so an active pill stays visible and clearable).
+  const pillItems = useMemo(
+    () =>
+      allItems.filter(
+        ([id]) =>
+          languagePopulation(id) >= MAJOR_LANG_POPULATION ||
+          selectedLanguages.includes(id)
+      ),
+    [allItems, selectedLanguages]
+  );
 
+  return (
+    <FacetPickerSection
+      title="Language"
+      icon={TranslateIcon}
+      items={allItems}
+      pillItems={pillItems}
+      selected={selectedLanguages}
+      onToggle={onToggleLanguage}
+      onReset={onResetLanguages}
+      dialogTitle="Languages"
+      dialogDescription="Filter fonts by the languages they support."
+      searchPlaceholder="Search languages"
+    />
+  );
+}
+
+// A sidebar section that shows selectable pills for a facet dimension plus a
+// "Browse all" dialog over the full searchable, scrollable list. Shared by the
+// Writing system and Language sections. Each item is [value, count, label].
+type FacetItem = readonly [string, number, string];
+function FacetPickerSection({
+  title,
+  icon: Icon,
+  items,
+  pillItems,
+  selected,
+  onToggle,
+  onReset,
+  dialogTitle,
+  dialogDescription,
+  searchPlaceholder,
+}: {
+  title: string;
+  icon: Icon;
+  items: readonly FacetItem[];
+  // Which items to show as sidebar pills; defaults to all of `items`.
+  pillItems?: readonly FacetItem[];
+  selected: string[];
+  onToggle: (v: string) => void;
+  onReset: () => void;
+  dialogTitle: string;
+  dialogDescription: string;
+  searchPlaceholder: string;
+}) {
+  const pills = pillItems ?? items;
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
         <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase tracking-wide">
-          <GlobeHemisphereWestIcon className="size-4" />
-          Writing system
+          <Icon className="size-4" />
+          {title}
         </h2>
-        {(selectedScripts.length > 0 || selectedLanguages.length > 0) && (
+        {selected.length > 0 && (
           <button
             type="button"
-            onClick={() => {
-              onResetScripts();
-              onResetLanguages();
-            }}
-            aria-label="Reset writing system"
+            onClick={onReset}
+            aria-label={`Reset ${title}`}
             className="flex items-center gap-1 rounded-md px-2 py-1 font-mono text-muted-foreground text-xs transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted/50"
           >
             <XIcon className="size-3" />
@@ -475,15 +526,14 @@ function WritingSystemSection({
         )}
       </div>
 
-      {/* Script pills (labelled by human name, value is the ISO code). */}
       <div className="flex flex-wrap gap-1.5">
-        {scriptItems.map(([code, count, label]) => {
-          const on = selectedScripts.includes(code);
+        {pills.map(([value, count, label]) => {
+          const on = selected.includes(value);
           return (
             <button
-              key={code}
+              key={value}
               type="button"
-              onClick={() => onToggleScript(code)}
+              onClick={() => onToggle(value)}
               className={cn(
                 "flex items-center gap-1 rounded-md border px-2.5 py-1 text-xs transition-colors",
                 on
@@ -496,91 +546,46 @@ function WritingSystemSection({
             </button>
           );
         })}
-        <ScriptPickerDialog
-          scripts={scriptItems}
-          selected={selectedScripts}
-          onToggle={onToggleScript}
+        <FacetPickerDialog
+          items={items}
+          selected={selected}
+          onToggle={onToggle}
+          title={dialogTitle}
+          description={dialogDescription}
+          searchPlaceholder={searchPlaceholder}
         />
       </div>
-
-      {/* Language search + list. */}
-      {languages.length > 0 && (
-        <div className="flex flex-col gap-2">
-          <div className="relative">
-            <MagnifyingGlassIcon className="absolute top-1/2 left-2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search languages"
-              className="w-full rounded-md border bg-transparent py-1.5 pr-2 pl-7 text-xs outline-none focus:border-foreground"
-            />
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {filteredLangs.map(([id, count, label]) => {
-              const on = selectedLanguages.includes(id);
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => onToggleLanguage(id)}
-                  className={cn(
-                    "flex items-center gap-1 rounded-md border px-2.5 py-1 text-xs transition-colors",
-                    on
-                      ? "border-foreground bg-foreground text-background"
-                      : "text-muted-foreground hover:border-foreground hover:text-foreground"
-                  )}
-                >
-                  <span className="truncate">{label}</span>
-                  <span className="font-mono opacity-60">{count}</span>
-                </button>
-              );
-            })}
-          </div>
-          {!query && hiddenCount > 0 && (
-            <button
-              type="button"
-              onClick={() => setShowAll((v) => !v)}
-              className="flex w-fit items-center gap-1 text-muted-foreground text-xs hover:text-foreground"
-            >
-              <CaretDownIcon
-                className={cn(
-                  "size-3 transition-transform",
-                  showAll && "rotate-180"
-                )}
-              />
-              {showAll ? "Show major only" : `${hiddenCount} more`}
-            </button>
-          )}
-        </div>
-      )}
     </div>
   );
 }
 
-// A dialog for picking writing systems from a searchable, scrollable list.
-// Opened from the Writing system section's script row; each row is a toggle
-// that writes straight to the script filter, so changes reflect live behind
-// the dialog. The trigger sits inline with the pills.
-function ScriptPickerDialog({
-  scripts,
+// A dialog for picking a facet value from a searchable, scrollable list. Each
+// row toggles the filter live, so the grid narrows behind the open dialog.
+function FacetPickerDialog({
+  items,
   selected,
   onToggle,
+  title,
+  description,
+  searchPlaceholder,
 }: {
-  scripts: readonly (readonly [string, number, string])[];
+  items: readonly FacetItem[];
   selected: string[];
   onToggle: (v: string) => void;
+  title: string;
+  description: string;
+  searchPlaceholder: string;
 }) {
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return scripts;
-    return scripts.filter(
-      ([code, , label]) =>
-        label.toLowerCase().includes(q) || code.toLowerCase().includes(q)
+    if (!q) return items;
+    return items.filter(
+      ([value, , label]) =>
+        label.toLowerCase().includes(q) || value.toLowerCase().includes(q)
     );
-  }, [scripts, query]);
+  }, [items, query]);
 
   return (
     <Dialog>
@@ -597,10 +602,8 @@ function ScriptPickerDialog({
       />
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Writing systems</DialogTitle>
-          <DialogDescription>
-            Filter fonts by the scripts they support.
-          </DialogDescription>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
         <div className="relative">
@@ -609,7 +612,7 @@ function ScriptPickerDialog({
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search writing systems"
+            placeholder={searchPlaceholder}
             autoFocus
             className="w-full rounded-md border bg-transparent py-2 pr-2 pl-8 text-sm outline-none focus:border-foreground"
           />
@@ -619,16 +622,16 @@ function ScriptPickerDialog({
           <div className="flex flex-col gap-0.5">
             {filtered.length === 0 && (
               <p className="py-6 text-center text-muted-foreground text-sm">
-                No writing systems match “{query}”.
+                Nothing matches “{query}”.
               </p>
             )}
-            {filtered.map(([code, count, label]) => {
-              const on = selected.includes(code);
+            {filtered.map(([value, count, label]) => {
+              const on = selected.includes(value);
               return (
                 <button
-                  key={code}
+                  key={value}
                   type="button"
-                  onClick={() => onToggle(code)}
+                  onClick={() => onToggle(value)}
                   aria-pressed={on}
                   className={cn(
                     "flex items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors",
@@ -653,7 +656,7 @@ function ScriptPickerDialog({
                         on ? "opacity-70" : "text-muted-foreground"
                       )}
                     >
-                      {code}
+                      {value}
                     </span>
                   </span>
                   <span
