@@ -7,15 +7,30 @@ import {
   ToggleRight,
   Translate,
 } from "@phosphor-icons/react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { FilterState } from "@/lib/fonts/filter";
+import {
+  ensureFontLoaded,
+  previewFontFamily,
+  useFontLoaded,
+} from "@/lib/fonts/loader";
 import { cn } from "@/lib/utils";
 
 // Pills for facets with fewer than this many fonts stay hidden behind a
 // collapsible until the user opens it, unless they're already selected.
 const RARE_THRESHOLD = 5;
+
+// A representative Google Font per category, used to render "Aa" on each
+// Category card in a typeface typical of that class.
+const CATEGORY_SPECIMEN: Record<string, string> = {
+  Sans: "Inter",
+  Serif: "Playfair Display",
+  Display: "Bebas Neue",
+  Script: "Dancing Script",
+  Mono: "JetBrains Mono",
+};
 
 // Per-section pill ordering: by font count (default) or alphabetically.
 type SortMode = "count" | "alpha";
@@ -47,13 +62,10 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
     <aside className="flex h-full w-full min-w-0 flex-col text-sidebar-foreground">
       <ScrollArea className="min-h-0 flex-1">
         <div className="flex flex-col gap-8 p-4">
-          <Section
-            title="Category"
-            icon={Shapes}
+          <CategoryCards
             items={index.classes}
             selected={filter.classes}
             onToggle={(v) => toggle("classes", v)}
-            sortable={false}
           />
           <Section
             title="Properties"
@@ -88,6 +100,87 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
         </div>
       </ScrollArea>
     </aside>
+  );
+}
+
+// Category filter as large square, tappable cards. Each card writes "Aa" in a
+// typeface representative of that category. Multi-select is preserved: a card is
+// a toggle, not a radio.
+function CategoryCards({
+  items,
+  selected,
+  onToggle,
+}: {
+  items: [string, number][];
+  selected: string[];
+  onToggle: (v: string) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase tracking-wide">
+        <Shapes className="size-4" />
+        Category
+      </h2>
+      <div className="grid grid-cols-3 gap-1.5">
+        {items.map(([value, count]) => (
+          <CategoryCard
+            key={value}
+            value={value}
+            count={count}
+            on={selected.includes(value)}
+            onToggle={() => onToggle(value)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CategoryCard({
+  value,
+  count,
+  on,
+  onToggle,
+}: {
+  value: string;
+  count: number;
+  on: boolean;
+  onToggle: () => void;
+}) {
+  const specimen = CATEGORY_SPECIMEN[value];
+  const loaded = useFontLoaded(specimen ?? "");
+
+  useEffect(() => {
+    if (specimen) ensureFontLoaded(specimen, [400]);
+  }, [specimen]);
+
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-pressed={on}
+      className={cn(
+        "relative flex cursor-pointer flex-col items-center gap-2 rounded-md border px-2 py-3 text-center shadow-xs outline-none transition-[color,box-shadow]",
+        on ? "border-primary" : "border-input hover:border-foreground/40"
+      )}
+    >
+      <span
+        className="text-2xl leading-none"
+        style={
+          specimen
+            ? { fontFamily: previewFontFamily(specimen, loaded) }
+            : undefined
+        }
+      >
+        Aa
+      </span>
+      <span className="font-medium text-foreground text-xs leading-none">
+        {value}
+      </span>
+      <span className="font-mono text-[10px] text-muted-foreground leading-none">
+        {count}
+      </span>
+    </button>
   );
 }
 
