@@ -96,27 +96,21 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
             sortable={false}
             grid
           />
-          <Section
+          <CardGrid
             title="Weight"
             icon={TextAaIcon}
             items={index.weights}
             selected={filter.weights}
             onToggle={(v) => toggle("weights", v)}
             label={weightLabel}
-            sortable={false}
-            grid
-            spread
           />
-          <Section
+          <CardGrid
             title="Width"
             icon={ArrowsHorizontalIcon}
             items={index.widths}
             selected={filter.widths}
             onToggle={(v) => toggle("widths", v)}
             label={widthLabel}
-            sortable={false}
-            grid
-            spread
           />
           <Section
             title="Variable axes"
@@ -223,6 +217,61 @@ function CategoryCard({
   );
 }
 
+// Big-button grid (same shape as CategoryCards) for value dimensions like Weight
+// and Width. No font specimen — the card shows its label plus family count. All
+// cards render at once (no rare collapse): the value sets are small and fixed.
+function CardGrid({
+  title,
+  icon: Icon,
+  items,
+  selected,
+  onToggle,
+  label,
+}: {
+  title: string;
+  icon: Icon;
+  items: [string, number][];
+  selected: string[];
+  onToggle: (v: string) => void;
+  // Map a raw value to a display label (e.g. "700" -> "Bold").
+  label: (value: string) => string;
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase tracking-wide">
+        <Icon className="size-4" />
+        {title}
+      </h2>
+      <div className="grid grid-cols-3 gap-3">
+        {items.map(([value, count]) => {
+          const on = selected.includes(value);
+          return (
+            <button
+              key={value}
+              type="button"
+              onClick={() => onToggle(value)}
+              aria-pressed={on}
+              className={cn(
+                "relative flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border p-2 text-center shadow-xs outline-none transition-[color,box-shadow]",
+                on
+                  ? "border-primary"
+                  : "border-input hover:border-foreground/40"
+              )}
+            >
+              <span className="w-full truncate font-medium text-foreground text-xs leading-none">
+                {label(value)}
+              </span>
+              <span className="font-mono text-muted-foreground text-xs leading-none">
+                {count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function Section({
   title,
   icon: Icon,
@@ -232,7 +281,6 @@ function Section({
   sortable = true,
   grid,
   spread,
-  label,
 }: {
   title: string;
   icon: Icon;
@@ -245,8 +293,6 @@ function Section({
   grid?: boolean;
   // When true, spread name left / count right with a mono name.
   spread?: boolean;
-  // Map a raw value to a display label (e.g. "700" -> "Bold").
-  label?: (value: string) => string;
 }) {
   const [sort, setSort] = useState<SortMode>("count");
 
@@ -285,7 +331,6 @@ function Section({
         onToggle={onToggle}
         grid={grid}
         spread={spread}
-        label={label}
       />
     </div>
   );
@@ -297,7 +342,6 @@ function Pills({
   onToggle,
   grid,
   spread,
-  label,
 }: {
   items: [string, number][];
   selected: string[];
@@ -306,8 +350,6 @@ function Pills({
   // When true, push name left and count right (justify-between) and render the
   // name in a mono face. Used for Variable axes and OpenType features.
   spread?: boolean;
-  // Map a raw value to a display label (e.g. "700" -> "Bold").
-  label?: (value: string) => string;
 }) {
   const [showRare, setShowRare] = useState(false);
 
@@ -337,9 +379,7 @@ function Pills({
             : "text-muted-foreground hover:border-foreground hover:text-foreground"
         )}
       >
-        <span className={cn("truncate", spread && "font-mono")}>
-          {label ? label(value) : value}
-        </span>
+        <span className={cn("truncate", spread && "font-mono")}>{value}</span>
         <span className="font-mono opacity-60">{count}</span>
       </button>
     );
