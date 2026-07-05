@@ -51,7 +51,7 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
             />
           </Section>
 
-          <Section title="Language">
+          <Section title="Subsets">
             <Pills
               items={index.scripts}
               selected={filter.facets}
