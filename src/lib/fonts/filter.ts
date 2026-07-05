@@ -64,7 +64,7 @@ export const WIDTH_LABELS: Record<number, string> = {
   8: "ExtraExpanded",
   9: "UltraExpanded",
 };
-const WIDTH_STEP_PCT: Record<number, number> = {
+export const WIDTH_STEP_PCT: Record<number, number> = {
   1: 50,
   2: 62.5,
   3: 75,

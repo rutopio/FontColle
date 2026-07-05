@@ -12,6 +12,9 @@ interface Props {
   favorites: string[];
   onToggleFavorite: (id: string) => void;
   view: ViewMode;
+  // Sidebar-selected weight/width steps (click order), forwarded to each card.
+  selectedWeights: number[];
+  selectedWidths: number[];
 }
 
 // Grid column count matches the CSS breakpoints (md:2, lg:3). Row mode is always
@@ -36,6 +39,8 @@ export function FontGrid({
   favorites,
   onToggleFavorite,
   view,
+  selectedWeights,
+  selectedWidths,
 }: Props) {
   const listRef = useRef<HTMLDivElement>(null);
   const [cols, setCols] = useState(view === "row" ? 1 : 3);
@@ -103,6 +108,8 @@ export function FontGrid({
         previewText={previewText}
         isFavorite={favorites.includes(font.id)}
         onToggleFavorite={onToggleFavorite}
+        selectedWeights={selectedWeights}
+        selectedWidths={selectedWidths}
       />
     );
 

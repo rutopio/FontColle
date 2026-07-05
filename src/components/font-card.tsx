@@ -1,7 +1,8 @@
 import { DownloadSimpleIcon, HeartIcon } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
+import { WIDTH_STEP_PCT } from "@/lib/fonts/filter";
 import {
   ensureFontLoaded,
   previewFontFamily,
@@ -16,6 +17,10 @@ interface Props {
   previewText: string;
   isFavorite: boolean;
   onToggleFavorite: (id: string) => void;
+  // Sidebar-selected weight/width (single-select, so at most one each). The
+  // preview applies them (pain point 4 driven from the filter).
+  selectedWeights: number[];
+  selectedWidths: number[];
 }
 
 export function FontCard({
@@ -23,44 +28,34 @@ export function FontCard({
   previewText,
   isFavorite,
   onToggleFavorite,
+  selectedWeights,
+  selectedWidths,
 }: Props) {
-  // Weight/instance switcher (pain point 4). Build the option list from named
-  // instances when variable, else fall back to a single default.
-  const weightOptions = useMemo(() => {
-    const fromInstances = font.instances
-      .map((i) => ({
-        label: i.name ?? "Regular",
-        weight: i.coords.wght ?? 400,
-        coords: i.coords,
-      }))
-      // de-dup by weight for a compact switcher, prefer upright names
-      .filter(
-        (o, idx, arr) => arr.findIndex((x) => x.weight === o.weight) === idx
-      )
-      .sort((a, b) => a.weight - b.weight);
-    if (fromInstances.length) return fromInstances;
-    return [
-      { label: "Regular", weight: 400, coords: {} as Record<string, number> },
-    ];
-  }, [font.instances]);
+  // Weight/Width are single-select in the sidebar, so the preview simply applies
+  // the selected weight (default 400) and the selected width mapped onto this
+  // font's wdth axis (variable only — static fonts have no adjustable width).
+  const activeWeight = selectedWeights[0] ?? 400;
+
+  const widthCoord = useMemo(() => {
+    const wdth = font.axes.find((a) => a.tag === "wdth");
+    if (!wdth || wdth.min == null || wdth.max == null) return null;
+    const step = selectedWidths[0];
+    if (step == null) return null;
+    const pct = WIDTH_STEP_PCT[step];
+    if (pct == null) return null;
+    return Math.min(wdth.max, Math.max(wdth.min, pct));
+  }, [font.axes, selectedWidths]);
 
   useEffect(() => {
-    ensureFontLoaded(
-      font.name,
-      weightOptions.map((o) => o.weight)
-    );
-  }, [font.name, weightOptions]);
-
-  const [active, setActive] = useState(() => {
-    const reg = weightOptions.find((o) => o.weight === 400);
-    return reg ?? weightOptions[Math.floor(weightOptions.length / 2)];
-  });
+    ensureFontLoaded(font.name, [activeWeight]);
+  }, [font.name, activeWeight]);
 
   const fontLoaded = useFontLoaded(font.name);
   const previewStyle: React.CSSProperties = {
     fontFamily: previewFontFamily(font.name, fontLoaded),
-    fontWeight: active.weight,
-    fontVariationSettings: buildVariationSettings(active.coords),
+    fontWeight: activeWeight,
+    fontVariationSettings:
+      widthCoord != null ? `"wdth" ${widthCoord}` : undefined,
     // Smooth the weight/axis change instead of a hard jump.
     transition: "font-weight 200ms ease, font-variation-settings 200ms ease",
   };
@@ -138,29 +133,6 @@ export function FontCard({
         </div>
       )}
 
-      {weightOptions.length > 1 && (
-        <div className="flex flex-wrap gap-1">
-          {weightOptions.map((o) => (
-            <button
-              key={`${o.label}-${o.weight}`}
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                setActive(o);
-              }}
-              className={cn(
-                "rounded border px-2 py-0.5 font-mono text-xs transition-colors",
-                active === o
-                  ? "border-foreground bg-foreground text-background"
-                  : "text-muted-foreground hover:border-foreground"
-              )}
-            >
-              {o.weight}
-            </button>
-          ))}
-        </div>
-      )}
-
       <div className="flex flex-wrap gap-1">
         {font.isVariable && (
           <Badge variant="secondary" className="text-[10px]">
@@ -175,10 +147,4 @@ export function FontCard({
       </div>
     </Link>
   );
-}
-
-function buildVariationSettings(coords: Record<string, number>) {
-  const entries = Object.entries(coords).filter(([tag]) => tag !== "wght");
-  if (!entries.length) return undefined;
-  return entries.map(([tag, val]) => `"${tag}" ${val}`).join(", ");
 }

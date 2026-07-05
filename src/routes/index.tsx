@@ -233,6 +233,8 @@ function App() {
             favorites={favorites}
             onToggleFavorite={toggle}
             view={view}
+            selectedWeights={filter.weights.map(Number)}
+            selectedWidths={filter.widths.map(Number)}
           />
         )}
       </Column>

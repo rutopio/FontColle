@@ -71,6 +71,13 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
     onChange({ ...filter, [key]: next });
   };
 
+  // Radio-style: Weight and Width allow at most one value. Clicking the current
+  // selection clears it; clicking another replaces it.
+  const select = (key: "weights" | "widths", value: string) => {
+    const next = filter[key].includes(value) ? [] : [value];
+    onChange({ ...filter, [key]: next });
+  };
+
   return (
     <aside className="flex h-full w-full min-w-0 flex-col text-sidebar-foreground">
       <ScrollArea className="min-h-0 flex-1">
@@ -101,7 +108,7 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
             icon={TextAaIcon}
             items={index.weights}
             selected={filter.weights}
-            onToggle={(v) => toggle("weights", v)}
+            onToggle={(v) => select("weights", v)}
             label={weightLabel}
           />
           <CardGrid
@@ -109,7 +116,7 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
             icon={ArrowsHorizontalIcon}
             items={index.widths}
             selected={filter.widths}
-            onToggle={(v) => toggle("widths", v)}
+            onToggle={(v) => select("widths", v)}
             label={widthLabel}
           />
           <Section
@@ -242,6 +249,7 @@ function CardGrid({
         <Icon className="size-4" />
         {title}
       </h2>
+      {/* At most one value per section (enforced by the handler). */}
       <div className="grid grid-cols-3 gap-3">
         {items.map(([value, count]) => {
           const on = selected.includes(value);
