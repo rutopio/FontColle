@@ -108,7 +108,7 @@ function Section({
         </h2>
         {items.length > 1 && (
           <Tabs value={sort} onValueChange={(v) => setSort(v as SortMode)}>
-            <TabsList variant="underline">
+            <TabsList>
               <TabsTrigger value="count" className="text-xs">
                 Count
               </TabsTrigger>
