@@ -358,18 +358,6 @@ function FeatureSidebar({
                     <span className="flex-1 truncate text-right text-[11px] text-muted-foreground">
                       {featureName(tag)}
                     </span>
-                    <span
-                      className={
-                        on
-                          ? "relative h-3.5 w-6 shrink-0 rounded-full bg-foreground"
-                          : "relative h-3.5 w-6 shrink-0 rounded-full bg-border"
-                      }
-                    >
-                      <span
-                        className="absolute top-0.5 size-2.5 rounded-full bg-background transition-all"
-                        style={{ left: on ? "0.875rem" : "0.125rem" }}
-                      />
-                    </span>
                   </button>
                 );
               })}
