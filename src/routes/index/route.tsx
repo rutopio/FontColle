@@ -37,6 +37,7 @@ import {
   type FilterState,
   filterToSearch,
   parseFilterSearch,
+  queryRelevance,
   searchToFilter,
 } from "@/lib/fonts/filter";
 import { getAllFonts } from "@/lib/fonts/queries";
@@ -68,10 +69,18 @@ function App() {
   const view: ViewMode = search.view === "row" ? "row" : "grid";
   const sort = (search.sort as SortKey) ?? DEFAULT_SORT;
 
-  const results = useMemo(
-    () => sortFonts(applyFilters(fonts, filter), sort),
-    [fonts, filter, sort]
-  );
+  const results = useMemo(() => {
+    const filtered = applyFilters(fonts, filter);
+    const sorted = sortFonts(filtered, sort);
+    // With a search query, surface the best textual matches first (ignoring the
+    // sort dropdown for ranking), then fall back to the chosen sort as the
+    // tiebreaker. Stable sort keeps the sorted order within equal-relevance ties.
+    if (!filter.query.trim()) return sorted;
+    return [...sorted].sort(
+      (a, b) =>
+        queryRelevance(b, filter.query) - queryRelevance(a, filter.query)
+    );
+  }, [fonts, filter, sort]);
 
   // Mirror the URL-derived filter into shared context so the detail page's
   // sidebar can reflect what's selected on the list.
