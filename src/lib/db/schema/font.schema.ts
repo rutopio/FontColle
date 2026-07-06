@@ -15,6 +15,7 @@ export const family = sqliteTable(
     id: integer("id").primaryKey({ autoIncrement: true }),
     familyDir: text("family_dir").notNull().unique(), // repo dir, stable key
     name: text("name").notNull(),
+    displayName: text("display_name"), // GF full title when != name; else null
     designer: text("designer"),
     category: text("category"), // Google's coarse style
     primaryClass: text("primary_class").notNull(), // our re-derived class (§12)
@@ -52,7 +53,9 @@ export const family = sqliteTable(
 
     // False for families in the google/fonts repo but not served by Google Fonts
     // (renamed, retired, or not yet published). Set during seed from the API whitelist.
-    isPublished: integer("is_published", { mode: "boolean" }).notNull().default(true),
+    isPublished: integer("is_published", { mode: "boolean" })
+      .notNull()
+      .default(true),
     // Signals from the Google Fonts Developer API (absent in the GitHub repo).
     // 1-based ranks; null when the family isn't in the published list.
     popularityRank: integer("popularity_rank"),

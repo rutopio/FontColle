@@ -36,6 +36,7 @@ async function loadAllFonts(): Promise<FontRecord[]> {
       return {
         id: f.familyDir,
         name: f.name,
+        displayName: f.displayName,
         designer: f.designer,
         class: f.primaryClass,
         category: f.category,

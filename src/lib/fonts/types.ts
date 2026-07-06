@@ -15,6 +15,9 @@ export interface FontInstance {
 export interface FontRecord {
   id: string;
   name: string;
+  // Google Fonts' full specimen title when it differs from `name` (e.g. name
+  // "Playwrite BE VLG" -> "Playwrite België Vlaanderen"); null when identical.
+  displayName: string | null;
   designer: string | null;
   class: string;
   category: string | null;

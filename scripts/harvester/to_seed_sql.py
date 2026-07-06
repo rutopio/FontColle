@@ -32,7 +32,7 @@ def statements_for(r, now):
     weights = json.dumps(r.get("weights", []))
     cjk_cov = json.dumps(r.get("cjkCoverage", {}))
     cols = (
-        "family_dir,name,designer,category,primary_class,license,license_dir,"
+        "family_dir,name,display_name,designer,category,primary_class,license,license_dir,"
         "is_variable,subsets,primary_ttf,version,version_string,created_ms,"
         "modified_ms,date_added,weight_class,width_class,weights,fs_type,glyph_count,"
         "char_count,units_per_em,has_stat,primary_script,panose,cjk_coverage,"
@@ -40,7 +40,7 @@ def statements_for(r, now):
         "content_hash,updated_at"
     )
     vals = (
-        f"{q(fam)},{q(r['name'])},{q(r.get('designer'))},{q(r.get('category'))},"
+        f"{q(fam)},{q(r['name'])},{q(r.get('displayName'))},{q(r.get('designer'))},{q(r.get('category'))},"
         f"{q(r.get('class','Sans'))},{q(r.get('license'))},{q(r.get('licenseDir'))},"
         f"{q(bool(r.get('isVariable')))},{q(subsets)},{q(r.get('primaryTtf'))},"
         f"{q(r.get('version'))},{q(r.get('versionString'))},{q(r.get('createdMs'))},"

@@ -173,10 +173,11 @@ export function applyFilters(
 ): FontRecord[] {
   const q = f.query.trim().toLowerCase();
   return fonts.filter((font) => {
-    // Match the family name or the designer/creator.
+    // Match the family name, its Google Fonts display name, or the designer.
     if (
       q &&
       !font.name.toLowerCase().includes(q) &&
+      !font.displayName?.toLowerCase().includes(q) &&
       !font.designer?.toLowerCase().includes(q)
     )
       return false;

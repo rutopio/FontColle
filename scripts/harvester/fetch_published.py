@@ -22,6 +22,9 @@ Usage:
 import json, os, sys, urllib.request
 
 API = "https://www.googleapis.com/webfonts/v1/webfonts"
+# Unofficial batch endpoint (no key). The only source of the full specimen
+# title ("displayName"), which the Developer API / METADATA.pb both omit.
+METADATA = "https://fonts.google.com/metadata/fonts"
 
 
 def fetch_sorted(api_key, sort):
@@ -31,6 +34,19 @@ def fetch_sorted(api_key, sort):
     with urllib.request.urlopen(req, timeout=30) as r:
         data = json.loads(r.read().decode("utf-8"))
     return data.get("items", [])
+
+
+def fetch_display_names():
+    """family name -> displayName, only where displayName differs from the name."""
+    req = urllib.request.Request(METADATA, headers={"User-Agent": "font-harvester/1.0"})
+    with urllib.request.urlopen(req, timeout=30) as r:
+        data = json.loads(r.read().decode("utf-8"))
+    out = {}
+    for f in data.get("familyMetadataList", []):
+        fam, dn = f.get("family"), f.get("displayName")
+        if fam and dn and dn != fam:
+            out[fam] = dn
+    return out
 
 
 def main():
@@ -44,6 +60,8 @@ def main():
     by_pop = fetch_sorted(api_key, "popularity")
     print("fetching trending order…", file=sys.stderr)
     by_trend = fetch_sorted(api_key, "trending")
+    print("fetching display names…", file=sys.stderr)
+    display_names = fetch_display_names()
 
     # 1-based ranks keyed by display name.
     pop_rank = {it["family"]: i + 1 for i, it in enumerate(by_pop)}
@@ -58,6 +76,7 @@ def main():
             "lastModified": it.get("lastModified"),
             "category": it.get("category"),
             "variants": len(it.get("variants", [])),
+            "displayName": display_names.get(name),
         }
 
     out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(
