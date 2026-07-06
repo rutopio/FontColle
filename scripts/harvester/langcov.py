@@ -82,6 +82,35 @@ def script_label_map():
     return {code: s.name for code, s in _scripts().items()}
 
 
+@lru_cache(maxsize=1)
+def specimen_by_script():
+    """script code -> a representative specimen string, the way Google Fonts
+    shows fonts in their own script.
+
+    For each script we pick the highest-population language that carries a
+    gflanguages sample_text, preferring a full sentence (tester) over a shorter
+    masthead. Latin is intentionally omitted so Latin fonts keep the app's
+    English UDHR default on the frontend.
+    """
+    best = {}  # script -> (population, text)
+    for _lid, lang in _languages().items():
+        script = lang.script
+        if not script or script == "Latn":
+            continue
+        st = lang.sample_text
+        if not st:
+            continue
+        text = st.tester or st.masthead_full or st.masthead_partial or ""
+        text = text.strip()
+        if not text:
+            continue
+        pop = lang.population or 0
+        cur = best.get(script)
+        if cur is None or pop > cur[0]:
+            best[script] = (pop, text)
+    return {script: text for script, (_pop, text) in best.items()}
+
+
 def coverage(cmap_codepoints, subsets):
     """Return (languages, scripts, cjk_coverage) for one family.
 

@@ -43,4 +43,5 @@ export interface FontRecord {
   popularityRank: number | null; // 1 = most popular
   trendingRank: number | null; // 1 = fastest-growing usage
   lastModified: string | null; // API "yyyy-MM-dd"
+  specimen: string | null; // native-script sample text (null for Latin-only)
 }

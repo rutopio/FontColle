@@ -25,6 +25,10 @@ const UDHR_ART18 = {
 // of them specimens in its own script rather than a Latin fallback it may not
 // even cover well.
 export function specimenFor(font: FontRecord): string {
+  // Prefer the harvested native-script sample (gflanguages), which covers ~156
+  // scripts the hardcoded map below doesn't (Oriya, Tamil, Ethiopic, …).
+  if (font.specimen) return font.specimen;
+
   const has = (s: string) => font.subsets.includes(s);
 
   // Traditional (incl. Hong Kong) vs Simplified use different characters, so
