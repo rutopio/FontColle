@@ -54,6 +54,7 @@ export function FontGrid({
   // `fonts` changes and apply the animation class only during it.
   const [animating, setAnimating] = useState(false);
   const firstRun = useRef(true);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `fonts` is the trigger, not read in the body — the effect fires on result-set change to open the entrance-animation window.
   useEffect(() => {
     if (firstRun.current) {
       firstRun.current = false;
@@ -87,7 +88,7 @@ export function FontGrid({
     scrollMargin,
   });
 
-  // Re-measure when column count, view, or list offset changes.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: cols/scrollMargin/view are the re-measure triggers, not read in the body — a change to any must re-run measurement.
   useEffect(() => {
     virtualizer.measure();
   }, [cols, scrollMargin, view, virtualizer]);
@@ -119,18 +120,20 @@ export function FontGrid({
     // instead of showing half-streamed cards jumping around. The virtualizer
     // takes over with real cards once mounted.
     const count = view === "row" ? 8 : 9;
+    // Stable keys for the fixed, never-reordered placeholder set.
+    const keys = Array.from({ length: count }, (_, i) => `skeleton-${i}`);
     return (
       <div ref={listRef} className="flex-1">
         {view === "row" ? (
           <div className="flex flex-col">
-            {Array.from({ length: count }, (_, i) => (
-              <SkeletonLine key={i} />
+            {keys.map((k) => (
+              <SkeletonLine key={k} />
             ))}
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: count }, (_, i) => (
-              <SkeletonCard key={i} />
+            {keys.map((k) => (
+              <SkeletonCard key={k} />
             ))}
           </div>
         )}

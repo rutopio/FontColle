@@ -99,7 +99,8 @@ export function sortFonts(fonts: FontRecord[], key: SortKey): FontRecord[] {
     case "popularity":
       // Lower rank = more popular; unranked (null) sort last, then by name.
       return out.sort(
-        (a, b) => numCmp(a.popularityRank, b.popularityRank, false) || byName(a, b)
+        (a, b) =>
+          numCmp(a.popularityRank, b.popularityRank, false) || byName(a, b)
       );
     case "trending":
       return out.sort(
