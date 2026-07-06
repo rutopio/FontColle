@@ -93,26 +93,37 @@ def script_label_map():
     return {code: s.name for code, s in _scripts().items()}
 
 
+def _sample_string(st):
+    """Pick a sample sentence from a gflanguages sample_text, in the same field
+    order Google Fonts' specimen preview uses: `styles` (the UDHR preamble line
+    they show, "…recognition of the inherent dignity…") first, then fall back to
+    the tester / masthead lines. Returns "" when none is present."""
+    if not st:
+        return ""
+    return (
+        st.styles
+        or st.tester
+        or st.masthead_full
+        or st.masthead_partial
+        or ""
+    ).strip()
+
+
 @lru_cache(maxsize=1)
 def specimen_by_script():
     """script code -> a representative specimen string, the way Google Fonts
     shows fonts in their own script.
 
     For each script we pick the highest-population language that carries a
-    gflanguages sample_text, preferring a full sentence (tester) over a shorter
-    masthead. Latin is intentionally omitted so Latin fonts keep the app's
-    English UDHR default on the frontend.
+    gflanguages sample_text. Latin is intentionally omitted so Latin fonts keep
+    the app's English UDHR default on the frontend.
     """
     best = {}  # script -> (population, text)
     for _lid, lang in _languages().items():
         script = lang.script
         if not script or script == "Latn":
             continue
-        st = lang.sample_text
-        if not st:
-            continue
-        text = st.tester or st.masthead_full or st.masthead_partial or ""
-        text = text.strip()
+        text = _sample_string(lang.sample_text)
         if not text:
             continue
         pop = lang.population or 0
@@ -123,18 +134,16 @@ def specimen_by_script():
 
 
 def specimen_for_lang(lang_id):
-    """A single language's sample string (tester > masthead), or None.
+    """A single language's sample string, or None.
 
     Used for CJK, where the script alone is ambiguous: Hant covers Traditional
     Chinese, Cantonese and several regional variants, and the highest-population
     one (Wu) is not what Google Fonts shows. Keying off the font's specific
     language gives the canonical text (zh_Hant / yue_Hant / zh_Hans / …)."""
     lang = _languages().get(lang_id)
-    if not lang or not lang.sample_text:
+    if not lang:
         return None
-    st = lang.sample_text
-    text = (st.tester or st.masthead_full or st.masthead_partial or "").strip()
-    return text or None
+    return _sample_string(lang.sample_text) or None
 
 
 def coverage(cmap_codepoints, subsets):
