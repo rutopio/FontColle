@@ -50,6 +50,13 @@
       "when": 1783345745211,
       "tag": "0006_stiff_jazinda",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1783348813592,
+      "tag": "0007_exotic_legion",
+      "breakpoints": true
     }
   ]
 }

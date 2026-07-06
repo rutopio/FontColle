@@ -201,6 +201,7 @@ def apply_published_signals(records, published):
     if published is None:
         for r in records:
             r["isPublished"] = True
+            r["displayName"] = None
             r["popularityRank"] = None
             r["trendingRank"] = None
             r["lastModifiedApi"] = None
@@ -211,6 +212,7 @@ def apply_published_signals(records, published):
     for r in records:
         sig = published.get(r["name"].lower())
         r["isPublished"] = sig is not None
+        r["displayName"] = sig.get("displayName") if sig else None
         r["popularityRank"] = sig.get("popularity") if sig else None
         r["trendingRank"] = sig.get("trending") if sig else None
         r["lastModifiedApi"] = sig.get("lastModified") if sig else None
