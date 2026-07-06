@@ -5,8 +5,8 @@ import {
 } from "@phosphor-icons/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { FilterSidebar } from "@/components/filter/filter-sidebar";
 import { Column, FilterLayout } from "@/components/filter-layout";
-import { FilterSidebar } from "@/components/filter-sidebar";
 import { FontGrid, type ViewMode } from "@/components/font-grid";
 import { Button } from "@/components/ui/button";
 import {
