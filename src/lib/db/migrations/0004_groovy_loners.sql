@@ -1,0 +1,1 @@
+ALTER TABLE `family` ADD `is_published` integer DEFAULT true NOT NULL;

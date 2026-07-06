@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
   family,
@@ -16,7 +17,7 @@ import type { FontRecord } from "./types";
 async function loadAllFonts(): Promise<FontRecord[]> {
   const [families, axes, features, instances, languages, scripts] =
     await Promise.all([
-      db.select().from(family),
+      db.select().from(family).where(eq(family.isPublished, true)),
       db.select().from(familyAxis),
       db.select().from(familyFeature),
       db.select().from(familyInstance),
@@ -69,6 +70,9 @@ async function loadAllFonts(): Promise<FontRecord[]> {
         glyphCount: f.glyphCount,
         charCount: f.charCount,
         primaryScript: f.primaryScript,
+        popularityRank: f.popularityRank,
+        trendingRank: f.trendingRank,
+        lastModified: f.lastModified,
       };
     })
     .sort((a, b) => a.name.localeCompare(b.name));
