@@ -182,14 +182,28 @@ def apply_specimens(records):
     import langcov
 
     by_script = langcov.specimen_by_script()
+    # Cache per-language CJK specimens once.
+    by_lang = {
+        subset: langcov.specimen_for_lang(lang)
+        for subset, lang in langcov.SUBSET_TO_SPECIMEN_LANG.items()
+    }
     filled = 0
     for r in records:
-        # Only non-Latin-primary fonts get a native sample. A missing/Latin
-        # primary_script means a Latin font (it may still cover Cyrillic/Greek),
-        # which should keep the English default — otherwise a Latin face that
-        # merely includes Armenian would wrongly specimen in Armenian.
-        script = r.get("primaryScript")
-        text = by_script.get(script) if script and script != "Latn" else None
+        # CJK first: the script alone is ambiguous (Hant = Traditional Chinese,
+        # Cantonese, Wu, …), so key off the font's CJK subset to get the same
+        # canonical text Google Fonts shows (HK -> Cantonese, TC -> zh_Hant).
+        subsets = r.get("subsets") or []
+        text = next(
+            (by_lang[s] for s in subsets if by_lang.get(s)),
+            None,
+        )
+        # Otherwise, only non-Latin-primary fonts get a native sample. A missing/
+        # Latin primary_script means a Latin font (it may still cover Cyrillic/
+        # Greek), which should keep the English default — otherwise a Latin face
+        # that merely includes Armenian would wrongly specimen in Armenian.
+        if text is None:
+            script = r.get("primaryScript")
+            text = by_script.get(script) if script and script != "Latn" else None
         r["specimen"] = text
         if text:
             filled += 1
