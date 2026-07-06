@@ -58,6 +58,9 @@ export const family = sqliteTable(
     popularityRank: integer("popularity_rank"),
     trendingRank: integer("trending_rank"),
     lastModified: text("last_modified"), // API "yyyy-MM-dd", more current than date_added
+    // Sample text in the font's own script (gflanguages), like Google Fonts'
+    // non-Latin previews. Null for Latin-only fonts (frontend uses its default).
+    specimen: text("specimen"),
 
     contentHash: text("content_hash").notNull(),
     updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),

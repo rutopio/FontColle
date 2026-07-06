@@ -174,6 +174,28 @@ def load_published_map():
     return {name.lower(): sig for name, sig in raw.items()}
 
 
+def apply_specimens(records):
+    """Set a per-font specimen string in the font's own script, matching how
+    Google Fonts previews non-Latin families. Uses gflanguages sample text keyed
+    by the font's primary (or first non-Latin) script. Latin-only fonts get None
+    so the frontend keeps its English UDHR default."""
+    import langcov
+
+    by_script = langcov.specimen_by_script()
+    filled = 0
+    for r in records:
+        # Only non-Latin-primary fonts get a native sample. A missing/Latin
+        # primary_script means a Latin font (it may still cover Cyrillic/Greek),
+        # which should keep the English default — otherwise a Latin face that
+        # merely includes Armenian would wrongly specimen in Armenian.
+        script = r.get("primaryScript")
+        text = by_script.get(script) if script and script != "Latn" else None
+        r["specimen"] = text
+        if text:
+            filled += 1
+    print(f"specimens: {filled}/{len(records)} fonts given a native-script sample")
+
+
 def apply_published_signals(records, published):
     """Set is_published + popularity/trending ranks on each record in place."""
     if published is None:
@@ -204,6 +226,7 @@ if __name__ == "__main__":
     records = [to_record(r) for r in raw if r.get("name")]
 
     apply_published_signals(records, load_published_map())
+    apply_specimens(records)
 
     records.sort(key=lambda x: x["name"].lower())
     json.dump(records, open(out, "w"), indent=2, ensure_ascii=False)

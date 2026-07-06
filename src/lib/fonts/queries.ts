@@ -73,6 +73,7 @@ async function loadAllFonts(): Promise<FontRecord[]> {
         popularityRank: f.popularityRank,
         trendingRank: f.trendingRank,
         lastModified: f.lastModified,
+        specimen: f.specimen,
       };
     })
     .sort((a, b) => a.name.localeCompare(b.name));
