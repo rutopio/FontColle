@@ -15,6 +15,7 @@
     "db": "drizzle-kit",
     "db:apply:local": "wrangler d1 migrations apply font-finder-d1 --local",
     "db:apply:remote": "wrangler d1 migrations apply font-finder-d1 --remote",
+    "db:fetch-published": "python3 scripts/harvester/fetch_published.py",
     "db:seed:gen": "python3 scripts/harvester/to_seed_sql.py src/data/fonts.json src/lib/db/seed",
     "db:seed:local": "bash scripts/seed-d1.sh --local",
     "db:seed:remote": "bash scripts/seed-d1.sh --remote"

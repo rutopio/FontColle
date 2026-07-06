@@ -39,4 +39,8 @@ export interface FontRecord {
   glyphCount: number | null;
   charCount: number | null;
   primaryScript: string | null;
+  // Signals from the Google Fonts Developer API (null when not published).
+  popularityRank: number | null; // 1 = most popular
+  trendingRank: number | null; // 1 = fastest-growing usage
+  lastModified: string | null; // API "yyyy-MM-dd"
 }

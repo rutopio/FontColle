@@ -36,7 +36,7 @@ def statements_for(r, now):
         "is_variable,subsets,primary_ttf,version,version_string,created_ms,"
         "modified_ms,date_added,weight_class,width_class,weights,fs_type,glyph_count,"
         "char_count,units_per_em,has_stat,primary_script,panose,cjk_coverage,"
-        "content_hash,updated_at"
+        "is_published,popularity_rank,trending_rank,last_modified,content_hash,updated_at"
     )
     vals = (
         f"{q(fam)},{q(r['name'])},{q(r.get('designer'))},{q(r.get('category'))},"
@@ -46,7 +46,9 @@ def statements_for(r, now):
         f"{q(r.get('modifiedMs'))},{q(r.get('dateAdded'))},{q(r.get('weightClass'))},"
         f"{q(r.get('widthClass'))},{q(weights)},{q(r.get('fsType'))},{q(r.get('glyphCount'))},"
         f"{q(r.get('charCount'))},{q(r.get('unitsPerEm'))},{q(bool(r.get('hasStat')))},"
-        f"{q(r.get('primaryScript'))},{q(r.get('panose'))},{q(cjk_cov)},{q(chash)},{now}"
+        f"{q(r.get('primaryScript'))},{q(r.get('panose'))},{q(cjk_cov)},"
+        f"{q(bool(r.get('isPublished', True)))},{q(r.get('popularityRank'))},"
+        f"{q(r.get('trendingRank'))},{q(r.get('lastModifiedApi'))},{q(chash)},{now}"
     )
     update = ",".join(
         f"{c}=excluded.{c}"

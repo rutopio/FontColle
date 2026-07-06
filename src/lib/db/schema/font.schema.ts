@@ -50,12 +50,22 @@ export const family = sqliteTable(
     // display. Supported languages/scripts live in reverse-index tables below.
     cjkCoverage: text("cjk_coverage"),
 
+    // False for families in the google/fonts repo but not served by Google Fonts
+    // (renamed, retired, or not yet published). Set during seed from the API whitelist.
+    isPublished: integer("is_published", { mode: "boolean" }).notNull().default(true),
+    // Signals from the Google Fonts Developer API (absent in the GitHub repo).
+    // 1-based ranks; null when the family isn't in the published list.
+    popularityRank: integer("popularity_rank"),
+    trendingRank: integer("trending_rank"),
+    lastModified: text("last_modified"), // API "yyyy-MM-dd", more current than date_added
+
     contentHash: text("content_hash").notNull(),
     updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
   },
   (t) => [
     index("family_class_idx").on(t.primaryClass),
     index("family_variable_idx").on(t.isVariable),
+    index("family_popularity_idx").on(t.popularityRank),
   ]
 );
 

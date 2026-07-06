@@ -5,7 +5,7 @@ Reads stress_output.json / harvest_output.json (list of raw records) and emits
 public/fonts.json: a compact array the MVP frontend reads directly. Also derives
 the §12 facets (variable, has-italic, axis facets, feature facets, script coverage).
 """
-import json, sys
+import json, os, sys
 
 # Human-friendly feature labels for the ones we surface as facets
 FEATURE_FACETS = {
@@ -160,11 +160,51 @@ def write_label_maps(records, out):
     print(f"wrote {len(scripts_out)} scripts, {len(langs_out)} languages to {d}")
 
 
+def load_published_map():
+    """Load the published-family signals (from fetch_published.py).
+
+    Returns a dict keyed by lowercase display name → {popularity, trending,
+    lastModified, ...}, or None if the file doesn't exist (all families treated
+    as published, with no ranking signals).
+    """
+    path = os.path.join(os.path.dirname(__file__), "published.json")
+    if not os.path.exists(path):
+        return None
+    raw = json.load(open(path))
+    return {name.lower(): sig for name, sig in raw.items()}
+
+
+def apply_published_signals(records, published):
+    """Set is_published + popularity/trending ranks on each record in place."""
+    if published is None:
+        for r in records:
+            r["isPublished"] = True
+            r["popularityRank"] = None
+            r["trendingRank"] = None
+            r["lastModifiedApi"] = None
+        print("no published.json found — all families marked as published, no ranks")
+        return
+
+    pub_count = 0
+    for r in records:
+        sig = published.get(r["name"].lower())
+        r["isPublished"] = sig is not None
+        r["popularityRank"] = sig.get("popularity") if sig else None
+        r["trendingRank"] = sig.get("trending") if sig else None
+        r["lastModifiedApi"] = sig.get("lastModified") if sig else None
+        if sig is not None:
+            pub_count += 1
+    print(f"published whitelist: {pub_count}/{len(records)} families marked as published")
+
+
 if __name__ == "__main__":
     src = sys.argv[1] if len(sys.argv) > 1 else "stress_output.json"
     out = sys.argv[2] if len(sys.argv) > 2 else "fonts.json"
     raw = json.load(open(src))
     records = [to_record(r) for r in raw if r.get("name")]
+
+    apply_published_signals(records, load_published_map())
+
     records.sort(key=lambda x: x["name"].lower())
     json.dump(records, open(out, "w"), indent=2, ensure_ascii=False)
     print(f"wrote {len(records)} records to {out}")

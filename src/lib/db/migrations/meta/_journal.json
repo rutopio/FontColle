@@ -29,6 +29,20 @@
       "when": 1783287653183,
       "tag": "0003_bent_white_tiger",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1783342554027,
+      "tag": "0004_groovy_loners",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1783344363879,
+      "tag": "0005_simple_black_bird",
+      "breakpoints": true
     }
   ]
 }
