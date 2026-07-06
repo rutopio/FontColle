@@ -35,6 +35,17 @@ SUBSET_TO_CJK_LANG = {
 # CJK language ids we also report a coverage ratio for (progressive display).
 CJK_RATIO_LANGS = ["zh_Hant", "zh_Hans", "ja_Jpan", "ko_Kore"]
 
+# CJK subset tag -> the language whose sample text we specimen the font in,
+# matching Google Fonts. Hong Kong shows Cantonese (yue_Hant), not the Wu text
+# that would win a raw Hant-by-population pick.
+SUBSET_TO_SPECIMEN_LANG = {
+    "chinese-hongkong": "yue_Hant",
+    "chinese-traditional": "zh_Hant",
+    "chinese-simplified": "zh_Hans",
+    "japanese": "ja_Jpan",
+    "korean": "ko_Kore",
+}
+
 
 @lru_cache(maxsize=1)
 def _languages():
@@ -109,6 +120,21 @@ def specimen_by_script():
         if cur is None or pop > cur[0]:
             best[script] = (pop, text)
     return {script: text for script, (_pop, text) in best.items()}
+
+
+def specimen_for_lang(lang_id):
+    """A single language's sample string (tester > masthead), or None.
+
+    Used for CJK, where the script alone is ambiguous: Hant covers Traditional
+    Chinese, Cantonese and several regional variants, and the highest-population
+    one (Wu) is not what Google Fonts shows. Keying off the font's specific
+    language gives the canonical text (zh_Hant / yue_Hant / zh_Hans / …)."""
+    lang = _languages().get(lang_id)
+    if not lang or not lang.sample_text:
+        return None
+    st = lang.sample_text
+    text = (st.tester or st.masthead_full or st.masthead_partial or "").strip()
+    return text or None
 
 
 def coverage(cmap_codepoints, subsets):
