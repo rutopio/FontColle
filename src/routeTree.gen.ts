@@ -9,32 +9,32 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as FontIdRouteImport } from './routes/$fontId'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as FontIdRouteRouteImport } from './routes/$fontId/route'
+import { Route as IndexRouteRouteImport } from './routes/index/route'
 
-const FontIdRoute = FontIdRouteImport.update({
+const FontIdRouteRoute = FontIdRouteRouteImport.update({
   id: '/$fontId',
   path: '/$fontId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
+const IndexRouteRoute = IndexRouteRouteImport.update({
   id: '/',
-  path: '/',
+  path: '',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/$fontId': typeof FontIdRoute
+  '/': typeof IndexRouteRoute
+  '/$fontId': typeof FontIdRouteRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/$fontId': typeof FontIdRoute
+  '/': typeof IndexRouteRoute
+  '/$fontId': typeof FontIdRouteRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/$fontId': typeof FontIdRoute
+  '/': typeof IndexRouteRoute
+  '/$fontId': typeof FontIdRouteRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -45,8 +45,8 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  FontIdRoute: typeof FontIdRoute
+  IndexRouteRoute: typeof IndexRouteRoute
+  FontIdRouteRoute: typeof FontIdRouteRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -55,22 +55,22 @@ declare module '@tanstack/react-router' {
       id: '/$fontId'
       path: '/$fontId'
       fullPath: '/$fontId'
-      preLoaderRoute: typeof FontIdRouteImport
+      preLoaderRoute: typeof FontIdRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
       id: '/'
-      path: '/'
+      path: ''
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+      preLoaderRoute: typeof IndexRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  FontIdRoute: FontIdRoute,
+  IndexRouteRoute: IndexRouteRoute,
+  FontIdRouteRoute: FontIdRouteRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
