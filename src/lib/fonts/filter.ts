@@ -167,6 +167,40 @@ export function parseFilterSearch(raw: Record<string, unknown>): FilterSearch {
   };
 }
 
+// Relevance of a font to a search query, higher = better. Name/display-name
+// matches rank above designer-only matches, and exact/prefix/word-boundary
+// matches rank above a mid-word substring, so "hk" surfaces "Noto Sans HK"
+// ahead of the many designers whose names merely contain "hk". Returns 0 when
+// the query matches nothing (the caller only scores rows that already passed
+// the text filter, so 0 means "designer match with no name hit").
+export function queryRelevance(font: FontRecord, rawQuery: string): number {
+  const q = rawQuery.trim().toLowerCase();
+  if (!q) return 0;
+
+  const names = [font.name, font.displayName].filter((n): n is string => !!n);
+  let best = 0;
+  for (const name of names) {
+    const n = name.toLowerCase();
+    const idx = n.indexOf(q);
+    if (idx < 0) continue;
+    let score: number;
+    if (n === q)
+      score = 100; // exact name
+    else if (idx === 0)
+      score = 80; // name starts with query
+    else if (/\s/.test(n[idx - 1] ?? ""))
+      score = 60; // word-boundary (e.g. " HK")
+    else score = 40; // mid-word substring
+    // Shorter names with the same match tier are a tighter fit.
+    score += Math.max(0, 10 - n.length / 8);
+    best = Math.max(best, score);
+  }
+  if (best > 0) return best;
+
+  // Designer-only match: weakest, so name hits always come first.
+  return font.designer?.toLowerCase().includes(q) ? 10 : 0;
+}
+
 export function applyFilters(
   fonts: FontRecord[],
   f: FilterState
