@@ -189,10 +189,17 @@ def apply_specimens(records):
     }
     filled = 0
     for r in records:
-        # CJK first: the script alone is ambiguous (Hant = Traditional Chinese,
+        subsets = r.get("subsets") or []
+        # Emoji fonts (only non-menu subset is "emoji") preview as emoji, like
+        # Google Fonts, not any linguistic sample.
+        non_menu = [s for s in subsets if s != "menu"]
+        if non_menu == ["emoji"]:
+            r["specimen"] = langcov.EMOJI_SAMPLE
+            filled += 1
+            continue
+        # CJK next: the script alone is ambiguous (Hant = Traditional Chinese,
         # Cantonese, Wu, …), so key off the font's CJK subset to get the same
         # canonical text Google Fonts shows (HK -> Cantonese, TC -> zh_Hant).
-        subsets = r.get("subsets") or []
         text = next(
             (by_lang[s] for s in subsets if by_lang.get(s)),
             None,

@@ -1,5 +1,9 @@
 import type { FontRecord } from "./types";
 
+// Emoji fonts (Noto Color Emoji / Noto Emoji) have no linguistic sample; Google
+// Fonts previews them with a fixed emoji string, so we do the same.
+const EMOJI_SAMPLE = "🥰💀✌️🌴🐢🐐🍄⚽🍻👑📸😬👀🚨🏡🕊️🏆😻🌟🧿🍀🎨🍜";
+
 // Default specimen text, like Google Fonts: Article 18 of the Universal
 // Declaration of Human Rights, shown in a language the font actually supports.
 // Falls back to the Latin (English) line.
@@ -21,31 +25,32 @@ const UDHR_ART18 = {
   korean: "모든 사람은 사상, 양심 및 종교의 자유에 대한 권리를 가진다.",
 } as const;
 
-// Pick by the font's subsets, non-Latin scripts first so a font built for one
-// of them specimens in its own script rather than a Latin fallback it may not
-// even cover well.
+// A font's primaryScript (ISO 15924) -> the hardcoded sample text for that
+// script. Only used as a fallback; the harvested `font.specimen` covers far more
+// scripts. Latin and any script not listed fall through to the Latin default.
+const SCRIPT_SPECIMEN: Record<string, string> = {
+  Hant: UDHR_ART18.chineseTraditional,
+  Hans: UDHR_ART18.chineseSimplified,
+  Jpan: UDHR_ART18.japanese,
+  Kore: UDHR_ART18.korean,
+  Arab: UDHR_ART18.arabic,
+  Hebr: UDHR_ART18.hebrew,
+  Thai: UDHR_ART18.thai,
+  Deva: UDHR_ART18.devanagari,
+  Grek: UDHR_ART18.greek,
+  Cyrl: UDHR_ART18.cyrillic,
+};
+
+// The sample sentence to preview a font with. Prefer the harvested native-script
+// sample (gflanguages, ~156 scripts). Otherwise fall back by the font's PRIMARY
+// script — not its subset list: Latin faces like Inter/Roboto also cover Greek
+// or Hebrew, but Google Fonts (and we) specimen them in Latin, so only a font
+// whose primary script is non-Latin gets a non-Latin sample.
 export function specimenFor(font: FontRecord): string {
-  // Prefer the harvested native-script sample (gflanguages), which covers ~156
-  // scripts the hardcoded map below doesn't (Oriya, Tamil, Ethiopic, …).
   if (font.specimen) return font.specimen;
-
-  const has = (s: string) => font.subsets.includes(s);
-
-  // Traditional (incl. Hong Kong) vs Simplified use different characters, so
-  // branch on the specific chinese-* subset rather than lumping them together.
-  if (has("chinese-traditional") || has("chinese-hongkong")) {
-    return UDHR_ART18.chineseTraditional;
-  }
-  if (font.subsets.some((s) => s.startsWith("chinese"))) {
-    return UDHR_ART18.chineseSimplified;
-  }
-  if (has("japanese")) return UDHR_ART18.japanese;
-  if (has("korean")) return UDHR_ART18.korean;
-  if (has("arabic")) return UDHR_ART18.arabic;
-  if (has("hebrew")) return UDHR_ART18.hebrew;
-  if (has("thai")) return UDHR_ART18.thai;
-  if (has("devanagari")) return UDHR_ART18.devanagari;
-  if (has("greek")) return UDHR_ART18.greek;
-  if (has("cyrillic")) return UDHR_ART18.cyrillic;
-  return UDHR_ART18.latin;
+  // Emoji-only fonts (their sole non-menu subset is "emoji") preview as emoji.
+  const nonMenu = font.subsets.filter((s) => s !== "menu");
+  if (nonMenu.length === 1 && nonMenu[0] === "emoji") return EMOJI_SAMPLE;
+  const primary = font.primaryScript;
+  return (primary && SCRIPT_SPECIMEN[primary]) || UDHR_ART18.latin;
 }

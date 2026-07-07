@@ -35,6 +35,10 @@ SUBSET_TO_CJK_LANG = {
 # CJK language ids we also report a coverage ratio for (progressive display).
 CJK_RATIO_LANGS = ["zh_Hant", "zh_Hans", "ja_Jpan", "ko_Kore"]
 
+# Emoji fonts have no linguistic sample; Google Fonts previews them with a fixed
+# emoji string, so we mirror it (see Noto Color Emoji / Noto Emoji specimen pages).
+EMOJI_SAMPLE = "🥰💀✌️🌴🐢🐐🍄⚽🍻👑📸😬👀🚨🏡🕊️🏆😻🌟🧿🍀🎨🍜"
+
 # CJK subset tag -> the language whose sample text we specimen the font in,
 # matching Google Fonts. Hong Kong shows Cantonese (yue_Hant), not the Wu text
 # that would win a raw Hant-by-population pick.
