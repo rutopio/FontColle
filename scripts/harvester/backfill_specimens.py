@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 """One-shot re-derivation of the `specimen` field on src/data/fonts.json.
 
-The previous specimen picked the highest-population language per script, which
-gave every Traditional-Chinese (Hant) font the Wu-Chinese UDHR text instead of
-the canonical zh_Hant / yue_Hant. This recomputes specimens with the corrected
-CJK-subset-based logic (see langcov.SUBSET_TO_SPECIMEN_LANG) without a full
-reharvest.
+Matches how Google Fonts previews a family: by its primary script, using the
+gflanguages `styles` sample (the UDHR preamble line Google shows). CJK is keyed
+off the font's chinese-* / japanese / korean subset instead of raw script, since
+Hant is ambiguous (Traditional Chinese vs Cantonese vs Wu) — HK -> Cantonese,
+TC -> zh_Hant, SC -> zh_Hans. Latin-primary fonts get null (English default).
+
+Mirrors to_dataset.apply_specimens so the shipped dataset can be fixed without a
+full reharvest.
 
 Usage:
     python3 backfill_specimens.py [path/to/fonts.json]
@@ -33,10 +36,14 @@ def main():
     changed = 0
     for r in records:
         subsets = r.get("subsets") or []
-        text = next((by_lang[s] for s in subsets if by_lang.get(s)), None)
-        if text is None:
-            script = r.get("primaryScript")
-            text = by_script.get(script) if script and script != "Latn" else None
+        non_menu = [s for s in subsets if s != "menu"]
+        if non_menu == ["emoji"]:
+            text = langcov.EMOJI_SAMPLE
+        else:
+            text = next((by_lang[s] for s in subsets if by_lang.get(s)), None)
+            if text is None:
+                script = r.get("primaryScript")
+                text = by_script.get(script) if script and script != "Latn" else None
         if r.get("specimen") != text:
             changed += 1
         r["specimen"] = text
