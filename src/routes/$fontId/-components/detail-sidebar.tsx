@@ -5,10 +5,10 @@ import {
   XIcon,
 } from "@phosphor-icons/react";
 import { useMemo } from "react";
+import { EditableValue } from "@/components/ui/editable-value";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { DEFAULT_ON, featureName } from "@/lib/fonts/features";
 import type { FontRecord } from "@/lib/fonts/types";
-import { EditableValue } from "./editable-value";
 
 // Preset values offered in the click-to-edit dropdowns.
 const SIZE_PRESETS = [

@@ -72,7 +72,7 @@ export function FeatureSection({
                 className={cn(
                   "flex min-w-0 items-center justify-between gap-1 rounded-md border px-2.5 py-1 text-xs transition-colors",
                   on
-                    ? "border-foreground bg-foreground text-background"
+                    ? "border-primary bg-muted text-foreground"
                     : "text-muted-foreground hover:border-foreground hover:text-foreground"
                 )}
               >
