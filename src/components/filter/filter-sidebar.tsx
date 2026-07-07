@@ -6,6 +6,7 @@ import {
 } from "@phosphor-icons/react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { FilterState } from "@/lib/fonts/filter";
+import { useScrollReset } from "@/lib/use-scroll-reset";
 import { CardGrid } from "./card-grid";
 import { CategoryCards } from "./category-cards";
 import { weightLabel, widthLabel } from "./constants";
@@ -102,9 +103,13 @@ export function FilterSidebar({
     onChange({ ...filter, [key]: filter[key].filter((v) => !own.has(v)) });
   };
 
+  // Always open at the top; don't let router scroll restoration carry the
+  // sidebar's position across list <-> detail navigation.
+  const viewportRef = useScrollReset<HTMLDivElement>();
+
   return (
     <aside className="flex h-full w-full min-w-0 flex-col text-sidebar-foreground">
-      <ScrollArea className="min-h-0 flex-1">
+      <ScrollArea viewportRef={viewportRef} className="min-h-0 flex-1">
         <div className="flex flex-col gap-12 p-4">
           <CategoryCards
             items={index.classes}
