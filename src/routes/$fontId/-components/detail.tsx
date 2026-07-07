@@ -203,6 +203,48 @@ export function Detail({
       {(font.scripts.length > 0 || font.languages.length > 0) && (
         <LanguageSupport font={font} />
       )}
+
+      {/* NAMED INSTANCES, ROW VIEW — one instance per block: its label on the
+          first line, a large preview of it on the second. */}
+      {font.instances.length > 0 && (
+        <Panel label="Named instances" count={font.instances.length}>
+          <div className="flex flex-col">
+            {font.instances.map((inst) => (
+              <button
+                key={`row:${inst.italic ? "i" : "u"}:${inst.name}`}
+                type="button"
+                onClick={() => onLoadInstance(inst.coords, inst.italic)}
+                className="flex flex-col gap-1 overflow-hidden border-border border-t py-3 text-left transition-colors first:border-t-0 hover:bg-muted/40"
+              >
+                <span className="flex items-baseline gap-2">
+                  <span className="font-mono text-sm">{inst.name}</span>
+                  <span className="truncate font-mono text-muted-foreground text-xs">
+                    {Object.entries(inst.coords)
+                      .map(([t, v]) => `${t} ${v}`)
+                      .join("  ")}
+                  </span>
+                </span>
+                <span
+                  dir="auto"
+                  className="truncate text-start text-3xl leading-tight"
+                  style={{
+                    fontFamily: previewFontFamily(font.name, fontLoaded),
+                    fontWeight: inst.coords.wght
+                      ? Math.round(inst.coords.wght)
+                      : undefined,
+                    fontStyle: inst.italic ? "italic" : undefined,
+                    fontVariationSettings: Object.entries(inst.coords)
+                      .map(([t, v]) => `"${t}" ${v}`)
+                      .join(", "),
+                  }}
+                >
+                  {specimen}
+                </span>
+              </button>
+            ))}
+          </div>
+        </Panel>
+      )}
     </Column>
   );
 }
