@@ -1,4 +1,4 @@
-import { HeartIcon } from "@phosphor-icons/react";
+import { DownloadSimpleIcon, HeartIcon } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -37,14 +37,20 @@ export function FontRow({
     <Link
       to="/$fontId"
       params={{ fontId: font.id }}
-      className="flex h-28 flex-col justify-center gap-3 overflow-hidden border-b transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:outline-none"
+      className="flex h-28 px-4 flex-col justify-center gap-3 overflow-hidden border-b transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:outline-none"
     >
       <div className="flex items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-2">
-          <h3 className="truncate font-medium text-sm">{font.name}</h3>
           <Badge variant="secondary" className="shrink-0 text-[10px]">
             {font.class}
           </Badge>
+          <h3 className="shrink-0 font-medium text-sm">{font.name}</h3>
+          {font.designer && (
+            <span className="truncate text-muted-foreground text-xs">
+              {font.designer}
+            </span>
+          )}
+
           {font.isVariable && (
             <Badge variant="outline" className="shrink-0 text-[10px]">
               {font.axes.length} axes
@@ -54,20 +60,43 @@ export function FontRow({
             {font.features.length} features
           </span>
         </div>
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            onToggleFavorite(font.id);
-          }}
-          aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
-          className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <HeartIcon
-            weight={isFavorite ? "fill" : "regular"}
-            className={cn("size-5", isFavorite && "text-red-500")}
-          />
-        </button>
+        <div className="flex shrink-0 items-center gap-4">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              onToggleFavorite(font.id);
+            }}
+            aria-label={
+              isFavorite ? "Remove from favorites" : "Add to favorites"
+            }
+            className="text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <HeartIcon
+              weight={isFavorite ? "fill" : "regular"}
+              className={cn("size-5", isFavorite && "text-red-500")}
+            />
+          </button>
+          {/* A button, not an <a>: the whole row is already a <Link> (an
+              <a>), and <a> can't nest <a> (hydration error). Open Google Fonts
+              in a new tab and stop the click from triggering row navigation. */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              window.open(
+                `https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`,
+                "_blank",
+                "noreferrer"
+              );
+            }}
+            aria-label="Download on Google Fonts"
+            className="text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <DownloadSimpleIcon className="size-5" />
+          </button>
+        </div>
       </div>
 
       {fontLoaded ? (

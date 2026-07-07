@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { scriptLabel, scriptPopulation } from "@/lib/fonts/labels";
 import { FacetPickerSection } from "./facet-picker";
 
-// Writing systems (real scripts, Latn/Cyrl/…). Pills show the top 15 by
+// Writing systems (real scripts, Latn/Cyrl/…). Pills show the top 10 by
 // real-world speaker population (summed per script from gflanguages), plus a
 // Browse all dialog over the full searchable list.
 export function WritingSystemSection({
@@ -36,6 +36,7 @@ export function WritingSystemSection({
       dialogDescription="Filter fonts by the scripts they support."
       searchPlaceholder="Search writing systems"
       rankBy={scriptPopulation}
+      topN={10}
     />
   );
 }

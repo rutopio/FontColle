@@ -63,9 +63,7 @@ export function FacetPickerSection({
     () =>
       new Set(
         [...items]
-          .sort((a, b) =>
-            rankBy ? rank(b[0]) - rank(a[0]) : b[1] - a[1]
-          )
+          .sort((a, b) => (rankBy ? rank(b[0]) - rank(a[0]) : b[1] - a[1]))
           .slice(0, TOP_N)
           .map((it) => it[0])
       ),
@@ -95,7 +93,9 @@ export function FacetPickerSection({
         onToggleSort={() => setSort((s) => (s === "count" ? "alpha" : "count"))}
       />
 
-      <div className="flex flex-wrap gap-1.5">
+      {/* Two per row, like OpenType features (which is three). Equal-width
+          cells that clip long labels; the Browse all trigger spans both. */}
+      <div className="grid grid-cols-2 gap-1.5">
         {/* Top-N most common values as toggleable pills; click to toggle. */}
         {visiblePills.map(([value, count, label]) => {
           const on = selected.includes(value);
@@ -105,7 +105,7 @@ export function FacetPickerSection({
               type="button"
               onClick={() => onToggle(value)}
               className={cn(
-                "flex items-center gap-1 rounded-md border px-2.5 py-1 text-xs transition-colors",
+                "flex min-w-0 items-center justify-between gap-1 rounded-md border px-2.5 py-1 text-xs transition-colors",
                 on
                   ? "border-primary bg-muted text-foreground"
                   : "text-muted-foreground hover:border-foreground hover:text-foreground"
@@ -116,14 +116,16 @@ export function FacetPickerSection({
             </button>
           );
         })}
-        <FacetPickerDialog
-          items={items}
-          selected={selected}
-          onToggle={onToggle}
-          title={dialogTitle}
-          description={dialogDescription}
-          searchPlaceholder={searchPlaceholder}
-        />
+        <div className="col-span-2">
+          <FacetPickerDialog
+            items={items}
+            selected={selected}
+            onToggle={onToggle}
+            title={dialogTitle}
+            description={dialogDescription}
+            searchPlaceholder={searchPlaceholder}
+          />
+        </div>
       </div>
     </div>
   );

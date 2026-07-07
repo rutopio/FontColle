@@ -110,7 +110,7 @@ export function FontCard({
       className="flex h-72 flex-col gap-4 overflow-hidden rounded-lg border bg-card p-5 transition-colors hover:border-foreground focus-visible:border-foreground focus-visible:outline-none"
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
+        <div className="min-w-0 flex flex-col gap-2">
           <div className="flex items-center gap-2">
             <h3 className="truncate font-medium text-sm">{font.name}</h3>
             <Badge variant="secondary" className="shrink-0 text-[10px]">
@@ -120,13 +120,13 @@ export function FontCard({
               {font.features.length} features
             </span>
           </div>
-          {font.designer && (
-            <p className="truncate text-muted-foreground text-xs">
-              {font.designer}
-            </p>
-          )}
+          {/* {font.designer && ( */}
+          <p className="truncate text-muted-foreground text-xs">
+            {font.designer ? font.designer : ""}
+          </p>
+          {/* )} */}
         </div>
-        <div className="flex shrink-0 items-center gap-1">
+        <div className="flex shrink-0 items-center gap-4">
           <button
             type="button"
             onClick={(e) => {

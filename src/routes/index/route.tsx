@@ -207,7 +207,7 @@ function App() {
 
             <div className="ml-auto flex items-center gap-2">
               <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
-                <SelectTrigger className="h-8 w-[176px]" aria-label="Sort by">
+                <SelectTrigger className="h-8 w-56" aria-label="Sort by">
                   <SelectValue placeholder="Sort">
                     {SORT_LABELS[sort]}
                   </SelectValue>
@@ -300,7 +300,7 @@ function SearchInput({
   };
 
   return (
-    <div className="relative w-56">
+    <div className="relative w-72">
       <MagnifyingGlassIcon className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
       <Input
         type="search"
