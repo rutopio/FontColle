@@ -22,6 +22,11 @@ interface Props {
   // preview applies them (pain point 4 driven from the filter).
   selectedWeights: number[];
   selectedWidths: number[];
+  // Sidebar-selected variable-axis tags and their slider positions (0-100%).
+  // Each font maps the percent onto its own axis range (see withSlider on
+  // Section) so preview reflects the drag live.
+  selectedAxes: string[];
+  axisValues: Record<string, number>;
 }
 
 export function FontCard({
@@ -31,6 +36,8 @@ export function FontCard({
   onToggleFavorite,
   selectedWeights,
   selectedWidths,
+  selectedAxes,
+  axisValues,
 }: Props) {
   // Weight/Width are single-select in the sidebar, so the preview simply applies
   // the selected weight (default 400) and the selected width mapped onto this
@@ -47,6 +54,31 @@ export function FontCard({
     return Math.min(wdth.max, Math.max(wdth.min, pct));
   }, [font.axes, selectedWidths]);
 
+  // Variable-axes sliders: map each selected axis's 0-100% onto this font's own
+  // min-max range (ranges differ per font, e.g. wght 100-900 vs 300-700), so
+  // the same slider position always means "this far across what this font
+  // offers." wght drives font-weight directly instead of a variation setting,
+  // matching how `activeWeight` already works. wdth here overrides the
+  // Width-card coord above when both are in play (the slider is the more
+  // explicit, live-adjusted control).
+  const { axisWeight, variationCoords } = useMemo(() => {
+    let weight: number | null = null;
+    const coords: Record<string, number> = {};
+    for (const tag of selectedAxes) {
+      const axis = font.axes.find((a) => a.tag === tag);
+      if (!axis || axis.min == null || axis.max == null) continue;
+      const pct = axisValues[tag] ?? 50;
+      const value = axis.min + ((axis.max - axis.min) * pct) / 100;
+      if (tag === "wght") weight = value;
+      else coords[tag] = value;
+    }
+    return { axisWeight: weight, variationCoords: coords };
+  }, [font.axes, selectedAxes, axisValues]);
+
+  if (widthCoord != null && !("wdth" in variationCoords)) {
+    variationCoords.wdth = widthCoord;
+  }
+
   // Variable fonts: load the full axis range once so any weight/width the user
   // picks renders from a single variable file. Static fonts: request the actual
   // selected weight cut (appended on each switch) so it doesn't stay on an old
@@ -60,11 +92,13 @@ export function FontCard({
   }, [font.name, font.isVariable, font.axes, activeWeight]);
 
   const fontLoaded = useFontLoaded(font.name);
+  const variationSettings = Object.entries(variationCoords)
+    .map(([tag, value]) => `"${tag}" ${value}`)
+    .join(", ");
   const previewStyle: React.CSSProperties = {
     fontFamily: previewFontFamily(font.name, fontLoaded),
-    fontWeight: activeWeight,
-    fontVariationSettings:
-      widthCoord != null ? `"wdth" ${widthCoord}` : undefined,
+    fontWeight: axisWeight ?? activeWeight,
+    fontVariationSettings: variationSettings || undefined,
     // Smooth the weight/axis change instead of a hard jump.
     transition: "font-weight 200ms ease, font-variation-settings 200ms ease",
   };

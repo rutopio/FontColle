@@ -69,7 +69,7 @@ export function FacetPickerSection({
           .slice(0, TOP_N)
           .map((it) => it[0])
       ),
-    [items, rankBy, rank]
+    [items, rankBy, rank, TOP_N]
   );
 
   // Top-N pills plus any selected value outside the top N, ordered by the
@@ -107,7 +107,7 @@ export function FacetPickerSection({
               className={cn(
                 "flex items-center gap-1 rounded-md border px-2.5 py-1 text-xs transition-colors",
                 on
-                  ? "border-foreground bg-foreground text-background"
+                  ? "border-primary bg-muted text-foreground"
                   : "text-muted-foreground hover:border-foreground hover:text-foreground"
               )}
             >

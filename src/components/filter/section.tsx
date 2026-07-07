@@ -5,8 +5,8 @@ import { RARE_THRESHOLD } from "./constants";
 import { SectionHeader, type SortMode } from "./section-header";
 
 // A pill-list filter section: a header (title + reset/sort) over a Pills list.
-// Used for Properties and Variable axes. Rare values (below RARE_THRESHOLD, or
-// outside the top-N when set) collapse behind a "more" expander.
+// Used for Properties. Rare values (below RARE_THRESHOLD, or outside the
+// top-N when set) collapse behind a "more" expander.
 export function Section({
   title,
   icon,
@@ -103,6 +103,7 @@ function Pills({
 
   const renderPill = ([value, count]: [string, number]) => {
     const on = selected.includes(value);
+
     return (
       <button
         key={value}
@@ -114,7 +115,7 @@ function Pills({
           // Equal-width three-per-row: let each cell shrink and clip its label.
           grid && "min-w-0",
           on
-            ? "border-foreground bg-foreground text-background"
+            ? "border-primary bg-muted text-foreground"
             : "text-muted-foreground hover:border-foreground hover:text-foreground"
         )}
       >

@@ -1,4 +1,5 @@
 import { ArrowsDownUpIcon, type Icon, XIcon } from "@phosphor-icons/react";
+import { cn } from "@/lib/utils";
 
 // Per-section pill ordering: by font count (default) or alphabetically.
 export type SortMode = "count" | "alpha";
@@ -8,17 +9,26 @@ export function HeaderButton({
   onClick,
   label,
   children,
+  className,
+  "aria-hidden": ariaHidden,
 }: {
   onClick: () => void;
   label: string;
   children: React.ReactNode;
+  className?: string;
+  "aria-hidden"?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       aria-label={label}
-      className="flex items-center gap-1 rounded-md px-2 py-1 font-mono text-muted-foreground text-xs transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted/50"
+      aria-hidden={ariaHidden}
+      tabIndex={ariaHidden ? -1 : undefined}
+      className={cn(
+        "flex items-center gap-1 rounded-md px-2 py-1 font-mono text-muted-foreground text-xs transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted/50",
+        className
+      )}
     >
       {children}
     </button>
@@ -46,7 +56,10 @@ export function SortToggle({
 }
 
 // A section header with a title and a right-side action that flips between a
-// Reset button (when values are selected) and a SortToggle (when not).
+// Reset button (when values are selected) and a SortToggle (when not). The
+// action slot always renders (invisible when neither applies) so its height
+// is reserved up front — otherwise a Reset button appearing on first
+// selection shifts every section below it down by a row.
 export function SectionHeader({
   title,
   icon: Icon,
@@ -75,8 +88,18 @@ export function SectionHeader({
           <XIcon className="size-3" />
           Reset
         </HeaderButton>
+      ) : canSort ? (
+        <SortToggle sort={sort} onToggle={onToggleSort} />
       ) : (
-        canSort && <SortToggle sort={sort} onToggle={onToggleSort} />
+        <HeaderButton
+          onClick={() => {}}
+          label=""
+          aria-hidden
+          className="invisible"
+        >
+          <XIcon className="size-3" />
+          Reset
+        </HeaderButton>
       )}
     </div>
   );

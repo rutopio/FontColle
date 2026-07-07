@@ -66,6 +66,13 @@ function App() {
   const { setFilter: setSharedFilter, listScrollY } = useFilter();
   const facetIndex = useMemo(() => buildFacetIndex(fonts), [fonts]);
   const filter = useMemo(() => searchToFilter(search), [search]);
+  // Relative position (0-100%) per selected variable-axis tag, from the
+  // sidebar sliders. Session-only UI state, not URL-synced: there's no
+  // universal min/max across fonts to persist as a real filter value, so each
+  // font maps this percent onto its own axis range for the live preview.
+  const [axisValues, setAxisValues] = useState<Record<string, number>>({});
+  const setAxisValue = (tag: string, pct: number) =>
+    setAxisValues((s) => ({ ...s, [tag]: pct }));
   const view: ViewMode = search.view === "row" ? "row" : "grid";
   const sort = (search.sort as SortKey) ?? DEFAULT_SORT;
 
@@ -172,6 +179,8 @@ function App() {
           index={facetIndex}
           filter={filter}
           onChange={setFilter}
+          axisValues={axisValues}
+          onAxisValueChange={setAxisValue}
         />
       }
     >
@@ -257,6 +266,8 @@ function App() {
             view={view}
             selectedWeights={filter.weights.map(Number)}
             selectedWidths={filter.widths.map(Number)}
+            selectedAxes={filter.axes}
+            axisValues={axisValues}
           />
         )}
       </Column>

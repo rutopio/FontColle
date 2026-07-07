@@ -12,6 +12,7 @@ import { weightLabel, widthLabel } from "./constants";
 import { FeatureSection } from "./feature-section";
 import { LanguageSection } from "./language-section";
 import { Section } from "./section";
+import { VariableAxesSection } from "./variable-axes-section";
 import { WritingSystemSection } from "./writing-system-section";
 
 interface FacetIndex {
@@ -29,9 +30,19 @@ interface Props {
   index: FacetIndex;
   filter: FilterState;
   onChange: (next: FilterState) => void;
+  // Relative position (0-100, default 50) per selected variable-axis tag,
+  // forwarded to the preview grid to drive each font's own axis range live.
+  axisValues: Record<string, number>;
+  onAxisValueChange: (tag: string, pct: number) => void;
 }
 
-export function FilterSidebar({ index, filter, onChange }: Props) {
+export function FilterSidebar({
+  index,
+  filter,
+  onChange,
+  axisValues,
+  onAxisValueChange,
+}: Props) {
   const toggle = (key: keyof Omit<FilterState, "query">, value: string) => {
     const cur = filter[key];
     const next = cur.includes(value)
@@ -40,11 +51,47 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
     onChange({ ...filter, [key]: next });
   };
 
+  // A variable axis and its equivalent value section drive the same thing, so
+  // they're mutually exclusive: the wght axis vs the Weight steps, wdth vs
+  // Width. Selecting one clears the other.
+  const AXIS_EXCLUSIVE: Record<string, "weights" | "widths"> = {
+    wght: "weights",
+    wdth: "widths",
+  };
+  const EXCLUSIVE_AXIS: Record<"weights" | "widths", string> = {
+    weights: "wght",
+    widths: "wdth",
+  };
+
+  // Variable-axis toggle: selecting wght/wdth clears the matching Weight/Width
+  // selection (they're mutually exclusive); other axes toggle normally.
+  const toggleAxis = (tag: string) => {
+    const turningOn = !filter.axes.includes(tag);
+    const nextAxes = turningOn
+      ? [...filter.axes, tag]
+      : filter.axes.filter((x) => x !== tag);
+    const cleared = turningOn ? AXIS_EXCLUSIVE[tag] : undefined;
+    onChange({
+      ...filter,
+      axes: nextAxes,
+      ...(cleared ? { [cleared]: [] } : {}),
+    });
+  };
+
   // Radio-style: Weight and Width allow at most one value. Clicking the current
-  // selection clears it; clicking another replaces it.
+  // selection clears it; clicking another replaces it. Selecting one also
+  // clears the mutually exclusive variable axis (wght/wdth).
   const select = (key: "weights" | "widths", value: string) => {
-    const next = filter[key].includes(value) ? [] : [value];
-    onChange({ ...filter, [key]: next });
+    const turningOn = !filter[key].includes(value);
+    const next = turningOn ? [value] : [];
+    const axisTag = EXCLUSIVE_AXIS[key];
+    onChange({
+      ...filter,
+      [key]: next,
+      axes: turningOn
+        ? filter.axes.filter((x) => x !== axisTag)
+        : filter.axes,
+    });
   };
 
   // Clear only the values a given section shows (Properties/Subsets share the
@@ -106,16 +153,14 @@ export function FilterSidebar({ index, filter, onChange }: Props) {
             label={widthLabel}
             axis="wdth"
           />
-          <Section
-            title="Variable axes"
+          <VariableAxesSection
             icon={SlidersHorizontalIcon}
             items={index.axes}
             selected={filter.axes}
-            onToggle={(v) => toggle("axes", v)}
+            onToggle={toggleAxis}
             onReset={() => clearSection("axes", index.axes)}
-            grid
-            spread
-            topN={6}
+            sliderValue={axisValues}
+            onSliderChange={onAxisValueChange}
           />
           <FeatureSection
             features={index.features}

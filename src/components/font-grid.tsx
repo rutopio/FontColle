@@ -15,6 +15,10 @@ interface Props {
   // Sidebar-selected weight/width steps (click order), forwarded to each card.
   selectedWeights: number[];
   selectedWidths: number[];
+  // Sidebar-selected variable-axis tags and their slider positions (0-100%),
+  // forwarded to each card so the preview reflects the live slider drag.
+  selectedAxes: string[];
+  axisValues: Record<string, number>;
 }
 
 // Grid column count matches the CSS breakpoints (md:2, lg:3). Row mode is always
@@ -41,6 +45,8 @@ export function FontGrid({
   view,
   selectedWeights,
   selectedWidths,
+  selectedAxes,
+  axisValues,
 }: Props) {
   const listRef = useRef<HTMLDivElement>(null);
   const [cols, setCols] = useState(view === "row" ? 1 : 3);
@@ -111,6 +117,8 @@ export function FontGrid({
         onToggleFavorite={onToggleFavorite}
         selectedWeights={selectedWeights}
         selectedWidths={selectedWidths}
+        selectedAxes={selectedAxes}
+        axisValues={axisValues}
       />
     );
 
