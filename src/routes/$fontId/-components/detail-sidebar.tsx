@@ -9,6 +9,7 @@ import { EditableValue } from "@/components/ui/editable-value";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { DEFAULT_ON, featureName } from "@/lib/fonts/features";
 import type { FontRecord } from "@/lib/fonts/types";
+import { useScrollReset } from "@/lib/use-scroll-reset";
 
 // Preset values offered in the click-to-edit dropdowns.
 const SIZE_PRESETS = [
@@ -103,9 +104,13 @@ export function DetailSidebar({
     (tag) => featureState[tag] !== DEFAULT_ON.has(tag)
   );
 
+  // Always open at the top; don't let router scroll restoration carry the
+  // sidebar's position across list <-> detail navigation.
+  const viewportRef = useScrollReset<HTMLDivElement>();
+
   return (
     <aside className="flex h-full w-full min-w-0 flex-col text-sidebar-foreground">
-      <ScrollArea className="min-h-0 flex-1">
+      <ScrollArea viewportRef={viewportRef} className="min-h-0 flex-1">
         <div className="flex flex-col gap-8 p-4">
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between gap-2">
