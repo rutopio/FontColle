@@ -88,9 +88,7 @@ export function FilterSidebar({
     onChange({
       ...filter,
       [key]: next,
-      axes: turningOn
-        ? filter.axes.filter((x) => x !== axisTag)
-        : filter.axes,
+      axes: turningOn ? filter.axes.filter((x) => x !== axisTag) : filter.axes,
     });
   };
 

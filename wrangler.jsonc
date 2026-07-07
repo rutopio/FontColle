@@ -10,9 +10,10 @@
       "database_name": "font-finder-d1",
       "database_id": "d2394735-b199-4bce-a639-7a90314f1bda",
       "migrations_dir": "src/lib/db/migrations",
-      // Dev hits the real (migrated + seeded) D1 rather than an empty local
-      // miniflare instance, so pages render real data (mirrors TypeSpan).
-      "remote": true
+      // Dev hits the local miniflare D1 (migrated + seeded from src/data via
+      // `pnpm db:apply:local && pnpm db:seed:local`) so queries are on-disk and
+      // fast, instead of round-tripping the remote production D1 on every load.
+      "remote": false
     }
   ]
 }

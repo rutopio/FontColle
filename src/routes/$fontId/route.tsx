@@ -1,21 +1,21 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
 import { FilterLayout } from "@/components/filter-layout";
-import { withFacets } from "@/lib/fonts/facets";
+import { deriveFacets } from "@/lib/fonts/facets";
 import { DEFAULT_ON } from "@/lib/fonts/features";
-import { getAllFonts } from "@/lib/fonts/queries";
+import { getFontById } from "@/lib/fonts/queries";
 import { Detail } from "./-components/detail";
 import { DetailSidebar } from "./-components/detail-sidebar";
 
 export const Route = createFileRoute("/$fontId")({
   component: DetailPage,
   loader: async ({ params }) => {
-    // The detail page needs only the one font; its sidebar shows that font's
-    // OpenType features, not the catalog-wide filter facets.
-    const all = withFacets(await getAllFonts());
-    const font = all.find((f) => f.id === params.fontId);
+    // The detail page needs only the one font, so query it directly rather
+    // than loading the whole catalog. Derive its facets (the DB stores raw
+    // axes/features, not derived facets) for parity with the list.
+    const font = await getFontById({ data: params.fontId });
     if (!font) throw notFound();
-    return { font };
+    return { font: { ...font, facets: deriveFacets(font) } };
   },
   notFoundComponent: () => (
     <div className="mx-auto w-full max-w-(--breakpoint-2xl) p-6">
