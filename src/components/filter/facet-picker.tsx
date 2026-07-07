@@ -34,6 +34,8 @@ export function FacetPickerSection({
   dialogTitle,
   dialogDescription,
   searchPlaceholder,
+  rankBy,
+  topN = 15,
 }: {
   title: string;
   icon: Icon;
@@ -44,21 +46,30 @@ export function FacetPickerSection({
   dialogTitle: string;
   dialogDescription: string;
   searchPlaceholder: string;
+  // How to pick which values make the top-N pills. Defaults to font count
+  // (how common the value is in this dataset); pass a lookup like real-world
+  // speaker population to rank by that instead.
+  rankBy?: (value: string) => number;
+  topN?: number;
 }) {
-  const TOP_N = 15;
+  const TOP_N = topN;
   const [sort, setSort] = useState<SortMode>("count");
+  const rank = rankBy ?? ((_value: string) => 0);
 
-  // The most common values, count-sorted regardless of the incoming order, so
-  // the top-N pills are the same set whether items arrive count- or name-sorted.
+  // The top-N values by rank (font count, unless `rankBy` overrides it),
+  // regardless of the incoming order, so the top-N pills are the same set
+  // whether items arrive count- or name-sorted.
   const topNSet = useMemo(
     () =>
       new Set(
         [...items]
-          .sort((a, b) => b[1] - a[1])
+          .sort((a, b) =>
+            rankBy ? rank(b[0]) - rank(a[0]) : b[1] - a[1]
+          )
           .slice(0, TOP_N)
           .map((it) => it[0])
       ),
-    [items]
+    [items, rankBy, rank]
   );
 
   // Top-N pills plus any selected value outside the top N, ordered by the

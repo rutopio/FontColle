@@ -1,10 +1,11 @@
 import { GlobeHemisphereWestIcon } from "@phosphor-icons/react";
 import { useMemo } from "react";
-import { scriptLabel } from "@/lib/fonts/labels";
+import { scriptLabel, scriptPopulation } from "@/lib/fonts/labels";
 import { FacetPickerSection } from "./facet-picker";
 
-// Writing systems (real scripts, Latn/Cyrl/…). Script pills for the common
-// ones, plus a Browse all dialog over the full searchable list.
+// Writing systems (real scripts, Latn/Cyrl/…). Pills show the top 15 by
+// real-world speaker population (summed per script from gflanguages), plus a
+// Browse all dialog over the full searchable list.
 export function WritingSystemSection({
   scripts,
   selectedScripts,
@@ -34,6 +35,7 @@ export function WritingSystemSection({
       dialogTitle="Writing systems"
       dialogDescription="Filter fonts by the scripts they support."
       searchPlaceholder="Search writing systems"
+      rankBy={scriptPopulation}
     />
   );
 }
