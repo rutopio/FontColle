@@ -1,10 +1,11 @@
 import { TranslateIcon } from "@phosphor-icons/react";
 import { useMemo } from "react";
-import { languageLabel } from "@/lib/fonts/labels";
+import { languageLabel, languagePopulation } from "@/lib/fonts/labels";
 import { FacetPickerSection } from "./facet-picker";
 
 // Languages: a searchable list of hundreds of language ids. The sidebar shows
-// the top 15 most common as pills; the Browse all dialog searches every one.
+// the top 20 by real-world speaker population (gflanguages) as pills; the
+// Browse all dialog searches every one.
 export function LanguageSection({
   languages,
   selectedLanguages,
@@ -36,6 +37,8 @@ export function LanguageSection({
       dialogTitle="Languages"
       dialogDescription="Filter fonts by the languages they support."
       searchPlaceholder="Search languages"
+      rankBy={languagePopulation}
+      topN={20}
     />
   );
 }

@@ -31,6 +31,20 @@ export function languagePopulation(id: string): number {
   return languages[id]?.population ?? 0;
 }
 
+// Script -> total speaker population, summed from every language written in
+// it (gflanguages), so Writing system pills can rank by real-world reach
+// instead of how many fonts happen to declare that subset.
+const SCRIPT_POPULATION: Record<string, number> = {};
+for (const meta of Object.values(languages)) {
+  if (!meta.script) continue;
+  SCRIPT_POPULATION[meta.script] =
+    (SCRIPT_POPULATION[meta.script] ?? 0) + (meta.population ?? 0);
+}
+
+export function scriptPopulation(code: string): number {
+  return SCRIPT_POPULATION[code] ?? 0;
+}
+
 /** Split lang ids into major (>=5M speakers) and the rest, each name-sorted. */
 export function splitLanguages(ids: string[]): {
   major: string[];
