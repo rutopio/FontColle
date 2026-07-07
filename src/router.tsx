@@ -5,10 +5,12 @@ export function getRouter() {
   const router = createTanStackRouter({
     routeTree,
 
-    // Restores the window scroll on back/forward (the list page relies on it).
-    // It also restores inner scroll containers like the sidebar, which we don't
-    // want — useScrollReset re-zeros those after the restore (see that hook).
-    scrollRestoration: true,
+    // Off on purpose. The list page restores the window scroll itself (the
+    // listScrollY logic in routes/index) with a frame-retry that waits for the
+    // virtualizer to grow to full height — router restoration can't, and fought
+    // it (partial offsets). With it off, inner containers like the sidebar also
+    // aren't restored, so they naturally open at the top.
+    scrollRestoration: false,
     defaultPreload: "intent",
     defaultPreloadStaleTime: 0,
   });

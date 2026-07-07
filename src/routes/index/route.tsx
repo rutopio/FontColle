@@ -104,22 +104,28 @@ function App() {
     return () => window.removeEventListener("scroll", onScroll);
   }, [listScrollY]);
 
-  // Restore it when returning from a detail page. The window virtualizer grows
-  // its total height over the first few frames, so retry across frames until
-  // the target is reachable (or we give up after a short budget).
+  // Restore the list scroll when returning from a detail page. Two obstacles:
+  // the window virtualizer grows its total height over the first frames (so the
+  // target isn't reachable immediately), and it also resets the window scroll
+  // as it mounts/measures (so a one-shot restore gets clobbered). So we keep
+  // re-asserting the target across a short time budget, stopping only once it
+  // has held for a few consecutive frames — not the first time it's reached.
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
   useEffect(() => {
     const target = listScrollY.current;
     if (target <= 0) return;
-    let frames = 0;
     let raf = 0;
+    const start = performance.now();
+    // Keep re-asserting the target for a fixed budget: the virtualizer resets
+    // the window scroll a few times as it mounts and measures, so a "stop once
+    // reached" restore gets clobbered afterward. We simply hold the target for
+    // ~600ms (long enough to outlast those resets, short enough that a user who
+    // immediately scrolls elsewhere isn't fought for long).
     const tick = () => {
       const max = document.documentElement.scrollHeight - window.innerHeight;
-      window.scrollTo(0, Math.min(target, max));
-      frames++;
-      if (window.scrollY < target - 1 && frames < 30) {
-        raf = requestAnimationFrame(tick);
-      }
+      const goal = Math.min(target, max);
+      if (Math.abs(window.scrollY - goal) > 1) window.scrollTo(0, goal);
+      if (performance.now() - start < 600) raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
