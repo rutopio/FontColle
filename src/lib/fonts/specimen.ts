@@ -47,7 +47,9 @@ const SCRIPT_SPECIMEN: Record<string, string> = {
 // or Hebrew, but Google Fonts (and we) specimen them in Latin, so only a font
 // whose primary script is non-Latin gets a non-Latin sample.
 export function specimenFor(font: FontRecord): string {
-  if (font.specimen) return font.specimen;
+  // An empty string is a deliberate blank preview (icon fonts like AllKin that
+  // Google shows blank); only null falls through to the script/UDHR default.
+  if (font.specimen != null) return font.specimen;
   // Emoji-only fonts (their sole non-menu subset is "emoji") preview as emoji.
   const nonMenu = font.subsets.filter((s) => s !== "menu");
   if (nonMenu.length === 1 && nonMenu[0] === "emoji") return EMOJI_SAMPLE;
