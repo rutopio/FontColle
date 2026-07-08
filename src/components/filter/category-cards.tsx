@@ -1,16 +1,10 @@
 import { ShapesIcon } from "@phosphor-icons/react";
-import { useEffect } from "react";
-import {
-  ensureFontLoaded,
-  previewFontFamily,
-  useFontLoaded,
-} from "@/lib/fonts/loader";
 import { cn } from "@/lib/utils";
-import { CATEGORY_SPECIMEN } from "./constants";
+import { CategorySpecimen } from "./specimen-icon";
 
 // Category filter as large square, tappable cards. Each card writes "Aa" in a
-// typeface representative of that category. Multi-select is preserved: a card is
-// a toggle, not a radio.
+// typeface representative of that category, drawn from a static SVG specimen (no
+// webfont load). Multi-select is preserved: a card is a toggle, not a radio.
 export function CategoryCards({
   items,
   selected,
@@ -52,13 +46,6 @@ function CategoryCard({
   on: boolean;
   onToggle: () => void;
 }) {
-  const specimen = CATEGORY_SPECIMEN[value];
-  const loaded = useFontLoaded(specimen ?? "");
-
-  useEffect(() => {
-    if (specimen) ensureFontLoaded(specimen, [400]);
-  }, [specimen]);
-
   return (
     <button
       type="button"
@@ -71,16 +58,8 @@ function CategoryCard({
           : "border-input hover:border-foreground/40"
       )}
     >
-      <span
-        className="text-2xl leading-none"
-        style={
-          specimen
-            ? { fontFamily: previewFontFamily(specimen, loaded) }
-            : undefined
-        }
-      >
-        Aa
-      </span>
+      <CategorySpecimen category={value} />
+
       <span className="font-medium text-muted-foreground text-xs leading-none">
         {value}
       </span>
