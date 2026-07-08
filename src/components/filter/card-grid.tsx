@@ -1,18 +1,12 @@
 import { type Icon, XIcon } from "@phosphor-icons/react";
-import { useEffect } from "react";
-import { WIDTH_STEP_PCT } from "@/lib/fonts/filter";
-import {
-  ensureFontRangeLoaded,
-  previewFontFamily,
-  useFontLoaded,
-} from "@/lib/fonts/loader";
 import { cn } from "@/lib/utils";
-import { clamp, SPECIMEN_AXES, SPECIMEN_FAMILY } from "./constants";
+import { WeightSpecimen, WidthSpecimen } from "./specimen-icon";
 
 // Big-button grid (same shape as CategoryCards) for value dimensions like Weight
 // and Width. Each card renders an Inconsolata "Aa" at the weight/width it stands
-// for, above its label + family count. All cards render at once (no rare
-// collapse): the value sets are small and fixed.
+// for, above its label + family count, drawn from a static SVG specimen (no
+// webfont load). All cards render at once (no rare collapse): the value sets are
+// small and fixed.
 export function CardGrid({
   title,
   icon: Icon,
@@ -35,25 +29,6 @@ export function CardGrid({
   // Which axis the card value drives on the "Aa" specimen.
   axis: "wght" | "wdth";
 }) {
-  const specimenLoaded = useFontLoaded(SPECIMEN_FAMILY);
-  useEffect(() => {
-    ensureFontRangeLoaded(SPECIMEN_FAMILY, SPECIMEN_AXES);
-  }, []);
-
-  // Style the "Aa" for a card: Weight cards vary font-weight; Width cards vary
-  // the wdth axis (value 1..9 -> percentage), clamped to Inconsolata's range.
-  const specimenStyle = (value: string): React.CSSProperties => {
-    const fontFamily = previewFontFamily(SPECIMEN_FAMILY, specimenLoaded);
-    if (axis === "wght") {
-      return { fontFamily, fontWeight: clamp(Number(value), 200, 900) };
-    }
-    const pct = WIDTH_STEP_PCT[Number(value)] ?? 100;
-    return {
-      fontFamily,
-      fontVariationSettings: `"wdth" ${clamp(pct, 50, 200)}`,
-    };
-  };
-
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between gap-2">
@@ -96,12 +71,11 @@ export function CardGrid({
                   : "border-input hover:border-foreground/40"
               )}
             >
-              <span
-                className="text-2xl leading-none"
-                style={specimenStyle(value)}
-              >
-                Aa
-              </span>
+              {axis === "wght" ? (
+                <WeightSpecimen value={value} />
+              ) : (
+                <WidthSpecimen value={value} />
+              )}
               <span className="w-full truncate font-medium text-muted-foreground text-xs leading-none">
                 {label(value)}
               </span>
