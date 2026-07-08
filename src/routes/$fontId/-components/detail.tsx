@@ -6,16 +6,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { buildFeatureSettings } from "@/lib/fonts/features";
 import { scriptLabel } from "@/lib/fonts/labels";
-import {
-  ensureFontRangeLoaded,
-  previewFontFamily,
-  useFontLoaded,
-} from "@/lib/fonts/loader";
+import { ensureFontRangeLoaded, useFontLoaded } from "@/lib/fonts/loader";
+import { previewStyle } from "@/lib/fonts/preview-style";
 import { specimenFor } from "@/lib/fonts/specimen";
-import type { FontInstance, FontRecord } from "@/lib/fonts/types";
+import type { FontRecord } from "@/lib/fonts/types";
 import { usePreview } from "@/lib/preview/context";
+import { InstanceChips } from "./instance-chips";
+import { InstanceRow } from "./instance-row";
 import { LanguageSupport } from "./language-support";
 import { Panel } from "./panel";
+import { TypeTester } from "./type-tester";
 
 export function Detail({
   font,
@@ -49,15 +49,14 @@ export function Detail({
   const fontLoaded = useFontLoaded(font.name);
 
   const specimenStyle: React.CSSProperties = useMemo(() => {
-    const varSettings = font.axes
-      .map((a) => `"${a.tag}" ${axisState[a.tag]}`)
-      .join(", ");
+    // Preview at every axis's current value; add the size + feature settings
+    // the tester exposes on top of the shared preview style.
+    const coords = Object.fromEntries(
+      font.axes.map((a) => [a.tag, axisState[a.tag]])
+    );
     return {
-      fontFamily: previewFontFamily(font.name, fontLoaded),
+      ...previewStyle({ name: font.name, loaded: fontLoaded, coords, italic }),
       fontSize: `${size}px`,
-      fontWeight: axisState.wght ? Math.round(axisState.wght) : undefined,
-      fontStyle: italic ? "italic" : undefined,
-      fontVariationSettings: varSettings || undefined,
       fontFeatureSettings: buildFeatureSettings(featureState),
     };
   }, [font.name, font.axes, axisState, size, italic, featureState, fontLoaded]);
@@ -149,43 +148,14 @@ export function Detail({
               sentence below is the editable specimen. */}
           <Panel label="Type tester">
             {font.instances.length > 0 && (
-              <div className="mb-4 flex flex-wrap gap-2">
-                {font.instances.map((inst) => {
-                  // Active when the preview still matches this instance:
-                  // same italic state and every axis it sets unchanged.
-                  // Nudging any of those axes breaks the match, so the
-                  // chip deselects on its own.
-                  const active =
-                    italic === inst.italic &&
-                    Object.entries(inst.coords).every(
-                      ([t, v]) => axisState[t] === v
-                    );
-                  return (
-                    <button
-                      key={`chip:${inst.italic ? "i" : "u"}:${inst.name}`}
-                      type="button"
-                      onClick={() => onLoadInstance(inst.coords, inst.italic)}
-                      className={`rounded-md border px-3 py-1.5 text-xs transition-colors ${
-                        active
-                          ? "border-primary bg-muted text-foreground"
-                          : "hover:border-foreground"
-                      }`}
-                      style={{
-                        fontFamily: previewFontFamily(font.name, fontLoaded),
-                        fontWeight: inst.coords.wght
-                          ? Math.round(inst.coords.wght)
-                          : undefined,
-                        fontStyle: inst.italic ? "italic" : undefined,
-                        fontVariationSettings: Object.entries(inst.coords)
-                          .map(([t, v]) => `"${t}" ${v}`)
-                          .join(", "),
-                      }}
-                    >
-                      {inst.name}
-                    </button>
-                  );
-                })}
-              </div>
+              <InstanceChips
+                instances={font.instances}
+                fontName={font.name}
+                fontLoaded={fontLoaded}
+                axisState={axisState}
+                italic={italic}
+                onLoadInstance={onLoadInstance}
+              />
             )}
             <TypeTester
               specimen={specimen}
@@ -205,7 +175,8 @@ export function Detail({
                     key={`row:${inst.italic ? "i" : "u"}:${inst.name}`}
                     inst={inst}
                     specimen={specimen}
-                    fontFamily={previewFontFamily(font.name, fontLoaded)}
+                    fontName={font.name}
+                    fontLoaded={fontLoaded}
                     onEditText={setText}
                   />
                 ))}
@@ -274,136 +245,6 @@ export function Detail({
         </>
       )}
     </Column>
-  );
-}
-
-// The main preview line, click-to-edit like the instance rows. Clicking swaps
-// the text for a same-styled textarea seeded with the current text; typing
-// updates the shared preview live, so every surface changes together.
-function TypeTester({
-  specimen,
-  style,
-  onEditText,
-}: {
-  specimen: string;
-  style: React.CSSProperties;
-  onEditText: (v: string) => void;
-}) {
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState("");
-
-  if (editing) {
-    return (
-      <textarea
-        dir="auto"
-        value={draft}
-        rows={1}
-        // biome-ignore lint/a11y/noAutofocus: focus the field the user just opened.
-        autoFocus
-        aria-label="Preview text"
-        onChange={(e) => {
-          setDraft(e.target.value);
-          onEditText(e.target.value.trim());
-        }}
-        onBlur={() => setEditing(false)}
-        onKeyDown={(e) => {
-          if (e.key === "Escape") setEditing(false);
-        }}
-        style={style}
-        className="field-sizing-content w-full resize-none break-words bg-transparent leading-tight outline-none"
-      />
-    );
-  }
-
-  return (
-    <button
-      type="button"
-      onClick={() => {
-        setDraft(specimen);
-        setEditing(true);
-      }}
-      aria-label="Edit preview text"
-      dir="auto"
-      style={style}
-      className="w-full cursor-text break-words text-start leading-tight"
-    >
-      {specimen}
-    </button>
-  );
-}
-
-// One named-instance row: label (loads the instance on click) plus a large
-// preview line that doubles as a text field. Clicking the preview opens an
-// input seeded with the current text; committing pushes it to the shared
-// preview, so every row and the type tester update together.
-function InstanceRow({
-  inst,
-  specimen,
-  fontFamily,
-  onEditText,
-}: {
-  inst: FontInstance;
-  specimen: string;
-  fontFamily: string;
-  onEditText: (v: string) => void;
-}) {
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState("");
-
-  const previewStyle: React.CSSProperties = {
-    fontFamily,
-    fontWeight: inst.coords.wght ? Math.round(inst.coords.wght) : undefined,
-    fontStyle: inst.italic ? "italic" : undefined,
-    fontVariationSettings: Object.entries(inst.coords)
-      .map(([t, v]) => `"${t}" ${v}`)
-      .join(", "),
-  };
-
-  return (
-    <div className="flex flex-col gap-4 overflow-hidden border-border border-t py-3 first:border-t-0">
-      <span className="flex items-baseline gap-2">
-        <span className="text-sm">{inst.name}</span>
-        <span className="truncate font-mono text-muted-foreground text-xs">
-          {Object.entries(inst.coords)
-            .map(([t, v]) => `${t} ${v}`)
-            .join("  ")}
-        </span>
-      </span>
-      {editing ? (
-        <input
-          type="text"
-          dir="auto"
-          value={draft}
-          // biome-ignore lint/a11y/noAutofocus: focus the field the user just opened.
-          autoFocus
-          aria-label={`Preview text for ${inst.name}`}
-          onChange={(e) => {
-            setDraft(e.target.value);
-            onEditText(e.target.value.trim());
-          }}
-          onBlur={() => setEditing(false)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === "Escape") setEditing(false);
-          }}
-          style={previewStyle}
-          className="w-full border-transparent border-b bg-transparent text-start text-3xl leading-tight outline-none focus:border-foreground"
-        />
-      ) : (
-        <button
-          type="button"
-          onClick={() => {
-            setDraft(specimen);
-            setEditing(true);
-          }}
-          aria-label={`Edit preview text for ${inst.name}`}
-          dir="auto"
-          style={previewStyle}
-          className="w-full cursor-text truncate border-transparent border-b text-start text-3xl leading-tight"
-        >
-          {specimen}
-        </button>
-      )}
-    </div>
   );
 }
 
