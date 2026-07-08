@@ -20,7 +20,23 @@ AXIS_FACETS = {
     "slnt": "slant-axis", "ital": "italic-axis", "GRAD": "grade-axis",
 }
 
-def primary_class(cat):
+# Families reassigned to the "Graphics" class regardless of Google's category:
+# emoji, symbol, icon, barcode and other non-linguistic display faces. A name
+# whitelist taken verbatim from Google Fonts' own search results for "emoji" (2)
+# and "symbols" (14), plus the emoji-only Compat Test face GF hides. A name
+# whitelist, not a heuristic: subset/name matching mis-classed normal fonts
+# (Open Sans has an emoji subset; "icon" matched Niconne).
+GRAPHICS_FAMILIES = {
+    "Noto Color Emoji", "Noto Color Emoji Compat Test", "Noto Emoji",
+    "Noto Sans Symbols", "Noto Sans Symbols 2", "Noto Music",
+    "Datatype", "Allkin", "Libre Barcode 39 Extended",
+    "Linefont", "Wavefont",
+    "Yarndings 20", "Yarndings 20 Charted",
+    "Yarndings 12", "Yarndings 12 Charted",
+}
+
+def primary_class(cat, name=None):
+    if name in GRAPHICS_FAMILIES: return "Graphics"
     c = (cat or "").upper()
     if "SERIF" in c and "SANS" not in c: return "Serif"
     if "SANS" in c: return "Sans"
@@ -97,7 +113,7 @@ def to_record(r):
         "id": r["family_dir"],
         "name": r.get("name") or r["family_dir"],
         "designer": r.get("designer"),
-        "class": primary_class(r.get("category")),
+        "class": primary_class(r.get("category"), r.get("name")),
         "category": r.get("category"),
         "license": r.get("license"),
         "licenseDir": r.get("license_dir"),
@@ -174,6 +190,22 @@ def load_published_map():
     return {name.lower(): sig for name, sig in raw.items()}
 
 
+# Per-family specimen overrides for the Graphics class (symbol/emoji/icon faces),
+# using the exact sample string Google Fonts shows so the card previews the
+# font's own glyphs, not a Latin sentence it can't render. Families that map
+# Latin letters to shapes (Yarndings, barcode, Linefont, Wavefont) are omitted:
+# Google previews them with the default Latin sentence, which the font renders as
+# graphics, so the normal Latin fallback already matches. AllKin previews blank
+# on Google (an icon font with no default text), so it gets an empty string.
+GRAPHICS_SPECIMENS = {
+    "Noto Sans Symbols": "⛾⛿☯☸ ⛩⛰⛱⛴⛷⛸⛹ ♸⚥☊☍☓☤ 🄰🄱🆈🆉 ⚖♇♪♬",
+    "Noto Sans Symbols 2": "🌍✄✎ 🏔🏕🏌🏍🎭🎮 🯅🯆🯇🯉 🡢🡭🡱🡼 🯱🯲🯳🯴🯵🯶 🂮🂱🂲🂳",
+    "Noto Music": "𝄆 𝄙𝆏 𝄞𝄟𝄢 𝄾𝄿𝄎 𝄴 𝄶𝅁 𝄭𝄰 𝇛𝇜 𝄊 𝄇",
+    "Datatype": "{l:Server Errors {b:20,25,52,36,67} Body Weight {l:42,21,53,67} 38% signed {p:38}",
+    "Allkin": "",
+}
+
+
 def apply_specimens(records):
     """Set a per-font specimen string in the font's own script, matching how
     Google Fonts previews non-Latin families. Uses gflanguages sample text keyed
@@ -190,6 +222,13 @@ def apply_specimens(records):
     filled = 0
     for r in records:
         subsets = r.get("subsets") or []
+        # Graphics faces with a Google-matched sample string take it verbatim
+        # (an empty string is a deliberate blank preview, so check membership,
+        # not truthiness).
+        if r.get("name") in GRAPHICS_SPECIMENS:
+            r["specimen"] = GRAPHICS_SPECIMENS[r["name"]]
+            filled += 1
+            continue
         # Emoji fonts (only non-menu subset is "emoji") preview as emoji, like
         # Google Fonts, not any linguistic sample.
         non_menu = [s for s in subsets if s != "menu"]
