@@ -64,7 +64,7 @@ function CategoryCard({
       onClick={onToggle}
       aria-pressed={on}
       className={cn(
-        "relative flex cursor-pointer flex-col items-center gap-2 rounded-md border p-2 text-center shadow-xs outline-none transition-[color,box-shadow,border-color,background-color]",
+        "relative flex cursor-pointer flex-col items-center gap-2 rounded-md border p-2 text-center shadow-xs outline-none transition-[color,box-shadow,border-color,background-color] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
         on
           ? "border-primary bg-muted"
           : "border-input hover:border-foreground/40"
