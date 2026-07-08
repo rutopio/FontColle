@@ -62,6 +62,28 @@ def _scripts():
 
 
 @lru_cache(maxsize=1)
+def _country_region_group():
+    """CLDR country code -> continent group (Africa/Americas/Asia/Europe/
+    Oceania), matching how Google Fonts buckets languages by region."""
+    out = {}
+    for rid, reg in gflanguages.LoadRegions().items():
+        if reg.region_group:
+            out[rid] = reg.region_group[0]
+    return out
+
+
+def language_region(lang):
+    """Continent for a gflanguages language, from its first CLDR region.
+    Returns "Other" when the language declares no region."""
+    groups = _country_region_group()
+    for c in lang.region:
+        g = groups.get(c)
+        if g:
+            return g
+    return "Other"
+
+
+@lru_cache(maxsize=1)
 def _lang_exemplars():
     """lang_id -> (script, set(base codepoints)); skip langs without a base."""
     out = {}
@@ -81,13 +103,14 @@ def script_name(code):
 
 
 def language_label_map():
-    """lang_id -> {name, script, population} for the frontend label map."""
+    """lang_id -> {name, script, population, region} for the frontend."""
     out = {}
     for lid, lang in _languages().items():
         out[lid] = {
             "name": lang.name,
             "script": lang.script,
             "population": lang.population or 0,
+            "region": language_region(lang),
         }
     return out
 

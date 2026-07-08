@@ -8,7 +8,19 @@ export interface LanguageMeta {
   name: string;
   script: string;
   population: number;
+  region: string;
 }
+
+// Continent buckets in the order Google Fonts lists them; "Other" (languages
+// with no CLDR region) trails at the end when present.
+export const LANGUAGE_REGIONS = [
+  "Africa",
+  "Americas",
+  "Asia",
+  "Europe",
+  "Oceania",
+  "Other",
+] as const;
 
 const scripts = scriptsRaw as Record<string, string>;
 const languages = languagesRaw as Record<string, LanguageMeta>;
@@ -29,6 +41,30 @@ export function languageLabel(id: string): string {
 
 export function languagePopulation(id: string): number {
   return languages[id]?.population ?? 0;
+}
+
+export function languageRegion(id: string): string {
+  return languages[id]?.region ?? "Other";
+}
+
+/** Bucket lang ids by continent, each name-sorted, in LANGUAGE_REGIONS order.
+ *  Only non-empty regions are returned. */
+export function groupLanguagesByRegion(
+  ids: string[]
+): { region: string; ids: string[] }[] {
+  const byRegion = new Map<string, string[]>();
+  for (const id of ids) {
+    const r = languageRegion(id);
+    const bucket = byRegion.get(r);
+    if (bucket) bucket.push(id);
+    else byRegion.set(r, [id]);
+  }
+  const byName = (a: string, b: string) =>
+    languageLabel(a).localeCompare(languageLabel(b));
+  return LANGUAGE_REGIONS.filter((r) => byRegion.has(r)).map((region) => ({
+    region,
+    ids: (byRegion.get(region) as string[]).sort(byName),
+  }));
 }
 
 // Script -> total speaker population, summed from every language written in

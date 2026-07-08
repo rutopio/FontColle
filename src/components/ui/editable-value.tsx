@@ -87,7 +87,7 @@ export function EditableValue({
         setEditing(true);
       }}
       aria-label={`${ariaLabel} (click to edit)`}
-      className="font-mono text-muted-foreground text-xs underline decoration-dotted underline-offset-2 transition-colors hover:text-foreground"
+      className="cursor-text font-mono text-muted-foreground text-xs underline decoration-dotted underline-offset-2 transition-colors hover:text-foreground"
     >
       {value}
       {suffix}
