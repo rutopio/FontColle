@@ -1,6 +1,8 @@
 import {
   MagnifyingGlassIcon,
   RowsIcon,
+  SortAscendingIcon,
+  SortDescendingIcon,
   SquaresFourIcon,
 } from "@phosphor-icons/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
@@ -20,9 +22,7 @@ import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -43,10 +43,11 @@ import {
 import { getAllFonts } from "@/lib/fonts/queries";
 import {
   DEFAULT_SORT,
-  SORT_LABELS,
-  SORT_OPTIONS,
+  isDirectionless,
+  SORT_GROUPS,
   type SortKey,
   sortFonts,
+  sortGroupOf,
 } from "@/lib/fonts/sort";
 import { usePreview } from "@/lib/preview/context";
 
@@ -212,25 +213,61 @@ function App() {
             </div>
 
             <div className="ml-auto flex items-center gap-2">
-              <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
-                <SelectTrigger className="h-8 w-56" aria-label="Sort by">
-                  <SelectValue placeholder="Sort">
-                    {SORT_LABELS[sort]}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {SORT_OPTIONS.map((g) => (
-                    <SelectGroup key={g.group}>
-                      <SelectLabel>{g.group}</SelectLabel>
-                      {g.items.map(([key, label]) => (
-                        <SelectItem key={key} value={key}>
-                          {label}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  ))}
-                </SelectContent>
-              </Select>
+              {/* Sort control: a group picker on the left and a direction toggle
+                  on the right, joined into one bordered button group. */}
+              {(() => {
+                const { group, asc } = sortGroupOf(sort);
+                const directionless = isDirectionless(group);
+                // Directionless groups only expose `asc`; keep the current
+                // direction when both groups support it.
+                const dirLabel = asc
+                  ? group.ascLabel
+                  : (group.descLabel ?? group.ascLabel);
+                return (
+                  <div className="flex h-8 items-center rounded-lg border border-input dark:bg-input/30">
+                    <Select
+                      value={group.group}
+                      onValueChange={(g) => {
+                        const next = SORT_GROUPS.find((x) => x.group === g);
+                        if (next)
+                          setSort(!asc && next.desc ? next.desc : next.asc);
+                      }}
+                    >
+                      <SelectTrigger
+                        className="h-full rounded-r-none border-0 bg-transparent focus-visible:ring-0 dark:bg-transparent dark:hover:bg-transparent"
+                        aria-label="Sort by"
+                      >
+                        <SelectValue>{group.group}</SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SORT_GROUPS.map((g) => (
+                          <SelectItem key={g.group} value={g.group}>
+                            {g.group}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <button
+                      type="button"
+                      disabled={directionless}
+                      onClick={() => {
+                        if (!directionless) {
+                          setSort(asc ? (group.desc ?? group.asc) : group.asc);
+                        }
+                      }}
+                      aria-label={`Sort direction: ${dirLabel}`}
+                      title={dirLabel}
+                      className="flex h-full items-center border-input border-l px-2.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-40 dark:hover:bg-input/50"
+                    >
+                      {asc ? (
+                        <SortAscendingIcon className="size-4" />
+                      ) : (
+                        <SortDescendingIcon className="size-4" />
+                      )}
+                    </button>
+                  </div>
+                );
+              })()}
 
               <Tabs value={view} onValueChange={(v) => setView(v as ViewMode)}>
                 <TabsList className="h-8">

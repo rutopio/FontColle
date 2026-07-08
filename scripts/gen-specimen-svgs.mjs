@@ -86,9 +86,11 @@ async function fontUrl(family, { wght, wdth } = {}) {
 // Fetch the .ttf css2 serves for the old UA and parse it with opentype.js.
 async function loadFont(family, axes) {
   const url = await fontUrl(family, axes);
-  const buf = Buffer.from(await fetch(url, {
-    headers: { "User-Agent": UA },
-  }).then((r) => r.arrayBuffer()));
+  const buf = Buffer.from(
+    await fetch(url, {
+      headers: { "User-Agent": UA },
+    }).then((r) => r.arrayBuffer())
+  );
   return opentype.parse(
     buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength)
   );
