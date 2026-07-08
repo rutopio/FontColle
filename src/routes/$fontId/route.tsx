@@ -4,6 +4,7 @@ import { FilterLayout } from "@/components/filter-layout";
 import { deriveFacets } from "@/lib/fonts/facets";
 import { DEFAULT_ON } from "@/lib/fonts/features";
 import { getFontById } from "@/lib/fonts/queries";
+import { pageTitle } from "@/lib/site";
 import { Detail } from "./-components/detail";
 import { DetailSidebar } from "./-components/detail-sidebar";
 
@@ -16,6 +17,21 @@ export const Route = createFileRoute("/$fontId")({
     const font = await getFontById({ data: params.fontId });
     if (!font) throw notFound();
     return { font: { ...font, facets: deriveFacets(font) } };
+  },
+  head: ({ loaderData }) => {
+    const name = loaderData?.font.name;
+    if (!name) return {};
+    const description = `Preview ${name}, browse its weights and OpenType features, and open it on Google Fonts.`;
+    return {
+      meta: [
+        { title: pageTitle(name) },
+        { name: "description", content: description },
+        { property: "og:title", content: pageTitle(name) },
+        { property: "og:description", content: description },
+        { name: "twitter:title", content: pageTitle(name) },
+        { name: "twitter:description", content: description },
+      ],
+    };
   },
   notFoundComponent: () => (
     <div className="mx-auto w-full max-w-(--breakpoint-2xl) p-6">
