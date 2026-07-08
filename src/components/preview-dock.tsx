@@ -1,4 +1,5 @@
 import { XIcon } from "@phosphor-icons/react";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { usePreview } from "@/lib/preview/context";
 
@@ -18,14 +19,15 @@ export function PreviewDock() {
           aria-label="Preview text"
         />
         {text && (
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setText("")}
             aria-label="Clear preview text"
-            className="flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="shrink-0 rounded-full text-muted-foreground"
           >
             <XIcon className="size-4" />
-          </button>
+          </Button>
         )}
       </div>
     </div>

@@ -113,14 +113,19 @@ export function Detail({
                 </button>
               ))}
             </div>
-            <a
-              href={`https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`}
-              target="_blank"
-              rel="noreferrer"
-              className="rounded-lg border border-foreground bg-foreground px-4 py-2 font-medium text-background text-sm"
+            <Button
+              render={
+                // biome-ignore lint/a11y/useAnchorContent: Button injects its children into this anchor via the render prop (aria-label also set); the static rule can't see through it.
+                <a
+                  href={`https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={`Download ${font.name} on Google Fonts`}
+                />
+              }
             >
               Download ↗
-            </a>
+            </Button>
           </div>
         </>
       }
