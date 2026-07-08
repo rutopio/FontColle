@@ -14,6 +14,14 @@ export interface FilterState {
   color: string[]; // "color" | "monochrome", at most one (radio-style)
 }
 
+// The slice of the filter a preview (card/row) needs to know about, to both
+// drive the live preview and highlight the trait badges that match. Bundled so
+// the grid passes one object instead of six loose arrays.
+export type FilterSelection = Pick<
+  FilterState,
+  "classes" | "facets" | "color" | "axes" | "weights" | "widths"
+>;
+
 export const emptyFilter: FilterState = {
   query: "",
   classes: [],

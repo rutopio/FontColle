@@ -1,9 +1,8 @@
 import { DownloadSimpleIcon, HeartIcon } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useMemo } from "react";
-import { Badge } from "@/components/ui/badge";
-import { isColorFont } from "@/lib/fonts/color";
-import { WIDTH_STEP_PCT } from "@/lib/fonts/filter";
+import { FontTraits } from "@/components/font-traits";
+import { type FilterSelection, WIDTH_STEP_PCT } from "@/lib/fonts/filter";
 import {
   ensureFontLoaded,
   ensureFontRangeLoaded,
@@ -20,20 +19,12 @@ interface Props {
   previewText: string;
   isFavorite: boolean;
   onToggleFavorite: (id: string) => void;
-  // Sidebar-selected weight/width (single-select, so at most one each). The
-  // preview applies them (pain point 4 driven from the filter).
-  selectedWeights: number[];
-  selectedWidths: number[];
-  // Sidebar-selected variable-axis tags and their slider positions (0-100%).
-  // Each font maps the percent onto its own axis range (see withSlider on
-  // Section) so preview reflects the drag live.
-  selectedAxes: string[];
+  // Active filter slice — drives both the live preview (weight/width/axes) and
+  // which trait badges render highlighted.
+  selection: FilterSelection;
+  // Session slider positions (0-100%) per selected variable axis. Not part of
+  // the filter: each font maps the percent onto its own axis range for preview.
   axisValues: Record<string, number>;
-  // Active filter selections, used to flag matching footer badges (secondary
-  // when this card's value is one the filter picked, outline otherwise).
-  selectedClasses: string[];
-  selectedFacets: string[];
-  selectedColor: string[];
 }
 
 export function FontCard({
@@ -41,14 +32,12 @@ export function FontCard({
   previewText,
   isFavorite,
   onToggleFavorite,
-  selectedWeights,
-  selectedWidths,
-  selectedAxes,
+  selection,
   axisValues,
-  selectedClasses,
-  selectedFacets,
-  selectedColor,
 }: Props) {
+  const selectedWeights = selection.weights.map(Number);
+  const selectedWidths = selection.widths.map(Number);
+  const selectedAxes = selection.axes;
   // Weight/Width are single-select in the sidebar, so the preview simply applies
   // the selected weight (default 400) and the selected width mapped onto this
   // font's wdth axis (variable only — static fonts have no adjustable width).
@@ -188,47 +177,7 @@ export function FontCard({
       )}
 
       <div className="flex flex-wrap gap-1">
-        {/* A footer badge turns secondary when its value is one the filter
-            picked (e.g. sidebar "Sans" highlights the category badge). */}
-        <Badge
-          variant={
-            selectedClasses.includes(font.class) ? "secondary" : "outline"
-          }
-          className="text-[10px]"
-        >
-          {font.class}
-        </Badge>
-        <Badge
-          variant={
-            // Variable also lights up when any variable-axis pill is picked
-            // (an axis selection is inherently a "variable" filter).
-            (
-              font.isVariable
-                ? selectedFacets.includes("variable") || selectedAxes.length > 0
-                : selectedFacets.includes("static")
-            )
-              ? "secondary"
-              : "outline"
-          }
-          className="text-[10px]"
-        >
-          {font.isVariable ? "Variable" : "Static"}
-        </Badge>
-        <Badge
-          variant={
-            selectedColor.includes(isColorFont(font) ? "color" : "monochrome")
-              ? "secondary"
-              : "outline"
-          }
-          className="text-[10px]"
-        >
-          {isColorFont(font) ? "Colorful" : "Monochrome"}
-        </Badge>
-        {font.features.length > 0 && (
-          <Badge variant="outline" className="text-[10px]">
-            {font.features.length} feature{font.features.length > 1 ? "s" : ""}
-          </Badge>
-        )}
+        <FontTraits font={font} selection={selection} />
       </div>
     </Link>
   );
