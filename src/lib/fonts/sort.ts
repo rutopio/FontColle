@@ -68,6 +68,86 @@ export const SORT_LABELS: Record<SortKey, string> = Object.fromEntries(
   )
 ) as Record<SortKey, string>;
 
+// The sort control is split into a group picker (left) and a direction toggle
+// (right). Each group maps its two directions to a concrete SortKey. `asc` is
+// the "SortAscending" direction (A→Z, oldest, fewest); `desc` its reverse.
+// `ascLabel`/`descLabel` name the directions for the toggle's tooltip/label.
+// Groups with no `desc` (Popularity, Trending) are directionless: they have a
+// single ranking and the direction toggle is disabled for them.
+export type SortGroup = {
+  group: string;
+  asc: SortKey;
+  desc?: SortKey;
+  ascLabel: string;
+  descLabel?: string;
+};
+
+export const SORT_GROUPS: SortGroup[] = [
+  {
+    // Popularity and Trending are each their own precomputed ranking with no
+    // natural reverse, so they are separate directionless groups.
+    group: "Popularity",
+    asc: "popularity",
+    ascLabel: "Most popular",
+  },
+  {
+    group: "Trending",
+    asc: "trending",
+    ascLabel: "Trending",
+  },
+  {
+    group: "Name",
+    asc: "name-asc",
+    desc: "name-desc",
+    ascLabel: "A → Z",
+    descLabel: "Z → A",
+  },
+  {
+    group: "Creator",
+    asc: "creator-asc",
+    desc: "creator-desc",
+    ascLabel: "A → Z",
+    descLabel: "Z → A",
+  },
+  {
+    group: "Date added",
+    // Keep the ascending direction (SortAscending icon) consistent across
+    // groups: A→Z, newest, and most all sit on `asc`; their reverses on `desc`.
+    asc: "date-newest",
+    desc: "date-oldest",
+    ascLabel: "Newest",
+    descLabel: "Oldest",
+  },
+  {
+    group: "Glyphs",
+    asc: "glyphs-most",
+    desc: "glyphs-fewest",
+    ascLabel: "Most",
+    descLabel: "Fewest",
+  },
+  {
+    group: "Axes",
+    asc: "axes-most",
+    desc: "axes-fewest",
+    ascLabel: "Most",
+    descLabel: "Fewest",
+  },
+];
+
+// Resolve a SortKey to its group and whether it's the ascending direction.
+export function sortGroupOf(key: SortKey): { group: SortGroup; asc: boolean } {
+  for (const group of SORT_GROUPS) {
+    if (group.asc === key) return { group, asc: true };
+    if (group.desc === key) return { group, asc: false };
+  }
+  // Fallback to the default's group (popularity is always present).
+  return { group: SORT_GROUPS[0], asc: true };
+}
+
+// A directionless group (Popularity, Trending) has no reverse; the direction
+// toggle is disabled and does nothing for it.
+export const isDirectionless = (group: SortGroup) => group.desc == null;
+
 const byName = (a: FontRecord, b: FontRecord) =>
   a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
 
