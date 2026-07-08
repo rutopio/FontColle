@@ -5,7 +5,7 @@ import {
   TextAaIcon,
 } from "@phosphor-icons/react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import type { FilterState } from "@/lib/fonts/filter";
+import type { FacetIndex, FilterState } from "@/lib/fonts/filter";
 import { useScrollReset } from "@/lib/use-scroll-reset";
 import { CardGrid } from "./card-grid";
 import { CategoryCards } from "./category-cards";
@@ -16,18 +16,6 @@ import { LanguageSection } from "./language-section";
 import { Section } from "./section";
 import { VariableAxesSection } from "./variable-axes-section";
 import { WritingSystemSection } from "./writing-system-section";
-
-interface FacetIndex {
-  classes: [string, number][];
-  facets: [string, number][];
-  features: [string, number][];
-  axes: [string, number][];
-  weights: [string, number][];
-  widths: [string, number][];
-  wsScripts: [string, number][];
-  languages: [string, number][];
-  color: [string, number][];
-}
 
 interface Props {
   index: FacetIndex;

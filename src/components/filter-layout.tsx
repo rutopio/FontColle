@@ -1,9 +1,5 @@
 import { AppSidebar } from "@/components/app-sidebar";
-import {
-  SidebarInset,
-  SidebarProvider,
-  //   SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 
 // sidebar-09 shell for the list and detail pages: a two-level sidebar (icon
@@ -33,8 +29,8 @@ export function FilterLayout({
 }
 
 // Right side of both pages, matching sidebar-09: a full-width sticky header
-// flush to the inset edge (SidebarTrigger + separator + the page's header
-// content), then the page body constrained to max-w below it.
+// flush to the inset edge (the page's header content), then the page body
+// constrained to max-w below it. The sidebar stays open, so there's no trigger.
 export function Column({
   header,
   headerClassName,
@@ -47,8 +43,6 @@ export function Column({
   return (
     <div className="flex min-w-0 flex-1 flex-col">
       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-border border-b bg-background px-4">
-        {/* <SidebarTrigger className="-ml-1" /> */}
-
         <div className={cn("flex flex-1 items-center gap-3", headerClassName)}>
           {header}
         </div>
