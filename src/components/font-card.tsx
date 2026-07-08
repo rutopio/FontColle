@@ -2,6 +2,7 @@ import { DownloadSimpleIcon, HeartIcon } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
+import { isColorFont } from "@/lib/fonts/color";
 import { WIDTH_STEP_PCT } from "@/lib/fonts/filter";
 import {
   ensureFontLoaded,
@@ -27,6 +28,11 @@ interface Props {
   // Section) so preview reflects the drag live.
   selectedAxes: string[];
   axisValues: Record<string, number>;
+  // Active filter selections, used to flag matching footer badges (secondary
+  // when this card's value is one the filter picked, outline otherwise).
+  selectedClasses: string[];
+  selectedFacets: string[];
+  selectedColor: string[];
 }
 
 export function FontCard({
@@ -38,6 +44,9 @@ export function FontCard({
   selectedWidths,
   selectedAxes,
   axisValues,
+  selectedClasses,
+  selectedFacets,
+  selectedColor,
 }: Props) {
   // Weight/Width are single-select in the sidebar, so the preview simply applies
   // the selected weight (default 400) and the selected width mapped onto this
@@ -110,21 +119,13 @@ export function FontCard({
       className="flex h-72 flex-col gap-4 overflow-hidden rounded-lg border bg-card p-5 transition-colors hover:border-foreground focus-visible:border-foreground focus-visible:outline-none"
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <h3 className="truncate font-medium text-sm">{font.name}</h3>
-            <Badge variant="secondary" className="shrink-0 text-[10px]">
-              {font.class}
-            </Badge>
-            <span className="shrink-0 text-muted-foreground text-xs">
-              {font.features.length} features
-            </span>
-          </div>
-          {/* {font.designer && ( */}
-          <p className="truncate text-muted-foreground text-xs">
-            {font.designer ? font.designer : ""}
-          </p>
-          {/* )} */}
+        <div className="flex min-w-0 flex-col gap-2">
+          <h3 className="truncate font-medium text-sm">{font.name}</h3>
+          {font.designer && (
+            <p className="truncate text-muted-foreground text-xs">
+              {font.designer}
+            </p>
+          )}
         </div>
         <div className="flex shrink-0 items-center gap-4">
           <button
@@ -186,16 +187,47 @@ export function FontCard({
       )}
 
       <div className="flex flex-wrap gap-1">
-        {font.isVariable && (
-          <Badge variant="secondary" className="text-[10px]">
-            Variable
+        {/* A footer badge turns secondary when its value is one the filter
+            picked (e.g. sidebar "Sans" highlights the category badge). */}
+        <Badge
+          variant={
+            selectedClasses.includes(font.class) ? "secondary" : "outline"
+          }
+          className="text-[10px]"
+        >
+          {font.class}
+        </Badge>
+        <Badge
+          variant={
+            // Variable also lights up when any variable-axis pill is picked
+            // (an axis selection is inherently a "variable" filter).
+            (
+              font.isVariable
+                ? selectedFacets.includes("variable") || selectedAxes.length > 0
+                : selectedFacets.includes("static")
+            )
+              ? "secondary"
+              : "outline"
+          }
+          className="text-[10px]"
+        >
+          {font.isVariable ? "Variable" : "Static"}
+        </Badge>
+        <Badge
+          variant={
+            selectedColor.includes(isColorFont(font) ? "color" : "monochrome")
+              ? "secondary"
+              : "outline"
+          }
+          className="text-[10px]"
+        >
+          {isColorFont(font) ? "Colorful" : "Monochrome"}
+        </Badge>
+        {font.features.length > 0 && (
+          <Badge variant="outline" className="text-[10px]">
+            {font.features.length} feature{font.features.length > 1 ? "s" : ""}
           </Badge>
         )}
-        {font.axes.map((a) => (
-          <Badge key={a.tag} variant="outline" className="text-[10px]">
-            {a.name ?? a.tag}
-          </Badge>
-        ))}
       </div>
     </Link>
   );

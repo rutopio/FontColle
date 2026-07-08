@@ -19,6 +19,11 @@ interface Props {
   // forwarded to each card so the preview reflects the live slider drag.
   selectedAxes: string[];
   axisValues: Record<string, number>;
+  // Selected class names, facet tags (variable/static), and color values, so a
+  // card can flag the footer badges that match the active filter.
+  selectedClasses: string[];
+  selectedFacets: string[];
+  selectedColor: string[];
 }
 
 // Grid column count matches the CSS breakpoints (md:2, lg:3). Row mode is always
@@ -47,6 +52,9 @@ export function FontGrid({
   selectedWidths,
   selectedAxes,
   axisValues,
+  selectedClasses,
+  selectedFacets,
+  selectedColor,
 }: Props) {
   const listRef = useRef<HTMLDivElement>(null);
   const [cols, setCols] = useState(view === "row" ? 1 : 3);
@@ -107,6 +115,10 @@ export function FontGrid({
         previewText={previewText}
         isFavorite={favorites.includes(font.id)}
         onToggleFavorite={onToggleFavorite}
+        selectedClasses={selectedClasses}
+        selectedFacets={selectedFacets}
+        selectedColor={selectedColor}
+        selectedAxes={selectedAxes}
       />
     ) : (
       <FontCard
@@ -119,6 +131,9 @@ export function FontGrid({
         selectedWidths={selectedWidths}
         selectedAxes={selectedAxes}
         axisValues={axisValues}
+        selectedClasses={selectedClasses}
+        selectedFacets={selectedFacets}
+        selectedColor={selectedColor}
       />
     );
 

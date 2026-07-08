@@ -9,6 +9,7 @@ import type { FilterState } from "@/lib/fonts/filter";
 import { useScrollReset } from "@/lib/use-scroll-reset";
 import { CardGrid } from "./card-grid";
 import { CategoryCards } from "./category-cards";
+import { ColorSection } from "./color-section";
 import { weightLabel, widthLabel } from "./constants";
 import { FeatureSection } from "./feature-section";
 import { LanguageSection } from "./language-section";
@@ -25,6 +26,7 @@ interface FacetIndex {
   widths: [string, number][];
   wsScripts: [string, number][];
   languages: [string, number][];
+  color: [string, number][];
 }
 
 interface Props {
@@ -93,6 +95,15 @@ export function FilterSidebar({
     });
   };
 
+  // Color is radio-style with no linked axis: clicking the current value clears
+  // it, clicking the other replaces it.
+  const selectColor = (value: string) => {
+    onChange({
+      ...filter,
+      color: filter.color.includes(value) ? [] : [value],
+    });
+  };
+
   // Clear only the values a given section shows (Properties/Subsets share the
   // facets key, so scope the reset to that section's own items).
   const clearSection = (
@@ -135,6 +146,12 @@ export function FilterSidebar({
             selectedLanguages={filter.languages}
             onToggleLanguage={(v) => toggle("languages", v)}
             onResetLanguages={() => onChange({ ...filter, languages: [] })}
+          />
+          <ColorSection
+            items={index.color}
+            selected={filter.color}
+            onToggle={selectColor}
+            onReset={() => onChange({ ...filter, color: [] })}
           />
           <CardGrid
             title="Weight"

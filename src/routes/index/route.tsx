@@ -177,7 +177,8 @@ function App() {
     filter.weights.length +
     filter.widths.length +
     filter.scripts.length +
-    filter.languages.length;
+    filter.languages.length +
+    filter.color.length;
 
   return (
     <FilterLayout
@@ -202,13 +203,13 @@ function App() {
             <div className="flex items-center gap-3 text-muted-foreground text-sm">
               <span>{results.length} fonts</span>
               {activeCount > 0 && (
-                <button
-                  type="button"
+                <Button
+                  variant="ghost"
                   onClick={reset}
-                  className="underline underline-offset-2 hover:text-foreground"
+                  className="text-destructive"
                 >
                   Clear {activeCount} filters
-                </button>
+                </Button>
               )}
             </div>
 
@@ -311,6 +312,9 @@ function App() {
             selectedWidths={filter.widths.map(Number)}
             selectedAxes={filter.axes}
             axisValues={axisValues}
+            selectedClasses={filter.classes}
+            selectedFacets={filter.facets}
+            selectedColor={filter.color}
           />
         )}
       </Column>

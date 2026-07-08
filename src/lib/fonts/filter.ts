@@ -1,3 +1,4 @@
+import { isColorFont } from "./color";
 import type { FontRecord } from "./types";
 
 export interface FilterState {
@@ -10,6 +11,7 @@ export interface FilterState {
   widths: string[]; // usWidthClass steps ("1".."9"), OR within
   scripts: string[]; // writing-system codes ("Latn"…), AND across
   languages: string[]; // language ids ("en_Latn"…), AND across
+  color: string[]; // "color" | "monochrome", at most one (radio-style)
 }
 
 export const emptyFilter: FilterState = {
@@ -22,6 +24,7 @@ export const emptyFilter: FilterState = {
   widths: [],
   scripts: [],
   languages: [],
+  color: [],
 };
 
 // Standard weight steps we expose as pills. Mirrors the harvester's snapping.
@@ -110,6 +113,7 @@ export interface FilterSearch {
   width?: string;
   script?: string;
   lang?: string;
+  color?: string;
   view?: "grid" | "row"; // display preference, not a filter
   sort?: string; // sort key, not a filter
 }
@@ -128,6 +132,7 @@ export function searchToFilter(s: FilterSearch): FilterState {
     widths: splitCsv(s.width),
     scripts: splitCsv(s.script),
     languages: splitCsv(s.lang),
+    color: splitCsv(s.color),
   };
 }
 
@@ -142,6 +147,7 @@ export function filterToSearch(f: FilterState): FilterSearch {
   if (f.widths.length) s.width = f.widths.join(",");
   if (f.scripts.length) s.script = f.scripts.join(",");
   if (f.languages.length) s.lang = f.languages.join(",");
+  if (f.color.length) s.color = f.color.join(",");
   return s;
 }
 
@@ -162,6 +168,7 @@ export function parseFilterSearch(raw: Record<string, unknown>): FilterSearch {
     width: numCsv(raw.width),
     script: str(raw.script),
     lang: str(raw.lang),
+    color: str(raw.color),
     view: raw.view === "row" ? "row" : undefined,
     sort: str(raw.sort),
   };
@@ -247,6 +254,11 @@ export function applyFilters(
       !f.languages.every((l) => font.languages.includes(l))
     )
       return false;
+    // Color: at most one of "color" / "monochrome" (radio-style).
+    if (f.color.length) {
+      const wantColor = f.color.includes("color");
+      if (isColorFont(font) !== wantColor) return false;
+    }
     return true;
   });
 }
@@ -261,6 +273,7 @@ export function buildFacetIndex(fonts: FontRecord[]) {
   const widths = new Map<string, number>();
   const wsScripts = new Map<string, number>(); // real writing systems (Latn…)
   const languages = new Map<string, number>();
+  const color = new Map<string, number>();
   const bump = (m: Map<string, number>, k: string) =>
     m.set(k, (m.get(k) ?? 0) + 1);
 
@@ -273,6 +286,7 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     for (const w of familyWidthSet(font)) bump(widths, String(w));
     for (const s of font.scripts) bump(wsScripts, s);
     for (const l of font.languages) bump(languages, l);
+    bump(color, isColorFont(font) ? "color" : "monochrome");
   }
   const sorted = (m: Map<string, number>) =>
     [...m.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
@@ -289,5 +303,10 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     // real writing systems + languages (language-support task)
     wsScripts: sorted(wsScripts),
     languages: sorted(languages),
+    // Monochrome first, then Colorful (fixed order, not by count).
+    color: [
+      ["monochrome", color.get("monochrome") ?? 0],
+      ["color", color.get("color") ?? 0],
+    ] as [string, number][],
   };
 }
