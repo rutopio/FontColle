@@ -10,6 +10,7 @@ import {
   previewFontFamily,
   useFontLoaded,
 } from "@/lib/fonts/loader";
+import { variationSettings } from "@/lib/fonts/preview-style";
 import { specimenFor } from "@/lib/fonts/specimen";
 import type { FontRecord } from "@/lib/fonts/types";
 import { cn } from "@/lib/utils";
@@ -101,13 +102,13 @@ export function FontCard({
   }, [font.name, font.isVariable, font.axes, activeWeight]);
 
   const fontLoaded = useFontLoaded(font.name);
-  const variationSettings = Object.entries(variationCoords)
-    .map(([tag, value]) => `"${tag}" ${value}`)
-    .join(", ");
+  const settings = variationSettings(variationCoords);
   const previewStyle: React.CSSProperties = {
     fontFamily: previewFontFamily(font.name, fontLoaded),
+    // The card drives weight from the sidebar (activeWeight) or the wght slider
+    // (axisWeight), not from a coords map, so it sets font-weight directly.
     fontWeight: axisWeight ?? activeWeight,
-    fontVariationSettings: variationSettings || undefined,
+    fontVariationSettings: settings || undefined,
     // Smooth the weight/axis change instead of a hard jump.
     transition: "font-weight 200ms ease, font-variation-settings 200ms ease",
   };
