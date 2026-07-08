@@ -1,15 +1,19 @@
+import { cn } from "@/lib/utils";
+
 // A titled card section on the detail page, with an optional count badge.
 export function Panel({
   label,
   count,
+  className,
   children,
 }: {
   label: string;
   count?: number;
+  className?: string;
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-lg border bg-card p-5">
+    <section className={cn("rounded-lg border bg-card p-5", className)}>
       <div className="mb-3.5 flex items-baseline justify-between">
         <h2 className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
           {label}
