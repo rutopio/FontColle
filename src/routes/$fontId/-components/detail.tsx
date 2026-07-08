@@ -5,6 +5,7 @@ import { Column } from "@/components/filter-layout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { buildFeatureSettings } from "@/lib/fonts/features";
+import { scriptLabel } from "@/lib/fonts/labels";
 import {
   ensureFontRangeLoaded,
   previewFontFamily,
@@ -139,30 +140,31 @@ export function Detail({
 
       {tab === "sample" && (
         <>
-          {/* TYPE TESTER */}
+          {/* TYPE TESTER — named-instance chips set the preview axes; the
+              sentence below is the editable specimen. */}
           <Panel label="Type tester">
-            <p
-              dir="auto"
-              style={specimenStyle}
-              className="break-words leading-tight"
-            >
-              {specimen}
-            </p>
-          </Panel>
-
-          {/* NAMED INSTANCES */}
-          {font.instances.length > 0 && (
-            <Panel label="Named instances" count={font.instances.length}>
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-2.5">
-                {font.instances.map((inst) => (
-                  <button
-                    key={`${inst.italic ? "i" : "u"}:${inst.name}`}
-                    type="button"
-                    onClick={() => onLoadInstance(inst.coords, inst.italic)}
-                    className="rounded-md border p-3 text-left transition-colors hover:border-foreground"
-                  >
-                    <span
-                      className="text-2xl"
+            {font.instances.length > 0 && (
+              <div className="mb-4 flex flex-wrap gap-2">
+                {font.instances.map((inst) => {
+                  // Active when the preview still matches this instance:
+                  // same italic state and every axis it sets unchanged.
+                  // Nudging any of those axes breaks the match, so the
+                  // chip deselects on its own.
+                  const active =
+                    italic === inst.italic &&
+                    Object.entries(inst.coords).every(
+                      ([t, v]) => axisState[t] === v
+                    );
+                  return (
+                    <button
+                      key={`chip:${inst.italic ? "i" : "u"}:${inst.name}`}
+                      type="button"
+                      onClick={() => onLoadInstance(inst.coords, inst.italic)}
+                      className={`rounded-md border px-3 py-1.5 text-xs transition-colors ${
+                        active
+                          ? "border-primary bg-muted text-foreground"
+                          : "hover:border-foreground"
+                      }`}
                       style={{
                         fontFamily: previewFontFamily(font.name, fontLoaded),
                         fontWeight: inst.coords.wght
@@ -174,16 +176,18 @@ export function Detail({
                           .join(", "),
                       }}
                     >
-                      Ag
-                    </span>
-                    <span className="mt-2 block font-mono text-muted-foreground text-xs">
                       {inst.name}
-                    </span>
-                  </button>
-                ))}
+                    </button>
+                  );
+                })}
               </div>
-            </Panel>
-          )}
+            )}
+            <TypeTester
+              specimen={specimen}
+              style={specimenStyle}
+              onEditText={setText}
+            />
+          </Panel>
 
           {/* NAMED INSTANCES, ROW VIEW — one instance per block: its label on the
           first line, an editable preview of it on the second. Editing any row's
@@ -208,9 +212,9 @@ export function Detail({
 
       {tab === "detail" && (
         <>
-          {/* SPECS + SUBSETS */}
-          <div className="grid gap-4 md:grid-cols-1">
-            <Panel label="Specs">
+          {/* SPECS + SUBSETS + WRITING SYSTEMS — one row, 2:1:1 columns. */}
+          <div className="grid gap-4 md:grid-cols-3">
+            <Panel label="Specs" className="md:col-span-1">
               <Spec label="Variable" value={font.isVariable ? "Yes" : "No"} />
               <Spec label="Axes" value={String(font.axes.length)} />
               <Spec
@@ -237,25 +241,89 @@ export function Detail({
               {font.license && <Spec label="License" value={font.license} />}
             </Panel>
             <Panel label="Subsets">
-              <div className="flex flex-wrap gap-1.5">
+              <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-sm">
                 {font.subsets
                   .filter((s) => s !== "menu")
                   .map((s) => (
-                    <Badge key={s} variant="outline">
+                    <span key={s} className="truncate text-muted-foreground">
                       {s}
-                    </Badge>
+                    </span>
                   ))}
               </div>
             </Panel>
+            {font.scripts.length > 0 && (
+              <Panel label="Writing systems" count={font.scripts.length}>
+                <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-sm">
+                  {font.scripts.map((s) => (
+                    <span key={s} className="truncate text-muted-foreground">
+                      {scriptLabel(s)}
+                    </span>
+                  ))}
+                </div>
+              </Panel>
+            )}
           </div>
 
-          {/* WRITING SYSTEMS + LANGUAGES */}
-          {(font.scripts.length > 0 || font.languages.length > 0) && (
-            <LanguageSupport font={font} />
-          )}
+          {/* LANGUAGES — full width. */}
+          {font.languages.length > 0 && <LanguageSupport font={font} />}
         </>
       )}
     </Column>
+  );
+}
+
+// The main preview line, click-to-edit like the instance rows. Clicking swaps
+// the text for a same-styled textarea seeded with the current text; typing
+// updates the shared preview live, so every surface changes together.
+function TypeTester({
+  specimen,
+  style,
+  onEditText,
+}: {
+  specimen: string;
+  style: React.CSSProperties;
+  onEditText: (v: string) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+
+  if (editing) {
+    return (
+      <textarea
+        dir="auto"
+        value={draft}
+        rows={1}
+        // biome-ignore lint/a11y/noAutofocus: focus the field the user just opened.
+        autoFocus
+        aria-label="Preview text"
+        onChange={(e) => {
+          setDraft(e.target.value);
+          onEditText(e.target.value.trim());
+        }}
+        onBlur={() => setEditing(false)}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") setEditing(false);
+        }}
+        style={style}
+        className="field-sizing-content w-full resize-none break-words bg-transparent leading-tight outline-none"
+      />
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        setDraft(specimen);
+        setEditing(true);
+      }}
+      aria-label="Edit preview text"
+      dir="auto"
+      style={style}
+      className="w-full cursor-text break-words text-start leading-tight"
+    >
+      {specimen}
+    </button>
   );
 }
 
@@ -289,7 +357,7 @@ function InstanceRow({
   return (
     <div className="flex flex-col gap-4 overflow-hidden border-border border-t py-3 first:border-t-0">
       <span className="flex items-baseline gap-2">
-        <span className=" text-sm">{inst.name}</span>
+        <span className="text-sm">{inst.name}</span>
         <span className="truncate font-mono text-muted-foreground text-xs">
           {Object.entries(inst.coords)
             .map(([t, v]) => `${t} ${v}`)

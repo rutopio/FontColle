@@ -116,7 +116,7 @@ export function DetailSidebar({
             <div className="flex items-center justify-between gap-2">
               <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase tracking-wide">
                 <TextAaIcon className="size-4" />
-                Size
+                Font Size
               </h2>
               <EditableValue
                 value={size}

@@ -1,18 +1,13 @@
 import { CaretDownIcon } from "@phosphor-icons/react";
 import { useMemo, useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import {
-  groupLanguagesByRegion,
-  languageLabel,
-  scriptLabel,
-} from "@/lib/fonts/labels";
+import { groupLanguagesByRegion, languageLabel } from "@/lib/fonts/labels";
 import type { FontRecord } from "@/lib/fonts/types";
 import { cn } from "@/lib/utils";
 import { Panel } from "./panel";
 
-// Read-only writing-system + language support. Scripts render as pills;
-// languages are grouped by continent into accordions (Africa/Americas/Asia/
-// Europe/Oceania), matching how the Google Fonts specimen lists them.
+// Read-only language support: languages grouped by continent into accordions
+// (Africa/Americas/Asia/Europe/Oceania), matching how the Google Fonts
+// specimen lists them. Writing systems live in the specs row on the detail tab.
 export function LanguageSupport({ font }: { font: FontRecord }) {
   const regions = useMemo(
     () => groupLanguagesByRegion(font.languages),
@@ -20,33 +15,18 @@ export function LanguageSupport({ font }: { font: FontRecord }) {
   );
 
   return (
-    <div className="grid gap-4 md:grid-cols-1">
-      {font.scripts.length > 0 && (
-        <Panel label="Writing systems" count={font.scripts.length}>
-          <div className="flex flex-wrap gap-1.5">
-            {font.scripts.map((s) => (
-              <Badge key={s} variant="secondary">
-                {scriptLabel(s)}
-              </Badge>
-            ))}
-          </div>
-        </Panel>
-      )}
-      {font.languages.length > 0 && (
-        <Panel label="Languages" count={font.languages.length}>
-          <div className="flex flex-col">
-            {regions.map(({ region, ids }, i) => (
-              <RegionAccordion
-                key={region}
-                region={region}
-                ids={ids}
-                defaultOpen={i === 0}
-              />
-            ))}
-          </div>
-        </Panel>
-      )}
-    </div>
+    <Panel label="Languages" count={font.languages.length}>
+      <div className="flex flex-col">
+        {regions.map(({ region, ids }, i) => (
+          <RegionAccordion
+            key={region}
+            region={region}
+            ids={ids}
+            defaultOpen={i === 0}
+          />
+        ))}
+      </div>
+    </Panel>
   );
 }
 
