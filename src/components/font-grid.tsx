@@ -2,6 +2,7 @@ import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { FontCard } from "@/components/font-card";
 import { FontRow } from "@/components/font-row";
+import type { FilterSelection } from "@/lib/fonts/filter";
 import type { FontRecord } from "@/lib/fonts/types";
 
 export type ViewMode = "grid" | "row";
@@ -12,18 +13,11 @@ interface Props {
   favorites: string[];
   onToggleFavorite: (id: string) => void;
   view: ViewMode;
-  // Sidebar-selected weight/width steps (click order), forwarded to each card.
-  selectedWeights: number[];
-  selectedWidths: number[];
-  // Sidebar-selected variable-axis tags and their slider positions (0-100%),
-  // forwarded to each card so the preview reflects the live slider drag.
-  selectedAxes: string[];
+  // Active filter slice, forwarded to each card/row to drive the live preview
+  // and highlight the matching trait badges.
+  selection: FilterSelection;
+  // Session slider positions (0-100%) per selected variable axis.
   axisValues: Record<string, number>;
-  // Selected class names, facet tags (variable/static), and color values, so a
-  // card can flag the footer badges that match the active filter.
-  selectedClasses: string[];
-  selectedFacets: string[];
-  selectedColor: string[];
 }
 
 // Grid column count matches the CSS breakpoints (md:2, lg:3). Row mode is always
@@ -48,13 +42,8 @@ export function FontGrid({
   favorites,
   onToggleFavorite,
   view,
-  selectedWeights,
-  selectedWidths,
-  selectedAxes,
+  selection,
   axisValues,
-  selectedClasses,
-  selectedFacets,
-  selectedColor,
 }: Props) {
   const listRef = useRef<HTMLDivElement>(null);
   const [cols, setCols] = useState(view === "row" ? 1 : 3);
@@ -115,10 +104,7 @@ export function FontGrid({
         previewText={previewText}
         isFavorite={favorites.includes(font.id)}
         onToggleFavorite={onToggleFavorite}
-        selectedClasses={selectedClasses}
-        selectedFacets={selectedFacets}
-        selectedColor={selectedColor}
-        selectedAxes={selectedAxes}
+        selection={selection}
       />
     ) : (
       <FontCard
@@ -127,13 +113,8 @@ export function FontGrid({
         previewText={previewText}
         isFavorite={favorites.includes(font.id)}
         onToggleFavorite={onToggleFavorite}
-        selectedWeights={selectedWeights}
-        selectedWidths={selectedWidths}
-        selectedAxes={selectedAxes}
+        selection={selection}
         axisValues={axisValues}
-        selectedClasses={selectedClasses}
-        selectedFacets={selectedFacets}
-        selectedColor={selectedColor}
       />
     );
 

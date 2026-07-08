@@ -1,8 +1,8 @@
 import { DownloadSimpleIcon, HeartIcon } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { Badge } from "@/components/ui/badge";
-import { isColorFont } from "@/lib/fonts/color";
+import { FontTraits } from "@/components/font-traits";
+import type { FilterSelection } from "@/lib/fonts/filter";
 import {
   ensureFontLoaded,
   previewFontFamily,
@@ -17,12 +17,9 @@ interface Props {
   previewText: string;
   isFavorite: boolean;
   onToggleFavorite: (id: string) => void;
-  // Active filter selections, so footer badges highlight (secondary) when they
-  // match the filter — mirrors FontCard.
-  selectedClasses: string[];
-  selectedFacets: string[];
-  selectedColor: string[];
-  selectedAxes: string[];
+  // Active filter slice, so footer badges highlight when they match — mirrors
+  // FontCard.
+  selection: FilterSelection;
 }
 
 // Row layout (Google Fonts style): one family per full-width row. Family name +
@@ -32,10 +29,7 @@ export function FontRow({
   previewText,
   isFavorite,
   onToggleFavorite,
-  selectedClasses,
-  selectedFacets,
-  selectedColor,
-  selectedAxes,
+  selection,
 }: Props) {
   useEffect(() => {
     const weights = font.instances.map((i) => i.coords.wght ?? 400);
@@ -58,47 +52,12 @@ export function FontRow({
               {font.designer}
             </span>
           )}
-          {/* Same footer badges as FontCard: category / Variable-Static /
-              Monochrome-Colorful / feature count, secondary when filtered. */}
-          <Badge
-            variant={
-              selectedClasses.includes(font.class) ? "secondary" : "outline"
-            }
-            className="shrink-0 text-[10px]"
-          >
-            {font.class}
-          </Badge>
-          <Badge
-            variant={
-              (
-                font.isVariable
-                  ? selectedFacets.includes("variable") ||
-                    selectedAxes.length > 0
-                  : selectedFacets.includes("static")
-              )
-                ? "secondary"
-                : "outline"
-            }
-            className="shrink-0 text-[10px]"
-          >
-            {font.isVariable ? "Variable" : "Static"}
-          </Badge>
-          <Badge
-            variant={
-              selectedColor.includes(isColorFont(font) ? "color" : "monochrome")
-                ? "secondary"
-                : "outline"
-            }
-            className="shrink-0 text-[10px]"
-          >
-            {isColorFont(font) ? "Colorful" : "Monochrome"}
-          </Badge>
-          {font.features.length > 0 && (
-            <Badge variant="outline" className="shrink-0 text-[10px]">
-              {font.features.length} feature
-              {font.features.length > 1 ? "s" : ""}
-            </Badge>
-          )}
+          {/* Same footer badges as FontCard, kept from wrapping (shrink-0). */}
+          <FontTraits
+            font={font}
+            selection={selection}
+            badgeClassName="shrink-0"
+          />
         </div>
         <div className="flex shrink-0 items-center gap-4">
           <button
