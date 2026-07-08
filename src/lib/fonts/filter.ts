@@ -271,6 +271,9 @@ export function applyFilters(
   });
 }
 
+/** The selectable filter values with family counts, keyed by section. */
+export type FacetIndex = ReturnType<typeof buildFacetIndex>;
+
 /** Build the set of selectable values with counts, from the full dataset. */
 export function buildFacetIndex(fonts: FontRecord[]) {
   const classes = new Map<string, number>();

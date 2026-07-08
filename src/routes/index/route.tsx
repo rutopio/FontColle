@@ -28,11 +28,11 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFilter } from "@/lib/filter/context";
-import { buildFacetIndex } from "@/lib/fonts/data";
 import { withFacets } from "@/lib/fonts/facets";
 import { useFavorites } from "@/lib/fonts/favorites";
 import {
   applyFilters,
+  buildFacetIndex,
   type FilterSearch,
   type FilterState,
   filterToSearch,
