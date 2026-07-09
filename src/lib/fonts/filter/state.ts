@@ -98,6 +98,23 @@ export function filterToSearch(f: FilterState): FilterSearch {
   return s;
 }
 
+/** How many filter values are active across every section (excludes the text
+ *  query). Drives the "Clear N filters" affordance. */
+export function activeFilterCount(f: FilterState): number {
+  return (
+    f.classes.length +
+    f.facets.length +
+    f.features.length +
+    f.axes.length +
+    f.weights.length +
+    f.widths.length +
+    f.scripts.length +
+    f.languages.length +
+    f.color.length +
+    f.colorFormats.length
+  );
+}
+
 /** Validate/coerce raw URL search into FilterSearch (drops unknown keys). */
 export function parseFilterSearch(raw: Record<string, unknown>): FilterSearch {
   const str = (v: unknown) => (typeof v === "string" ? v : undefined);
