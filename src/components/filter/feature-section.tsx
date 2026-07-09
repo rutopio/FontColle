@@ -1,6 +1,6 @@
-import { ToggleRightIcon } from "@phosphor-icons/react";
+import { MagnifyingGlassIcon, ToggleRightIcon } from "@phosphor-icons/react";
 import { useMemo, useState } from "react";
-import { groupFeatures } from "@/lib/fonts/features";
+import { featureName, groupFeatures } from "@/lib/fonts/features";
 import { Pills } from "./section";
 import { SectionHeader, type SortMode } from "./section-header";
 
@@ -9,7 +9,8 @@ import { SectionHeader, type SortMode } from "./section-header";
 // script shaping, …) under a single header. Every tag is rendered — rare ones
 // collapse behind each sub-list's own "N more" expander, which is what keeps
 // the 81 character variants and the 64 unregistered tags from swamping the
-// panel while still leaving them reachable.
+// panel while still leaving them reachable. The search box matches both the raw
+// tag and its human name, so "ligature" finds liga/dlig/hlig.
 export function FeatureSection({
   features,
   selectedFeatures,
@@ -22,16 +23,30 @@ export function FeatureSection({
   onResetFeatures: () => void;
 }) {
   const [sort, setSort] = useState<SortMode>("count");
+  const [query, setQuery] = useState("");
+  const q = query.trim().toLowerCase();
 
   // `features` arrives count-sorted; groupFeatures preserves that order within
   // each group. Alpha sort re-orders before grouping so each sub-list follows.
+  // While searching, drop non-matching tags and hand Pills a topNSet holding
+  // every survivor: a match must never stay hidden behind a "N more" expander.
   const groups = useMemo(() => {
     const ordered =
       sort === "alpha"
         ? [...features].sort((a, b) => a[0].localeCompare(b[0]))
         : features;
-    return groupFeatures(ordered);
-  }, [features, sort]);
+    const grouped = groupFeatures(ordered);
+    if (!q) return grouped;
+    return grouped.flatMap((g) => {
+      const items = g.items.filter(
+        ([tag]) =>
+          tag.toLowerCase().includes(q) ||
+          featureName(tag).toLowerCase().includes(q)
+      );
+      if (items.length === 0) return [];
+      return [{ ...g, items, topNSet: new Set(items.map(([tag]) => tag)) }];
+    });
+  }, [features, sort, q]);
 
   const hasSelection = features.some(([v]) => selectedFeatures.includes(v));
 
@@ -46,23 +61,40 @@ export function FeatureSection({
         sort={sort}
         onToggleSort={() => setSort((s) => (s === "count" ? "alpha" : "count"))}
       />
-      <div className="flex flex-col gap-5">
-        {groups.map(({ id, title, items, topNSet }) => (
-          <div key={id} className="flex flex-col gap-2">
-            <h3 className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
-              {title}
-            </h3>
-            <Pills
-              items={items}
-              selected={selectedFeatures}
-              onToggle={onToggleFeature}
-              topNSet={topNSet}
-              grid
-              spread
-            />
-          </div>
-        ))}
+      <div className="relative">
+        <MagnifyingGlassIcon className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search features"
+          aria-label="Search OpenType features"
+          className="w-full rounded-md border bg-transparent py-1.5 pr-2 pl-8 text-sm outline-none focus:border-foreground"
+        />
       </div>
+      {groups.length === 0 ? (
+        <p className="text-muted-foreground text-sm">
+          No features match “{query.trim()}”.
+        </p>
+      ) : (
+        <div className="flex flex-col gap-8">
+          {groups.map(({ id, title, items, topNSet }) => (
+            <div key={id} className="flex flex-col gap-2">
+              <h3 className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+                {title}
+              </h3>
+              <Pills
+                items={items}
+                selected={selectedFeatures}
+                onToggle={onToggleFeature}
+                topNSet={topNSet}
+                grid
+                spread
+              />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
