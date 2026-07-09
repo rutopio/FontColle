@@ -5,11 +5,8 @@ import {
   TextAaIcon,
 } from "@phosphor-icons/react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  type FacetIndex,
-  type FilterState,
-  FONT_TYPE_FACETS,
-} from "@/lib/fonts/filter";
+import * as actions from "@/lib/fonts/filter-actions";
+import type { FacetIndex, FilterState } from "@/lib/fonts/filter";
 import { useScrollReset } from "@/lib/use-scroll-reset";
 import { CardGrid } from "./card-grid";
 import { CategoryCards } from "./category-cards";
@@ -43,128 +40,25 @@ export function FilterSidebar({
   axisValues,
   onAxisValueChange,
 }: Props) {
-  const toggle = (key: keyof Omit<FilterState, "query">, value: string) => {
-    const cur = filter[key];
-    const next = cur.includes(value)
-      ? cur.filter((x) => x !== value)
-      : [...cur, value];
-    onChange({ ...filter, [key]: next });
-  };
-
-  // A variable axis and its equivalent value section drive the same thing, so
-  // they're mutually exclusive: the wght axis vs the Weight steps, wdth vs
-  // Width. Selecting one clears the other.
-  const AXIS_EXCLUSIVE: Record<string, "weights" | "widths"> = {
-    wght: "weights",
-    wdth: "widths",
-  };
-  const EXCLUSIVE_AXIS: Record<"weights" | "widths", string> = {
-    weights: "wght",
-    widths: "wdth",
-  };
-
-  // Variable-axis toggle: selecting wght/wdth clears the matching Weight/Width
-  // selection (they're mutually exclusive); other axes toggle normally.
-  const toggleAxis = (tag: string) => {
-    const turningOn = !filter.axes.includes(tag);
-    const nextAxes = turningOn
-      ? [...filter.axes, tag]
-      : filter.axes.filter((x) => x !== tag);
-    const cleared = turningOn ? AXIS_EXCLUSIVE[tag] : undefined;
-    onChange({
-      ...filter,
-      axes: nextAxes,
-      ...(cleared ? { [cleared]: [] } : {}),
-    });
-  };
-
-  // Radio-style: Weight and Width allow at most one value. Clicking the current
-  // selection clears it; clicking another replaces it. Selecting one also
-  // clears the mutually exclusive variable axis (wght/wdth).
-  const select = (key: "weights" | "widths", value: string) => {
-    const turningOn = !filter[key].includes(value);
-    const next = turningOn ? [value] : [];
-    const axisTag = EXCLUSIVE_AXIS[key];
-    onChange({
-      ...filter,
-      [key]: next,
-      axes: turningOn ? filter.axes.filter((x) => x !== axisTag) : filter.axes,
-    });
-  };
-
-  // Picking a color format already implies Colorful (only a font with a color
-  // table can carry one), so Colorful shows as selected without duplicating it
-  // into filter.color — applyFilters would just apply the same narrowing twice.
-  const colorImpliedByFormat = filter.colorFormats.length > 0;
-  const colorSelected = colorImpliedByFormat ? ["color"] : filter.color;
-
-  // Color is radio-style: clicking the current value clears it, clicking the
-  // other replaces it. Two couplings with the format pills:
-  //  - Monochrome clears them (a monochrome font has no color table, so leaving
-  //    them set would filter everything out from a now-disabled control).
-  //  - Clicking the format-implied Colorful clears them too, since that implied
-  //    selection is the only thing making it look selected.
-  const selectColor = (value: string) => {
-    if (value === "color" && colorImpliedByFormat) {
-      onChange({ ...filter, color: [], colorFormats: [] });
-      return;
-    }
-    const next = filter.color.includes(value) ? [] : [value];
-    onChange({
-      ...filter,
-      color: next,
-      colorFormats: next.includes("monochrome") ? [] : filter.colorFormats,
-    });
-  };
-
-  // Static/Variable live in `facets`, which is AND-ed — selecting both would
-  // always return nothing. Enforce radio behavior: clicking the selected value
-  // clears it, clicking the other replaces it, leaving the rest of the facets
-  // (ligatures, fractions, …) untouched.
-  const withoutFontType = filter.facets.filter(
-    (f) => !FONT_TYPE_FACETS.includes(f)
-  );
-
-  // Picking a variable axis already implies Variable (only a variable font has
-  // axes), so Variable shows as selected without duplicating it into `facets` —
-  // applyFilters would just apply the same narrowing twice. Mirrors how a color
-  // format implies Colorful.
-  const variableImpliedByAxes = filter.axes.length > 0;
-  const fontTypeSelected = variableImpliedByAxes
-    ? ["variable"]
-    : filter.facets.filter((f) => FONT_TYPE_FACETS.includes(f));
-
-  // Two couplings with the variable axes below:
-  //  - Static clears them (a static font has no axes, so leaving them set would
-  //    filter everything out from a now-disabled control).
-  //  - Clicking the axis-implied Variable clears them too, since that implied
-  //    selection is the only thing making it look selected.
-  const selectFontType = (value: string) => {
-    if (value === "variable" && variableImpliedByAxes) {
-      onChange({ ...filter, facets: withoutFontType, axes: [] });
-      return;
-    }
-    const turningOff = filter.facets.includes(value);
-    const facets = turningOff ? withoutFontType : [...withoutFontType, value];
-    onChange({
-      ...filter,
-      facets,
-      axes: facets.includes("static") ? [] : filter.axes,
-    });
-  };
-  const resetFontType = () =>
-    onChange({ ...filter, facets: withoutFontType, axes: [] });
-
-  // Clear only the values a given section shows. Several sections share one
-  // FilterState key (Properties and Font type both live in `facets`), so scope
-  // the reset to the items that section actually renders.
+  // Thin wrappers: every rule lives in filter-actions.ts (pure, testable); the
+  // component only feeds the current filter in and pushes the result back out.
+  const toggle = (key: keyof Omit<FilterState, "query">, value: string) =>
+    onChange(actions.toggle(filter, key, value));
+  const toggleAxis = (tag: string) => onChange(actions.toggleAxis(filter, tag));
+  const select = (key: "weights" | "widths", value: string) =>
+    onChange(actions.select(filter, key, value));
+  const selectColor = (value: string) =>
+    onChange(actions.selectColor(filter, value));
+  const selectFontType = (value: string) =>
+    onChange(actions.selectFontType(filter, value));
+  const resetFontType = () => onChange(actions.resetFontType(filter));
   const clearSection = (
     key: keyof Omit<FilterState, "query">,
     items: [string, number][]
-  ) => {
-    const own = new Set(items.map(([v]) => v));
-    onChange({ ...filter, [key]: filter[key].filter((v) => !own.has(v)) });
-  };
+  ) => onChange(actions.clearSection(filter, key, items));
+
+  const colorSelected = actions.colorSelection(filter);
+  const fontTypeSelected = actions.fontTypeSelection(filter);
 
   // Always open at the top; don't let router scroll restoration carry the
   // sidebar's position across list <-> detail navigation.
