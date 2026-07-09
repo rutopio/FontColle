@@ -1,9 +1,10 @@
 import { ToggleRightIcon } from "@phosphor-icons/react";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { featureName, groupFeatures } from "@/lib/fonts/features";
 import { NoMatches, SearchBox } from "./search-box";
 import { Pills } from "./section";
-import { SectionHeader, type SortMode } from "./section-header";
+import { SectionHeader } from "./section-header";
+import { filterGroupsByQuery, useSearchSort } from "./use-facet-search";
 
 // OpenType features: 272 distinct tags across the catalog. Rather than one
 // count-sorted wall of pills, group them by what they do (ligatures, numerals,
@@ -23,30 +24,18 @@ export function FeatureSection({
   onToggleFeature: (v: string) => void;
   onResetFeatures: () => void;
 }) {
-  const [sort, setSort] = useState<SortMode>("count");
-  const [query, setQuery] = useState("");
-  const q = query.trim().toLowerCase();
+  const { sort, toggleSort, query, setQuery, q } = useSearchSort();
 
   // `features` arrives count-sorted; groupFeatures preserves that order within
   // each group. Alpha sort re-orders before grouping so each sub-list follows.
-  // While searching, drop non-matching tags and hand Pills a topNSet holding
-  // every survivor: a match must never stay hidden behind a "N more" expander.
+  // filterGroupsByQuery then drops non-matching tags and rebuilds each group's
+  // topNSet so a match never stays hidden behind a "N more" expander.
   const groups = useMemo(() => {
     const ordered =
       sort === "alpha"
         ? [...features].sort((a, b) => a[0].localeCompare(b[0]))
         : features;
-    const grouped = groupFeatures(ordered);
-    if (!q) return grouped;
-    return grouped.flatMap((g) => {
-      const items = g.items.filter(
-        ([tag]) =>
-          tag.toLowerCase().includes(q) ||
-          featureName(tag).toLowerCase().includes(q)
-      );
-      if (items.length === 0) return [];
-      return [{ ...g, items, topNSet: new Set(items.map(([tag]) => tag)) }];
-    });
+    return filterGroupsByQuery(groupFeatures(ordered), q, featureName);
   }, [features, sort, q]);
 
   const hasSelection = features.some(([v]) => selectedFeatures.includes(v));
@@ -60,7 +49,7 @@ export function FeatureSection({
         onReset={onResetFeatures}
         canSort={features.length > 1}
         sort={sort}
-        onToggleSort={() => setSort((s) => (s === "count" ? "alpha" : "count"))}
+        onToggleSort={toggleSort}
       />
       <SearchBox
         value={query}

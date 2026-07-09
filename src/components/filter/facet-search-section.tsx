@@ -1,8 +1,9 @@
 import type { Icon } from "@phosphor-icons/react";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { NoMatches, SearchBox } from "./search-box";
 import { Pills } from "./section";
-import { SectionHeader, type SortMode } from "./section-header";
+import { SectionHeader } from "./section-header";
+import { useSearchSort } from "./use-facet-search";
 
 /** A labelled facet value: [value, family count, human label]. */
 export type FacetItem = readonly [string, number, string];
@@ -37,9 +38,7 @@ export function FacetSearchSection({
   rankBy?: (value: string) => number;
   topN: number;
 }) {
-  const [sort, setSort] = useState<SortMode>("count");
-  const [query, setQuery] = useState("");
-  const q = query.trim().toLowerCase();
+  const { sort, toggleSort, query, setQuery, q } = useSearchSort();
 
   const labelOf = useMemo(
     () => new Map(items.map(([value, , label]) => [value, label])),
@@ -90,7 +89,7 @@ export function FacetSearchSection({
         onReset={onReset}
         canSort={items.length > 1}
         sort={sort}
-        onToggleSort={() => setSort((s) => (s === "count" ? "alpha" : "count"))}
+        onToggleSort={toggleSort}
       />
       <SearchBox
         value={query}
