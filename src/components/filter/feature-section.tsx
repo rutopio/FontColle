@@ -1,14 +1,7 @@
-import { MagnifyingGlassIcon, ToggleRightIcon } from "@phosphor-icons/react";
+import { ToggleRightIcon } from "@phosphor-icons/react";
 import { useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/components/ui/empty";
 import { featureName, groupFeatures } from "@/lib/fonts/features";
+import { NoMatches, SearchBox } from "./search-box";
 import { Pills } from "./section";
 import { SectionHeader, type SortMode } from "./section-header";
 
@@ -69,32 +62,18 @@ export function FeatureSection({
         sort={sort}
         onToggleSort={() => setSort((s) => (s === "count" ? "alpha" : "count"))}
       />
-      <div className="relative">
-        <MagnifyingGlassIcon className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
-        <input
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search features"
-          aria-label="Search OpenType features"
-          className="w-full rounded-md border bg-transparent py-1.5 pr-2 pl-8 text-sm outline-none focus:border-foreground"
-        />
-      </div>
+      <SearchBox
+        value={query}
+        onChange={setQuery}
+        placeholder="Search features"
+        label="Search OpenType features"
+      />
       {groups.length === 0 ? (
-        <Empty className="py-8">
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <MagnifyingGlassIcon />
-            </EmptyMedia>
-            <EmptyTitle>No features found</EmptyTitle>
-            <EmptyDescription>
-              No features match “{query.trim()}”. Try a tag or a feature name.
-            </EmptyDescription>
-          </EmptyHeader>
-          <Button variant="outline" onClick={() => setQuery("")}>
-            Clear search
-          </Button>
-        </Empty>
+        <NoMatches
+          title="No features found"
+          description={`No features match “${query.trim()}”. Try a tag or a feature name.`}
+          onClear={() => setQuery("")}
+        />
       ) : (
         <div className="flex flex-col gap-8">
           {groups.map(({ id, title, items, topNSet }) => (
