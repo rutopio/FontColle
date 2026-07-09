@@ -1,5 +1,5 @@
 import { ShapesIcon } from "@phosphor-icons/react";
-import { cn } from "@/lib/utils";
+import { CardButton } from "./card-button";
 import { CategorySpecimen } from "./specimen-icon";
 
 // Fixed display order for the Category cards (not by count): Graphics last,
@@ -34,50 +34,17 @@ export function CategoryCards({
       </h2>
       <div className="grid grid-cols-3 gap-3">
         {ordered.map(([value, count]) => (
-          <CategoryCard
+          <CardButton
             key={value}
-            value={value}
+            label={value}
             count={count}
-            on={selected.includes(value)}
+            selected={selected.includes(value)}
             onToggle={() => onToggle(value)}
-          />
+          >
+            <CategorySpecimen category={value} />
+          </CardButton>
         ))}
       </div>
     </div>
-  );
-}
-
-function CategoryCard({
-  value,
-  count,
-  on,
-  onToggle,
-}: {
-  value: string;
-  count: number;
-  on: boolean;
-  onToggle: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onToggle}
-      aria-pressed={on}
-      className={cn(
-        "relative flex cursor-pointer flex-col items-center gap-2 rounded-md border p-2 text-center shadow-xs outline-none transition-[color,box-shadow,border-color,background-color] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
-        on
-          ? "border-primary bg-muted"
-          : "border-input hover:border-foreground/40"
-      )}
-    >
-      <CategorySpecimen category={value} />
-
-      <span className="font-medium text-muted-foreground text-xs leading-none">
-        {value}
-      </span>
-      <span className="font-mono text-muted-foreground text-xs leading-none">
-        {count}
-      </span>
-    </button>
   );
 }
