@@ -1,6 +1,7 @@
 import { TextAaIcon } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import type * as React from "react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Sidebar,
   SidebarHeader,
@@ -10,13 +11,14 @@ import {
 } from "@/components/ui/sidebar";
 
 // sidebar-09 layout: a parent icon-collapsible sidebar holding two child
-// sidebars side by side. First child is the icon rail (one link home, for now),
-// second child is the page's own panel (list filters / detail features), passed
-// in as children.
+// sidebars side by side. First child is the icon rail (the home link, plus
+// whatever switcher the page hands us via `rail`), second child is the page's
+// own panel (list filters / detail features), passed in as children.
 export function AppSidebar({
+  rail,
   children,
   ...props
-}: React.ComponentProps<typeof Sidebar>) {
+}: React.ComponentProps<typeof Sidebar> & { rail?: React.ReactNode }) {
   return (
     <Sidebar
       collapsible="icon"
@@ -31,20 +33,25 @@ export function AppSidebar({
         <SidebarHeader>
           <SidebarMenu>
             <SidebarMenuItem>
+              {/* The rail is icon-only, so the wordmark stays in the tooltip. */}
               <SidebarMenuButton
                 size="lg"
-                className="md:h-8 md:p-0"
-                tooltip={{ children: "All fonts", hidden: false }}
+                className="justify-center md:h-8 md:p-0"
+                tooltip={{ children: "Font Finder", hidden: false }}
                 render={<Link to="/" aria-label="All fonts" />}
               >
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                   <TextAaIcon className="size-4" weight="bold" />
                 </div>
-                <span className="truncate font-medium">Font Finder</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarHeader>
+        {rail && (
+          <ScrollArea className="min-h-0 flex-1">
+            <div className="pb-2">{rail}</div>
+          </ScrollArea>
+        )}
       </Sidebar>
 
       {/* Second sidebar: the page's own panel, filling the remaining width. The

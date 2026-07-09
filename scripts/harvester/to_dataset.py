@@ -134,6 +134,8 @@ def to_record(r):
         "charCount": ttf.get("char_count"),
         "unitsPerEm": ttf.get("units_per_em"),
         "hasStat": bool(ttf.get("has_stat")),
+        # sfnt tags, stripped of the padding space in "SVG ". Empty => monochrome.
+        "colorTables": [t.strip() for t in ttf.get("color_tables", [])],
         "primaryScript": r.get("primary_script"),
         "panose": ",".join(str(x) for x in panose) if panose else None,
         "axes": [

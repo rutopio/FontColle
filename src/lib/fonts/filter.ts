@@ -1,4 +1,4 @@
-import { isColorFont } from "./color";
+import { COLOR_FORMATS, isColorFont } from "./color";
 import type { FontRecord } from "./types";
 
 export interface FilterState {
@@ -12,6 +12,9 @@ export interface FilterState {
   scripts: string[]; // writing-system codes ("Latn"…), AND across
   languages: string[]; // language ids ("en_Latn"…), AND across
   color: string[]; // "color" | "monochrome", at most one (radio-style)
+  // Color-table formats ("COLR", "SVG", …), AND across: a font carrying both
+  // COLR and SVG matches when both are selected. Counts therefore overlap.
+  colorFormats: string[];
 }
 
 // The slice of the filter a preview (card/row) needs to know about, to both
@@ -33,7 +36,14 @@ export const emptyFilter: FilterState = {
   scripts: [],
   languages: [],
   color: [],
+  colorFormats: [],
 };
+
+// The two `facets` values that say whether a family is a variable font. They
+// live in `facets` like any other tag, but the UI surfaces them as their own
+// radio pair (Axes > Font type) rather than as pills in Properties, so
+// buildFacetIndex keeps them out of the `facets` list it emits.
+export const FONT_TYPE_FACETS = ["static", "variable"];
 
 // Standard weight steps we expose as pills. Mirrors the harvester's snapping.
 export const WEIGHT_STEPS = [100, 200, 300, 400, 500, 600, 700, 800, 900];
@@ -122,6 +132,7 @@ export interface FilterSearch {
   script?: string;
   lang?: string;
   color?: string;
+  cfmt?: string;
   view?: "grid" | "row"; // display preference, not a filter
   sort?: string; // sort key, not a filter
 }
@@ -141,6 +152,7 @@ export function searchToFilter(s: FilterSearch): FilterState {
     scripts: splitCsv(s.script),
     languages: splitCsv(s.lang),
     color: splitCsv(s.color),
+    colorFormats: splitCsv(s.cfmt),
   };
 }
 
@@ -156,6 +168,7 @@ export function filterToSearch(f: FilterState): FilterSearch {
   if (f.scripts.length) s.script = f.scripts.join(",");
   if (f.languages.length) s.lang = f.languages.join(",");
   if (f.color.length) s.color = f.color.join(",");
+  if (f.colorFormats.length) s.cfmt = f.colorFormats.join(",");
   return s;
 }
 
@@ -177,6 +190,7 @@ export function parseFilterSearch(raw: Record<string, unknown>): FilterSearch {
     script: str(raw.script),
     lang: str(raw.lang),
     color: str(raw.color),
+    cfmt: str(raw.cfmt),
     view: raw.view === "row" ? "row" : undefined,
     sort: str(raw.sort),
   };
@@ -267,6 +281,13 @@ export function applyFilters(
       const wantColor = f.color.includes("color");
       if (isColorFont(font) !== wantColor) return false;
     }
+    // AND across color formats: a font must carry every selected format's
+    // table. Selecting COLR + SVG yields only the dual-format families.
+    if (
+      f.colorFormats.length &&
+      !f.colorFormats.every((t) => font.colorTables.includes(t))
+    )
+      return false;
     return true;
   });
 }
@@ -285,6 +306,7 @@ export function buildFacetIndex(fonts: FontRecord[]) {
   const wsScripts = new Map<string, number>(); // real writing systems (Latn…)
   const languages = new Map<string, number>();
   const color = new Map<string, number>();
+  const colorFormats = new Map<string, number>();
   const bump = (m: Map<string, number>, k: string) =>
     m.set(k, (m.get(k) ?? 0) + 1);
 
@@ -298,6 +320,7 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     for (const s of font.scripts) bump(wsScripts, s);
     for (const l of font.languages) bump(languages, l);
     bump(color, isColorFont(font) ? "color" : "monochrome");
+    for (const t of font.colorTables) bump(colorFormats, t);
   }
   const sorted = (m: Map<string, number>) =>
     [...m.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
@@ -306,7 +329,12 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     [...m.entries()].sort((a, b) => Number(a[0]) - Number(b[0]));
   return {
     classes: sorted(classes),
-    facets: sorted(facets),
+    // Properties: every facet except static/variable, which the Axes panel owns
+    // as its Font type radio pair. Excluding them here is what keeps Properties
+    // from offering a second, duplicate entry point to the same filter — and it
+    // scopes the Properties Reset off them too (clearSection only clears the
+    // values its own section shows).
+    facets: sorted(facets).filter(([v]) => !FONT_TYPE_FACETS.includes(v)),
     features: sorted(features),
     axes: sorted(axes),
     weights: byStep(weights),
@@ -319,5 +347,15 @@ export function buildFacetIndex(fonts: FontRecord[]) {
       ["monochrome", color.get("monochrome") ?? 0],
       ["color", color.get("color") ?? 0],
     ] as [string, number][],
+    // Static/Variable in fixed order — the sole entry point for this filter.
+    // Same underlying `facets` values, so applyFilters needs no special case.
+    fontTypes: FONT_TYPE_FACETS.map(
+      (v) => [v, facets.get(v) ?? 0] as [string, number]
+    ),
+    // Every format, in COLOR_FORMATS order, including the ones no published
+    // font uses — they stay selectable rather than vanishing at count 0.
+    colorFormats: COLOR_FORMATS.map(
+      (f) => [f.id, colorFormats.get(f.id) ?? 0] as [string, number]
+    ),
   };
 }

@@ -31,11 +31,12 @@ def statements_for(r, now):
     subsets = json.dumps(r.get("subsets", []), ensure_ascii=False)
     weights = json.dumps(r.get("weights", []))
     cjk_cov = json.dumps(r.get("cjkCoverage", {}))
+    color_tables = json.dumps(r.get("colorTables", []))
     cols = (
         "family_dir,name,display_name,designer,category,primary_class,license,license_dir,"
         "is_variable,subsets,primary_ttf,version,version_string,created_ms,"
         "modified_ms,date_added,weight_class,width_class,weights,fs_type,glyph_count,"
-        "char_count,units_per_em,has_stat,primary_script,panose,cjk_coverage,"
+        "char_count,units_per_em,has_stat,color_tables,primary_script,panose,cjk_coverage,"
         "is_published,popularity_rank,trending_rank,last_modified,specimen,"
         "content_hash,updated_at"
     )
@@ -47,6 +48,7 @@ def statements_for(r, now):
         f"{q(r.get('modifiedMs'))},{q(r.get('dateAdded'))},{q(r.get('weightClass'))},"
         f"{q(r.get('widthClass'))},{q(weights)},{q(r.get('fsType'))},{q(r.get('glyphCount'))},"
         f"{q(r.get('charCount'))},{q(r.get('unitsPerEm'))},{q(bool(r.get('hasStat')))},"
+        f"{q(color_tables)},"
         f"{q(r.get('primaryScript'))},{q(r.get('panose'))},{q(cjk_cov)},"
         f"{q(bool(r.get('isPublished', True)))},{q(r.get('popularityRank'))},"
         f"{q(r.get('trendingRank'))},{q(r.get('lastModifiedApi'))},{q(r.get('specimen'))},"

@@ -7,7 +7,12 @@ import {
 } from "@phosphor-icons/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { FilterRail } from "@/components/filter/filter-rail";
 import { FilterSidebar } from "@/components/filter/filter-sidebar";
+import {
+  DEFAULT_FILTER_GROUP,
+  type FilterGroupId,
+} from "@/components/filter/groups";
 import { Column, FilterLayout } from "@/components/filter-layout";
 import { FontGrid, type ViewMode } from "@/components/font-grid";
 import { Button } from "@/components/ui/button";
@@ -74,6 +79,8 @@ function App() {
   const [axisValues, setAxisValues] = useState<Record<string, number>>({});
   const setAxisValue = (tag: string, pct: number) =>
     setAxisValues((s) => ({ ...s, [tag]: pct }));
+  // Which filter group the sidebar panel shows. Session-only UI state.
+  const [group, setGroup] = useState<FilterGroupId>(DEFAULT_FILTER_GROUP);
   const view: ViewMode = search.view === "row" ? "row" : "grid";
   const sort = (search.sort as SortKey) ?? DEFAULT_SORT;
 
@@ -178,15 +185,18 @@ function App() {
     filter.widths.length +
     filter.scripts.length +
     filter.languages.length +
-    filter.color.length;
+    filter.color.length +
+    filter.colorFormats.length;
 
   return (
     <FilterLayout
+      rail={<FilterRail active={group} filter={filter} onSelect={setGroup} />}
       sidebar={
         <FilterSidebar
           index={facetIndex}
           filter={filter}
           onChange={setFilter}
+          group={group}
           axisValues={axisValues}
           onAxisValueChange={setAxisValue}
         />

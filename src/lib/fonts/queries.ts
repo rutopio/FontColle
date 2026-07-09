@@ -54,6 +54,7 @@ function toFontRecord(f: FamilyRow, related: RelatedByFamily): FontRecord {
     })),
     features: (featsByFamily.get(f.id) ?? []).map((x) => x.featureTag).sort(),
     facets: [], // derived client-side from axes/features/subsets
+    colorTables: parseJson<string[]>(f.colorTables, []),
     languages: (langsByFamily.get(f.id) ?? []).map((l) => l.langId).sort(),
     scripts: (scriptsByFamily.get(f.id) ?? []).map((s) => s.script).sort(),
     cjkCoverage: parseJson<Record<string, number>>(f.cjkCoverage, {}),

@@ -18,6 +18,10 @@ const PCT_PRESETS = [0, 25, 50, 75, 100];
 // so dragging can never also toggle the pill. No sort toggle or "more" expander
 // — this section is meant to stay small (see Section for the general pill-list
 // pattern).
+//
+// `disabled` fades the list out under Font type = Static: only variable fonts
+// have axes. Picking Static also clears the axis selection (see FilterSidebar),
+// so the sliders are always collapsed by the time this renders disabled.
 export function VariableAxesSection({
   icon,
   items,
@@ -26,6 +30,7 @@ export function VariableAxesSection({
   onReset,
   sliderValue,
   onSliderChange,
+  disabled = false,
 }: {
   icon: Icon;
   items: [string, number][];
@@ -34,6 +39,7 @@ export function VariableAxesSection({
   onReset: () => void;
   sliderValue: Record<string, number>;
   onSliderChange: (tag: string, pct: number) => void;
+  disabled?: boolean;
 }) {
   const top = useMemo(() => items.slice(0, TOP_N), [items]);
   const hasSelection = top.some(([value]) => selected.includes(value));
@@ -49,7 +55,12 @@ export function VariableAxesSection({
         sort="count"
         onToggleSort={() => {}}
       />
-      <div className="flex flex-col gap-1.5">
+      <div
+        className={cn(
+          "flex flex-col gap-1.5 transition-opacity",
+          disabled && "opacity-40"
+        )}
+      >
         {top.map(([tag, count]) => {
           const on = selected.includes(tag);
           const pct = sliderValue[tag] ?? 50;
@@ -59,11 +70,14 @@ export function VariableAxesSection({
               <button
                 type="button"
                 onClick={() => onToggle(tag)}
+                disabled={disabled}
                 className={cn(
                   "flex min-w-0 flex-1 items-center justify-between gap-1 rounded-md border px-2.5 py-1 text-xs transition-[flex-basis,border-color,background-color] duration-200 ease-out",
+                  disabled && "cursor-not-allowed",
                   on
                     ? "basis-1/3 border-primary bg-muted"
-                    : "basis-full border-input hover:border-foreground/40"
+                    : "basis-full border-input",
+                  !disabled && !on && "hover:border-foreground/40"
                 )}
               >
                 <span className="truncate font-mono text-foreground">
