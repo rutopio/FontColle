@@ -1,8 +1,6 @@
 import {
   MagnifyingGlassIcon,
   RowsIcon,
-  SortAscendingIcon,
-  SortDescendingIcon,
   SquaresFourIcon,
 } from "@phosphor-icons/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
@@ -24,20 +22,15 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFilter } from "@/lib/filter/context";
 import { withFacets } from "@/lib/fonts/facets";
 import { useFavorites } from "@/lib/fonts/favorites";
 import {
+  activeFilterCount,
   applyFilters,
   buildFacetIndex,
+  emptyFilter,
   type FilterSearch,
   type FilterState,
   filterToSearch,
@@ -46,15 +39,10 @@ import {
   searchToFilter,
 } from "@/lib/fonts/filter";
 import { getAllFonts } from "@/lib/fonts/queries";
-import {
-  DEFAULT_SORT,
-  isDirectionless,
-  SORT_GROUPS,
-  type SortKey,
-  sortFonts,
-  sortGroupOf,
-} from "@/lib/fonts/sort";
+import { DEFAULT_SORT, type SortKey, sortFonts } from "@/lib/fonts/sort";
 import { usePreview } from "@/lib/preview/context";
+import { useListScrollRestore } from "@/lib/use-list-scroll-restore";
+import { SortControl } from "./-components/sort-control";
 
 export const Route = createFileRoute("/")({
   component: App,
@@ -103,90 +91,34 @@ function App() {
     setSharedFilter(filter);
   }, [filter, setSharedFilter]);
 
-  // Remember the scroll position while browsing the list.
-  useEffect(() => {
-    const onScroll = () => {
-      listScrollY.current = window.scrollY;
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [listScrollY]);
+  useListScrollRestore(listScrollY);
 
-  // Restore the list scroll when returning from a detail page. Two obstacles:
-  // the window virtualizer grows its total height over the first frames (so the
-  // target isn't reachable immediately), and it also resets the window scroll
-  // as it mounts/measures (so a one-shot restore gets clobbered). So we keep
-  // re-asserting the target across a short time budget, stopping only once it
-  // has held for a few consecutive frames — not the first time it's reached.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
-  useEffect(() => {
-    const target = listScrollY.current;
-    if (target <= 0) return;
-    let raf = 0;
-    const start = performance.now();
-    // Keep re-asserting the target for a fixed budget: the virtualizer resets
-    // the window scroll a few times as it mounts and measures, so a "stop once
-    // reached" restore gets clobbered afterward. We simply hold the target for
-    // ~600ms (long enough to outlast those resets, short enough that a user who
-    // immediately scrolls elsewhere isn't fought for long).
-    const tick = () => {
-      const max = document.documentElement.scrollHeight - window.innerHeight;
-      const goal = Math.min(target, max);
-      if (Math.abs(window.scrollY - goal) > 1) window.scrollTo(0, goal);
-      if (performance.now() - start < 600) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, []);
-
-  // view and sort are display prefs, not filters — preserve them across changes.
-  const setFilter = (next: FilterState) => {
-    navigate({
-      search: { ...filterToSearch(next), view: search.view, sort: search.sort },
-      replace: true,
-    });
-  };
-
-  const setView = (next: ViewMode) => {
+  // Every nav writes the same search shape: the filter as params, plus the two
+  // display prefs (view, sort) preserved unless the caller overrides them. One
+  // helper keeps the three setters from drifting out of sync.
+  const setSearch = (
+    filterPart: FilterState,
+    prefs?: Partial<Pick<FilterSearch, "view" | "sort">>
+  ) => {
     navigate({
       search: {
-        ...filterToSearch(filter),
-        view: next === "row" ? "row" : undefined,
-        sort: search.sort,
+        ...filterToSearch(filterPart),
+        view: prefs && "view" in prefs ? prefs.view : search.view,
+        sort: prefs && "sort" in prefs ? prefs.sort : search.sort,
       },
       replace: true,
     });
   };
 
-  const setSort = (next: SortKey) => {
-    navigate({
-      search: {
-        ...filterToSearch(filter),
-        view: search.view,
-        sort: next === DEFAULT_SORT ? undefined : next,
-      },
-      replace: true,
-    });
-  };
-
+  const setFilter = (next: FilterState) => setSearch(next);
+  const setView = (next: ViewMode) =>
+    setSearch(filter, { view: next === "row" ? "row" : undefined });
+  const setSort = (next: SortKey) =>
+    setSearch(filter, { sort: next === DEFAULT_SORT ? undefined : next });
   // Clear every filter and the search query, keeping only display prefs.
-  const reset = () =>
-    navigate({
-      search: { view: search.view, sort: search.sort },
-      replace: true,
-    });
+  const reset = () => setSearch(emptyFilter);
 
-  const activeCount =
-    filter.classes.length +
-    filter.facets.length +
-    filter.features.length +
-    filter.axes.length +
-    filter.weights.length +
-    filter.widths.length +
-    filter.scripts.length +
-    filter.languages.length +
-    filter.color.length +
-    filter.colorFormats.length;
+  const activeCount = activeFilterCount(filter);
 
   return (
     <FilterLayout
@@ -224,63 +156,7 @@ function App() {
             </div>
 
             <div className="ml-auto flex items-center gap-2">
-              {/* Sort control: a group picker on the left and a direction toggle
-                  on the right, joined into one bordered button group. */}
-              {(() => {
-                const { group: sortGroup, asc } = sortGroupOf(sort);
-                const directionless = isDirectionless(sortGroup);
-                // Directionless groups only expose `asc`; keep the current
-                // direction when both groups support it.
-                const dirLabel = asc
-                  ? sortGroup.ascLabel
-                  : (sortGroup.descLabel ?? sortGroup.ascLabel);
-                return (
-                  <div className="flex h-8 items-center rounded-lg border border-input dark:bg-input/30">
-                    <Select
-                      value={sortGroup.group}
-                      onValueChange={(g) => {
-                        const next = SORT_GROUPS.find((x) => x.group === g);
-                        if (next)
-                          setSort(!asc && next.desc ? next.desc : next.asc);
-                      }}
-                    >
-                      <SelectTrigger
-                        className="h-full rounded-r-none border-0 bg-transparent focus-visible:ring-0 dark:bg-transparent dark:hover:bg-transparent"
-                        aria-label="Sort by"
-                      >
-                        <SelectValue>{sortGroup.group}</SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {SORT_GROUPS.map((g) => (
-                          <SelectItem key={g.group} value={g.group}>
-                            {g.group}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <button
-                      type="button"
-                      disabled={directionless}
-                      onClick={() => {
-                        if (!directionless) {
-                          setSort(
-                            asc ? (sortGroup.desc ?? sortGroup.asc) : sortGroup.asc
-                          );
-                        }
-                      }}
-                      aria-label={`Sort direction: ${dirLabel}`}
-                      title={dirLabel}
-                      className="flex h-full items-center border-input border-l px-2.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-40 dark:hover:bg-input/50"
-                    >
-                      {asc ? (
-                        <SortAscendingIcon className="size-4" />
-                      ) : (
-                        <SortDescendingIcon className="size-4" />
-                      )}
-                    </button>
-                  </div>
-                );
-              })()}
+              <SortControl sort={sort} onChange={setSort} />
 
               <Tabs value={view} onValueChange={(v) => setView(v as ViewMode)}>
                 <TabsList className="h-8">
