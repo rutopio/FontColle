@@ -13,6 +13,11 @@ import langcov
 
 RAW = "https://raw.githubusercontent.com/google/fonts/main"
 
+# sfnt tags of the color tables we report. "SVG " carries its padding space.
+# CPAL/CBLC are companion tables (palettes / bitmap locations) and are recorded
+# alongside their primary, since a font is only well-formed with both.
+COLOR_TABLES = ("COLR", "CPAL", "SVG ", "sbix", "CBDT", "CBLC")
+
 # Human weight names for synthesizing static-family style names (Thin..Black).
 WEIGHT_NAMES = {
     100: "Thin", 200: "ExtraLight", 300: "Light", 400: "Regular",
@@ -131,6 +136,11 @@ def parse_ttf(raw_bytes):
     out["char_count"] = len(cmap)
     out["units_per_em"] = head.unitsPerEm if head else None
     out["has_stat"] = "STAT" in f
+    # Color-table presence, in table-directory order. A font may carry several at
+    # once (6 GF families ship both COLR and OpenType-SVG so old renderers can
+    # fall back), so this is a list, not an enum. lazy=True means `in` only reads
+    # the table directory — no parse cost.
+    out["color_tables"] = [t for t in COLOR_TABLES if t in f]
     if os2 and hasattr(os2, "panose"):
         p = os2.panose
         out["panose"] = [p.bFamilyType, p.bSerifStyle, p.bWeight, p.bProportion,

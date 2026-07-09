@@ -43,6 +43,10 @@ export const family = sqliteTable(
     charCount: integer("char_count"), // cmap character count
     unitsPerEm: integer("units_per_em"), // head unitsPerEm
     hasStat: integer("has_stat", { mode: "boolean" }), // STAT table present
+    // Color tables present in the primary TTF, as a JSON array of sfnt tags
+    // ("COLR","CPAL","SVG ",...). Empty for monochrome fonts. A font can carry
+    // several at once, so this is a list rather than a single format enum.
+    colorTables: text("color_tables"),
     primaryScript: text("primary_script"), // METADATA primary_script, "Latn"
     // PANOSE 10 digits as a compact string "2,11,2,0,..." (rarely populated,
     // kept flat for the few families that set it).

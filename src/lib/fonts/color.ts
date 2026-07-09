@@ -1,36 +1,42 @@
 import type { FontRecord } from "./types";
 
-// Color (multicolor) font families on Google Fonts. Sourced from GF's
-// authoritative `colorCapabilities` metadata field (COLRv0/v1, OTSVG); a font
-// is "colorful" iff it carries a color table. Kept as a static frontend set
-// because the dataset doesn't harvest the color-table flag — update this list
-// when Google ships new color families. Note the color variant, not the plain
-// base (e.g. "Bungee Spice", not "Bungee Color"; "Sixtyfour Convergence", not
-// "Sixtyfour").
-export const COLOR_FONTS = new Set<string>([
-  "Aref Ruqaa Ink",
-  "Bitcount Grid Double Ink",
-  "Bitcount Grid Single Ink",
-  "Bitcount Ink",
-  "Bitcount Prop Double Ink",
-  "Bitcount Prop Single Ink",
-  "Bitcount Single Ink",
-  "Blaka Ink",
-  "Bungee Spice",
-  "Bungee Tint",
-  "Cairo Play",
-  "Coral Pixels",
-  "Foldit",
-  "Honk",
-  "Kalnia Glaze",
-  "Nabla",
-  "Noto Color Emoji",
-  "Noto Znamenny Musical Notation",
-  "Reem Kufi Fun",
-  "Reem Kufi Ink",
-  "Sixtyfour Convergence",
-]);
+// The four color-font formats, each keyed by the sfnt table that identifies it.
+// CPAL (palettes) and CBLC (bitmap locations) are companion tables to COLR and
+// CBDT, so they don't get their own entry. Displayed in this order.
+//
+// Google Fonts currently publishes only COLR/CPAL and OpenType-SVG faces (and
+// six families carry both, for renderers that lack COLR support). sbix and
+// CBDT/CBLC therefore show a count of 0 — they're kept as real, selectable
+// filters so a font in either format surfaces the moment Google ships one.
+export const COLOR_FORMATS = [
+  { id: "COLR", label: "COLR/CPAL" },
+  { id: "SVG", label: "OpenType-SVG" },
+  { id: "sbix", label: "sbix" },
+  { id: "CBDT", label: "CBDT/CBLC" },
+] as const;
 
+export type ColorFormatId = (typeof COLOR_FORMATS)[number]["id"];
+
+const FORMAT_LABEL = new Map<string, string>(
+  COLOR_FORMATS.map((f) => [f.id, f.label])
+);
+
+/** Human name for a color-format id ("SVG" -> "OpenType-SVG"). */
+export function colorFormatLabel(id: string): string {
+  return FORMAT_LABEL.get(id) ?? id;
+}
+
+/** A font is colorful iff it carries at least one color table. */
 export function isColorFont(font: FontRecord): boolean {
-  return COLOR_FONTS.has(font.name);
+  return font.colorTables.length > 0;
+}
+
+/**
+ * The color formats a font provides. A font can carry several at once, so this
+ * returns every match, not a single "primary" format.
+ */
+export function colorFormatsOf(font: FontRecord): ColorFormatId[] {
+  return COLOR_FORMATS.filter((f) => font.colorTables.includes(f.id)).map(
+    (f) => f.id
+  );
 }

@@ -28,6 +28,10 @@ export interface FontRecord {
   instances: FontInstance[];
   features: string[];
   facets: string[];
+  // sfnt tags of the color tables the font carries ("COLR", "CPAL", "SVG",
+  // "sbix", "CBDT", "CBLC"). Empty for monochrome fonts. Several can coexist:
+  // some families ship both COLR and OpenType-SVG for renderer fallback.
+  colorTables: string[];
   // Writing-system / language coverage (todo: language-support task).
   languages: string[]; // supported lang ids, e.g. "en_Latn"
   scripts: string[]; // distinct scripts, e.g. "Latn", "Cyrl"

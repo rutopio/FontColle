@@ -7,9 +7,11 @@ import { cn } from "@/lib/utils";
 // right. The list passes its FilterSidebar; the detail page passes its feature
 // panel. The preview dock is mounted once in __root, so both pages share it.
 export function FilterLayout({
+  rail,
   sidebar,
   children,
 }: {
+  rail?: React.ReactNode;
   sidebar: React.ReactNode;
   children: React.ReactNode;
 }) {
@@ -17,12 +19,14 @@ export function FilterLayout({
     <SidebarProvider
       style={
         {
-          // Icon rail (3rem) + room for the side panel at its original 20rem.
-          "--sidebar-width": "23rem",
+          // A wider icon rail: it carries labelled group buttons, not just the
+          // home link. Plus room for the side panel at its original 20rem.
+          "--sidebar-width-icon": "4.5rem",
+          "--sidebar-width": "24.5rem",
         } as React.CSSProperties
       }
     >
-      <AppSidebar>{sidebar}</AppSidebar>
+      <AppSidebar rail={rail}>{sidebar}</AppSidebar>
       <SidebarInset>{children}</SidebarInset>
     </SidebarProvider>
   );
