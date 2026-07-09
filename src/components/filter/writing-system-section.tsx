@@ -1,11 +1,12 @@
 import { GlobeHemisphereWestIcon } from "@phosphor-icons/react";
 import { useMemo } from "react";
 import { scriptLabel, scriptPopulation } from "@/lib/fonts/labels";
-import { FacetPickerSection } from "./facet-picker";
+import { FacetSearchSection } from "./facet-search-section";
 
-// Writing systems (real scripts, Latn/Cyrl/…). Pills show the top 10 by
-// real-world speaker population (summed per script from gflanguages), plus a
-// Browse all dialog over the full searchable list.
+// Writing systems (real scripts, Latn/Cyrl/…). Only 45 of them, so the whole
+// list lives inline: pills show the top 10 by real-world speaker population
+// (summed per script from gflanguages), the rest sit behind a "N more"
+// expander, and a search box filters across all of them.
 export function WritingSystemSection({
   scripts,
   selectedScripts,
@@ -25,15 +26,13 @@ export function WritingSystemSection({
   );
 
   return (
-    <FacetPickerSection
+    <FacetSearchSection
       title="Writing system"
       icon={GlobeHemisphereWestIcon}
       items={items}
       selected={selectedScripts}
       onToggle={onToggleScript}
       onReset={onResetScripts}
-      dialogTitle="Writing systems"
-      dialogDescription="Filter fonts by the scripts they support."
       searchPlaceholder="Search writing systems"
       rankBy={scriptPopulation}
       topN={10}

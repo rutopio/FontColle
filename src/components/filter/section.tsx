@@ -82,6 +82,9 @@ export function Pills({
   onToggle,
   grid,
   spread,
+  mono,
+  label,
+  columns = 3,
   topNSet,
 }: {
   items: [string, number][];
@@ -89,6 +92,13 @@ export function Pills({
   onToggle: (v: string) => void;
   grid?: boolean;
   spread?: boolean;
+  // Render the value in a monospaced face — right for four-letter tags like
+  // "liga", wrong for human labels like "Latin".
+  mono?: boolean;
+  // Display name for a value; the toggle still passes the raw value.
+  label?: (value: string) => string;
+  // Cells per row in grid mode.
+  columns?: 2 | 3;
   // When provided, only values in this set are shown by default (instead of
   // using RARE_THRESHOLD). Selected values outside the set are pulled up.
   topNSet?: Set<string> | null;
@@ -115,21 +125,28 @@ export function Pills({
         className={cn(
           "flex items-center gap-1 rounded-md border px-2.5 py-1 text-xs transition-colors",
           spread ? "justify-between" : "justify-center",
-          // Equal-width three-per-row: let each cell shrink and clip its label.
+          // Equal-width cells: let each one shrink and clip its label.
           grid && "min-w-0",
           on
             ? "border-primary bg-muted text-foreground"
             : "text-muted-foreground hover:border-foreground hover:text-foreground"
         )}
       >
-        <span className={cn("truncate", spread && "font-mono")}>{value}</span>
+        <span className={cn("truncate", mono && "font-mono")}>
+          {label ? label(value) : value}
+        </span>
         <span className="font-mono opacity-60">{count}</span>
       </button>
     );
   };
 
-  // Grid mode lays pills out three-per-row at equal width; otherwise they wrap.
-  const rowClass = grid ? "grid grid-cols-3 gap-1.5" : "flex flex-wrap gap-1.5";
+  // Grid mode lays pills out N-per-row at equal width; otherwise they wrap.
+  // Both column classes are spelled out — Tailwind can't see interpolated ones.
+  const rowClass = grid
+    ? columns === 2
+      ? "grid grid-cols-2 gap-1.5"
+      : "grid grid-cols-3 gap-1.5"
+    : "flex flex-wrap gap-1.5";
 
   return (
     <div className="flex flex-col gap-2">

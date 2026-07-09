@@ -109,6 +109,7 @@ export function FeatureSection({
                 topNSet={topNSet}
                 grid
                 spread
+                mono
               />
             </div>
           ))}
