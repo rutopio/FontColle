@@ -8,9 +8,11 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import type { FacetItem } from "./facet-picker";
 import { Pills } from "./section";
 import { SectionHeader, type SortMode } from "./section-header";
+
+/** A labelled facet value: [value, family count, human label]. */
+export type FacetItem = readonly [string, number, string];
 
 // A facet section small enough to render every value inline: a live search box
 // over the whole list, then pills with the rare ones behind a "N more"
