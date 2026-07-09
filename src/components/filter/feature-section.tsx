@@ -1,5 +1,13 @@
 import { MagnifyingGlassIcon, ToggleRightIcon } from "@phosphor-icons/react";
 import { useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { featureName, groupFeatures } from "@/lib/fonts/features";
 import { Pills } from "./section";
 import { SectionHeader, type SortMode } from "./section-header";
@@ -73,9 +81,20 @@ export function FeatureSection({
         />
       </div>
       {groups.length === 0 ? (
-        <p className="text-muted-foreground text-sm">
-          No features match “{query.trim()}”.
-        </p>
+        <Empty className="py-8">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <MagnifyingGlassIcon />
+            </EmptyMedia>
+            <EmptyTitle>No features found</EmptyTitle>
+            <EmptyDescription>
+              No features match “{query.trim()}”. Try a tag or a feature name.
+            </EmptyDescription>
+          </EmptyHeader>
+          <Button variant="outline" onClick={() => setQuery("")}>
+            Clear search
+          </Button>
+        </Empty>
       ) : (
         <div className="flex flex-col gap-8">
           {groups.map(({ id, title, items, topNSet }) => (
