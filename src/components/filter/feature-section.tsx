@@ -47,7 +47,7 @@ export function FeatureSection({
         onToggleSort={() => setSort((s) => (s === "count" ? "alpha" : "count"))}
       />
       <div className="flex flex-col gap-5">
-        {groups.map(({ id, title, items }) => (
+        {groups.map(({ id, title, items, topNSet }) => (
           <div key={id} className="flex flex-col gap-2">
             <h3 className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
               {title}
@@ -56,6 +56,7 @@ export function FeatureSection({
               items={items}
               selected={selectedFeatures}
               onToggle={onToggleFeature}
+              topNSet={topNSet}
               grid
               spread
             />
