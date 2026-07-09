@@ -2,6 +2,7 @@ import { CaretDownIcon, type Icon } from "@phosphor-icons/react";
 import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { RARE_THRESHOLD } from "./constants";
+import { PillButton } from "./pill-button";
 import { SectionHeader, type SortMode } from "./section-header";
 
 // A pill-list filter section: a header (title + reset/sort) over a Pills list.
@@ -114,31 +115,20 @@ export function Pills({
   const common = items.filter((it) => !isRare(it));
   const rare = items.filter(isRare);
 
-  const renderPill = ([value, count]: [string, number]) => {
-    const on = selected.includes(value);
-
-    return (
-      <button
-        key={value}
-        type="button"
-        onClick={() => onToggle(value)}
-        className={cn(
-          "flex items-center gap-1 rounded-md border px-2.5 py-1 text-xs transition-colors",
-          spread ? "justify-between" : "justify-center",
-          // Equal-width cells: let each one shrink and clip its label.
-          grid && "min-w-0",
-          on
-            ? "border-primary bg-muted text-foreground"
-            : "text-muted-foreground hover:border-foreground hover:text-foreground"
-        )}
-      >
-        <span className={cn("truncate", mono && "font-mono")}>
-          {label ? label(value) : value}
-        </span>
-        <span className="font-mono opacity-60">{count}</span>
-      </button>
-    );
-  };
+  const renderPill = ([value, count]: [string, number]) => (
+    <PillButton
+      key={value}
+      value={value}
+      count={count}
+      label={label ? label(value) : value}
+      selected={selected.includes(value)}
+      onToggle={onToggle}
+      spread={!!spread}
+      mono={mono}
+      // Equal-width cells in grid mode: let each one shrink and clip its label.
+      className={cn(grid && "min-w-0")}
+    />
+  );
 
   // Grid mode lays pills out N-per-row at equal width; otherwise they wrap.
   // Both column classes are spelled out — Tailwind can't see interpolated ones.

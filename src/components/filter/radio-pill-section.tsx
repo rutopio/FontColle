@@ -1,5 +1,5 @@
 import type { Icon } from "@phosphor-icons/react";
-import { cn } from "@/lib/utils";
+import { PillButton } from "./pill-button";
 import { SectionHeader } from "./section-header";
 
 // A two-per-row grid of radio-style pills: at most one selected, clicking the
@@ -37,26 +37,17 @@ export function RadioPillSection({
         onToggleSort={() => {}}
       />
       <div className="grid grid-cols-2 gap-1.5">
-        {items.map(([value, count]) => {
-          const on = selected.includes(value);
-          return (
-            <button
-              key={value}
-              type="button"
-              onClick={() => onToggle(value)}
-              aria-pressed={on}
-              className={cn(
-                "flex min-w-0 items-center justify-between gap-1 rounded-md border px-2.5 py-1 text-xs transition-colors",
-                on
-                  ? "border-primary bg-muted text-foreground"
-                  : "text-muted-foreground hover:border-foreground hover:text-foreground"
-              )}
-            >
-              <span className="truncate">{labels[value] ?? value}</span>
-              <span className="font-mono opacity-60">{count}</span>
-            </button>
-          );
-        })}
+        {items.map(([value, count]) => (
+          <PillButton
+            key={value}
+            value={value}
+            count={count}
+            label={labels[value] ?? value}
+            selected={selected.includes(value)}
+            onToggle={onToggle}
+            className="min-w-0"
+          />
+        ))}
       </div>
     </div>
   );
