@@ -97,7 +97,7 @@ async function loadFont(family, axes) {
 }
 
 // Build one specimen SVG string for "Aa" from a parsed font.
-function specimenSvg(font, { fontWeight, wdth } = {}) {
+function specimenSvg(font) {
   // A nominal font size; the viewBox is derived from actual glyph metrics so the
   // chosen size only sets the coordinate scale.
   const size = 100;
