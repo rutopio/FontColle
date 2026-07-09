@@ -1,12 +1,15 @@
 import { ToggleRightIcon } from "@phosphor-icons/react";
 import { useMemo, useState } from "react";
-import { featureName } from "@/lib/fonts/features";
-import { cn } from "@/lib/utils";
-import { FacetPickerDialog } from "./facet-picker";
+import { groupFeatures } from "@/lib/fonts/features";
+import { Pills } from "./section";
 import { SectionHeader, type SortMode } from "./section-header";
 
-// OpenType features: dozens of four-letter tags. The sidebar shows the top 15
-// most common as toggleable pills, plus a Browse all dialog for the full list.
+// OpenType features: 272 distinct tags across the catalog. Rather than one
+// count-sorted wall of pills, group them by what they do (ligatures, numerals,
+// script shaping, …) under a single header. Every tag is rendered — rare ones
+// collapse behind each sub-list's own "N more" expander, which is what keeps
+// the 81 character variants and the 64 unregistered tags from swamping the
+// panel while still leaving them reachable.
 export function FeatureSection({
   features,
   selectedFeatures,
@@ -18,34 +21,17 @@ export function FeatureSection({
   onToggleFeature: (v: string) => void;
   onResetFeatures: () => void;
 }) {
-  const TOP_N = 15;
   const [sort, setSort] = useState<SortMode>("count");
 
-  const topNSet = useMemo(
-    () => new Set(features.slice(0, TOP_N).map(([v]) => v)),
-    [features]
-  );
-
-  const sorted = useMemo(() => {
-    if (sort === "alpha") {
-      return [...features].sort((a, b) => a[0].localeCompare(b[0]));
-    }
-    return features;
+  // `features` arrives count-sorted; groupFeatures preserves that order within
+  // each group. Alpha sort re-orders before grouping so each sub-list follows.
+  const groups = useMemo(() => {
+    const ordered =
+      sort === "alpha"
+        ? [...features].sort((a, b) => a[0].localeCompare(b[0]))
+        : features;
+    return groupFeatures(ordered);
   }, [features, sort]);
-
-  // Show top N pills + any selected values outside the top N.
-  const visiblePills = sorted.filter(
-    ([value]) => topNSet.has(value) || selectedFeatures.includes(value)
-  );
-
-  // Dialog items labelled with human names, name-sorted.
-  const dialogItems = useMemo(
-    () =>
-      features
-        .map(([tag, count]) => [tag, count, featureName(tag)] as const)
-        .sort((a, b) => a[2].localeCompare(b[2])),
-    [features]
-  );
 
   const hasSelection = features.some(([v]) => selectedFeatures.includes(v));
 
@@ -56,41 +42,25 @@ export function FeatureSection({
         icon={ToggleRightIcon}
         hasSelection={hasSelection}
         onReset={onResetFeatures}
-        canSort={sorted.length > 1}
+        canSort={features.length > 1}
         sort={sort}
         onToggleSort={() => setSort((s) => (s === "count" ? "alpha" : "count"))}
       />
-      <div className="flex flex-col gap-2">
-        <div className="grid grid-cols-3 gap-1.5">
-          {visiblePills.map(([value, count]) => {
-            const on = selectedFeatures.includes(value);
-            return (
-              <button
-                key={value}
-                type="button"
-                onClick={() => onToggleFeature(value)}
-                className={cn(
-                  "flex min-w-0 items-center justify-between gap-1 rounded-md border px-2.5 py-1 text-xs transition-colors",
-                  on
-                    ? "border-primary bg-muted text-foreground"
-                    : "text-muted-foreground hover:border-foreground hover:text-foreground"
-                )}
-              >
-                <span className="truncate font-mono">{value}</span>
-                <span className="font-mono opacity-60">{count}</span>
-              </button>
-            );
-          })}
-        </div>
-        <FacetPickerDialog
-          items={dialogItems}
-          selected={selectedFeatures}
-          onToggle={onToggleFeature}
-          title="OpenType features"
-          description="Filter fonts by the OpenType features they include."
-          searchPlaceholder="Search features"
-          primary="value"
-        />
+      <div className="flex flex-col gap-5">
+        {groups.map(({ id, title, items }) => (
+          <div key={id} className="flex flex-col gap-2">
+            <h3 className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+              {title}
+            </h3>
+            <Pills
+              items={items}
+              selected={selectedFeatures}
+              onToggle={onToggleFeature}
+              grid
+              spread
+            />
+          </div>
+        ))}
       </div>
     </div>
   );
