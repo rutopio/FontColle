@@ -21,7 +21,7 @@
     "name": "Abua",
     "script": "Latn",
     "population": 25000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "abq_Cyrl": {
     "name": "Abaza",
@@ -123,7 +123,7 @@
     "name": "Ashe",
     "script": "Latn",
     "population": 53000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "aht_Latn": {
     "name": "Ahtna",
@@ -135,13 +135,13 @@
     "name": "Assyrian Neo-Aramaic, Cyrillic",
     "script": "Cyrl",
     "population": 0,
-    "region": "Other"
+    "region": "Americas"
   },
   "aii_Syrc": {
     "name": "Assyrian Neo-Aramaic",
     "script": "Syrc",
     "population": 0,
-    "region": "Asia"
+    "region": "Americas"
   },
   "ajg_Latn": {
     "name": "Aja",
@@ -153,13 +153,13 @@
     "name": "Siwu",
     "script": "Latn",
     "population": 27000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "aks_Latn": {
     "name": "Akeselem",
     "script": "Latn",
     "population": 69100,
-    "region": "Africa"
+    "region": "Americas"
   },
   "ala_Latn": {
     "name": "Alago",
@@ -225,13 +225,13 @@
     "name": "Denya",
     "script": "Latn",
     "population": 36000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "anw_Latn": {
     "name": "Anaang",
     "script": "Latn",
     "population": 2900000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "any_Latn": {
     "name": "Anyin",
@@ -255,7 +255,7 @@
     "name": "Arabic",
     "script": "Arab",
     "population": 350901500,
-    "region": "Asia"
+    "region": "Africa"
   },
   "arn_Latn": {
     "name": "Mapuche",
@@ -297,7 +297,7 @@
     "name": "Attié",
     "script": "Latn",
     "population": 739000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "av_Cyrl": {
     "name": "Avaric",
@@ -327,7 +327,7 @@
     "name": "Cicipu",
     "script": "Latn",
     "population": 44000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "awo_Latn": {
     "name": "Awak",
@@ -363,7 +363,7 @@
     "name": "Awing",
     "script": "Latn",
     "population": 19000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "ba_Cyrl": {
     "name": "Bashkir",
@@ -417,7 +417,7 @@
     "name": "Batak Toba, Batak",
     "script": "Batk",
     "population": 0,
-    "region": "Other"
+    "region": "Asia"
   },
   "bbc_Latn": {
     "name": "Batak Toba",
@@ -435,7 +435,7 @@
     "name": "Northern Bobo Madaré",
     "script": "Latn",
     "population": 119000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "bbp_Latn": {
     "name": "Banda, West Central",
@@ -465,19 +465,19 @@
     "name": "Bana",
     "script": "Latn",
     "population": 23000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "bcy_Latn": {
     "name": "Bacama",
     "script": "Latn",
     "population": 300000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "bdh_Latn": {
     "name": "Baka, DRC/South Sudan",
     "script": "Latn",
     "population": 60000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "be_Cyrl": {
     "name": "Belarusian",
@@ -507,7 +507,7 @@
     "name": "Berber (Latin)",
     "script": "Latn",
     "population": 0,
-    "region": "Other"
+    "region": "Americas"
   },
   "bet_Latn": {
     "name": "Bété, Guiberoua",
@@ -519,7 +519,7 @@
     "name": "Bété, Daloa",
     "script": "Latn",
     "population": 265000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "bex_Latn": {
     "name": "Jur Modo",
@@ -537,7 +537,7 @@
     "name": "Bari",
     "script": "Latn",
     "population": 865000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "bfd_Latn": {
     "name": "Bafut",
@@ -549,7 +549,7 @@
     "name": "Malba Birifor",
     "script": "Latn",
     "population": 108000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "bg_Cyrl": {
     "name": "Bulgarian",
@@ -603,7 +603,7 @@
     "name": "Birifor, Southern",
     "script": "Latn",
     "population": 190000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "bjt_Latn": {
     "name": "Balanta-Ganja",
@@ -615,7 +615,7 @@
     "name": "Bedjond",
     "script": "Latn",
     "population": 216000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "bkc_Latn": {
     "name": "Baka, Cameroon/Gabon",
@@ -645,7 +645,7 @@
     "name": "Anii",
     "script": "Latn",
     "population": 49000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "bm_Latn": {
     "name": "Bambara",
@@ -693,25 +693,25 @@
     "name": "Bongo",
     "script": "Latn",
     "population": 19000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "bov_Latn": {
     "name": "Tuwuli",
     "script": "Latn",
     "population": 11000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "box_Latn": {
     "name": "Buamu",
     "script": "Latn",
     "population": 268000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "boz_Latn": {
     "name": "Tiéyaxo Bozo",
     "script": "Latn",
     "population": 335000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "bpy_Beng": {
     "name": "Bishnupriya",
@@ -729,7 +729,7 @@
     "name": "Bandial",
     "script": "Latn",
     "population": 13000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "bqp_Latn": {
     "name": "Bisã",
@@ -771,13 +771,13 @@
     "name": "Bassari",
     "script": "Latn",
     "population": 15264,
-    "region": "Africa"
+    "region": "Americas"
   },
   "bsc_Latn_GN": {
     "name": "Guinean Bassari",
     "script": "Latn",
     "population": 18000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "bsj_Latn": {
     "name": "Bangwinji",
@@ -789,7 +789,7 @@
     "name": "Baga Sitemu",
     "script": "Latn",
     "population": 44000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "bsq_Latn": {
     "name": "Bassa (Latin)",
@@ -861,7 +861,7 @@
     "name": "gevové",
     "script": "Latn",
     "population": 4000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "bvb_Latn": {
     "name": "Bube",
@@ -873,19 +873,19 @@
     "name": "Belanda Viri, Latin",
     "script": "Latn",
     "population": 73000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "bwj_Latn": {
     "name": "Láá Láá Bwamu",
     "script": "Latn",
     "population": 69200,
-    "region": "Africa"
+    "region": "Americas"
   },
   "bwq_Latn": {
     "name": "Southern Bobo Madaré",
     "script": "Latn",
     "population": 180000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "bwr_Latn": {
     "name": "Bura-Pabir",
@@ -933,7 +933,7 @@
     "name": "Bozo, Hainyaxo",
     "script": "Latn",
     "population": 47000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "ca_Latn": {
     "name": "Catalan",
@@ -945,7 +945,7 @@
     "name": "Lehar",
     "script": "Latn",
     "population": 19000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "car_Latn": {
     "name": "Carib",
@@ -969,7 +969,7 @@
     "name": "Kamuku",
     "script": "Latn",
     "population": 45000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "ce_Cyrl": {
     "name": "Chechen",
@@ -1041,13 +1041,13 @@
     "name": "Chokwe",
     "script": "Latn",
     "population": 2500000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "cjs_Cyrl": {
     "name": "Shor",
     "script": "Cyrl",
     "population": 0,
-    "region": "Europe"
+    "region": "Americas"
   },
   "ckb_Arab": {
     "name": "Central Kurdish",
@@ -1071,7 +1071,7 @@
     "name": "Chukot",
     "script": "Cyrl",
     "population": 8526,
-    "region": "Europe"
+    "region": "Americas"
   },
   "cky_Latn": {
     "name": "Cakfem-Mushere",
@@ -1107,7 +1107,7 @@
     "name": "Wamey",
     "script": "Latn",
     "population": 38000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "crh_Cyrl": {
     "name": "Crimean Turkish, Cyrillic",
@@ -1119,7 +1119,7 @@
     "name": "Sãotomense",
     "script": "Latn",
     "population": 70000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "crs_Latn": {
     "name": "Seselwa Creole French",
@@ -1143,7 +1143,7 @@
     "name": "Jola-Kasa",
     "script": "Latn",
     "population": 45000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "ctd_Latn": {
     "name": "Tedim Chin",
@@ -1167,13 +1167,13 @@
     "name": "Kwere",
     "script": "Latn",
     "population": 315000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "cy_Latn": {
     "name": "Welsh",
     "script": "Latn",
     "population": 536376,
-    "region": "Americas"
+    "region": "Europe"
   },
   "da_Latn": {
     "name": "Danish",
@@ -1185,7 +1185,7 @@
     "name": "Dangaléat",
     "script": "Latn",
     "population": 60000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "dag_Latn": {
     "name": "Dagbani",
@@ -1263,25 +1263,25 @@
     "name": "Didinga",
     "script": "Latn",
     "population": 100000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "din_Latn": {
     "name": "Dinka",
     "script": "Latn",
     "population": 1300000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "dip_Latn": {
     "name": "Dinka, Northeastern",
     "script": "Latn",
     "population": 812000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "djc_Latn": {
     "name": "Dar Daju Daju",
     "script": "Latn",
     "population": 75000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "dje_Latn": {
     "name": "Zarma",
@@ -1293,7 +1293,7 @@
     "name": "Dungan",
     "script": "Cyrl",
     "population": 110000,
-    "region": "Asia"
+    "region": "Americas"
   },
   "dnj_Latn": {
     "name": "Dan",
@@ -1311,7 +1311,7 @@
     "name": "Ndrulo",
     "script": "Latn",
     "population": 150000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "doi_Deva": {
     "name": "Dogri",
@@ -1377,7 +1377,7 @@
     "name": "Dii",
     "script": "Latn",
     "population": 71000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "dv_Thaa": {
     "name": "Divehi",
@@ -1389,19 +1389,19 @@
     "name": "Dawro",
     "script": "Latn",
     "population": 533000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "dya_Latn": {
     "name": "Dyan",
     "script": "Latn",
     "population": 14100,
-    "region": "Africa"
+    "region": "Americas"
   },
   "dyi_Latn": {
     "name": "Sénoufo, Djimini",
     "script": "Latn",
     "population": 96000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "dyo_Latn": {
     "name": "Jola-Fonyi",
@@ -1431,7 +1431,7 @@
     "name": "Teke-Ebo",
     "script": "Latn",
     "population": 260000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "ebu_Latn": {
     "name": "Embu",
@@ -1461,13 +1461,13 @@
     "name": "Elip",
     "script": "Latn",
     "population": 20000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "ekp_Latn": {
     "name": "Ekpeye",
     "script": "Latn",
     "population": 226000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "el_Grek": {
     "name": "Greek",
@@ -1497,19 +1497,19 @@
     "name": "English",
     "script": "Latn",
     "population": 1636848718,
-    "region": "Oceania"
+    "region": "Americas"
   },
   "enf_Cyrl": {
     "name": "Forest Enets",
     "script": "Cyrl",
     "population": 50,
-    "region": "Europe"
+    "region": "Americas"
   },
   "enh_Cyrl": {
     "name": "Tundra Enets",
     "script": "Cyrl",
     "population": 35,
-    "region": "Europe"
+    "region": "Americas"
   },
   "enn_Latn": {
     "name": "Engenni",
@@ -1545,7 +1545,7 @@
     "name": "Eton, Cameroon",
     "script": "Latn",
     "population": 400000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "etu_Latn": {
     "name": "Ejagham",
@@ -1569,7 +1569,7 @@
     "name": "Evenki",
     "script": "Cyrl",
     "population": 16000,
-    "region": "Europe"
+    "region": "Americas"
   },
   "ewo_Latn": {
     "name": "Ewondo",
@@ -1605,7 +1605,7 @@
     "name": "West Albay Bikol",
     "script": "Latn",
     "population": 2511162,
-    "region": "Asia"
+    "region": "Americas"
   },
   "ff_Adlm": {
     "name": "Fulah (Adlam)",
@@ -1809,7 +1809,7 @@
     "name": "Southern Giziga",
     "script": "Latn",
     "population": 211000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "gjn_Latn": {
     "name": "Gonja",
@@ -1839,7 +1839,7 @@
     "name": "Nanai",
     "script": "Cyrl",
     "population": 1390,
-    "region": "Europe"
+    "region": "Americas"
   },
   "gmm_Latn": {
     "name": "Gbaya-Mbodomo",
@@ -1863,7 +1863,7 @@
     "name": "Kaansa",
     "script": "Latn",
     "population": 15000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "gnd_Latn": {
     "name": "Zulgo-Gemzek",
@@ -1881,7 +1881,7 @@
     "name": "Guro",
     "script": "Latn",
     "population": 700000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "god_Latn": {
     "name": "Godié",
@@ -1905,13 +1905,13 @@
     "name": "Goo",
     "script": "Latn",
     "population": 8500,
-    "region": "Africa"
+    "region": "Americas"
   },
   "gqr_Latn": {
     "name": "Gor",
     "script": "Latn",
     "population": 175000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "grb_Latn": {
     "name": "Grebo",
@@ -1923,7 +1923,7 @@
     "name": "Ancient Greek (Greek)",
     "script": "Grek",
     "population": 0,
-    "region": "Other"
+    "region": "Asia"
   },
   "gsw_Latn": {
     "name": "Swiss German",
@@ -1953,7 +1953,7 @@
     "name": "Gumuz",
     "script": "Latn",
     "population": 248000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "gur_Latn": {
     "name": "Frafra",
@@ -1989,13 +1989,13 @@
     "name": "Gulay",
     "script": "Latn",
     "population": 250478,
-    "region": "Africa"
+    "region": "Americas"
   },
   "gwd_Latn": {
     "name": "Gawwada",
     "script": "Latn",
     "population": 146000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "gwi_Latn": {
     "name": "Gwichʼin",
@@ -2031,7 +2031,7 @@
     "name": "Harari",
     "script": "Latn",
     "population": 26000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "haw_Latn": {
     "name": "Hawaiian",
@@ -2061,7 +2061,7 @@
     "name": "Hindi",
     "script": "Deva",
     "population": 545367583,
-    "region": "Oceania"
+    "region": "Asia"
   },
   "hia_Latn": {
     "name": "Lamang",
@@ -2085,7 +2085,7 @@
     "name": "Hmong",
     "script": "Latn",
     "population": 2700000,
-    "region": "Asia"
+    "region": "Americas"
   },
   "hnn_Hano": {
     "name": "Hanunoo (Hanunoo)",
@@ -2229,7 +2229,7 @@
     "name": "Ijo, Southeast",
     "script": "Latn",
     "population": 2471000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "ikk_Latn": {
     "name": "Ika",
@@ -2265,7 +2265,7 @@
     "name": "Ikwo",
     "script": "Latn",
     "population": 260000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "iri_Latn": {
     "name": "Rigwe",
@@ -2277,7 +2277,7 @@
     "name": "Iraqw",
     "script": "Latn",
     "population": 1013000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "is_Latn": {
     "name": "Icelandic",
@@ -2289,7 +2289,7 @@
     "name": "Esan",
     "script": "Latn",
     "population": 700000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "it_Latn": {
     "name": "Italian",
@@ -2301,25 +2301,25 @@
     "name": "Itelmen",
     "script": "Cyrl",
     "population": 808,
-    "region": "Europe"
+    "region": "Americas"
   },
   "izr_Latn": {
     "name": "Izere",
     "script": "Latn",
     "population": 500000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "izz_Latn": {
     "name": "Izii",
     "script": "Latn",
     "population": 540000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "ja_Jpan": {
     "name": "Japanese",
     "script": "Jpan",
     "population": 119676253,
-    "region": "Americas"
+    "region": "Asia"
   },
   "jab_Latn": {
     "name": "Hyam",
@@ -2451,7 +2451,7 @@
     "name": "Keliko",
     "script": "Latn",
     "population": 63000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "kbp_Latn": {
     "name": "Kabiyé",
@@ -2469,7 +2469,7 @@
     "name": "Khanty",
     "script": "Cyrl",
     "population": 14000,
-    "region": "Europe"
+    "region": "Americas"
   },
   "kcg_Latn": {
     "name": "Tyap",
@@ -2487,7 +2487,7 @@
     "name": "Kutu",
     "script": "Latn",
     "population": 45000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "kde_Latn": {
     "name": "Makonde",
@@ -2505,7 +2505,7 @@
     "name": "Karamojong",
     "script": "Latn",
     "population": 97900,
-    "region": "Africa"
+    "region": "Americas"
   },
   "kdl_Latn": {
     "name": "Tsikimba",
@@ -2529,7 +2529,7 @@
     "name": "Akebu",
     "script": "Latn",
     "population": 70300,
-    "region": "Africa"
+    "region": "Americas"
   },
   "kez_Latn": {
     "name": "Kukele",
@@ -2571,13 +2571,13 @@
     "name": "Kim",
     "script": "Latn",
     "population": 53000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "kib_Latn": {
     "name": "Koalib",
     "script": "Latn",
     "population": 150000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "kiu_Latn": {
     "name": "Kirmanjki",
@@ -2595,7 +2595,7 @@
     "name": "Khakas",
     "script": "Cyrl",
     "population": 0,
-    "region": "Europe"
+    "region": "Americas"
   },
   "kk_Arab": {
     "name": "Kazakh (Arabic)",
@@ -2625,7 +2625,7 @@
     "name": "Kalaallisut",
     "script": "Latn",
     "population": 55440,
-    "region": "Europe"
+    "region": "Americas"
   },
   "kln_Latn": {
     "name": "Kalenjin",
@@ -2649,13 +2649,13 @@
     "name": "Kâte",
     "script": "Latn",
     "population": 30000,
-    "region": "Oceania"
+    "region": "Americas"
   },
   "kmy_Latn": {
     "name": "Koma",
     "script": "Latn",
     "population": 76000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "kn_Knda": {
     "name": "Kannada",
@@ -2667,7 +2667,7 @@
     "name": "Lubuagan Kalinga",
     "script": "Latn",
     "population": 30000,
-    "region": "Asia"
+    "region": "Americas"
   },
   "knc_Latn": {
     "name": "Kanuri, Central",
@@ -2709,7 +2709,7 @@
     "name": "Konjo",
     "script": "Latn",
     "population": 1535000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "kpe_Latn": {
     "name": "Kpelle",
@@ -2727,25 +2727,25 @@
     "name": "Koryak",
     "script": "Cyrl",
     "population": 1665,
-    "region": "Europe"
+    "region": "Americas"
   },
   "kpz_Latn": {
     "name": "Sapiny",
     "script": "Latn",
     "population": 270000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "kqn_Latn": {
     "name": "Kaonde",
     "script": "Latn",
     "population": 509000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "kqp_Latn": {
     "name": "Kimré",
     "script": "Latn",
     "population": 20000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "kqs_Latn": {
     "name": "Kissi, Northern",
@@ -2787,13 +2787,13 @@
     "name": "Western Krahn",
     "script": "Latn",
     "population": 97800,
-    "region": "Africa"
+    "region": "Americas"
   },
   "ks_Arab": {
     "name": "Kashmiri",
     "script": "Arab",
     "population": 5723030,
-    "region": "Europe"
+    "region": "Asia"
   },
   "ksb_Latn": {
     "name": "Shambala",
@@ -2817,37 +2817,37 @@
     "name": "Kabba",
     "script": "Latn",
     "population": 83000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "kss_Latn": {
     "name": "Southern Kisi",
     "script": "Latn",
     "population": 360000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "kst_Latn": {
     "name": "Winyé",
     "script": "Latn",
     "population": 20000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "ktj_Latn": {
     "name": "Krumen, Plapo",
     "script": "Latn",
     "population": 200,
-    "region": "Africa"
+    "region": "Americas"
   },
   "ktu_Latn": {
     "name": "Kituba",
     "script": "Latn",
     "population": 12326000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "ktz_Latn": {
     "name": "Juǀʼhoan",
     "script": "Latn",
     "population": 4000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "ku_Latn": {
     "name": "Kurdish (Latin)",
@@ -2901,7 +2901,7 @@
     "name": "Kabalai",
     "script": "Latn",
     "population": 18000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "kw_Latn": {
     "name": "Cornish",
@@ -2931,25 +2931,25 @@
     "name": "Kouya",
     "script": "Latn",
     "population": 10100,
-    "region": "Africa"
+    "region": "Americas"
   },
   "kyq_Latn": {
     "name": "Kenga",
     "script": "Latn",
     "population": 125000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "kyu_Latn": {
     "name": "Western Kayah (Latin)",
     "script": "Latn",
     "population": 186000,
-    "region": "Asia"
+    "region": "Americas"
   },
   "kzc_Latn": {
     "name": "Bondoukou Kulango",
     "script": "Latn",
     "population": 204000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "kzr_Latn": {
     "name": "Karang",
@@ -2985,7 +2985,7 @@
     "name": "Lamba",
     "script": "Latn",
     "population": 200000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "las_Latn": {
     "name": "Lama, Togo",
@@ -3033,7 +3033,7 @@
     "name": "Lese",
     "script": "Latn",
     "population": 70000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "lez_Cyrl": {
     "name": "Lezghian",
@@ -3075,7 +3075,7 @@
     "name": "Sekpele",
     "script": "Latn",
     "population": 23000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "lkt_Latn": {
     "name": "Lakota",
@@ -3111,7 +3111,7 @@
     "name": "South Central Banda",
     "script": "Latn",
     "population": 244000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "lns_Latn": {
     "name": "Lamnso’",
@@ -3135,13 +3135,13 @@
     "name": "Lobi",
     "script": "Latn",
     "population": 723000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "log_Latn": {
     "name": "Logo",
     "script": "Latn",
     "population": 210000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "lok_Latn": {
     "name": "Loko",
@@ -3159,13 +3159,13 @@
     "name": "Loma, Liberia",
     "script": "Latn",
     "population": 320000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "loq_Latn": {
     "name": "Lobala",
     "script": "Latn",
     "population": 159000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "lor_Latn": {
     "name": "Téén",
@@ -3177,7 +3177,7 @@
     "name": "Otuho",
     "script": "Latn",
     "population": 274000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "loz_Latn": {
     "name": "Lozi",
@@ -3219,19 +3219,19 @@
     "name": "Luvale",
     "script": "Latn",
     "population": 970000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "lui_Latn": {
     "name": "Luiseno",
     "script": "Latn",
     "population": 0,
-    "region": "Other"
+    "region": "Americas"
   },
   "lun_Latn": {
     "name": "Lunda",
     "script": "Latn",
     "population": 1115000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "luo_Latn": {
     "name": "Luo",
@@ -3255,7 +3255,7 @@
     "name": "Luwo",
     "script": "Latn",
     "population": 260000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "lzz_Latn": {
     "name": "Laz (Latin)",
@@ -3339,7 +3339,7 @@
     "name": "Masana",
     "script": "Latn",
     "population": 230000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "mcp_Latn": {
     "name": "Makaa",
@@ -3375,7 +3375,7 @@
     "name": "Mbere",
     "script": "Latn",
     "population": 237000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "men_Latn": {
     "name": "Mende",
@@ -3387,7 +3387,7 @@
     "name": "Merey",
     "script": "Latn",
     "population": 10000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "mer_Latn": {
     "name": "Meru",
@@ -3399,19 +3399,19 @@
     "name": "Mano",
     "script": "Latn",
     "population": 430000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "mey_Latn": {
     "name": "Hassaniyya",
     "script": "Latn",
     "population": 7238,
-    "region": "Africa"
+    "region": "Americas"
   },
   "mfd_Latn": {
     "name": "Mendankwe-Nkwen",
     "script": "Latn",
     "population": 28000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "mfe_Latn": {
     "name": "Morisyen",
@@ -3423,7 +3423,7 @@
     "name": "Wandala",
     "script": "Latn",
     "population": 44000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "mfn_Latn": {
     "name": "Mbembe, Cross River",
@@ -3447,7 +3447,7 @@
     "name": "Mandjak",
     "script": "Latn",
     "population": 121170,
-    "region": "Africa"
+    "region": "Americas"
   },
   "mg_Latn": {
     "name": "Malagasy",
@@ -3459,19 +3459,19 @@
     "name": "Morokodo",
     "script": "Latn",
     "population": 50000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "mgd_Latn": {
     "name": "Moru",
     "script": "Latn",
     "population": 214000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "mge_Latn": {
     "name": "Mango",
     "script": "Latn",
     "population": 77000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "mgh_Latn": {
     "name": "Makhuwa-Meetto",
@@ -3489,7 +3489,7 @@
     "name": "Mbugwe",
     "script": "Latn",
     "population": 50000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "mh_Latn": {
     "name": "Marshallese",
@@ -3561,7 +3561,7 @@
     "name": "Naba",
     "script": "Latn",
     "population": 477000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "mnf_Latn": {
     "name": "Mundani",
@@ -3585,7 +3585,7 @@
     "name": "Mansi",
     "script": "Cyrl",
     "population": 2229,
-    "region": "Europe"
+    "region": "Americas"
   },
   "moa_Latn": {
     "name": "Mwan",
@@ -3609,7 +3609,7 @@
     "name": "Moro",
     "script": "Latn",
     "population": 86000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "mos_Latn": {
     "name": "Mossi",
@@ -3621,7 +3621,7 @@
     "name": "Mbuko",
     "script": "Latn",
     "population": 15000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "mql_Latn": {
     "name": "Mbelime",
@@ -3645,7 +3645,7 @@
     "name": "Maninka, Sankaran",
     "script": "Latn",
     "population": 110000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "mt_Latn": {
     "name": "Maltese",
@@ -3663,7 +3663,7 @@
     "name": "Mündü",
     "script": "Latn",
     "population": 26000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "mur_Latn": {
     "name": "Murle",
@@ -3681,7 +3681,7 @@
     "name": "Muyang",
     "script": "Latn",
     "population": 30000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "mwk_Latn": {
     "name": "Kita Maninkakan",
@@ -3693,13 +3693,13 @@
     "name": "Mirandese",
     "script": "Latn",
     "population": 15000,
-    "region": "Europe"
+    "region": "Americas"
   },
   "mwm_Latn": {
     "name": "Sar",
     "script": "Latn",
     "population": 500000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "mxc_Latn": {
     "name": "Manyika",
@@ -3777,13 +3777,13 @@
     "name": "Cahungwarya",
     "script": "Latn",
     "population": 20000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "naw_Latn": {
     "name": "Nawuri",
     "script": "Latn",
     "population": 14000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "nb_Latn": {
     "name": "Norwegian Bokmål",
@@ -3795,7 +3795,7 @@
     "name": "Nyemba",
     "script": "Latn",
     "population": 1135000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "ncu_Latn": {
     "name": "Chumburung",
@@ -3819,7 +3819,7 @@
     "name": "Ndamba",
     "script": "Latn",
     "population": 55000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "nds_Latn": {
     "name": "Low German",
@@ -3831,13 +3831,13 @@
     "name": "Ndut",
     "script": "Latn",
     "population": 60000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "ndz_Latn": {
     "name": "Ndogo",
     "script": "Latn",
     "population": 48000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "ne_Deva": {
     "name": "Nepali",
@@ -3861,7 +3861,7 @@
     "name": "Mfumte",
     "script": "Latn",
     "population": 79000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "ng_Latn": {
     "name": "Ndonga",
@@ -3885,7 +3885,7 @@
     "name": "Nǁng",
     "script": "Latn",
     "population": 1,
-    "region": "Africa"
+    "region": "Americas"
   },
   "ngl_Latn": {
     "name": "Lomwe",
@@ -3897,7 +3897,7 @@
     "name": "Ngulu",
     "script": "Latn",
     "population": 130000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "nhb_Latn": {
     "name": "Beng",
@@ -3909,7 +3909,7 @@
     "name": "Noone",
     "script": "Latn",
     "population": 50000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "nin_Latn": {
     "name": "Ninzo",
@@ -3945,13 +3945,13 @@
     "name": "Kulango, Bouna",
     "script": "Latn",
     "population": 325000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "nl_Latn": {
     "name": "Dutch",
     "script": "Latn",
     "population": 31709104,
-    "region": "Americas"
+    "region": "Europe"
   },
   "nmg_Latn": {
     "name": "Kwasio",
@@ -3963,7 +3963,7 @@
     "name": "ǃXoon",
     "script": "Latn",
     "population": 3600,
-    "region": "Africa"
+    "region": "Americas"
   },
   "nmz_Latn": {
     "name": "Nawdm",
@@ -3987,13 +3987,13 @@
     "name": "Ngindo",
     "script": "Latn",
     "population": 220000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "nnw_Latn": {
     "name": "Southern Nuni",
     "script": "Latn",
     "population": 147000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "no_Latn": {
     "name": "Norwegian",
@@ -4005,13 +4005,13 @@
     "name": "Nogai",
     "script": "Cyrl",
     "population": 86000,
-    "region": "Europe"
+    "region": "Americas"
   },
   "nov_Latn": {
     "name": "Novial",
     "script": "Latn",
     "population": 0,
-    "region": "Other"
+    "region": "Americas"
   },
   "nr_Latn": {
     "name": "South Ndebele",
@@ -4101,7 +4101,7 @@
     "name": "Nyangbo",
     "script": "Latn",
     "population": 11000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "nym_Latn": {
     "name": "Nyamwezi",
@@ -4119,13 +4119,13 @@
     "name": "Nyoro",
     "script": "Latn",
     "population": 670000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "nza_Latn": {
     "name": "Tigon Mbembe",
     "script": "Latn",
     "population": 60000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "nzi_Latn": {
     "name": "Nzima",
@@ -4137,7 +4137,7 @@
     "name": "Nzakara",
     "script": "Latn",
     "population": 50000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "oc_Latn": {
     "name": "Occitan",
@@ -4155,7 +4155,7 @@
     "name": "Okiek",
     "script": "Latn",
     "population": 79000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "okr_Latn": {
     "name": "Kirike",
@@ -4197,7 +4197,7 @@
     "name": "Elfdalian",
     "script": "Latn",
     "population": 0,
-    "region": "Europe"
+    "region": "Americas"
   },
   "ozm_Latn": {
     "name": "Koonzime",
@@ -4215,7 +4215,7 @@
     "name": "Punjabi",
     "script": "Guru",
     "population": 37669517,
-    "region": "Europe"
+    "region": "Asia"
   },
   "pam_Latn": {
     "name": "Pampanga",
@@ -4275,7 +4275,7 @@
     "name": "Pokomo",
     "script": "Latn",
     "population": 117000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "pko_Latn": {
     "name": "Pökoot",
@@ -4305,7 +4305,7 @@
     "name": "Pana, Central African Republic",
     "script": "Latn",
     "population": 153000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "pon_Latn": {
     "name": "Pohnpeian",
@@ -4317,13 +4317,13 @@
     "name": "Crioulo, Upper Guinea",
     "script": "Latn",
     "population": 541000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "poy_Latn": {
     "name": "Pogolo",
     "script": "Latn",
     "population": 180000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "prg_Latn": {
     "name": "Prussian",
@@ -4353,7 +4353,7 @@
     "name": "Phuie",
     "script": "Latn",
     "population": 14000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "puu_Latn": {
     "name": "Punu",
@@ -4365,7 +4365,7 @@
     "name": "Pyam",
     "script": "Latn",
     "population": 31000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "qu_Latn": {
     "name": "Quechua",
@@ -4389,7 +4389,7 @@
     "name": "Rarotongan",
     "script": "Latn",
     "population": 0,
-    "region": "Oceania"
+    "region": "Americas"
   },
   "rcf_Latn": {
     "name": "Réunion Creole French",
@@ -4461,7 +4461,7 @@
     "name": "Romany",
     "script": "Latn",
     "population": 4800000,
-    "region": "Europe"
+    "region": "Americas"
   },
   "ru_Cyrl": {
     "name": "Russian",
@@ -4473,7 +4473,7 @@
     "name": "Gungu",
     "script": "Latn",
     "population": 49000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "rue_Cyrl": {
     "name": "Rusyn",
@@ -4485,13 +4485,13 @@
     "name": "Luguru",
     "script": "Latn",
     "population": 690000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "rup_Latn": {
     "name": "Aromanian",
     "script": "Latn",
     "population": 210000,
-    "region": "Europe"
+    "region": "Americas"
   },
   "rw_Latn": {
     "name": "Kinyarwanda",
@@ -4521,7 +4521,7 @@
     "name": "Sandawe",
     "script": "Latn",
     "population": 60000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "saf_Latn": {
     "name": "Safaliba",
@@ -4563,7 +4563,7 @@
     "name": "Southern Samo",
     "script": "Latn",
     "population": 85000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "sbp_Latn": {
     "name": "Sangu",
@@ -4635,7 +4635,7 @@
     "name": "Selkup",
     "script": "Cyrl",
     "population": 0,
-    "region": "Other"
+    "region": "Americas"
   },
   "ses_Latn": {
     "name": "Koyraboro Senni",
@@ -4653,7 +4653,7 @@
     "name": "Sheko",
     "script": "Latn",
     "population": 39000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "shi_Latn": {
     "name": "Tachelhit (Latin)",
@@ -4683,7 +4683,7 @@
     "name": "Syenara Senoufo",
     "script": "Latn",
     "population": 210000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "si_Sinh": {
     "name": "Sinhala",
@@ -4767,7 +4767,7 @@
     "name": "Noon",
     "script": "Latn",
     "population": 37767,
-    "region": "Africa"
+    "region": "Americas"
   },
   "snk_Latn": {
     "name": "Soninke",
@@ -4779,7 +4779,7 @@
     "name": "Selee",
     "script": "Latn",
     "population": 11000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "so_Arab": {
     "name": "Somali (Arabic)",
@@ -4809,7 +4809,7 @@
     "name": "Sénoufo, Supyire",
     "script": "Latn",
     "population": 691000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "sq_Latn": {
     "name": "Albanian",
@@ -4887,7 +4887,7 @@
     "name": "Suri, Tirmaga-Chai",
     "script": "Latn",
     "population": 27000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "sur_Latn": {
     "name": "Mwaghavul",
@@ -4905,7 +4905,7 @@
     "name": "Sunwar",
     "script": "Sunu",
     "population": 26611,
-    "region": "Asia"
+    "region": "Americas"
   },
   "sv_Latn": {
     "name": "Swedish",
@@ -4935,7 +4935,7 @@
     "name": "Suba",
     "script": "Latn",
     "population": 140000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "sxw_Latn": {
     "name": "Saxwe Gbe",
@@ -4959,7 +4959,7 @@
     "name": "Tabassaran",
     "script": "Cyrl",
     "population": 126900,
-    "region": "Europe"
+    "region": "Americas"
   },
   "taj_Deva": {
     "name": "Eastern Tamang",
@@ -5001,7 +5001,7 @@
     "name": "Tafi",
     "script": "Latn",
     "population": 7600,
-    "region": "Africa"
+    "region": "Americas"
   },
   "tce_Latn": {
     "name": "Southern Tutchone",
@@ -5013,7 +5013,7 @@
     "name": "Tagdal",
     "script": "Latn",
     "population": 65000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "te_Telu": {
     "name": "Telugu",
@@ -5103,7 +5103,7 @@
     "name": "Takwane",
     "script": "Latn",
     "population": 387000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "tkl_Latn": {
     "name": "Tokelau",
@@ -5127,13 +5127,13 @@
     "name": "Talinga-Bwisi",
     "script": "Latn",
     "population": 99000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "tly_Cyrl": {
     "name": "Talysh (Cyrillic)",
     "script": "Cyrl",
     "population": 229590,
-    "region": "Europe"
+    "region": "Asia"
   },
   "tly_Latn": {
     "name": "Talysh (Latin)",
@@ -5157,7 +5157,7 @@
     "name": "Ménik",
     "script": "Latn",
     "population": 3304,
-    "region": "Africa"
+    "region": "Americas"
   },
   "to_Latn": {
     "name": "Tongan",
@@ -5169,7 +5169,7 @@
     "name": "Toma",
     "script": "Latn",
     "population": 420000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "tog_Latn": {
     "name": "Nyasa Tonga",
@@ -5181,7 +5181,7 @@
     "name": "Tonga",
     "script": "Latn",
     "population": 3075000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "toq_Latn": {
     "name": "Toposa",
@@ -5205,7 +5205,7 @@
     "name": "Turkish",
     "script": "Latn",
     "population": 80191488,
-    "region": "Europe"
+    "region": "Asia"
   },
   "ts_Latn": {
     "name": "Tsonga",
@@ -5217,7 +5217,7 @@
     "name": "Tsamai",
     "script": "Latn",
     "population": 51000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "tsw_Latn": {
     "name": "Tsishingini",
@@ -5289,7 +5289,7 @@
     "name": "Turka",
     "script": "Latn",
     "population": 37000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "tvd_Latn": {
     "name": "Tsuvadi",
@@ -5355,7 +5355,7 @@
     "name": "Uduk",
     "script": "Latn",
     "population": 22000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "ug_Arab": {
     "name": "Uyghur",
@@ -5475,7 +5475,7 @@
     "name": "Vidunda",
     "script": "Latn",
     "population": 32000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "vmw_Latn": {
     "name": "Makhuwa",
@@ -5583,7 +5583,7 @@
     "name": "Mwani",
     "script": "Latn",
     "population": 100000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "wo_Latn": {
     "name": "Wolof",
@@ -5601,7 +5601,7 @@
     "name": "Longto",
     "script": "Latn",
     "population": 5000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "wwa_Latn": {
     "name": "Waama",
@@ -5613,7 +5613,7 @@
     "name": "Kalmyk",
     "script": "Cyrl",
     "population": 110000,
-    "region": "Europe"
+    "region": "Americas"
   },
   "xav_Latn": {
     "name": "Xavánte",
@@ -5625,7 +5625,7 @@
     "name": "Hdi",
     "script": "Latn",
     "population": 29000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "xh_Latn": {
     "name": "Xhosa",
@@ -5673,7 +5673,7 @@
     "name": "Kuo",
     "script": "Latn",
     "population": 20000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "xwe_Latn": {
     "name": "Gbe, Xwela",
@@ -5685,7 +5685,7 @@
     "name": "Yalunka",
     "script": "Latn",
     "population": 105000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "yam_Latn": {
     "name": "Yamba",
@@ -5787,7 +5787,7 @@
     "name": "Nenets",
     "script": "Cyrl",
     "population": 0,
-    "region": "Europe"
+    "region": "Americas"
   },
   "yua_Latn": {
     "name": "Yucateco",
@@ -5811,7 +5811,7 @@
     "name": "Zayse",
     "script": "Latn",
     "population": 19000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "zdj_Latn": {
     "name": "Comorian, Ngazidja",
@@ -5823,7 +5823,7 @@
     "name": "Zenaga (Latin)",
     "script": "Latn",
     "population": 2700,
-    "region": "Africa"
+    "region": "Americas"
   },
   "zgh_Tfng": {
     "name": "Standard Moroccan Tamazight",
@@ -5841,19 +5841,19 @@
     "name": "Chinese (Traditional)",
     "script": "Hant",
     "population": 38770383,
-    "region": "Oceania"
+    "region": "Asia"
   },
   "ziw_Latn": {
     "name": "Zigula",
     "script": "Latn",
     "population": 442000,
-    "region": "Africa"
+    "region": "Americas"
   },
   "zlm_Latn": {
     "name": "Malay (Latin)",
     "script": "Latn",
     "population": 24170000,
-    "region": "Asia"
+    "region": "Africa"
   },
   "zne_Latn": {
     "name": "Zande",
