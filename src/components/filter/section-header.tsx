@@ -1,4 +1,9 @@
-import { ArrowsDownUpIcon, type Icon, XIcon } from "@phosphor-icons/react";
+import { ArrowsDownUpIcon, type Icon, InfoIcon, XIcon } from "@phosphor-icons/react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 // Per-section pill ordering: by font count (default) or alphabetically.
@@ -68,6 +73,7 @@ export function SectionHeader({
   canSort,
   sort,
   onToggleSort,
+  info,
 }: {
   title: string;
   icon: Icon;
@@ -76,12 +82,29 @@ export function SectionHeader({
   canSort: boolean;
   sort: SortMode;
   onToggleSort: () => void;
+  // Optional explanatory note shown in a tooltip behind an info icon after the
+  // title. Used where the grouping could be misread (e.g. Language by continent).
+  info?: React.ReactNode;
 }) {
   return (
     <div className="flex items-center justify-between gap-2">
       <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase tracking-wide">
         <Icon className="size-4" />
         {title}
+        {info ? (
+          <Tooltip>
+            <TooltipTrigger
+              type="button"
+              aria-label={`About ${title}`}
+              className="text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <InfoIcon className="size-3.5" />
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs normal-case tracking-normal">
+              {info}
+            </TooltipContent>
+          </Tooltip>
+        ) : null}
       </h2>
       {hasSelection ? (
         <HeaderButton onClick={onReset} label={`Reset ${title}`}>

@@ -70,6 +70,7 @@ export function LanguageSection({
         canSort={languages.length > 1}
         sort={sort}
         onToggleSort={() => setSort((s) => (s === "count" ? "alpha" : "count"))}
+        info="Grouped by continent using each language's primary region in CLDR, matching Google Fonts. A language appears under one continent only, so widely spoken ones can land somewhere unexpected — English sits under Americas because its main territory is the US. Use search to find any language directly."
       />
       <div className="relative">
         <MagnifyingGlassIcon className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
