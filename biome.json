@@ -24,7 +24,9 @@
       "!src/lib/db/migrations",
       "!src/lib/db/seed.*.sql",
       "!src/components/ui",
-      "!src/styles.css"
+      "!src/styles.css",
+      "!src/data/fonts.json",
+      "!scripts/harvester/stress_output.json"
     ]
   },
   "formatter": {

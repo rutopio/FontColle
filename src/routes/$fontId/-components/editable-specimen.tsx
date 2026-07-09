@@ -33,7 +33,6 @@ export function EditableSpecimen({
       dir: "auto" as const,
       value: draft,
       "aria-label": ariaLabel,
-      // biome-ignore lint/a11y/noAutofocus: focus the field the user just opened.
       autoFocus: true,
       onChange: (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
