@@ -73,7 +73,10 @@ export function Section({
   );
 }
 
-function Pills({
+// The pill list on its own, without a section header. Exported so a panel that
+// renders several labelled sub-lists under one header (the features panel) can
+// reuse the rare-value collapsing without nesting SectionHeaders.
+export function Pills({
   items,
   selected,
   onToggle,
