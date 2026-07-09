@@ -1,6 +1,7 @@
 import { PaletteIcon, StackIcon } from "@phosphor-icons/react";
 import { colorFormatLabel } from "@/lib/fonts/color";
 import { cn } from "@/lib/utils";
+import { PillButton } from "./pill-button";
 import { RadioPillSection } from "./radio-pill-section";
 import { SectionHeader } from "./section-header";
 
@@ -78,31 +79,18 @@ export function ColorFormatSection({
           disabled && "opacity-40"
         )}
       >
-        {items.map(([value, count]) => {
-          const on = selected.includes(value);
-          return (
-            <button
-              key={value}
-              type="button"
-              onClick={() => onToggle(value)}
-              aria-pressed={on}
-              disabled={disabled}
-              className={cn(
-                "flex min-w-0 items-center justify-between gap-1 rounded-md border px-2.5 py-1 text-xs transition-colors",
-                disabled && "cursor-not-allowed",
-                on
-                  ? "border-primary bg-muted text-foreground"
-                  : "text-muted-foreground",
-                !disabled &&
-                  !on &&
-                  "hover:border-foreground hover:text-foreground"
-              )}
-            >
-              <span className="truncate">{colorFormatLabel(value)}</span>
-              <span className="font-mono opacity-60">{count}</span>
-            </button>
-          );
-        })}
+        {items.map(([value, count]) => (
+          <PillButton
+            key={value}
+            value={value}
+            count={count}
+            label={colorFormatLabel(value)}
+            selected={selected.includes(value)}
+            onToggle={onToggle}
+            disabled={disabled}
+            className="min-w-0"
+          />
+        ))}
       </div>
     </div>
   );
