@@ -67,6 +67,44 @@ export function groupLanguagesByRegion(
   }));
 }
 
+export interface LanguageRegionGroup {
+  region: string;
+  items: [string, number][];
+  /** The region's `topN` most-spoken languages, which render up front. */
+  topNSet: Set<string>;
+}
+
+/**
+ * Bucket [langId, fontCount] pairs by continent for the filter sidebar,
+ * preserving the incoming order within each region. Empty regions are dropped.
+ *
+ * `topNSet` always ranks by speaker population, never by the incoming order, so
+ * flipping the panel to A–Z reorders pills without changing which ones hide.
+ */
+export function groupLanguageCountsByRegion(
+  items: [string, number][],
+  topN: number
+): LanguageRegionGroup[] {
+  const byRegion = new Map<string, [string, number][]>();
+  for (const entry of items) {
+    const r = languageRegion(entry[0]);
+    const bucket = byRegion.get(r);
+    if (bucket) bucket.push(entry);
+    else byRegion.set(r, [entry]);
+  }
+  return LANGUAGE_REGIONS.filter((r) => byRegion.has(r)).map((region) => {
+    const regionItems = byRegion.get(region) as [string, number][];
+    const top = [...regionItems]
+      .sort((a, b) => languagePopulation(b[0]) - languagePopulation(a[0]))
+      .slice(0, topN);
+    return {
+      region,
+      items: regionItems,
+      topNSet: new Set(top.map(([id]) => id)),
+    };
+  });
+}
+
 // Script -> total speaker population, summed from every language written in
 // it (gflanguages), so Writing system pills can rank by real-world reach
 // instead of how many fonts happen to declare that subset.
