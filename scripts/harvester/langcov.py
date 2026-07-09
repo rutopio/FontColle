@@ -15,6 +15,7 @@ Kept as a separate module so harvest.py stays about font I/O.
 from functools import lru_cache
 
 import gflanguages
+import langcodes
 from gftools.util.google_fonts import parse
 
 ALPHA_THRESHOLD = 0.98
@@ -73,9 +74,28 @@ def _country_region_group():
 
 
 def language_region(lang):
-    """Continent for a gflanguages language, from its first CLDR region.
-    Returns "Other" when the language declares no region."""
+    """Continent for a gflanguages language.
+
+    gflanguages' `region` is an alphabetical list of every country where the
+    language is spoken, with no indication of which one is primary — picking
+    its first entry put English in Oceania (AS, American Samoa) and Japanese in
+    the Americas (BR). Ranking that list by country population is no better:
+    India outweighs the US for English, Brazil outweighs Japan for Japanese.
+
+    So ask CLDR instead. Its likelySubtags maximizes a bare language code to
+    its primary territory (en -> en_Latn_US, ja -> ja_Jpan_JP, pt -> pt_Latn_BR),
+    which is exactly the "where is this language chiefly spoken" answer we want.
+    Fall back to the old first-country scan when CLDR has no opinion.
+    """
     groups = _country_region_group()
+    try:
+        territory = langcodes.Language.get(lang.language).maximize().territory
+    except Exception:
+        territory = None
+    if territory:
+        g = groups.get(territory)
+        if g:
+            return g
     for c in lang.region:
         g = groups.get(c)
         if g:
