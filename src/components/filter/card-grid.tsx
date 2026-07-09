@@ -1,5 +1,6 @@
-import { type Icon, XIcon } from "@phosphor-icons/react";
-import { cn } from "@/lib/utils";
+import type { Icon } from "@phosphor-icons/react";
+import { CardButton } from "./card-button";
+import { SectionHeader } from "./section-header";
 import { WeightSpecimen, WidthSpecimen } from "./specimen-icon";
 
 // Big-button grid (same shape as CategoryCards) for value dimensions like Weight
@@ -31,60 +32,33 @@ export function CardGrid({
 }) {
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-between gap-2">
-        <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase tracking-wide">
-          <Icon className="size-4" />
-          {title}
-        </h2>
-        {/* Always rendered (hidden while empty) so the title row keeps a
-            constant height whether or not a selection exists. Same slot/style
-            as the sort toggle on other sections. */}
-        <button
-          type="button"
-          onClick={onReset}
-          aria-label={`Reset ${title}`}
-          disabled={selected.length === 0}
-          aria-hidden={selected.length === 0}
-          className={cn(
-            "flex items-center gap-1 rounded-md px-2 py-1 font-mono text-muted-foreground text-xs transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted/50",
-            selected.length === 0 && "invisible"
-          )}
-        >
-          <XIcon className="size-3" />
-          Reset
-        </button>
-      </div>
+      <SectionHeader
+        title={title}
+        icon={Icon}
+        hasSelection={selected.length > 0}
+        onReset={onReset}
+        canSort={false}
+        sort="count"
+        onToggleSort={() => {}}
+      />
       {/* At most one value per section (enforced by the handler). */}
       <div className="grid grid-cols-3 gap-3">
-        {items.map(([value, count]) => {
-          const on = selected.includes(value);
-          return (
-            <button
-              key={value}
-              type="button"
-              onClick={() => onToggle(value)}
-              aria-pressed={on}
-              className={cn(
-                "relative flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border p-2 text-center shadow-xs outline-none transition-[color,box-shadow,border-color,background-color] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
-                on
-                  ? "border-primary bg-muted"
-                  : "border-input hover:border-foreground/40"
-              )}
-            >
-              {axis === "wght" ? (
-                <WeightSpecimen value={value} />
-              ) : (
-                <WidthSpecimen value={value} />
-              )}
-              <span className="w-full truncate font-medium text-muted-foreground text-xs leading-none">
-                {label(value)}
-              </span>
-              <span className="font-mono text-muted-foreground text-xs leading-none">
-                {count}
-              </span>
-            </button>
-          );
-        })}
+        {items.map(([value, count]) => (
+          <CardButton
+            key={value}
+            label={label(value)}
+            count={count}
+            selected={selected.includes(value)}
+            onToggle={() => onToggle(value)}
+            className="justify-center"
+          >
+            {axis === "wght" ? (
+              <WeightSpecimen value={value} />
+            ) : (
+              <WidthSpecimen value={value} />
+            )}
+          </CardButton>
+        ))}
       </div>
     </div>
   );
