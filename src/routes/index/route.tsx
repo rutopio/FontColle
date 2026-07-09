@@ -227,17 +227,17 @@ function App() {
               {/* Sort control: a group picker on the left and a direction toggle
                   on the right, joined into one bordered button group. */}
               {(() => {
-                const { group, asc } = sortGroupOf(sort);
-                const directionless = isDirectionless(group);
+                const { group: sortGroup, asc } = sortGroupOf(sort);
+                const directionless = isDirectionless(sortGroup);
                 // Directionless groups only expose `asc`; keep the current
                 // direction when both groups support it.
                 const dirLabel = asc
-                  ? group.ascLabel
-                  : (group.descLabel ?? group.ascLabel);
+                  ? sortGroup.ascLabel
+                  : (sortGroup.descLabel ?? sortGroup.ascLabel);
                 return (
                   <div className="flex h-8 items-center rounded-lg border border-input dark:bg-input/30">
                     <Select
-                      value={group.group}
+                      value={sortGroup.group}
                       onValueChange={(g) => {
                         const next = SORT_GROUPS.find((x) => x.group === g);
                         if (next)
@@ -248,7 +248,7 @@ function App() {
                         className="h-full rounded-r-none border-0 bg-transparent focus-visible:ring-0 dark:bg-transparent dark:hover:bg-transparent"
                         aria-label="Sort by"
                       >
-                        <SelectValue>{group.group}</SelectValue>
+                        <SelectValue>{sortGroup.group}</SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         {SORT_GROUPS.map((g) => (
@@ -263,7 +263,9 @@ function App() {
                       disabled={directionless}
                       onClick={() => {
                         if (!directionless) {
-                          setSort(asc ? (group.desc ?? group.asc) : group.asc);
+                          setSort(
+                            asc ? (sortGroup.desc ?? sortGroup.asc) : sortGroup.asc
+                          );
                         }
                       }}
                       aria-label={`Sort direction: ${dirLabel}`}

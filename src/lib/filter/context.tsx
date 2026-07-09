@@ -8,7 +8,7 @@ import {
 } from "react";
 import { emptyFilter, type FilterState } from "@/lib/fonts/filter";
 
-interface FilterState_ {
+interface FilterContextValue {
   filter: FilterState;
   setFilter: (next: FilterState) => void;
   // Last known list scroll position. A ref (not state) because it's read/written
@@ -18,7 +18,7 @@ interface FilterState_ {
   listScrollY: React.RefObject<number>;
 }
 
-const FilterContext = createContext<FilterState_ | null>(null);
+const FilterContext = createContext<FilterContextValue | null>(null);
 
 // Shares the active filter across the app, mirroring PreviewProvider. The list
 // page keeps this in sync with its URL (the source of truth for sharable
@@ -33,7 +33,7 @@ export function FilterProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useFilter(): FilterState_ {
+export function useFilter(): FilterContextValue {
   const ctx = useContext(FilterContext);
   if (!ctx) {
     throw new Error("useFilter must be used within a FilterProvider");

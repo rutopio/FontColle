@@ -47,23 +47,36 @@ export function languageRegion(id: string): string {
   return languages[id]?.region ?? "Other";
 }
 
+/** Bucket items by the continent of their language id, preserving input order
+ *  within each region and returning regions in LANGUAGE_REGIONS order. Empty
+ *  regions are dropped. The shared core behind the two public groupers below. */
+function bucketByRegion<T>(
+  items: T[],
+  idOf: (item: T) => string
+): { region: string; items: T[] }[] {
+  const byRegion = new Map<string, T[]>();
+  for (const item of items) {
+    const r = languageRegion(idOf(item));
+    const bucket = byRegion.get(r);
+    if (bucket) bucket.push(item);
+    else byRegion.set(r, [item]);
+  }
+  return LANGUAGE_REGIONS.filter((r) => byRegion.has(r)).map((region) => ({
+    region,
+    items: byRegion.get(region) as T[],
+  }));
+}
+
 /** Bucket lang ids by continent, each name-sorted, in LANGUAGE_REGIONS order.
  *  Only non-empty regions are returned. */
 export function groupLanguagesByRegion(
   ids: string[]
 ): { region: string; ids: string[] }[] {
-  const byRegion = new Map<string, string[]>();
-  for (const id of ids) {
-    const r = languageRegion(id);
-    const bucket = byRegion.get(r);
-    if (bucket) bucket.push(id);
-    else byRegion.set(r, [id]);
-  }
   const byName = (a: string, b: string) =>
     languageLabel(a).localeCompare(languageLabel(b));
-  return LANGUAGE_REGIONS.filter((r) => byRegion.has(r)).map((region) => ({
+  return bucketByRegion(ids, (id) => id).map(({ region, items }) => ({
     region,
-    ids: (byRegion.get(region) as string[]).sort(byName),
+    ids: [...items].sort(byName),
   }));
 }
 
@@ -85,24 +98,18 @@ export function groupLanguageCountsByRegion(
   items: [string, number][],
   topN: number
 ): LanguageRegionGroup[] {
-  const byRegion = new Map<string, [string, number][]>();
-  for (const entry of items) {
-    const r = languageRegion(entry[0]);
-    const bucket = byRegion.get(r);
-    if (bucket) bucket.push(entry);
-    else byRegion.set(r, [entry]);
-  }
-  return LANGUAGE_REGIONS.filter((r) => byRegion.has(r)).map((region) => {
-    const regionItems = byRegion.get(region) as [string, number][];
-    const top = [...regionItems]
-      .sort((a, b) => languagePopulation(b[0]) - languagePopulation(a[0]))
-      .slice(0, topN);
-    return {
-      region,
-      items: regionItems,
-      topNSet: new Set(top.map(([id]) => id)),
-    };
-  });
+  return bucketByRegion(items, ([id]) => id).map(
+    ({ region, items: regionItems }) => {
+      const top = [...regionItems]
+        .sort((a, b) => languagePopulation(b[0]) - languagePopulation(a[0]))
+        .slice(0, topN);
+      return {
+        region,
+        items: regionItems,
+        topNSet: new Set(top.map(([id]) => id)),
+      };
+    }
+  );
 }
 
 // Script -> total speaker population, summed from every language written in
