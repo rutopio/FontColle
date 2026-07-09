@@ -1,9 +1,10 @@
 import { TranslateIcon } from "@phosphor-icons/react";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { groupLanguageCountsByRegion, languageLabel } from "@/lib/fonts/labels";
 import { NoMatches, SearchBox } from "./search-box";
 import { Pills } from "./section";
-import { SectionHeader, type SortMode } from "./section-header";
+import { SectionHeader } from "./section-header";
+import { filterGroupsByQuery, useSearchSort } from "./use-facet-search";
 
 // How many languages each continent shows before the "N more" expander.
 const TOP_N_PER_REGION = 10;
@@ -24,13 +25,11 @@ export function LanguageSection({
   onToggleLanguage: (v: string) => void;
   onResetLanguages: () => void;
 }) {
-  const [sort, setSort] = useState<SortMode>("count");
-  const [query, setQuery] = useState("");
-  const q = query.trim().toLowerCase();
+  const { sort, toggleSort, query, setQuery, q } = useSearchSort();
 
   // Search matches the human name ("English") and the raw id ("en_Latn").
-  // Matching groups hand Pills a topNSet of every survivor, so a hit is never
-  // left collapsed behind an expander.
+  // filterGroupsByQuery rebuilds each region's topNSet from its matches, so a
+  // hit is never left collapsed behind an expander.
   const groups = useMemo(() => {
     const ordered =
       sort === "alpha"
@@ -38,17 +37,11 @@ export function LanguageSection({
             languageLabel(a[0]).localeCompare(languageLabel(b[0]))
           )
         : languages;
-    const grouped = groupLanguageCountsByRegion(ordered, TOP_N_PER_REGION);
-    if (!q) return grouped;
-    return grouped.flatMap((g) => {
-      const items = g.items.filter(
-        ([id]) =>
-          id.toLowerCase().includes(q) ||
-          languageLabel(id).toLowerCase().includes(q)
-      );
-      if (items.length === 0) return [];
-      return [{ ...g, items, topNSet: new Set(items.map(([id]) => id)) }];
-    });
+    return filterGroupsByQuery(
+      groupLanguageCountsByRegion(ordered, TOP_N_PER_REGION),
+      q,
+      languageLabel
+    );
   }, [languages, sort, q]);
 
   const hasSelection = languages.some(([id]) => selectedLanguages.includes(id));
@@ -62,7 +55,7 @@ export function LanguageSection({
         onReset={onResetLanguages}
         canSort={languages.length > 1}
         sort={sort}
-        onToggleSort={() => setSort((s) => (s === "count" ? "alpha" : "count"))}
+        onToggleSort={toggleSort}
         info="Grouped by continent using each language's primary region in CLDR, matching Google Fonts. A language appears under one continent only, so widely spoken ones can land somewhere unexpected — English sits under Americas because its main territory is the US. Use search to find any language directly."
       />
       <SearchBox
