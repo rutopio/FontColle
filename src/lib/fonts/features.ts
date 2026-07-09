@@ -190,17 +190,24 @@ export type FeatureGroupId =
   | "cjk"
   | "other";
 
-export const FEATURE_GROUPS: { id: FeatureGroupId; title: string }[] = [
+// `topN` caps how many pills a group shows up front, by font count; the rest
+// collapse behind its "N more" expander (a selected pill always shows). Omit it
+// to render the whole group — right for the small, wholly useful ones.
+export const FEATURE_GROUPS: {
+  id: FeatureGroupId;
+  title: string;
+  topN?: number;
+}[] = [
   { id: "ligatures", title: "Ligatures" },
-  { id: "alternates", title: "Alternates" },
+  { id: "alternates", title: "Alternates", topN: 9 },
   { id: "stylisticSets", title: "Stylistic sets" },
-  { id: "characterVariants", title: "Character variants" },
+  { id: "characterVariants", title: "Character variants", topN: 15 },
   { id: "letterCase", title: "Letter case" },
   { id: "numerals", title: "Numerals" },
   { id: "positioning", title: "Positioning & kerning" },
-  { id: "shaping", title: "Script shaping" },
-  { id: "cjk", title: "CJK & vertical" },
-  { id: "other", title: "Other" },
+  { id: "shaping", title: "Script shaping", topN: 30 },
+  { id: "cjk", title: "CJK & vertical", topN: 12 },
+  { id: "other", title: "Other", topN: 3 },
 ];
 
 // Explicit tag -> group. ss##/cv## are matched by pattern instead (there are
@@ -335,13 +342,24 @@ export function featureGroupOf(tag: string): FeatureGroupId {
   return FEATURE_GROUP_OF[tag] ?? "other";
 }
 
+export interface FeatureGroup {
+  id: FeatureGroupId;
+  title: string;
+  items: [string, number][];
+  /** The tags this group shows up front. Holds every tag when `topN` is unset. */
+  topNSet: Set<string>;
+}
+
 /**
  * Bucket [tag, count] pairs into the display groups, preserving the incoming
- * order (count-sorted) within each. Empty groups are dropped.
+ * order within each. Empty groups are dropped.
+ *
+ * `topNSet` is always computed from font count, never from `features`' order —
+ * flipping the panel to A–Z must reorder the pills, not change which ones the
+ * group hides. A group with no `topN` gets a set of all its tags, so Pills
+ * shows them all rather than falling back to its own rarity threshold.
  */
-export function groupFeatures(
-  features: [string, number][]
-): { id: FeatureGroupId; title: string; items: [string, number][] }[] {
+export function groupFeatures(features: [string, number][]): FeatureGroup[] {
   const byGroup = new Map<FeatureGroupId, [string, number][]>();
   for (const entry of features) {
     const id = featureGroupOf(entry[0]);
@@ -349,8 +367,13 @@ export function groupFeatures(
     if (bucket) bucket.push(entry);
     else byGroup.set(id, [entry]);
   }
-  return FEATURE_GROUPS.flatMap(({ id, title }) => {
+  return FEATURE_GROUPS.flatMap(({ id, title, topN }) => {
     const items = byGroup.get(id);
-    return items ? [{ id, title, items }] : [];
+    if (!items) return [];
+    const shown =
+      topN == null
+        ? items
+        : [...items].sort((a, b) => b[1] - a[1]).slice(0, topN);
+    return [{ id, title, items, topNSet: new Set(shown.map(([tag]) => tag)) }];
   });
 }
