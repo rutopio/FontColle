@@ -18,7 +18,6 @@ export function Section({
   sortable = true,
   grid,
   spread,
-  topN,
 }: {
   title: string;
   icon: Icon;
@@ -29,8 +28,6 @@ export function Section({
   sortable?: boolean;
   grid?: boolean;
   spread?: boolean;
-  // When set, show only the top N items by count (instead of RARE_THRESHOLD).
-  topN?: number;
 }) {
   const [sort, setSort] = useState<SortMode>("count");
 
@@ -40,13 +37,6 @@ export function Section({
     }
     return items;
   }, [items, sort]);
-
-  // Pre-compute the set of top-N values by count so Pills can use it
-  // regardless of current sort order.
-  const topNSet = useMemo(
-    () => (topN != null ? new Set(items.slice(0, topN).map(([v]) => v)) : null),
-    [items, topN]
-  );
 
   const hasSelection =
     !!onReset && items.some(([value]) => selected.includes(value));
@@ -68,7 +58,6 @@ export function Section({
         onToggle={onToggle}
         grid={grid}
         spread={spread}
-        topNSet={topNSet}
       />
     </div>
   );
