@@ -1,13 +1,6 @@
-import { type Icon, MagnifyingGlassIcon } from "@phosphor-icons/react";
+import type { Icon } from "@phosphor-icons/react";
 import { useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/components/ui/empty";
+import { NoMatches, SearchBox } from "./search-box";
 import { Pills } from "./section";
 import { SectionHeader, type SortMode } from "./section-header";
 
@@ -99,32 +92,18 @@ export function FacetSearchSection({
         sort={sort}
         onToggleSort={() => setSort((s) => (s === "count" ? "alpha" : "count"))}
       />
-      <div className="relative">
-        <MagnifyingGlassIcon className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
-        <input
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={searchPlaceholder}
-          aria-label={`Search ${title.toLowerCase()}`}
-          className="w-full rounded-md border bg-transparent py-1.5 pr-2 pl-8 text-sm outline-none focus:border-foreground"
-        />
-      </div>
+      <SearchBox
+        value={query}
+        onChange={setQuery}
+        placeholder={searchPlaceholder}
+        label={`Search ${title.toLowerCase()}`}
+      />
       {pills.length === 0 ? (
-        <Empty className="py-8">
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <MagnifyingGlassIcon />
-            </EmptyMedia>
-            <EmptyTitle>Nothing found</EmptyTitle>
-            <EmptyDescription>
-              No {title.toLowerCase()} matches “{query.trim()}”.
-            </EmptyDescription>
-          </EmptyHeader>
-          <Button variant="outline" onClick={() => setQuery("")}>
-            Clear search
-          </Button>
-        </Empty>
+        <NoMatches
+          title="Nothing found"
+          description={`No ${title.toLowerCase()} matches “${query.trim()}”.`}
+          onClear={() => setQuery("")}
+        />
       ) : (
         <Pills
           items={pills}

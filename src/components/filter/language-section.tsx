@@ -1,14 +1,7 @@
-import { MagnifyingGlassIcon, TranslateIcon } from "@phosphor-icons/react";
+import { TranslateIcon } from "@phosphor-icons/react";
 import { useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/components/ui/empty";
 import { groupLanguageCountsByRegion, languageLabel } from "@/lib/fonts/labels";
+import { NoMatches, SearchBox } from "./search-box";
 import { Pills } from "./section";
 import { SectionHeader, type SortMode } from "./section-header";
 
@@ -72,32 +65,18 @@ export function LanguageSection({
         onToggleSort={() => setSort((s) => (s === "count" ? "alpha" : "count"))}
         info="Grouped by continent using each language's primary region in CLDR, matching Google Fonts. A language appears under one continent only, so widely spoken ones can land somewhere unexpected — English sits under Americas because its main territory is the US. Use search to find any language directly."
       />
-      <div className="relative">
-        <MagnifyingGlassIcon className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
-        <input
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search languages"
-          aria-label="Search languages"
-          className="w-full rounded-md border bg-transparent py-1.5 pr-2 pl-8 text-sm outline-none focus:border-foreground"
-        />
-      </div>
+      <SearchBox
+        value={query}
+        onChange={setQuery}
+        placeholder="Search languages"
+        label="Search languages"
+      />
       {groups.length === 0 ? (
-        <Empty className="py-8">
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <MagnifyingGlassIcon />
-            </EmptyMedia>
-            <EmptyTitle>No languages found</EmptyTitle>
-            <EmptyDescription>
-              No language matches “{query.trim()}”.
-            </EmptyDescription>
-          </EmptyHeader>
-          <Button variant="outline" onClick={() => setQuery("")}>
-            Clear search
-          </Button>
-        </Empty>
+        <NoMatches
+          title="No languages found"
+          description={`No language matches “${query.trim()}”.`}
+          onClear={() => setQuery("")}
+        />
       ) : (
         <div className="flex flex-col gap-8">
           {groups.map(({ region, items, topNSet }) => (
