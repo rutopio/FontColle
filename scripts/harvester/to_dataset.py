@@ -138,6 +138,28 @@ def to_record(r):
         "colorTables": [t.strip() for t in ttf.get("color_tables", [])],
         "primaryScript": r.get("primary_script"),
         "panose": ",".join(str(x) for x in panose) if panose else None,
+        # Style metrics (raw font units; ratios derived at the UI layer using
+        # unitsPerEm above). null fields mean "unavailable", never guessed.
+        "xHeight": ttf.get("x_height"),
+        "capHeight": ttf.get("cap_height"),
+        "italicAngle": ttf.get("italic_angle"),
+        "hheaAscender": ttf.get("hhea_ascender"),
+        "hheaDescender": ttf.get("hhea_descender"),
+        "hheaLineGap": ttf.get("hhea_line_gap"),
+        "typoAscender": ttf.get("typo_ascender"),
+        "typoDescender": ttf.get("typo_descender"),
+        "typoLineGap": ttf.get("typo_line_gap"),
+        "winAscent": ttf.get("win_ascent"),
+        "winDescent": ttf.get("win_descent"),
+        "useTypoMetrics": ttf.get("use_typo_metrics"),
+        "avgCharWidth": ttf.get("avg_char_width"),
+        "isMonospace": ttf.get("is_monospace"),
+        # outlineFormat deliberately NOT emitted: the 2026-07 sample was 100%
+        # glyf across google/fonts, so it would be a stored constant. The raw
+        # harvest output still records outline_format for verification.
+        "hasHinting": ttf.get("has_hinting"),
+        "vendorId": ttf.get("vendor_id"),
+        "fileSize": ttf.get("file_size"),
         "axes": [
             {"tag": a["tag"], "name": a.get("name"),
              "min": a.get("min"), "default": a.get("default"), "max": a.get("max")}

@@ -6,9 +6,10 @@ Per family:
   - Download the primary TTF and parse GSUB/GPOS features, fvar axes, named instances.
 Outputs one merged JSON record per family conforming to a stable schema.
 """
-import json, re, sys, urllib.request, urllib.parse, io, time, resource
+import json, os, re, sys, urllib.request, urllib.parse, io, time, resource
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from fontTools.ttLib import TTFont
+from fontTools.pens.boundsPen import BoundsPen
 import langcov
 
 RAW = "https://raw.githubusercontent.com/google/fonts/main"
@@ -24,13 +25,39 @@ WEIGHT_NAMES = {
     500: "Medium", 600: "SemiBold", 700: "Bold", 800: "ExtraBold", 900: "Black",
 }
 
+# Dev-time cache for binary (TTF) downloads, mirroring the repo path under
+# TTF_CACHE_DIR. Cached files are trusted as-is: delete the directory (or set
+# TTF_CACHE=0) to force fresh downloads, e.g. for a release run.
+CACHE_DIR = os.environ.get(
+    "TTF_CACHE_DIR", os.path.join(os.path.dirname(__file__), "ttf_cache")
+)
+USE_CACHE = os.environ.get("TTF_CACHE", "1") != "0"
+
+def _cache_path(url):
+    if not url.startswith(RAW):
+        return None
+    rel = urllib.parse.unquote(url[len(RAW):]).lstrip("/")
+    return os.path.join(CACHE_DIR, rel)
+
 def fetch(url, binary=False, retries=3):
+    cpath = _cache_path(url) if binary and USE_CACHE else None
+    if cpath and os.path.isfile(cpath):
+        with open(cpath, "rb") as fh:
+            return fh.read()
     last = None
     for attempt in range(retries):
         try:
             req = urllib.request.Request(url, headers={"User-Agent": "font-harvester"})
             with urllib.request.urlopen(req, timeout=60) as r:
-                return r.read() if binary else r.read().decode("utf-8")
+                data = r.read() if binary else r.read().decode("utf-8")
+            if cpath:
+                # Atomic write so a concurrent worker never reads a torn file.
+                os.makedirs(os.path.dirname(cpath), exist_ok=True)
+                tmp = f"{cpath}.tmp.{os.getpid()}.{id(url)}"
+                with open(tmp, "wb") as fh:
+                    fh.write(data)
+                os.replace(tmp, cpath)
+            return data
         except Exception as e:
             last = e
             time.sleep(1.5 * (attempt + 1))
@@ -86,6 +113,119 @@ def _epoch_ms(long_datetime):
         return int((long_datetime - _MAC_EPOCH_OFFSET) * 1000)
     except Exception:
         return None
+
+def _glyph_ymax(f, char):
+    """yMax of `char`'s outline bounding box, via the font's glyph set (works
+    for both glyf and CFF/CFF2 outlines since it goes through a pen, not raw
+    glyf coordinates). None if the font has no cmap entry for `char` or the
+    glyph has no contours (e.g. space)."""
+    try:
+        cmap = f.getBestCmap()
+        gname = cmap.get(ord(char))
+        if not gname:
+            return None
+        glyph_set = f.getGlyphSet()
+        pen = BoundsPen(glyph_set)
+        glyph_set[gname].draw(pen)
+        if pen.bounds is None:
+            return None
+        return pen.bounds[3]  # (xMin, yMin, xMax, yMax)
+    except Exception:
+        return None
+
+
+def _x_height(f, os2):
+    if os2 is not None and getattr(os2, "version", 0) >= 2:
+        v = getattr(os2, "sxHeight", 0)
+        if v:
+            return v
+    return _glyph_ymax(f, "x")
+
+
+def _cap_height(f, os2):
+    if os2 is not None and getattr(os2, "version", 0) >= 2:
+        v = getattr(os2, "sCapHeight", 0)
+        if v:
+            return v
+    return _glyph_ymax(f, "H")
+
+
+def _is_monospace(f, post):
+    """post.isFixedPitch OR every non-zero hmtx advance width is equal."""
+    if post is not None and getattr(post, "isFixedPitch", 0):
+        return True
+    if "hmtx" in f:
+        widths = {aw for aw, _lsb in f["hmtx"].metrics.values() if aw}
+        if len(widths) == 1:
+            return True
+    return False
+
+
+def _has_hinting(f, outline_format):
+    """True when fpgm or prep carries non-trivial bytecode. Only meaningful
+    for glyf-flavored fonts; CFF fonts hint via CFF charstrings, not
+    fpgm/prep, so this is null for them. Reads raw table bytes (cheap,
+    no decompile) rather than the parsed Program object."""
+    if outline_format != "glyf":
+        return None
+    for tag in ("fpgm", "prep"):
+        if tag in f:
+            try:
+                data = f.reader[tag]
+            except Exception:
+                data = None
+            if data and len(data) > 4:
+                return True
+    return False
+
+
+def _vendor_id(os2):
+    if os2 is None:
+        return None
+    v = (getattr(os2, "achVendID", None) or "").strip(" \x00")
+    return v or None
+
+
+def extract_style_metrics(f):
+    """New per-family style metrics (§ style-metric filters): x-height,
+    cap-height, italic angle, hhea/typo vertical metrics, avg char width,
+    monospace/hinting/outline-format flags, vendor id, raw values in font
+    units (ratios are derived later at the UI layer using units_per_em)."""
+    os2 = f["OS/2"] if "OS/2" in f else None
+    hhea = f["hhea"] if "hhea" in f else None
+    post = f["post"] if "post" in f else None
+
+    if "CFF2" in f:
+        outline_format = "CFF2"
+    elif "CFF " in f:
+        outline_format = "CFF"
+    elif "glyf" in f:
+        outline_format = "glyf"
+    else:
+        outline_format = None
+
+    return {
+        "x_height": _x_height(f, os2),
+        "cap_height": _cap_height(f, os2),
+        "italic_angle": float(post.italicAngle) if post is not None else None,
+        "hhea_ascender": hhea.ascender if hhea is not None else None,
+        "hhea_descender": hhea.descender if hhea is not None else None,
+        "hhea_line_gap": hhea.lineGap if hhea is not None else None,
+        "typo_ascender": os2.sTypoAscender if os2 is not None else None,
+        "typo_descender": os2.sTypoDescender if os2 is not None else None,
+        "typo_line_gap": os2.sTypoLineGap if os2 is not None else None,
+        "win_ascent": os2.usWinAscent if os2 is not None else None,
+        "win_descent": os2.usWinDescent if os2 is not None else None,  # positive per spec
+        # fsSelection bit 7 (USE_TYPO_METRICS): renderers should prefer the
+        # sTypo* trio over win/hhea for default line height.
+        "use_typo_metrics": bool(os2.fsSelection & 0x80) if os2 is not None else None,
+        "avg_char_width": (os2.xAvgCharWidth or None) if os2 is not None else None,
+        "is_monospace": _is_monospace(f, post),
+        "outline_format": outline_format,
+        "has_hinting": _has_hinting(f, outline_format),
+        "vendor_id": _vendor_id(os2),
+    }
+
 
 def parse_ttf(raw_bytes):
     f = TTFont(io.BytesIO(raw_bytes), lazy=True)
@@ -153,6 +293,8 @@ def parse_ttf(raw_bytes):
         out["unicode_ranges"] = [getattr(os2, f"ulUnicodeRange{i}", 0) for i in (1, 2, 3, 4)]
     else:
         out["unicode_ranges"] = None
+
+    out.update(extract_style_metrics(f))
 
     f.close()
     return out
@@ -223,6 +365,7 @@ def harvest(entry):
             for inst in parsed.get("named_instances", []):
                 instances.append({**inst, "italic": is_italic})
             if fname == primary_ttf:
+                parsed["file_size"] = len(raw)
                 primary_parsed = parsed
         # Family record uses the upright primary's axes/features/metrics.
         primary_parsed["named_instances"] = instances
@@ -249,6 +392,7 @@ def harvest(entry):
                     parsed = parse_ttf(raw)
                     t_parse += time.time() - t1
                     cmap_chars |= parsed.pop("_cmap_chars", set())
+                    parsed["file_size"] = len(raw)
                     rec["ttf"] = parsed
                 else:
                     # Non-primary static cuts: only union the cmap (cheap).

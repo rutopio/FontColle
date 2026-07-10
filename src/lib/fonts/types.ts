@@ -55,4 +55,26 @@ export interface FontRecord {
   // "/Serif/Fat Face"), not exposed by the Developer API. Scores are 0-100.
   // Empty for families the CSV doesn't cover.
   tags: Record<string, number>;
+  // Style metrics from the primary TTF (2026-07 reharvest). Raw font units;
+  // normalize against unitsPerEm at the UI layer. Null when unavailable.
+  unitsPerEm: number | null; // head unitsPerEm, the ratio denominator
+  xHeight: number | null; // OS/2 sxXHeight
+  capHeight: number | null; // OS/2 sCapHeight
+  italicAngle: number | null; // post italicAngle, degrees
+  hheaAscender: number | null;
+  hheaDescender: number | null;
+  hheaLineGap: number | null;
+  typoAscender: number | null; // OS/2 sTypoAscender
+  typoDescender: number | null; // OS/2 sTypoDescender
+  typoLineGap: number | null; // OS/2 sTypoLineGap
+  winAscent: number | null; // OS/2 usWinAscent
+  winDescent: number | null; // OS/2 usWinDescent, positive per spec
+  // OS/2 fsSelection bit 7: when true, the typo* trio (not hhea*/win*)
+  // governs line height.
+  useTypoMetrics: boolean | null;
+  avgCharWidth: number | null; // OS/2 xAvgCharWidth
+  isMonospace: boolean | null; // post isFixedPitch
+  hasHinting: boolean | null; // TrueType instructions present
+  vendorId: string | null; // OS/2 achVendID, e.g. "GOOG"
+  fileSize: number | null; // primary TTF byte size
 }

@@ -73,6 +73,29 @@ export const family = sqliteTable(
     // {"/Serif/Fat Face": 90}. Scores are 0-100. Empty object when uncovered.
     tags: text("tags"),
 
+    // --- style metrics from the primary TTF (2026-07 reharvest) ---
+    // Raw font units (see unitsPerEm above); ratios derived at the UI layer.
+    // All nullable: absent when the source table isn't present in the font.
+    xHeight: integer("x_height"), // OS/2 sxXHeight
+    capHeight: integer("cap_height"), // OS/2 sCapHeight
+    italicAngle: real("italic_angle"), // post italicAngle, degrees
+    hheaAscender: integer("hhea_ascender"), // hhea ascender
+    hheaDescender: integer("hhea_descender"), // hhea descender
+    hheaLineGap: integer("hhea_line_gap"), // hhea lineGap
+    typoAscender: integer("typo_ascender"), // OS/2 sTypoAscender
+    typoDescender: integer("typo_descender"), // OS/2 sTypoDescender
+    typoLineGap: integer("typo_line_gap"), // OS/2 sTypoLineGap
+    winAscent: integer("win_ascent"), // OS/2 usWinAscent
+    winDescent: integer("win_descent"), // OS/2 usWinDescent, positive per spec
+    // OS/2 fsSelection bit 7: when set, the typo* trio (not hhea*/win*)
+    // governs line height.
+    useTypoMetrics: integer("use_typo_metrics", { mode: "boolean" }),
+    avgCharWidth: integer("avg_char_width"), // OS/2 xAvgCharWidth
+    isMonospace: integer("is_monospace", { mode: "boolean" }), // post isFixedPitch
+    hasHinting: integer("has_hinting", { mode: "boolean" }), // TrueType instructions present
+    vendorId: text("vendor_id"), // OS/2 achVendID, e.g. "GOOG"
+    fileSize: integer("file_size"), // primary TTF byte size
+
     contentHash: text("content_hash").notNull(),
     updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
   },
