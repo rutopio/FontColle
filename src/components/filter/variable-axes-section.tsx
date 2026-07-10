@@ -92,8 +92,18 @@ export function VariableAxesSection({
         >
           <span className="flex min-w-0 items-baseline gap-1.5">
             <span className="font-mono text-foreground">{tag}</span>
+            {/* Weight eases via the variable font's wght axis (Inter Variable)
+                so selecting fades regular -> semibold, not a hard font-weight
+                jump. */}
             {info ? (
-              <span className="truncate text-muted-foreground text-xs">
+              <span
+                className={cn(
+                  "truncate text-muted-foreground text-xs transition-[font-variation-settings] duration-200 ease-out",
+                  on
+                    ? "[font-variation-settings:'wght'_600]"
+                    : "[font-variation-settings:'wght'_400]"
+                )}
+              >
                 {info.name}
               </span>
             ) : null}
