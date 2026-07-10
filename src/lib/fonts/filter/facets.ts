@@ -73,13 +73,15 @@ export const LICENSE_LABELS: Record<string, string> = {
   UFL: "UFL",
 };
 
-// Source/provenance flag pills, in fixed order. Families whose flag is
-// false/null never match and don't contribute a count.
-export const FLAG_VALUES = ["noto", "brand", "opensource"];
+// Source pills: a radio-style split of the catalog by Noto membership. Every
+// published family is either Noto (Google's global writing-system project) or
+// Others, so these two cover the whole set. (isBrandFont/isOpenSource carry no
+// filter: Brand is ~all Noto, and OpenSource is true for every published
+// family — neither distinguishes anything.)
+export const FLAG_VALUES = ["noto", "others"];
 export const FLAG_LABELS: Record<string, string> = {
   noto: "Noto",
-  brand: "Brand",
-  opensource: "Open Source",
+  others: "Non-Noto",
 };
 
 /** Build the set of selectable values with counts, from the full dataset. */
@@ -118,9 +120,7 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     for (const [path, score] of Object.entries(font.tags))
       if (score >= TAG_MEMBERSHIP_THRESHOLD) bump(classifications, path);
     if (font.license) bump(license, font.license);
-    if (font.isNoto) bump(flags, "noto");
-    if (font.isBrandFont) bump(flags, "brand");
-    if (font.isOpenSource) bump(flags, "opensource");
+    bump(flags, font.isNoto ? "noto" : "others");
   }
   const sorted = (m: Map<string, number>) =>
     [...m.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
@@ -169,7 +169,7 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     license: LICENSE_VALUES.map(
       (v) => [v, license.get(v) ?? 0] as [string, number]
     ),
-    // Source pills in fixed order (Noto / Brand / Open Source).
+    // Source pills in fixed order (Noto / Others).
     flags: FLAG_VALUES.map((v) => [v, flags.get(v) ?? 0] as [string, number]),
     // Units-per-em pill items ([value, family count]) for the Metrics tab.
     upmCounts: catalogUpmCounts(fonts),

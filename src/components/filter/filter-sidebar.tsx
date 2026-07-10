@@ -233,7 +233,7 @@ export function FilterSidebar({
               <SourceSection
                 items={index.flags}
                 selected={filter.flags}
-                onToggle={(v) => toggle("flags", v)}
+                onToggle={(v) => onChange(actions.selectFlag(filter, v))}
                 onReset={() => onChange({ ...filter, flags: [] })}
               />
             </>
