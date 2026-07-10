@@ -1,6 +1,7 @@
 // Filter state shape, its empty value, and the URL <-> state codec. Filters
 // live in the URL so they persist across list <-> detail navigation and the
 // detail sidebar can link back to the list with a filter applied.
+import type { MetricKey, MetricRange } from "../metrics";
 
 export interface FilterState {
   query: string;
@@ -20,6 +21,13 @@ export interface FilterState {
   // font matches when any selected tag scores tags[path] >= 50.
   classifications: string[];
   license: string[]; // license ids ("OFL", "APACHE2", "UFL"), OR within
+  // Derived-metric range sliders (x-height ratio, file size, …), AND across.
+  // Only active ranges (a thumb off its domain edge) are present; an absent key
+  // filters nothing. See ../metrics for the derivations and domains.
+  metrics: Partial<Record<MetricKey, MetricRange>>;
+  // Standalone boolean facets, each its own on/off pill. undefined = off.
+  isMonospace?: boolean;
+  hasHinting?: boolean;
 }
 
 // The slice of the filter a preview (card/row) needs to know about, to both
@@ -44,6 +52,7 @@ export const emptyFilter: FilterState = {
   colorFormats: [],
   classifications: [],
   license: [],
+  metrics: {},
 };
 
 // The two `facets` values that say whether a family is a variable font. They
@@ -67,12 +76,60 @@ export interface FilterSearch {
   cfmt?: string;
   cls?: string; // classification tag paths
   lic?: string; // license ids
+  // Metric ranges, each "lo-hi" (e.g. mxh=0.45-0.55). One key per metric.
+  mxh?: string; // x-height ratio
+  mch?: string; // cap-height ratio
+  mlh?: string; // line-height ratio
+  maw?: string; // avg width ratio
+  mupm?: string; // units per em (raw)
+  mfs?: string; // file size (raw bytes)
+  mono?: string; // "1" when Monospace pill is on
+  hint?: string; // "1" when Hinted pill is on
   view?: "grid" | "row"; // display preference, not a filter
   sort?: string; // sort key, not a filter
 }
 
 const splitCsv = (v: string | undefined): string[] =>
   v ? v.split(",").filter(Boolean) : [];
+
+// URL <-> metric-range codec. "lo-hi", each a plain number so the round-trip is
+// lossless; negatives never occur in these domains, so "-" is a safe separator.
+// The URL param name per metric. Every one is a string-valued FilterSearch key,
+// so encode can assign a string to it without widening to view/sort.
+type MetricParam = "mxh" | "mch" | "mlh" | "maw" | "mupm" | "mfs";
+const METRIC_PARAM: Record<MetricKey, MetricParam> = {
+  xHeight: "mxh",
+  capHeight: "mch",
+  lineHeight: "mlh",
+  avgWidth: "maw",
+  upm: "mupm",
+  fileSize: "mfs",
+};
+
+const parseRange = (v: string | undefined): MetricRange | undefined => {
+  if (!v) return undefined;
+  const [lo, hi] = v.split("-");
+  const n = (s: string | undefined) => (s != null ? Number(s) : Number.NaN);
+  const l = n(lo);
+  const h = n(hi);
+  return Number.isFinite(l) && Number.isFinite(h) ? [l, h] : undefined;
+};
+
+function decodeMetrics(s: FilterSearch): FilterState["metrics"] {
+  const out: FilterState["metrics"] = {};
+  for (const key of Object.keys(METRIC_PARAM) as MetricKey[]) {
+    const r = parseRange(s[METRIC_PARAM[key]]);
+    if (r) out[key] = r;
+  }
+  return out;
+}
+
+function encodeMetrics(metrics: FilterState["metrics"], s: FilterSearch): void {
+  for (const key of Object.keys(METRIC_PARAM) as MetricKey[]) {
+    const r = metrics[key];
+    if (r) s[METRIC_PARAM[key]] = `${r[0]}-${r[1]}`;
+  }
+}
 
 export function searchToFilter(s: FilterSearch): FilterState {
   return {
@@ -89,6 +146,9 @@ export function searchToFilter(s: FilterSearch): FilterState {
     colorFormats: splitCsv(s.cfmt),
     classifications: splitCsv(s.cls),
     license: splitCsv(s.lic),
+    metrics: decodeMetrics(s),
+    isMonospace: s.mono === "1" ? true : undefined,
+    hasHinting: s.hint === "1" ? true : undefined,
   };
 }
 
@@ -107,6 +167,9 @@ export function filterToSearch(f: FilterState): FilterSearch {
   if (f.colorFormats.length) s.cfmt = f.colorFormats.join(",");
   if (f.classifications.length) s.cls = f.classifications.join(",");
   if (f.license.length) s.lic = f.license.join(",");
+  encodeMetrics(f.metrics, s);
+  if (f.isMonospace) s.mono = "1";
+  if (f.hasHinting) s.hint = "1";
   return s;
 }
 
@@ -125,7 +188,10 @@ export function activeFilterCount(f: FilterState): number {
     f.color.length +
     f.colorFormats.length +
     f.classifications.length +
-    f.license.length
+    f.license.length +
+    Object.keys(f.metrics).length +
+    (f.isMonospace ? 1 : 0) +
+    (f.hasHinting ? 1 : 0)
   );
 }
 
@@ -150,6 +216,14 @@ export function parseFilterSearch(raw: Record<string, unknown>): FilterSearch {
     cfmt: str(raw.cfmt),
     cls: str(raw.cls),
     lic: str(raw.lic),
+    mxh: str(raw.mxh),
+    mch: str(raw.mch),
+    mlh: str(raw.mlh),
+    maw: str(raw.maw),
+    mupm: str(raw.mupm),
+    mfs: str(raw.mfs),
+    mono: str(raw.mono),
+    hint: str(raw.hint),
     view: raw.view === "row" ? "row" : undefined,
     sort: str(raw.sort),
   };

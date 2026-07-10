@@ -1,5 +1,21 @@
 import { type FilterState, FONT_TYPE_FACETS } from "./filter";
 
+// The FilterState fields that hold a plain string[] — the ones toggle/
+// clearSection operate on. Excludes `metrics` (object) and the boolean facets.
+type ArrayKey =
+  | "classes"
+  | "facets"
+  | "features"
+  | "axes"
+  | "weights"
+  | "widths"
+  | "scripts"
+  | "languages"
+  | "color"
+  | "colorFormats"
+  | "classifications"
+  | "license";
+
 // Pure filter-state transitions, lifted out of FilterSidebar so the app's
 // trickiest rules (mutual exclusion, implied selections, scoped resets) live in
 // one testable place. Every function takes the current filter and returns the
@@ -20,7 +36,7 @@ const EXCLUSIVE_AXIS: Record<"weights" | "widths", string> = {
 /** Multi-select toggle for a plain array key (classes, facets, features, …). */
 export function toggle(
   filter: FilterState,
-  key: keyof Omit<FilterState, "query">,
+  key: ArrayKey,
   value: string
 ): FilterState {
   const cur = filter[key];
@@ -137,7 +153,7 @@ export function resetFontType(filter: FilterState): FilterState {
  *  the reset to the items that section actually renders. */
 export function clearSection(
   filter: FilterState,
-  key: keyof Omit<FilterState, "query">,
+  key: ArrayKey,
   items: [string, number][]
 ): FilterState {
   const own = new Set(items.map(([v]) => v));
