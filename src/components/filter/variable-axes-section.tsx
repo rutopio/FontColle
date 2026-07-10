@@ -1,9 +1,20 @@
-import type { Icon } from "@phosphor-icons/react";
+import { type Icon, InfoIcon } from "@phosphor-icons/react";
 import { useMemo } from "react";
 import { EditableValue } from "@/components/ui/editable-value";
 import { Slider } from "@/components/ui/slider";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import axesData from "@/data/axes.json";
 import { cn } from "@/lib/utils";
 import { SectionHeader } from "./section-header";
+
+// Official display name + description per axis tag, from Google Fonts'
+// axisregistry (see scripts/gen-axes-data.mjs). Tags not in the registry
+// (mostly newer or vendor-specific axes) render with no info icon.
+const AXES: Record<string, { name: string; description: string }> = axesData;
 
 const TOP_N = 4;
 // Relative-position presets offered in the editable % readout's dropdown.
@@ -64,6 +75,7 @@ export function VariableAxesSection({
         {top.map(([tag, count]) => {
           const on = selected.includes(tag);
           const pct = sliderValue[tag] ?? 50;
+          const info = AXES[tag];
 
           return (
             <div key={tag} className="flex items-center gap-1.5">
@@ -87,6 +99,24 @@ export function VariableAxesSection({
                   {count}
                 </span>
               </button>
+              {/* Sibling of the pill button, never nested inside it: TooltipTrigger
+                  renders its own <button>, and a <button> inside the pill's
+                  <button> would be invalid HTML and would double-fire onToggle. */}
+              {info ? (
+                <Tooltip>
+                  <TooltipTrigger
+                    type="button"
+                    aria-label={`About ${info.name}`}
+                    className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <InfoIcon className="size-3.5" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs normal-case tracking-normal">
+                    <span className="font-semibold">{info.name}</span>:{" "}
+                    {info.description}
+                  </TooltipContent>
+                </Tooltip>
+              ) : null}
               {/* Always mounted so both directions animate: the pill's flex-basis
                   and this container's flex-basis transition together (the pill
                   shrinks / expands, this grows / collapses), while opacity fades
