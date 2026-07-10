@@ -4,7 +4,7 @@ import {
   SquaresFourIcon,
 } from "@phosphor-icons/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { ActiveFilterChips } from "@/components/filter/active-filter-chips";
 import { FilterRail } from "@/components/filter/filter-rail";
 import { FilterSidebar } from "@/components/filter/filter-sidebar";
@@ -14,6 +14,7 @@ import {
 } from "@/components/filter/groups";
 import { Column, FilterLayout } from "@/components/filter-layout";
 import { FontGrid, type ViewMode } from "@/components/font-grid";
+import { FontGridSkeleton } from "@/components/font-grid-skeleton";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -60,7 +61,36 @@ function App() {
 
   const { setFilter: setSharedFilter, listScrollY } = useFilter();
   const facetIndex = useMemo(() => buildFacetIndex(fonts), [fonts]);
-  const filter = useMemo(() => searchToFilter(search), [search]);
+
+  // Two-layer filter state so tapping a pill feels instant and stays decoupled
+  // from the expensive re-filter of the whole catalog:
+  //  - `filter` (pending) updates synchronously on every tap, driving the pills,
+  //    rail, chips and active count so the UI responds immediately.
+  //  - `deferredFilter` lags behind under useDeferredValue; the heavy
+  //    applyFilters + grid re-render run against it at a lower priority, so a
+  //    burst of taps coalesces and never blocks the click feedback.
+  //  - the URL is only rewritten once filtering settles (see the effect below),
+  //    keeping it shareable without paying a navigation on every tap.
+  const [filter, setFilter] = useState<FilterState>(() =>
+    searchToFilter(search)
+  );
+  const deferredFilter = useDeferredValue(filter);
+  const isFiltering = filter !== deferredFilter;
+
+  // Pull external URL changes (back/forward, a shared link) back into the
+  // pending filter. Guarded by a serialized compare so our own URL writes —
+  // which make `search` match `filter` — don't loop back in.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: compare against the live `filter` without making it a trigger; only `search` should drive this.
+  useEffect(() => {
+    const fromUrl = searchToFilter(search);
+    if (
+      JSON.stringify(filterToSearch(fromUrl)) !==
+      JSON.stringify(filterToSearch(filter))
+    ) {
+      setFilter(fromUrl);
+    }
+  }, [search]);
+
   // Relative position (0-100%) per selected variable-axis tag, from the
   // sidebar sliders. Session-only UI state, not URL-synced: there's no
   // universal min/max across fonts to persist as a real filter value, so each
@@ -74,50 +104,61 @@ function App() {
   const sort = (search.sort as SortKey) ?? DEFAULT_SORT;
 
   const results = useMemo(() => {
-    const filtered = applyFilters(fonts, filter);
+    const filtered = applyFilters(fonts, deferredFilter);
     const sorted = sortFonts(filtered, sort);
     // With a search query, surface the best textual matches first (ignoring the
     // sort dropdown for ranking), then fall back to the chosen sort as the
     // tiebreaker. Stable sort keeps the sorted order within equal-relevance ties.
-    if (!filter.query.trim()) return sorted;
+    if (!deferredFilter.query.trim()) return sorted;
     return [...sorted].sort(
       (a, b) =>
-        queryRelevance(b, filter.query) - queryRelevance(a, filter.query)
+        queryRelevance(b, deferredFilter.query) -
+        queryRelevance(a, deferredFilter.query)
     );
-  }, [fonts, filter, sort]);
+  }, [fonts, deferredFilter, sort]);
 
-  // Mirror the URL-derived filter into shared context so the detail page's
-  // sidebar can reflect what's selected on the list.
+  // Write the settled filter to the URL once filtering catches up, so the URL
+  // stays shareable without a navigation on every intermediate tap. Guarded so
+  // it only fires when the URL's filter part actually differs.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `search` is read to compare, not to trigger; the settled `deferredFilter` is the trigger.
+  useEffect(() => {
+    const next = filterToSearch(deferredFilter);
+    const cur = filterToSearch(searchToFilter(search));
+    if (JSON.stringify(next) === JSON.stringify(cur)) return;
+    navigate({
+      search: { ...next, view: search.view, sort: search.sort },
+      replace: true,
+    });
+  }, [deferredFilter, navigate]);
+
+  // Mirror the pending filter into shared context so the detail page's sidebar
+  // reflects what's selected on the list without waiting on the deferred pass.
   useEffect(() => {
     setSharedFilter(filter);
   }, [filter, setSharedFilter]);
 
   useListScrollRestore(listScrollY);
 
-  // Every nav writes the same search shape: the filter as params, plus the two
-  // display prefs (view, sort) preserved unless the caller overrides them. One
-  // helper keeps the three setters from drifting out of sync.
-  const setSearch = (
-    filterPart: FilterState,
-    prefs?: Partial<Pick<FilterSearch, "view" | "sort">>
-  ) => {
+  // Display prefs (view, sort) still write the URL immediately — they're cheap
+  // and don't gate on the deferred filter. They carry the current pending
+  // filter along so the URL keeps a consistent shape.
+  const setPref = (prefs: Partial<Pick<FilterSearch, "view" | "sort">>) => {
     navigate({
       search: {
-        ...filterToSearch(filterPart),
-        view: prefs && "view" in prefs ? prefs.view : search.view,
-        sort: prefs && "sort" in prefs ? prefs.sort : search.sort,
+        ...filterToSearch(filter),
+        view: "view" in prefs ? prefs.view : search.view,
+        sort: "sort" in prefs ? prefs.sort : search.sort,
       },
       replace: true,
     });
   };
 
-  const setFilter = (next: FilterState) => setSearch(next);
   const setView = (next: ViewMode) =>
-    setSearch(filter, { view: next === "row" ? "row" : undefined });
+    setPref({ view: next === "row" ? "row" : undefined });
   const setSort = (next: SortKey) =>
-    setSearch(filter, { sort: next === DEFAULT_SORT ? undefined : next });
+    setPref({ sort: next === DEFAULT_SORT ? undefined : next });
   // Clear every filter and the search query, keeping only display prefs.
-  const reset = () => setSearch(emptyFilter);
+  const reset = () => setFilter(emptyFilter);
 
   const activeCount = activeFilterCount(filter);
 
@@ -175,7 +216,20 @@ function App() {
           </>
         }
       >
-        {results.length === 0 ? (
+        {isFiltering ? (
+          // Filtering the whole catalog is deferred; show a skeleton for the
+          // brief catch-up window instead of blocking on the old list. The
+          // chips stay live above it so the tap that triggered this still reads
+          // as applied.
+          <>
+            <ActiveFilterChips
+              filter={filter}
+              onChange={setFilter}
+              align="left"
+            />
+            <FontGridSkeleton view={view} />
+          </>
+        ) : results.length === 0 ? (
           <Empty className="py-16">
             <EmptyHeader>
               <EmptyMedia variant="icon">
@@ -205,7 +259,7 @@ function App() {
               favorites={favorites}
               onToggleFavorite={toggle}
               view={view}
-              selection={filter}
+              selection={deferredFilter}
               axisValues={axisValues}
             />
           </>
