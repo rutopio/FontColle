@@ -1,10 +1,25 @@
-import { ArrowsDownUpIcon, type Icon, InfoIcon, XIcon } from "@phosphor-icons/react";
+import {
+  ArrowsDownUpIcon,
+  type Icon,
+  InfoIcon,
+  XIcon,
+} from "@phosphor-icons/react";
+import { AnimatePresence, motion } from "motion/react";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+
+// Shared fade for header actions that swap in/out (Reset <-> Sort). Fast and
+// subtle — it should read as a soft cross-fade, not a spotlight.
+const FADE = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
+  transition: { duration: 0.15, ease: "easeOut" },
+} as const;
 
 // Per-section pill ordering: by font count (default) or alphabetically.
 export type SortMode = "count" | "alpha";
@@ -106,14 +121,10 @@ export function SectionHeader({
           </Tooltip>
         ) : null}
       </h2>
-      {hasSelection ? (
-        <HeaderButton onClick={onReset} label={`Reset ${title}`}>
-          <XIcon className="size-3" />
-          Reset
-        </HeaderButton>
-      ) : canSort ? (
-        <SortToggle sort={sort} onToggle={onToggleSort} />
-      ) : (
+      {/* Reserve the action slot's height/width up front with an invisible
+          Reset, then cross-fade the live action (Reset <-> Sort) over it so a
+          button appearing on first selection never shifts the layout. */}
+      <div className="relative shrink-0">
         <HeaderButton
           onClick={() => {}}
           label=""
@@ -123,7 +134,29 @@ export function SectionHeader({
           <XIcon className="size-3" />
           Reset
         </HeaderButton>
-      )}
+        <AnimatePresence initial={false} mode="popLayout">
+          {hasSelection ? (
+            <motion.div
+              key="reset"
+              {...FADE}
+              className="absolute inset-y-0 right-0"
+            >
+              <HeaderButton onClick={onReset} label={`Reset ${title}`}>
+                <XIcon className="size-3" />
+                Reset
+              </HeaderButton>
+            </motion.div>
+          ) : canSort ? (
+            <motion.div
+              key="sort"
+              {...FADE}
+              className="absolute inset-y-0 right-0"
+            >
+              <SortToggle sort={sort} onToggle={onToggleSort} />
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
