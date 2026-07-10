@@ -1,5 +1,10 @@
 import { CaretDownIcon, type Icon } from "@phosphor-icons/react";
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { RARE_THRESHOLD } from "./constants";
 import { PillButton } from "./pill-button";
@@ -91,6 +96,7 @@ export function Pills({
   spread,
   mono,
   label,
+  title,
   columns = 3,
   topNSet,
   expandAll,
@@ -105,6 +111,9 @@ export function Pills({
   mono?: boolean;
   // Display name for a value; the toggle still passes the raw value.
   label?: (value: string) => string;
+  // Hover/focus tooltip text for a value (e.g. a feature tag's full name).
+  // Empty string suppresses the tooltip for that value.
+  title?: (value: string) => string;
   // Cells per row in grid mode.
   columns?: 2 | 3;
   // When provided, only values in this set are shown by default (instead of
@@ -125,20 +134,44 @@ export function Pills({
   const common = items.filter((it) => !isRare(it));
   const rare = items.filter(isRare);
 
-  const renderPill = ([value, count]: [string, number]) => (
-    <PillButton
-      key={value}
-      value={value}
-      count={count}
-      label={label ? label(value) : value}
-      selected={selected.includes(value)}
-      onToggle={onToggle}
-      spread={!!spread}
-      mono={mono}
-      // Equal-width cells in grid mode: let each one shrink and clip its label.
-      className={cn(grid && "min-w-0")}
-    />
-  );
+  const renderPill = ([value, count]: [string, number]) => {
+    const tip = title?.(value);
+    const pill = (
+      <PillButton
+        value={value}
+        count={count}
+        label={label ? label(value) : value}
+        selected={selected.includes(value)}
+        onToggle={onToggle}
+        spread={!!spread}
+        mono={mono}
+        // Equal-width cells in grid mode: let each one shrink and clip its
+        // label. When wrapped in a tooltip trigger the pill fills the wrapper
+        // (w-full) instead of stretching as a direct grid item.
+        className={cn(grid && "min-w-0", tip && "w-full")}
+      />
+    );
+    // No tooltip: the pill is the grid/flex item directly, as before.
+    if (!tip) return <Fragment key={value}>{pill}</Fragment>;
+    return (
+      <Tooltip key={value}>
+        {/* Trigger is a wrapper (not the pill's own <button>, which can't nest a
+            second button, and not display:contents, which has no box for base-ui
+            to position the popup against). The wrapper takes the grid/flex
+            item's place and the pill fills it, so layout is unchanged. */}
+        <TooltipTrigger
+          render={(props) => (
+            <div {...props} className={cn("flex", grid && "min-w-0")}>
+              {pill}
+            </div>
+          )}
+        />
+        <TooltipContent className="normal-case tracking-normal">
+          {tip}
+        </TooltipContent>
+      </Tooltip>
+    );
+  };
 
   // Grid mode lays pills out N-per-row at equal width; otherwise they wrap.
   // Both column classes are spelled out — Tailwind can't see interpolated ones.

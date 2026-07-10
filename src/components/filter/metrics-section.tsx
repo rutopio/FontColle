@@ -1,6 +1,17 @@
-import { RulerIcon, TextAaIcon, TextTIcon } from "@phosphor-icons/react";
+import {
+  InfoIcon,
+  RulerIcon,
+  TextAaIcon,
+  TextTIcon,
+} from "@phosphor-icons/react";
 import { useMemo } from "react";
+import { EditableValue } from "@/components/ui/editable-value";
 import { RangeSlider } from "@/components/ui/range-slider";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   isRangeActive,
   METRIC_ORDER,
@@ -8,7 +19,10 @@ import {
   type MetricKey,
   type MetricRange,
   type MetricSpec,
+  quartileRanges,
+  rangesEqual,
 } from "@/lib/fonts/filter";
+import { cn } from "@/lib/utils";
 import { PillButton } from "./pill-button";
 import { Section } from "./section";
 import { SectionHeader } from "./section-header";
@@ -37,6 +51,13 @@ function humanBytes(bytes: number): string {
 function formatValue(key: MetricKey, v: number): string {
   if (key === "fileSize") return humanBytes(v);
   return v.toFixed(2);
+}
+
+// Round a value to the metric's step so the editable readout shows a clean
+// number (0.46, not 0.4640000001) and the field round-trips losslessly.
+function roundTo(v: number, step: number): number {
+  const inv = 1 / step;
+  return Math.round(v * inv) / inv;
 }
 
 // Slider-track coordinates for a metric. Linear metrics map straight through;
@@ -82,15 +103,12 @@ function MetricRangeRow({
   onChange: (next: MetricRange | undefined) => void;
 }) {
   const map = useMemo(() => trackMap(spec), [spec]);
+  const quartiles = useMemo(() => quartileRanges(spec), [spec]);
   const [lo, hi] = value ?? [spec.min, spec.max];
   const trackValue: [number, number] = [map.toTrack(lo), map.toTrack(hi)];
 
-  const handle = (raw: number | readonly number[]) => {
-    const arr = Array.isArray(raw) ? raw : [raw, raw];
-    const nlo = map.fromTrack(arr[0]);
-    const nhi = map.fromTrack(arr[1]);
-    // Clamp back into the metric domain so log/rounding drift can't leak past
-    // the edges, then drop the range entirely when it's inactive.
+  // Clamp a range into the domain, then store it (or clear it when inactive).
+  const commit = (nlo: number, nhi: number) => {
     const range: MetricRange = [
       Math.max(spec.min, Math.min(nlo, spec.max)),
       Math.max(spec.min, Math.min(nhi, spec.max)),
@@ -98,13 +116,63 @@ function MetricRangeRow({
     onChange(isRangeActive(spec, range) ? range : undefined);
   };
 
+  const handle = (raw: number | readonly number[]) => {
+    const arr = Array.isArray(raw) ? raw : [raw, raw];
+    commit(map.fromTrack(arr[0]), map.fromTrack(arr[1]));
+  };
+
+  // A quartile pill jumps the slider to that quartile's range; clicking the
+  // one already selected clears it back to full extent.
+  const pickQuartile = (q: MetricRange) => {
+    if (value && rangesEqual(value, q)) onChange(undefined);
+    else commit(q[0], q[1]);
+  };
+  // fileSize's readout stays a humanized text (KB/MB); ratios are editable.
+  const editable = spec.scale !== "log";
+
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1.5">
       <div className="flex items-baseline justify-between text-xs">
-        <span className="text-foreground">{spec.label}</span>
-        <span className="font-mono text-muted-foreground">
-          {formatValue(spec.key, lo)} – {formatValue(spec.key, hi)}
+        <span className="flex items-center gap-1.5">
+          <span className="text-foreground">{spec.label}</span>
+          <Tooltip>
+            <TooltipTrigger
+              type="button"
+              aria-label={`About ${spec.label}`}
+              className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <InfoIcon className="size-3.5" />
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs normal-case tracking-normal">
+              {spec.hint}
+            </TooltipContent>
+          </Tooltip>
         </span>
+        {editable ? (
+          <span className="flex items-baseline gap-1 font-mono text-muted-foreground">
+            <EditableValue
+              value={roundTo(lo, spec.step)}
+              min={spec.min}
+              max={hi}
+              presets={spec.quantiles}
+              onChange={(v) => commit(v, hi)}
+              ariaLabel={`${spec.label} minimum`}
+            />
+            <span>–</span>
+            <EditableValue
+              value={roundTo(hi, spec.step)}
+              min={lo}
+              max={spec.max}
+              presets={spec.quantiles}
+              onChange={(v) => commit(lo, v)}
+              ariaLabel={`${spec.label} maximum`}
+            />
+          </span>
+        ) : (
+          <span className="font-mono text-muted-foreground">
+            {formatValue(spec.key, lo)} – {formatValue(spec.key, hi)}
+          </span>
+        )}
       </div>
       <RangeSlider
         value={trackValue}
@@ -114,6 +182,43 @@ function MetricRangeRow({
         step={map.step}
         getAriaLabel={(i) => `${spec.label} ${i === 0 ? "minimum" : "maximum"}`}
       />
+      {/* Quartile quick-select: each pill sets the slider to a range holding
+          ~1/4 of the catalog (Q1 = smallest, Q4 = largest). */}
+      <div className="grid grid-cols-4 gap-1">
+        {quartiles.map((q, i) => {
+          const active = value != null && rangesEqual(value, q);
+          return (
+            <Tooltip
+              // biome-ignore lint/suspicious/noArrayIndexKey: fixed 4-quartile list
+              key={i}
+            >
+              {/* The quartile pill is itself the trigger — no nested button —
+                  so base-ui merges its hover/focus onto this <button> while
+                  keeping our onClick. */}
+              <TooltipTrigger
+                render={
+                  <button
+                    type="button"
+                    onClick={() => pickQuartile(q)}
+                    aria-pressed={active}
+                    className={cn(
+                      "rounded border py-0.5 text-center text-[11px] transition-colors",
+                      active
+                        ? "border-primary bg-muted font-semibold text-foreground"
+                        : "text-muted-foreground hover:border-foreground hover:text-foreground"
+                    )}
+                  >
+                    Q{i + 1}
+                  </button>
+                }
+              />
+              <TooltipContent className="font-mono normal-case tracking-normal">
+                {formatValue(spec.key, q[0])} – {formatValue(spec.key, q[1])}
+              </TooltipContent>
+            </Tooltip>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -122,92 +227,111 @@ export function MetricsSection({
   metrics,
   onMetricChange,
   onReset,
+}: {
+  metrics: Partial<Record<MetricKey, MetricRange>>;
+  onMetricChange: (key: MetricKey, next: MetricRange | undefined) => void;
+  onReset: () => void;
+}) {
+  const hasSelection = Object.keys(metrics).length > 0;
+
+  return (
+    <div className="flex flex-col gap-4">
+      <SectionHeader
+        title="Metrics"
+        icon={RulerIcon}
+        hasSelection={hasSelection}
+        onReset={onReset}
+        canSort={false}
+        sort="count"
+        onToggleSort={() => {}}
+      />
+      {/* Six slider rows — the sub-items inside this one section, so gap-8;
+          the Metrics/Units/Hint sections themselves are spaced by the sidebar's
+          gap-12, not here. */}
+      <div className="flex flex-col gap-8">
+        {METRIC_ORDER.map((key) => (
+          <MetricRangeRow
+            key={key}
+            spec={METRIC_SPECS[key]}
+            value={metrics[key]}
+            onChange={(next) => onMetricChange(key, next)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Units-per-em pills. A thin wrapper over the shared Section so the sidebar can
+// place it as a sibling of Metrics/Hint (own gap-12), with the upm-specific
+// default pill set and numeric sort baked in.
+export function UnitsPerEmSection({
   upmCounts,
   selectedUpm,
   onToggleUpm,
   onResetUpm,
+}: {
+  upmCounts: [string, number][];
+  selectedUpm: string[];
+  onToggleUpm: (value: string) => void;
+  onResetUpm: () => void;
+}) {
+  return (
+    <Section
+      title="Units per em"
+      icon={TextAaIcon}
+      items={upmCounts}
+      selected={selectedUpm}
+      onToggle={onToggleUpm}
+      onReset={onResetUpm}
+      topNSet={UPM_DEFAULT}
+      numericSort
+    />
+  );
+}
+
+// Hint radio (Hinted / No Hinted), a standalone section.
+export function HintSection({
   hasHinting,
   hintedCount,
   unhintedCount,
   onSetHinting,
 }: {
-  metrics: Partial<Record<MetricKey, MetricRange>>;
-  onMetricChange: (key: MetricKey, next: MetricRange | undefined) => void;
-  onReset: () => void;
-  upmCounts: [string, number][];
-  selectedUpm: string[];
-  onToggleUpm: (value: string) => void;
-  onResetUpm: () => void;
   hasHinting: boolean | undefined;
   hintedCount: number;
   unhintedCount: number;
   onSetHinting: (value: boolean) => void;
 }) {
-  const hasSelection = Object.keys(metrics).length > 0;
-
   return (
-    <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-4">
-        <SectionHeader
-          title="Metrics"
-          icon={RulerIcon}
-          hasSelection={hasSelection}
-          onReset={onReset}
-          canSort={false}
-          sort="count"
-          onToggleSort={() => {}}
-        />
-        <div className="flex flex-col gap-4">
-          {METRIC_ORDER.map((key) => (
-            <MetricRangeRow
-              key={key}
-              spec={METRIC_SPECS[key]}
-              value={metrics[key]}
-              onChange={(next) => onMetricChange(key, next)}
-            />
-          ))}
-        </div>
-      </div>
-      <Section
-        title="Units per em"
-        icon={TextAaIcon}
-        items={upmCounts}
-        selected={selectedUpm}
-        onToggle={onToggleUpm}
-        onReset={onResetUpm}
-        topNSet={UPM_DEFAULT}
-        numericSort
+    <div className="flex flex-col gap-2">
+      <SectionHeader
+        title="Hint"
+        icon={TextTIcon}
+        hasSelection={hasHinting !== undefined}
+        onReset={() => {
+          if (hasHinting !== undefined) onSetHinting(hasHinting);
+        }}
+        canSort={false}
+        sort="count"
+        onToggleSort={() => {}}
       />
-      <div className="flex flex-col gap-2">
-        <SectionHeader
-          title="Hint"
-          icon={TextTIcon}
-          hasSelection={hasHinting !== undefined}
-          onReset={() => {
-            if (hasHinting !== undefined) onSetHinting(hasHinting);
-          }}
-          canSort={false}
-          sort="count"
-          onToggleSort={() => {}}
+      <div className="grid grid-cols-2 gap-1.5">
+        <PillButton
+          value="hinted"
+          label="Hinted"
+          count={hintedCount}
+          selected={hasHinting === true}
+          onToggle={() => onSetHinting(true)}
+          className="min-w-0"
         />
-        <div className="grid grid-cols-2 gap-1.5">
-          <PillButton
-            value="hinted"
-            label="Hinted"
-            count={hintedCount}
-            selected={hasHinting === true}
-            onToggle={() => onSetHinting(true)}
-            className="min-w-0"
-          />
-          <PillButton
-            value="no-hinted"
-            label="No Hinted"
-            count={unhintedCount}
-            selected={hasHinting === false}
-            onToggle={() => onSetHinting(false)}
-            className="min-w-0"
-          />
-        </div>
+        <PillButton
+          value="no-hinted"
+          label="No Hinted"
+          count={unhintedCount}
+          selected={hasHinting === false}
+          onToggle={() => onSetHinting(false)}
+          className="min-w-0"
+        />
       </div>
     </div>
   );

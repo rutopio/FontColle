@@ -29,6 +29,14 @@ export interface MetricSpec {
   // "linear": value maps straight onto the track (ratios). "log": track works
   // in log space (fileSize).
   scale: "linear" | "log";
+  // p25/p50/p75 of this metric's value over the published catalog (computed
+  // 2026-07-11). They split the domain into four quartile pills (Q1…Q4), so
+  // each pill selects a range holding ~1/4 of the fonts — unlike an even split
+  // of the clipped domain, whose edge buckets are near-empty.
+  quantiles: [number, number, number];
+  // One-sentence explanation of what the ratio measures and what higher/lower
+  // looks like on the page. Shown in the metric's info-icon tooltip.
+  hint: string;
 }
 
 // Ratio domains sized from the p1/median/p99 distribution over the catalog so
@@ -41,6 +49,8 @@ export const METRIC_SPECS: Record<MetricKey, MetricSpec> = {
     max: 0.9,
     step: 0.01,
     scale: "linear",
+    quantiles: [0.464, 0.5, 0.535],
+    hint: "Height of lowercase letters (the 'x') relative to the em. Higher means a taller x-height — the font looks larger and more legible at small sizes; lower reads as more classic or elegant.",
   },
   capHeight: {
     key: "capHeight",
@@ -49,6 +59,8 @@ export const METRIC_SPECS: Record<MetricKey, MetricSpec> = {
     max: 1.1,
     step: 0.01,
     scale: "linear",
+    quantiles: [0.665, 0.7, 0.729],
+    hint: "Height of capital letters relative to the em. Higher caps feel bolder and more imposing; lower caps sit more quietly against lowercase text.",
   },
   lineHeight: {
     key: "lineHeight",
@@ -57,6 +69,8 @@ export const METRIC_SPECS: Record<MetricKey, MetricSpec> = {
     max: 2.5,
     step: 0.01,
     scale: "linear",
+    quantiles: [1.2, 1.3, 1.448],
+    hint: "Default line height the font asks for (ascender − descender + line gap) relative to the em. Higher means the font wants more space between lines; lower packs lines tighter.",
   },
   avgWidth: {
     key: "avgWidth",
@@ -65,6 +79,8 @@ export const METRIC_SPECS: Record<MetricKey, MetricSpec> = {
     max: 1.2,
     step: 0.01,
     scale: "linear",
+    quantiles: [0.497, 0.563, 0.635],
+    hint: "Average character width relative to the em (OS/2 average). Higher means a wider, more spacious font; lower is condensed and fits more per line.",
   },
   // 16KB … 64MB, log-scaled. Stored/compared in raw bytes.
   fileSize: {
@@ -74,6 +90,8 @@ export const METRIC_SPECS: Record<MetricKey, MetricSpec> = {
     max: 64 * 1024 * 1024,
     step: 1,
     scale: "log",
+    quantiles: [72060, 153704, 353980],
+    hint: "Byte size of the primary font file. Larger files usually carry more glyphs, more languages, or variable-font axes; smaller files load faster.",
   },
 };
 
@@ -130,6 +148,26 @@ export function matchesRange(
   if (lo > spec.min && v < lo) return false;
   if (hi < spec.max && v > hi) return false;
   return true;
+}
+
+/** The four quartile ranges of a metric, from its p25/p50/p75 breakpoints:
+ *  [min,p25], [p25,p50], [p50,p75], [p75,max]. Each holds ~1/4 of the catalog.
+ *  Drives the Q1…Q4 quick-select pills under each slider. */
+export function quartileRanges(spec: MetricSpec): MetricRange[] {
+  const [q1, q2, q3] = spec.quantiles;
+  return [
+    [spec.min, q1],
+    [q1, q2],
+    [q2, q3],
+    [q3, spec.max],
+  ];
+}
+
+/** Whether a stored range equals a given quartile range (so its pill shows
+ *  active and a second click clears it). Compared with a small epsilon since
+ *  the values are stored rounded. */
+export function rangesEqual(a: MetricRange, b: MetricRange): boolean {
+  return Math.abs(a[0] - b[0]) < 1e-6 && Math.abs(a[1] - b[1]) < 1e-6;
 }
 
 /** A range is active (filters anything) only when a thumb has moved off a
