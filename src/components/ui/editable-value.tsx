@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 // A slider's numeric readout that doubles as a manual input: a dotted underline
 // hints it's editable. Clicking swaps it for a borderless underlined field (no
@@ -23,6 +24,11 @@ export function EditableValue({
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
+  const anchorRef = useRef<HTMLSpanElement>(null);
+  // Fixed-position coords for the portalled dropdown, measured off the anchor.
+  const [menuPos, setMenuPos] = useState<{ top: number; right: number } | null>(
+    null
+  );
 
   const commit = (raw: string) => {
     const n = Number(raw);
@@ -34,9 +40,30 @@ export function EditableValue({
   // Only presets within range, so a picked value never gets clamped away.
   const options = (presets ?? []).filter((p) => p >= min && p <= max);
 
+  // The dropdown is portalled to <body> so it escapes the axis row's
+  // overflow-hidden slider wrapper (which would otherwise clip it). Position it
+  // under the anchor with fixed coords, remeasured whenever the editor opens.
+  useLayoutEffect(() => {
+    if (!editing || !anchorRef.current) return;
+    const measure = () => {
+      const r = anchorRef.current?.getBoundingClientRect();
+      if (r) setMenuPos({ top: r.bottom + 4, right: window.innerWidth - r.right });
+    };
+    measure();
+    window.addEventListener("scroll", measure, true);
+    window.addEventListener("resize", measure);
+    return () => {
+      window.removeEventListener("scroll", measure, true);
+      window.removeEventListener("resize", measure);
+    };
+  }, [editing]);
+
   if (editing) {
     return (
-      <span className="relative inline-flex items-baseline font-mono text-foreground text-xs">
+      <span
+        ref={anchorRef}
+        className="relative inline-flex items-baseline font-mono text-foreground text-xs"
+      >
         <input
           type="text"
           inputMode="decimal"
@@ -55,26 +82,36 @@ export function EditableValue({
           className="w-[4ch] border-transparent border-b bg-transparent text-right outline-none hover:border-muted-foreground focus:border-foreground"
         />
         {suffix}
-        {options.length > 0 && (
-          <ul className="absolute top-full right-0 z-20 mt-1 max-h-56 min-w-16 overflow-auto rounded-md border bg-popover py-1 text-popover-foreground shadow-md">
-            {options.map((p) => (
-              <li key={p}>
-                <button
-                  type="button"
-                  // mousedown fires before the input's blur, so the value commits.
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    commit(String(p));
-                  }}
-                  className="block w-full px-3 py-1 text-right hover:bg-muted"
-                >
-                  {p}
-                  {suffix}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
+        {options.length > 0 &&
+          menuPos &&
+          createPortal(
+            <ul
+              style={{
+                position: "fixed",
+                top: menuPos.top,
+                right: menuPos.right,
+              }}
+              className="z-50 max-h-56 min-w-16 overflow-auto rounded-md border bg-popover py-1 font-mono text-popover-foreground text-xs shadow-md"
+            >
+              {options.map((p) => (
+                <li key={p}>
+                  <button
+                    type="button"
+                    // mousedown fires before the input's blur, so the value commits.
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      commit(String(p));
+                    }}
+                    className="block w-full px-3 py-1 text-right hover:bg-muted"
+                  >
+                    {p}
+                    {suffix}
+                  </button>
+                </li>
+              ))}
+            </ul>,
+            document.body
+          )}
       </span>
     );
   }
