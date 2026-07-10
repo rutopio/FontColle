@@ -111,17 +111,12 @@ export function applyFilters(
     // OR within license: family's license is one of the selected ids.
     if (f.license.length && !(font.license && f.license.includes(font.license)))
       return false;
-    // OR within source flags: family must carry at least one selected flag.
-    if (
-      f.flags.length &&
-      !f.flags.some(
-        (fl) =>
-          (fl === "noto" && font.isNoto) ||
-          (fl === "brand" && font.isBrandFont) ||
-          (fl === "opensource" && font.isOpenSource)
-      )
-    )
-      return false;
+    // Source: radio-style Noto / Others (at most one). Every published family
+    // is one or the other, so this partitions the catalog.
+    if (f.flags.length) {
+      const wantNoto = f.flags.includes("noto");
+      if (!!font.isNoto !== wantNoto) return false;
+    }
     // OR within upm: family's units-per-em is one of the selected values.
     if (f.upm.length && !f.upm.includes(String(font.unitsPerEm))) return false;
     // AND across metric ranges: the font's derived value must fall in every

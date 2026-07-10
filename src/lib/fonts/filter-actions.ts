@@ -15,7 +15,6 @@ type ArrayKey =
   | "colorFormats"
   | "classifications"
   | "license"
-  | "flags"
   | "upm";
 
 // Pure filter-state transitions, lifted out of FilterSidebar so the app's
@@ -148,6 +147,13 @@ export function selectFontType(
 /** Reset the Font type section: clear its facets and the implied axes. */
 export function resetFontType(filter: FilterState): FilterState {
   return { ...filter, facets: withoutFontType(filter), axes: [] };
+}
+
+/** Radio-style Source select (Noto / Others): at most one value; re-clicking
+ *  the active one clears it. Stored in `flags` as a 0- or 1-length array. */
+export function selectFlag(filter: FilterState, value: string): FilterState {
+  const next = filter.flags.includes(value) ? [] : [value];
+  return { ...filter, flags: next };
 }
 
 /** Clear only the values a given section shows. Several sections share one

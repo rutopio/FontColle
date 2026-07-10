@@ -21,8 +21,7 @@ export interface FilterState {
   // font matches when any selected tag scores tags[path] >= 50.
   classifications: string[];
   license: string[]; // license ids ("OFL", "APACHE2", "UFL"), OR within
-  // Source/provenance flags ("noto" | "brand" | "opensource"), OR within: a
-  // family matches when it carries any selected flag.
+  // Source: radio-style Noto / Others, stored as a 0- or 1-length array.
   flags: string[];
   upm: string[]; // units-per-em values ("1000", "2048"…), OR within
   // Derived-metric range sliders (x-height ratio, file size, …), AND across.
@@ -82,7 +81,7 @@ export interface FilterSearch {
   cfmt?: string;
   cls?: string; // classification tag paths
   lic?: string; // license ids
-  flag?: string; // source flags (noto/brand/opensource), comma-joined
+  flag?: string; // source radio: "noto" | "others"
   upm?: string; // units-per-em values, comma-joined
   // Metric ranges, each "lo-hi" (e.g. mxh=0.45-0.55). One key per metric.
   mxh?: string; // x-height ratio
