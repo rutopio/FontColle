@@ -51,4 +51,8 @@ export interface FontRecord {
   trendingRank: number | null; // 1 = fastest-growing usage
   lastModified: string | null; // API "yyyy-MM-dd"
   specimen: string | null; // native-script sample text (null for Latin-only)
+  // Google Fonts classification tags (google/fonts tags CSV, e.g.
+  // "/Serif/Fat Face"), not exposed by the Developer API. Scores are 0-100.
+  // Empty for families the CSV doesn't cover.
+  tags: Record<string, number>;
 }

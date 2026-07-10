@@ -68,6 +68,10 @@ export const family = sqliteTable(
     // Sample text in the font's own script (gflanguages), like Google Fonts'
     // non-Latin previews. Null for Latin-only fonts (frontend uses its default).
     specimen: text("specimen"),
+    // Google Fonts classification tags (google/fonts tags CSV, not exposed by
+    // the Developer API) as JSON {"<full tag path>": score}, e.g.
+    // {"/Serif/Fat Face": 90}. Scores are 0-100. Empty object when uncovered.
+    tags: text("tags"),
 
     contentHash: text("content_hash").notNull(),
     updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
