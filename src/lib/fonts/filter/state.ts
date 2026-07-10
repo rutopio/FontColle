@@ -16,6 +16,10 @@ export interface FilterState {
   // Color-table formats ("COLR", "SVG", …), AND across: a font carrying both
   // COLR and SVG matches when both are selected. Counts therefore overlap.
   colorFormats: string[];
+  // Google Fonts classification tag paths ("/Serif/Didone", …), OR within: a
+  // font matches when any selected tag scores tags[path] >= 50.
+  classifications: string[];
+  license: string[]; // license ids ("OFL", "APACHE2", "UFL"), OR within
 }
 
 // The slice of the filter a preview (card/row) needs to know about, to both
@@ -38,6 +42,8 @@ export const emptyFilter: FilterState = {
   languages: [],
   color: [],
   colorFormats: [],
+  classifications: [],
+  license: [],
 };
 
 // The two `facets` values that say whether a family is a variable font. They
@@ -59,6 +65,8 @@ export interface FilterSearch {
   lang?: string;
   color?: string;
   cfmt?: string;
+  cls?: string; // classification tag paths
+  lic?: string; // license ids
   view?: "grid" | "row"; // display preference, not a filter
   sort?: string; // sort key, not a filter
 }
@@ -79,6 +87,8 @@ export function searchToFilter(s: FilterSearch): FilterState {
     languages: splitCsv(s.lang),
     color: splitCsv(s.color),
     colorFormats: splitCsv(s.cfmt),
+    classifications: splitCsv(s.cls),
+    license: splitCsv(s.lic),
   };
 }
 
@@ -95,6 +105,8 @@ export function filterToSearch(f: FilterState): FilterSearch {
   if (f.languages.length) s.lang = f.languages.join(",");
   if (f.color.length) s.color = f.color.join(",");
   if (f.colorFormats.length) s.cfmt = f.colorFormats.join(",");
+  if (f.classifications.length) s.cls = f.classifications.join(",");
+  if (f.license.length) s.lic = f.license.join(",");
   return s;
 }
 
@@ -111,7 +123,9 @@ export function activeFilterCount(f: FilterState): number {
     f.scripts.length +
     f.languages.length +
     f.color.length +
-    f.colorFormats.length
+    f.colorFormats.length +
+    f.classifications.length +
+    f.license.length
   );
 }
 
@@ -134,6 +148,8 @@ export function parseFilterSearch(raw: Record<string, unknown>): FilterSearch {
     lang: str(raw.lang),
     color: str(raw.color),
     cfmt: str(raw.cfmt),
+    cls: str(raw.cls),
+    lic: str(raw.lic),
     view: raw.view === "row" ? "row" : undefined,
     sort: str(raw.sort),
   };

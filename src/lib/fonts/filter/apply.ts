@@ -1,6 +1,7 @@
 // Filtering and search relevance: turn a FilterState into the matching subset.
 import { isColorFont } from "../color";
 import type { FontRecord } from "../types";
+import { TAG_MEMBERSHIP_THRESHOLD } from "./facets";
 import type { FilterState } from "./state";
 import { familyWeightSet, familyWidthSet } from "./weights";
 
@@ -95,6 +96,18 @@ export function applyFilters(
       f.colorFormats.length &&
       !f.colorFormats.every((t) => font.colorTables.includes(t))
     )
+      return false;
+    // OR within classifications: family matches when it carries any selected
+    // tag with a score of at least 50.
+    if (
+      f.classifications.length &&
+      !f.classifications.some(
+        (t) => (font.tags[t] ?? 0) >= TAG_MEMBERSHIP_THRESHOLD
+      )
+    )
+      return false;
+    // OR within license: family's license is one of the selected ids.
+    if (f.license.length && !(font.license && f.license.includes(font.license)))
       return false;
     return true;
   });

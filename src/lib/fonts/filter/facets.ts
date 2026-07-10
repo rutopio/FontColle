@@ -8,6 +8,70 @@ import { familyWeightSet, familyWidthSet } from "./weights";
 /** The selectable filter values with family counts, keyed by section. */
 export type FacetIndex = ReturnType<typeof buildFacetIndex>;
 
+// A font belongs to a classification tag when its score reaches this. Shared
+// with applyFilters so counts and results agree.
+export const TAG_MEMBERSHIP_THRESHOLD = 50;
+
+// The four classification sections, in display order, each an ordered list of
+// its sub-tag paths (the only groups surfaced for now). Sub-tag order is by
+// family count descending, taken from the current dataset.
+export const CLASSIFICATION_SECTIONS: {
+  title: string;
+  prefix: string;
+  tags: string[];
+}[] = [
+  {
+    title: "Serif",
+    prefix: "/Serif/",
+    tags: [
+      "/Serif/Transitional",
+      "/Serif/Old Style Garalde",
+      "/Serif/Modern",
+      "/Serif/Humanist Venetian",
+      "/Serif/Didone",
+      "/Serif/Scotch",
+      "/Serif/Fat Face",
+    ],
+  },
+  {
+    title: "Sans Serif",
+    prefix: "/Sans/",
+    tags: [
+      "/Sans/Humanist",
+      "/Sans/Geometric",
+      "/Sans/Neo Grotesque",
+      "/Sans/Rounded",
+      "/Sans/Grotesque",
+      "/Sans/Superellipse",
+      "/Sans/Glyphic",
+    ],
+  },
+  {
+    title: "Slab",
+    prefix: "/Slab/",
+    tags: ["/Slab/Humanist", "/Slab/Clarendon", "/Slab/Geometric"],
+  },
+  {
+    title: "Calligraphy",
+    prefix: "/Script/",
+    tags: [
+      "/Script/Handwritten",
+      "/Script/Informal",
+      "/Script/Upright Script",
+      "/Script/Formal",
+    ],
+  },
+];
+
+// The license pills, in fixed order. Records with a null license never match
+// and get no pill.
+export const LICENSE_VALUES = ["OFL", "APACHE2", "UFL"];
+export const LICENSE_LABELS: Record<string, string> = {
+  OFL: "OFL",
+  APACHE2: "Apache 2.0",
+  UFL: "UFL",
+};
+
 /** Build the set of selectable values with counts, from the full dataset. */
 export function buildFacetIndex(fonts: FontRecord[]) {
   const classes = new Map<string, number>();
@@ -20,6 +84,8 @@ export function buildFacetIndex(fonts: FontRecord[]) {
   const languages = new Map<string, number>();
   const color = new Map<string, number>();
   const colorFormats = new Map<string, number>();
+  const classifications = new Map<string, number>();
+  const license = new Map<string, number>();
   const bump = (m: Map<string, number>, k: string) =>
     m.set(k, (m.get(k) ?? 0) + 1);
 
@@ -34,6 +100,9 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     for (const l of font.languages) bump(languages, l);
     bump(color, isColorFont(font) ? "color" : "monochrome");
     for (const t of font.colorTables) bump(colorFormats, t);
+    for (const [path, score] of Object.entries(font.tags))
+      if (score >= TAG_MEMBERSHIP_THRESHOLD) bump(classifications, path);
+    if (font.license) bump(license, font.license);
   }
   const sorted = (m: Map<string, number>) =>
     [...m.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
@@ -69,6 +138,18 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     // font uses — they stay selectable rather than vanishing at count 0.
     colorFormats: COLOR_FORMATS.map(
       (f) => [f.id, colorFormats.get(f.id) ?? 0] as [string, number]
+    ),
+    // One entry per classification section: its sub-tag pills in fixed order,
+    // each [full tag path, count].
+    classifications: CLASSIFICATION_SECTIONS.map((section) => ({
+      title: section.title,
+      items: section.tags.map(
+        (t) => [t, classifications.get(t) ?? 0] as [string, number]
+      ),
+    })),
+    // License pills in fixed order (OFL / Apache 2.0 / UFL).
+    license: LICENSE_VALUES.map(
+      (v) => [v, license.get(v) ?? 0] as [string, number]
     ),
   };
 }
