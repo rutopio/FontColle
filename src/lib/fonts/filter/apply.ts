@@ -1,6 +1,6 @@
 // Filtering and search relevance: turn a FilterState into the matching subset.
 import { isColorFont } from "../color";
-import { type MetricKey, matchesRange, METRIC_SPECS } from "../metrics";
+import { METRIC_SPECS, type MetricKey, matchesRange } from "../metrics";
 import type { FontRecord } from "../types";
 import { TAG_MEMBERSHIP_THRESHOLD } from "./facets";
 import type { FilterState } from "./state";
@@ -111,9 +111,19 @@ export function applyFilters(
     // OR within license: family's license is one of the selected ids.
     if (f.license.length && !(font.license && f.license.includes(font.license)))
       return false;
-    // OR within upm: family's units-per-em is one of the selected values.
-    if (f.upm.length && !f.upm.includes(String(font.unitsPerEm)))
+    // OR within source flags: family must carry at least one selected flag.
+    if (
+      f.flags.length &&
+      !f.flags.some(
+        (fl) =>
+          (fl === "noto" && font.isNoto) ||
+          (fl === "brand" && font.isBrandFont) ||
+          (fl === "opensource" && font.isOpenSource)
+      )
+    )
       return false;
+    // OR within upm: family's units-per-em is one of the selected values.
+    if (f.upm.length && !f.upm.includes(String(font.unitsPerEm))) return false;
     // AND across metric ranges: the font's derived value must fall in every
     // active range. A font with a null input to an active metric is excluded.
     for (const key of metricKeys) {

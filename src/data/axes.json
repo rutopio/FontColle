@@ -1,226 +1,394 @@
 {
   "ARRR": {
     "name": "AR Retinal Resolution",
-    "description": " Resolution-specific enhancements in AR/VR typefaces to optimize rendering across the different resolutions of the headsets making designs accessible and easy to read."
+    "description": " Resolution-specific enhancements in AR/VR typefaces to optimize rendering across the different resolutions of the headsets making designs accessible and easy to read.",
+    "min": 10,
+    "default": 10,
+    "max": 60
   },
   "BLED": {
     "name": "Bleed",
-    "description": "Bleed adjusts the overall darkness in the typographic color of strokes or other forms, without any changes in overall width, line breaks, or page layout. Negative values make the font appearance lighter, while positive values make it darker, similarly to ink bleed or dot gain on paper."
+    "description": "Bleed adjusts the overall darkness in the typographic color of strokes or other forms, without any changes in overall width, line breaks, or page layout. Negative values make the font appearance lighter, while positive values make it darker, similarly to ink bleed or dot gain on paper.",
+    "min": 0,
+    "default": 0,
+    "max": 100
   },
   "BNCE": {
     "name": "Bounce",
-    "description": "Shift glyphs up and down in the Y dimension, resulting in an uneven, bouncy baseline."
+    "description": "Shift glyphs up and down in the Y dimension, resulting in an uneven, bouncy baseline.",
+    "min": -100,
+    "default": 0,
+    "max": 100
   },
   "CASL": {
     "name": "Casual",
-    "description": "Adjust stroke curvature, contrast, and terminals from a sturdy, rational Linear style to a friendly, energetic Casual style."
+    "description": "Adjust stroke curvature, contrast, and terminals from a sturdy, rational Linear style to a friendly, energetic Casual style.",
+    "min": 0,
+    "default": 0,
+    "max": 1
   },
   "CRSV": {
     "name": "Cursive",
-    "description": "Control the substitution of cursive forms along the Slant axis. 'Off' (0) maintains Roman letterforms such as a double-storey a and g, 'Auto' (0.5) allows for Cursive substitution, and 'On' (1) asserts cursive forms even in upright text with a Slant of 0."
+    "description": "Control the substitution of cursive forms along the Slant axis. 'Off' (0) maintains Roman letterforms such as a double-storey a and g, 'Auto' (0.5) allows for Cursive substitution, and 'On' (1) asserts cursive forms even in upright text with a Slant of 0.",
+    "min": 0,
+    "default": 0.5,
+    "max": 1
   },
   "CTRS": {
     "name": "Contrast",
-    "description": "Contrast describes the stroke width difference between the thick and thin parts of the font glyphs. A value of zero indicates no visible/apparent contrast. A positive number indicates an increase in contrast relative to the zero-contrast thickness, achieved by making the thin stroke thinner. A value of 100 indicates that the thin stroke has disappeared completely. A negative value indicates “reverse contrast”: the strokes which would conventionally be thick in the writing system are instead made thinner. In western-language fonts this might be perceived as a 19th-century, “circus” or “old West” effect. A value of -100 indicates that the strokes which would normally be thick have disappeared completely."
+    "description": "Contrast describes the stroke width difference between the thick and thin parts of the font glyphs. A value of zero indicates no visible/apparent contrast. A positive number indicates an increase in contrast relative to the zero-contrast thickness, achieved by making the thin stroke thinner. A value of 100 indicates that the thin stroke has disappeared completely. A negative value indicates “reverse contrast”: the strokes which would conventionally be thick in the writing system are instead made thinner. In western-language fonts this might be perceived as a 19th-century, “circus” or “old West” effect. A value of -100 indicates that the strokes which would normally be thick have disappeared completely.",
+    "min": -100,
+    "default": 0,
+    "max": 100
   },
   "EDPT": {
     "name": "Extrusion Depth",
-    "description": "Controls the 3D depth on contours."
+    "description": "Controls the 3D depth on contours.",
+    "min": 0,
+    "default": 100,
+    "max": 1000
   },
   "EHLT": {
     "name": "Edge Highlight",
-    "description": "Controls thickness of edge highlight details."
+    "description": "Controls thickness of edge highlight details.",
+    "min": 0,
+    "default": 12,
+    "max": 1000
   },
   "ELGR": {
     "name": "Element Grid",
-    "description": "In modular fonts, where glyphs are composed using multiple copies of the same element, this axis controls how many elements are used per one grid unit."
+    "description": "In modular fonts, where glyphs are composed using multiple copies of the same element, this axis controls how many elements are used per one grid unit.",
+    "min": 1,
+    "default": 1,
+    "max": 2
   },
   "ELSH": {
     "name": "Element Shape",
-    "description": "In modular fonts, where glyphs are composed using multiple copies of the same element, this axis controls the shape of the element"
+    "description": "In modular fonts, where glyphs are composed using multiple copies of the same element, this axis controls the shape of the element",
+    "min": 0,
+    "default": 0,
+    "max": 100
   },
   "ELXP": {
     "name": "Element Expansion",
-    "description": "As the Element Expansion axis progresses, the elements move apart."
+    "description": "As the Element Expansion axis progresses, the elements move apart.",
+    "min": 0,
+    "default": 0,
+    "max": 100
   },
   "ENLA": {
     "name": "Enlarge",
-    "description": "Scales lowercase letters to an intermediate size between minuscule and majuscule, as used in medieval manuscripts for enlarged minuscules at sentence openings. Adjusts x-height and character width continuously from 0 (default lowercase) to 100 (fully enlarged)."
+    "description": "Scales lowercase letters to an intermediate size between minuscule and majuscule, as used in medieval manuscripts for enlarged minuscules at sentence openings. Adjusts x-height and character width continuously from 0 (default lowercase) to 100 (fully enlarged).",
+    "min": 0,
+    "default": 0,
+    "max": 100
   },
   "FILL": {
     "name": "Fill",
-    "description": "Fill in transparent forms with opaque ones. Sometimes interior opaque forms become transparent, to maintain contrasting shapes. This can be useful in animation or interaction to convey a state transition. Ranges from 0 (no treatment) to 1 (completely filled)."
+    "description": "Fill in transparent forms with opaque ones. Sometimes interior opaque forms become transparent, to maintain contrasting shapes. This can be useful in animation or interaction to convey a state transition. Ranges from 0 (no treatment) to 1 (completely filled).",
+    "min": 0,
+    "default": 0,
+    "max": 1
   },
   "FLAR": {
     "name": "Flare",
-    "description": "As the flare axis grows, the stem terminals go from straight (0%) to develop a swelling (100%)."
+    "description": "As the flare axis grows, the stem terminals go from straight (0%) to develop a swelling (100%).",
+    "min": 0,
+    "default": 0,
+    "max": 100
   },
   "GDOP": {
     "name": "Guides Opacity",
-    "description": "Adjust opacity of guides from 100 (fully visible) down to 0 (fully invisible)."
+    "description": "Adjust opacity of guides from 100 (fully visible) down to 0 (fully invisible).",
+    "min": 0,
+    "default": 100,
+    "max": 100
   },
   "GEOM": {
     "name": "Geometric Form",
-    "description": "It transforms complex letterforms into simplified geometric shapes like circles, triangles, and squares. This transition can occurs through gradual structural shifting and/or character swaps at specific intervals."
+    "description": "It transforms complex letterforms into simplified geometric shapes like circles, triangles, and squares. This transition can occurs through gradual structural shifting and/or character swaps at specific intervals.",
+    "min": 0,
+    "default": 0,
+    "max": 100
   },
   "GRAD": {
     "name": "Grade",
-    "description": "Finesse the style from lighter to bolder in typographic color, without any changes overall width, line breaks or page layout. Negative grade makes the style lighter, while positive grade makes it bolder. The units are the same as in the Weight axis."
+    "description": "Finesse the style from lighter to bolder in typographic color, without any changes overall width, line breaks or page layout. Negative grade makes the style lighter, while positive grade makes it bolder. The units are the same as in the Weight axis.",
+    "min": -1000,
+    "default": 0,
+    "max": 1000
   },
   "HEXP": {
     "name": "Hyper Expansion",
-    "description": "Expansion of inner and outer space of glyphs."
+    "description": "Expansion of inner and outer space of glyphs.",
+    "min": 0,
+    "default": 0,
+    "max": 100
   },
   "INFM": {
     "name": "Informality",
-    "description": "Adjusts overall design from formal and traditional (0%) to informal and unconventional (up to 100%)."
+    "description": "Adjusts overall design from formal and traditional (0%) to informal and unconventional (up to 100%).",
+    "min": 0,
+    "default": 0,
+    "max": 100
   },
   "ital": {
     "name": "Italic",
-    "description": "Adjust the style from roman to italic. This can be provided as a continuous range within a single font file, like most axes, or as a toggle between two roman and italic files that form a family as a pair."
+    "description": "Adjust the style from roman to italic. This can be provided as a continuous range within a single font file, like most axes, or as a toggle between two roman and italic files that form a family as a pair.",
+    "min": 0,
+    "default": 0,
+    "max": 1
   },
   "MONO": {
     "name": "Monospace",
-    "description": "Adjust the style from Proportional (natural widths, default) to Monospace (fixed width). With proportional spacing, each glyph takes up a unique amount of space on a line, while monospace is when all glyphs have the same total character width."
+    "description": "Adjust the style from Proportional (natural widths, default) to Monospace (fixed width). With proportional spacing, each glyph takes up a unique amount of space on a line, while monospace is when all glyphs have the same total character width.",
+    "min": 0,
+    "default": 0,
+    "max": 1
   },
   "MORF": {
     "name": "Morph",
-    "description": "Letterforms morph: Changing in unconventional ways, that don't alter other attributes, like width or weight. The range from 0 to 60 can be understood as seconds."
+    "description": "Letterforms morph: Changing in unconventional ways, that don't alter other attributes, like width or weight. The range from 0 to 60 can be understood as seconds.",
+    "min": 0,
+    "default": 0,
+    "max": 60
   },
   "opsz": {
     "name": "Optical Size",
-    "description": "Adapt the style to specific text sizes. At smaller sizes, letters typically become optimized for more legibility. At larger sizes, optimized for headlines, with more extreme weights and widths. In CSS this axis is activated automatically when it is available."
+    "description": "Adapt the style to specific text sizes. At smaller sizes, letters typically become optimized for more legibility. At larger sizes, optimized for headlines, with more extreme weights and widths. In CSS this axis is activated automatically when it is available.",
+    "min": 5,
+    "default": 14,
+    "max": 1200
   },
   "ROND": {
     "name": "Roundness",
-    "description": "Adjust shapes from angular defaults (0%) to become increasingly rounded (up to 100%)."
+    "description": "Adjust shapes from angular defaults (0%) to become increasingly rounded (up to 100%).",
+    "min": 0,
+    "default": 0,
+    "max": 100
   },
   "SCAN": {
     "name": "Scanlines",
-    "description": "Break up shapes into horizontal segments without any changes in overall width, letter spacing, or kerning, so there are no line breaks or page layout changes. Negative values make the scanlines thinner, and positive values make them thicker."
+    "description": "Break up shapes into horizontal segments without any changes in overall width, letter spacing, or kerning, so there are no line breaks or page layout changes. Negative values make the scanlines thinner, and positive values make them thicker.",
+    "min": -100,
+    "default": 0,
+    "max": 100
   },
   "SHLN": {
     "name": "Shadow Length",
-    "description": "Adjusts the font's shadow length from no shadow visible (0 %) to a maximum shadow applied (100%) relative to each family design."
+    "description": "Adjusts the font's shadow length from no shadow visible (0 %) to a maximum shadow applied (100%) relative to each family design.",
+    "min": 0,
+    "default": 50,
+    "max": 100
   },
   "SHRP": {
     "name": "Sharpness",
-    "description": "Adjust shapes from angular or blunt default shapes (0%) to become increasingly sharped forms (up to 100%)."
+    "description": "Adjust shapes from angular or blunt default shapes (0%) to become increasingly sharped forms (up to 100%).",
+    "min": 0,
+    "default": 0,
+    "max": 100
   },
   "slnt": {
     "name": "Slant",
-    "description": "Adjust the style from upright to slanted. Negative values produce right-leaning forms, also known to typographers as an 'oblique' style. Positive values produce left-leaning forms, also called a 'backslanted' or 'reverse oblique' style."
+    "description": "Adjust the style from upright to slanted. Negative values produce right-leaning forms, also known to typographers as an 'oblique' style. Positive values produce left-leaning forms, also called a 'backslanted' or 'reverse oblique' style.",
+    "min": -90,
+    "default": 0,
+    "max": 90
   },
   "SOFT": {
     "name": "Softness",
-    "description": "Adjust letterforms to become more and more soft and rounded."
+    "description": "Adjust letterforms to become more and more soft and rounded.",
+    "min": 0,
+    "default": 0,
+    "max": 100
   },
   "SPAC": {
     "name": "Spacing",
-    "description": "Adjusts the overall letter spacing of a font. The range is a relative percentage change from the family’s default spacing, so the default value is 0."
+    "description": "Adjusts the overall letter spacing of a font. The range is a relative percentage change from the family’s default spacing, so the default value is 0.",
+    "min": -100,
+    "default": 0,
+    "max": 100
   },
   "SZP1": {
     "name": "Size of Paint 1",
-    "description": "Modifies the size of a paint element going from an initial size (0) to positive values that increase the size (100%) or negative values that shrink it down (-100%). Reducing the size can create transparency."
+    "description": "Modifies the size of a paint element going from an initial size (0) to positive values that increase the size (100%) or negative values that shrink it down (-100%). Reducing the size can create transparency.",
+    "min": -100,
+    "default": 0,
+    "max": 100
   },
   "SZP2": {
     "name": "Size of Paint 2",
-    "description": "Modifies the size of a paint element going from an initial size (0) to positive values that increase the size (100%) or negative values that shrink it down (-100%). Reducing the size can create transparency. Paint 2 is in front of Paint 1."
+    "description": "Modifies the size of a paint element going from an initial size (0) to positive values that increase the size (100%) or negative values that shrink it down (-100%). Reducing the size can create transparency. Paint 2 is in front of Paint 1.",
+    "min": -100,
+    "default": 0,
+    "max": 100
   },
   "VOLM": {
     "name": "Volume",
-    "description": "Expands and exaggerates details of a typeface to emphasize the personality. Understood in a percentage amount, it goes from a neutral state (0%) to a maximum level (100%)."
+    "description": "Expands and exaggerates details of a typeface to emphasize the personality. Understood in a percentage amount, it goes from a neutral state (0%) to a maximum level (100%).",
+    "min": 0,
+    "default": 0,
+    "max": 100
   },
   "wdth": {
     "name": "Width",
-    "description": "Adjust the style from narrower to wider, by varying the proportions of counters, strokes, spacing and kerning, and other aspects of the type. This typically changes the typographic color in a subtle way, and so may be used in conjunction with Weight and Grade axes."
+    "description": "Adjust the style from narrower to wider, by varying the proportions of counters, strokes, spacing and kerning, and other aspects of the type. This typically changes the typographic color in a subtle way, and so may be used in conjunction with Weight and Grade axes.",
+    "min": 25,
+    "default": 100,
+    "max": 200
   },
   "wght": {
     "name": "Weight",
-    "description": "Adjust the style from lighter to bolder in typographic color, by varying stroke weights, spacing and kerning, and other aspects of the type. This typically changes overall width, and so may be used in conjunction with Width and Grade axes."
+    "description": "Adjust the style from lighter to bolder in typographic color, by varying stroke weights, spacing and kerning, and other aspects of the type. This typically changes overall width, and so may be used in conjunction with Width and Grade axes.",
+    "min": 1,
+    "default": 400,
+    "max": 1000
   },
   "WONK": {
     "name": "Wonky",
-    "description": "Toggle the substitution of wonky forms. 'Off' (0) maintains more conventional letterforms, while 'On' (1) maintains wonky letterforms, such as leaning stems in roman, or flagged ascenders in italic. These forms are also controlled by Optical Size."
+    "description": "Toggle the substitution of wonky forms. 'Off' (0) maintains more conventional letterforms, while 'On' (1) maintains wonky letterforms, such as leaning stems in roman, or flagged ascenders in italic. These forms are also controlled by Optical Size.",
+    "min": 0,
+    "default": 0,
+    "max": 1
   },
   "XELA": {
     "name": "Horizontal Element Alignment",
-    "description": "Align glyph elements from their default position (0%), usually the baseline, to a rightmost (100%) or leftmost (-100%) position."
+    "description": "Align glyph elements from their default position (0%), usually the baseline, to a rightmost (100%) or leftmost (-100%) position.",
+    "min": -100,
+    "default": 0,
+    "max": 100
   },
   "XOPQ": {
     "name": "Thick Stroke",
-    "description": "A parametric axis for varying thick stroke weights, such as stems."
+    "description": "A parametric axis for varying thick stroke weights, such as stems.",
+    "min": -1000,
+    "default": 88,
+    "max": 2000
   },
   "XPN1": {
     "name": "Horizontal Position of Paint 1",
-    "description": "The position of the paint moves left and right. Negative values move to the left and positive values move to the right, in the X dimension. Paint 1 is behind Paint 2."
+    "description": "The position of the paint moves left and right. Negative values move to the left and positive values move to the right, in the X dimension. Paint 1 is behind Paint 2.",
+    "min": -100,
+    "default": 0,
+    "max": 100
   },
   "XPN2": {
     "name": "Horizontal Position of Paint 2",
-    "description": "The position of the paint moves left and right. Negative values move to the left and positive values move to the right, in the X dimension. Paint 2 is in front of Paint 1."
+    "description": "The position of the paint moves left and right. Negative values move to the left and positive values move to the right, in the X dimension. Paint 2 is in front of Paint 1.",
+    "min": -100,
+    "default": 0,
+    "max": 100
   },
   "XROT": {
     "name": "Rotation in X",
-    "description": "Glyphs rotate left and right, negative values to the left and positive values to the right, in the X dimension."
+    "description": "Glyphs rotate left and right, negative values to the left and positive values to the right, in the X dimension.",
+    "min": -180,
+    "default": 0,
+    "max": 180
   },
   "XTFI": {
     "name": "X transparent figures",
-    "description": "Assigns a 'white' per mille value to each instance of the design space."
+    "description": "Assigns a 'white' per mille value to each instance of the design space.",
+    "min": -1000,
+    "default": 400,
+    "max": 2000
   },
   "XTRA": {
     "name": "Counter Width",
-    "description": "A parametric axis for varying counter widths in the X dimension."
+    "description": "A parametric axis for varying counter widths in the X dimension.",
+    "min": -1000,
+    "default": 400,
+    "max": 2000
   },
   "YEAR": {
     "name": "Year",
-    "description": "Axis that shows in a metaphoric way the effect of time on a chosen topic."
+    "description": "Axis that shows in a metaphoric way the effect of time on a chosen topic.",
+    "min": -4000,
+    "default": 2000,
+    "max": 4000
   },
   "YELA": {
     "name": "Vertical Element Alignment",
-    "description": "Align glyphs elements from their default position (0%), usually the baseline, to an upper (100%) or lower (-100%) position."
+    "description": "Align glyphs elements from their default position (0%), usually the baseline, to an upper (100%) or lower (-100%) position.",
+    "min": -100,
+    "default": 0,
+    "max": 100
   },
   "YEXT": {
     "name": "Vertical Extension",
-    "description": "The axis extends glyphs in the Y dimension, such as the Cap Height, Ascender and Descender lengths. This is a relative axis, starting at 0% and going to the typeface's individual maximum extent at 100%."
+    "description": "The axis extends glyphs in the Y dimension, such as the Cap Height, Ascender and Descender lengths. This is a relative axis, starting at 0% and going to the typeface's individual maximum extent at 100%.",
+    "min": 0,
+    "default": 0,
+    "max": 100
   },
   "YOPQ": {
     "name": "Thin Stroke",
-    "description": "A parametric axis for varying thin stroke weights, such as bars and hairlines."
+    "description": "A parametric axis for varying thin stroke weights, such as bars and hairlines.",
+    "min": -1000,
+    "default": 116,
+    "max": 2000
   },
   "YPN1": {
     "name": "Vertical Position of Paint 1",
-    "description": "The position of the paint moves up and down. Negative values move down and positive values move up. Paint 1 is behind Paint 2."
+    "description": "The position of the paint moves up and down. Negative values move down and positive values move up. Paint 1 is behind Paint 2.",
+    "min": -100,
+    "default": 0,
+    "max": 100
   },
   "YPN2": {
     "name": "Vertical Position of Paint 2",
-    "description": "The position of the paint moves up and down. Negative values move down and positive values move up. Paint 2 is in front of Paint 1."
+    "description": "The position of the paint moves up and down. Negative values move down and positive values move up. Paint 2 is in front of Paint 1.",
+    "min": -100,
+    "default": 0,
+    "max": 100
   },
   "YROT": {
     "name": "Rotation in Y",
-    "description": "Glyphs rotate up and down, negative values tilt down and positive values tilt up, in the Y dimension."
+    "description": "Glyphs rotate up and down, negative values tilt down and positive values tilt up, in the Y dimension.",
+    "min": -180,
+    "default": 0,
+    "max": 180
   },
   "YTAS": {
     "name": "Ascender Height",
-    "description": "A parametric axis for varying the height of lowercase ascenders."
+    "description": "A parametric axis for varying the height of lowercase ascenders.",
+    "min": 0,
+    "default": 750,
+    "max": 1000
   },
   "YTDE": {
     "name": "Descender Depth",
-    "description": "A parametric axis for varying the depth of lowercase descenders."
+    "description": "A parametric axis for varying the depth of lowercase descenders.",
+    "min": -1000,
+    "default": -250,
+    "max": 0
   },
   "YTFI": {
     "name": "Figure Height",
-    "description": "A parametric axis for varying the height of figures."
+    "description": "A parametric axis for varying the height of figures.",
+    "min": -1000,
+    "default": 600,
+    "max": 2000
   },
   "YTLC": {
     "name": "Lowercase Height",
-    "description": "A parametric axis for varying the height of the lowercase."
+    "description": "A parametric axis for varying the height of the lowercase.",
+    "min": 0,
+    "default": 500,
+    "max": 1000
   },
   "YTUC": {
     "name": "Uppercase Height",
-    "description": "A parametric axis for varying the heights of uppercase letterforms."
+    "description": "A parametric axis for varying the heights of uppercase letterforms.",
+    "min": 0,
+    "default": 725,
+    "max": 1000
   },
   "ZROT": {
     "name": "Rotation in Z",
-    "description": "Glyphs rotate left and right, negative values to the left and positive values to the right, in the Z dimension."
+    "description": "Glyphs rotate left and right, negative values to the left and positive values to the right, in the Z dimension.",
+    "min": -180,
+    "default": 0,
+    "max": 180
   }
 }

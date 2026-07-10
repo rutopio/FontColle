@@ -40,6 +40,10 @@ function toFontRecord(f: FamilyRow, related: RelatedByFamily): FontRecord {
     license: f.license,
     isVariable: f.isVariable,
     subsets: parseJson<string[]>(f.subsets, []),
+    repositoryUrl: f.repositoryUrl,
+    isNoto: f.isNoto,
+    isBrandFont: f.isBrandFont,
+    isOpenSource: f.isOpenSource,
     axes: (axesByFamily.get(f.id) ?? []).map((a) => ({
       tag: a.axisTag,
       name: a.axisName,

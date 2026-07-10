@@ -78,6 +78,13 @@
       "when": 1783696257775,
       "tag": "0010_goofy_firestar",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1783712090534,
+      "tag": "0011_deep_synch",
+      "breakpoints": true
     }
   ]
 }

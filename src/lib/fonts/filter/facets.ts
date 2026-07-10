@@ -73,6 +73,15 @@ export const LICENSE_LABELS: Record<string, string> = {
   UFL: "UFL",
 };
 
+// Source/provenance flag pills, in fixed order. Families whose flag is
+// false/null never match and don't contribute a count.
+export const FLAG_VALUES = ["noto", "brand", "opensource"];
+export const FLAG_LABELS: Record<string, string> = {
+  noto: "Noto",
+  brand: "Brand",
+  opensource: "Open Source",
+};
+
 /** Build the set of selectable values with counts, from the full dataset. */
 export function buildFacetIndex(fonts: FontRecord[]) {
   const classes = new Map<string, number>();
@@ -87,6 +96,7 @@ export function buildFacetIndex(fonts: FontRecord[]) {
   const colorFormats = new Map<string, number>();
   const classifications = new Map<string, number>();
   const license = new Map<string, number>();
+  const flags = new Map<string, number>();
   let hintedCount = 0;
   let unhintedCount = 0;
   const bump = (m: Map<string, number>, k: string) =>
@@ -108,6 +118,9 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     for (const [path, score] of Object.entries(font.tags))
       if (score >= TAG_MEMBERSHIP_THRESHOLD) bump(classifications, path);
     if (font.license) bump(license, font.license);
+    if (font.isNoto) bump(flags, "noto");
+    if (font.isBrandFont) bump(flags, "brand");
+    if (font.isOpenSource) bump(flags, "opensource");
   }
   const sorted = (m: Map<string, number>) =>
     [...m.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
@@ -156,6 +169,8 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     license: LICENSE_VALUES.map(
       (v) => [v, license.get(v) ?? 0] as [string, number]
     ),
+    // Source pills in fixed order (Noto / Brand / Open Source).
+    flags: FLAG_VALUES.map((v) => [v, flags.get(v) ?? 0] as [string, number]),
     // Units-per-em pill items ([value, family count]) for the Metrics tab.
     upmCounts: catalogUpmCounts(fonts),
     // Family counts for the Hint pills.

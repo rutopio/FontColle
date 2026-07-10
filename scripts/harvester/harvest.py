@@ -78,6 +78,9 @@ def parse_metadata_pb(text):
         "primary_script": scalar("primary_script"),  # e.g. "Latn"
         "stroke": scalar("stroke"),              # SERIF / SANS_SERIF stroke class
         "classifications": re.findall(r'classifications:\s*"([^"]+)"', text),
+        # source { repository_url: "..." } — the upstream GitHub repo. None when
+        # the source block is absent (older fonts, API-supplemented families).
+        "repository_url": scalar("repository_url"),
     }
     # fonts { ... } blocks -> weights/styles
     fonts = []

@@ -25,6 +25,7 @@ import { LanguageSection } from "./language-section";
 import { LicenseSection } from "./license-section";
 import { MetricsSection } from "./metrics-section";
 import { Section } from "./section";
+import { SourceSection } from "./source-section";
 import { VariableAxesSection } from "./variable-axes-section";
 import { WritingSystemSection } from "./writing-system-section";
 
@@ -222,12 +223,20 @@ export function FilterSidebar({
             />
           )}
           {group === "other" && (
-            <LicenseSection
-              items={index.license}
-              selected={filter.license}
-              onToggle={(v) => toggle("license", v)}
-              onReset={() => onChange({ ...filter, license: [] })}
-            />
+            <>
+              <LicenseSection
+                items={index.license}
+                selected={filter.license}
+                onToggle={(v) => toggle("license", v)}
+                onReset={() => onChange({ ...filter, license: [] })}
+              />
+              <SourceSection
+                items={index.flags}
+                selected={filter.flags}
+                onToggle={(v) => toggle("flags", v)}
+                onReset={() => onChange({ ...filter, flags: [] })}
+              />
+            </>
           )}
         </div>
       </ScrollArea>

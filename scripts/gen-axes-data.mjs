@@ -58,10 +58,19 @@ function parseTextproto(text) {
     description = fragments.join("");
   }
 
+  // Scalar range fields (numbers, unquoted). Absent in some axes' textprotos.
+  const num = (field) => {
+    const m = text.match(new RegExp(`^${field}:\\s*(-?[\\d.]+)`, "m"));
+    return m ? Number(m[1]) : null;
+  };
+
   return {
     tag: unescapeProtoString(tagMatch[1]),
     name: unescapeProtoString(nameMatch[1]),
     description,
+    min: num("min_value"),
+    default: num("default_value"),
+    max: num("max_value"),
   };
 }
 
@@ -83,7 +92,13 @@ async function main() {
       console.warn(`  skip ${f.name}: missing tag/display_name/description`);
       continue;
     }
-    axes[parsed.tag] = { name: parsed.name, description: parsed.description };
+    axes[parsed.tag] = {
+      name: parsed.name,
+      description: parsed.description,
+      min: parsed.min,
+      default: parsed.default,
+      max: parsed.max,
+    };
   }
 
   const sorted = Object.fromEntries(
