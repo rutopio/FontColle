@@ -11,50 +11,50 @@ import { cn } from "@/lib/utils";
 // label/count distribution: centered when unset (the wrapping Pills layout),
 // pushed apart when set (the two-per-row grids).
 export function PillButton({
-  value,
-  count,
-  label,
-  selected,
-  onToggle,
-  spread = true,
-  mono = false,
-  disabled = false,
-  className,
+    value,
+    count,
+    label,
+    selected,
+    onToggle,
+    spread = true,
+    mono = false,
+    disabled = false,
+    className,
 }: {
-  value: string;
-  count: number;
-  // Display label; the toggle always passes the raw `value`.
-  label: string;
-  selected: boolean;
-  onToggle: (value: string) => void;
-  // Push label and count to opposite ends; otherwise center them.
-  spread?: boolean;
-  // Render the label monospaced (right for tags like "liga", wrong for "Latin").
-  mono?: boolean;
-  disabled?: boolean;
-  className?: string;
+    value: string;
+    count: number;
+    // Display label; the toggle always passes the raw `value`.
+    label: string;
+    selected: boolean;
+    onToggle: (value: string) => void;
+    // Push label and count to opposite ends; otherwise center them.
+    spread?: boolean;
+    // Render the label monospaced (right for tags like "liga", wrong for "Latin").
+    mono?: boolean;
+    disabled?: boolean;
+    className?: string;
 }) {
-  return (
-    <button
-      type="button"
-      onClick={() => onToggle(value)}
-      aria-pressed={selected}
-      disabled={disabled}
-      className={cn(
-        "flex items-center gap-1 rounded-md border px-2.5 py-1 text-xs transition-colors",
-        spread ? "justify-between" : "justify-center",
-        disabled && "cursor-not-allowed",
-        selected
-          ? "border-primary bg-muted text-foreground"
-          : "text-muted-foreground",
-        !disabled &&
-          !selected &&
-          "hover:border-foreground hover:text-foreground",
-        className
-      )}
-    >
-      <span className={cn("truncate", mono && "font-mono")}>{label}</span>
-      <span className="font-mono opacity-60">{count}</span>
-    </button>
-  );
+    return (
+        <button
+            type="button"
+            onClick={() => onToggle(value)}
+            aria-pressed={selected}
+            disabled={disabled}
+            className={cn(
+                "flex items-center gap-1 rounded-md border px-2.5 duration-200 py-1 text-xs transition-colors",
+                spread ? "justify-between" : "justify-center",
+                disabled && "cursor-not-allowed",
+                selected
+                    ? "border-primary bg-muted text-foreground font-semibold"
+                    : "text-muted-foreground",
+                !disabled &&
+                !selected &&
+                "hover:border-foreground hover:text-foreground",
+                className
+            )}
+        >
+            <span className={cn("truncate", mono && "font-mono")}>{label}</span>
+            <span className="font-mono opacity-60">{count}</span>
+        </button>
+    );
 }
