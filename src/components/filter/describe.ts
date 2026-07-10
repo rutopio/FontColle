@@ -1,8 +1,14 @@
 import { featureName } from "@/lib/fonts/features";
-import type { FilterState } from "@/lib/fonts/filter";
+import { CLASSIFICATION_SECTIONS, type FilterState } from "@/lib/fonts/filter";
 import { languageLabel, scriptLabel } from "@/lib/fonts/labels";
 import { METRIC_SPECS, type MetricKey } from "@/lib/fonts/metrics";
 import { subTagLabel, weightLabel, widthLabel } from "./constants";
+
+// The classification section a tag path belongs to ("/Serif/Old Style Garalde"
+// -> "Serif"), so its chip reads with the same section name the sidebar shows.
+const classificationSection = (path: string): string =>
+  CLASSIFICATION_SECTIONS.find((s) => path.startsWith(s.prefix))?.title ??
+  "Style";
 
 // One active-filter chip: what to show, and how to remove just this condition.
 export interface FilterChip {
@@ -47,7 +53,12 @@ export function describeActiveFilters(f: FilterState): FilterChip[] {
   for (const v of f.facets)
     push(`facet:${v}`, "Property", v, without(f, "facets", v));
   for (const v of f.classifications)
-    push(`cls:${v}`, "Style", subTagLabel(v), without(f, "classifications", v));
+    push(
+      `cls:${v}`,
+      classificationSection(v),
+      subTagLabel(v),
+      without(f, "classifications", v)
+    );
   for (const v of f.color)
     push(`color:${v}`, "Color", COLOR_LABEL[v] ?? v, without(f, "color", v));
   for (const v of f.colorFormats)
