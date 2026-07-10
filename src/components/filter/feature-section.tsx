@@ -1,4 +1,4 @@
-import { ToggleRightIcon } from "@phosphor-icons/react";
+import { CodeIcon } from "@phosphor-icons/react";
 import { useMemo } from "react";
 import { featureName, groupFeatures } from "@/lib/fonts/features";
 import { NoMatches, SearchBox } from "./search-box";
@@ -44,7 +44,7 @@ export function FeatureSection({
     <div className="flex flex-col gap-4">
       <SectionHeader
         title="OpenType features"
-        icon={ToggleRightIcon}
+        icon={CodeIcon}
         hasSelection={hasSelection}
         onReset={onResetFeatures}
         canSort={features.length > 1}

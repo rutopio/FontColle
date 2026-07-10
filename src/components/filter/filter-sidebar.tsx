@@ -1,6 +1,6 @@
 import {
   ArrowsOutLineHorizontalIcon,
-  BookmarkSimpleIcon,
+  ListBulletsIcon,
   SlidersHorizontalIcon,
   TextAaIcon,
 } from "@phosphor-icons/react";
@@ -109,7 +109,7 @@ export function FilterSidebar({
               />
               <Section
                 title="Properties"
-                icon={BookmarkSimpleIcon}
+                icon={ListBulletsIcon}
                 items={index.facets}
                 selected={filter.facets}
                 onToggle={(v) => toggle("facets", v)}

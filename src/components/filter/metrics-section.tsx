@@ -1,8 +1,8 @@
 import {
+  BoundingBoxIcon,
+  GitCommitIcon,
+  GridFourIcon,
   InfoIcon,
-  RulerIcon,
-  TextAaIcon,
-  TextTIcon,
 } from "@phosphor-icons/react";
 import { useMemo } from "react";
 import { EditableValue } from "@/components/ui/editable-value";
@@ -238,7 +238,7 @@ export function MetricsSection({
     <div className="flex flex-col gap-4">
       <SectionHeader
         title="Metrics"
-        icon={RulerIcon}
+        icon={GitCommitIcon}
         hasSelection={hasSelection}
         onReset={onReset}
         canSort={false}
@@ -279,7 +279,7 @@ export function UnitsPerEmSection({
   return (
     <Section
       title="Units per em"
-      icon={TextAaIcon}
+      icon={BoundingBoxIcon}
       items={upmCounts}
       selected={selectedUpm}
       onToggle={onToggleUpm}
@@ -306,7 +306,7 @@ export function HintSection({
     <div className="flex flex-col gap-2">
       <SectionHeader
         title="Hint"
-        icon={TextTIcon}
+        icon={GridFourIcon}
         hasSelection={hasHinting !== undefined}
         onReset={() => {
           if (hasHinting !== undefined) onSetHinting(hasHinting);

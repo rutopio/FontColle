@@ -1,4 +1,4 @@
-import { CertificateIcon } from "@phosphor-icons/react";
+import { BookmarkSimpleIcon } from "@phosphor-icons/react";
 import { LICENSE_LABELS } from "@/lib/fonts/filter";
 import { PillButton } from "./pill-button";
 import { SectionHeader } from "./section-header";
@@ -22,7 +22,7 @@ export function LicenseSection({
     <div className="flex flex-col gap-2">
       <SectionHeader
         title="License"
-        icon={CertificateIcon}
+        icon={BookmarkSimpleIcon}
         hasSelection={selected.length > 0}
         onReset={onReset}
         canSort={false}

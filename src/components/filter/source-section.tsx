@@ -1,4 +1,4 @@
-import { GitBranchIcon } from "@phosphor-icons/react";
+import { GoogleLogoIcon } from "@phosphor-icons/react";
 import { FLAG_LABELS } from "@/lib/fonts/filter";
 import { PillButton } from "./pill-button";
 import { SectionHeader } from "./section-header";
@@ -22,7 +22,7 @@ export function SourceSection({
     <div className="flex flex-col gap-2">
       <SectionHeader
         title="Source"
-        icon={GitBranchIcon}
+        icon={GoogleLogoIcon}
         hasSelection={selected.length > 0}
         onReset={onReset}
         canSort={false}
