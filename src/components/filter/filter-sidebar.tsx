@@ -1,15 +1,16 @@
 import {
   ArrowsOutLineHorizontalIcon,
-  ListBulletsIcon,
   SlidersHorizontalIcon,
+  TagIcon,
   TextAaIcon,
 } from "@phosphor-icons/react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import type {
-  FacetIndex,
-  FilterState,
-  MetricKey,
-  MetricRange,
+import {
+  FACET_LABELS,
+  type FacetIndex,
+  type FilterState,
+  type MetricKey,
+  type MetricRange,
 } from "@/lib/fonts/filter";
 import * as actions from "@/lib/fonts/filter-actions";
 import { useScrollReset } from "@/lib/use-scroll-reset";
@@ -44,6 +45,9 @@ interface Props {
   axisValues: Record<string, number>;
   onAxisValueChange: (tag: string, pct: number) => void;
 }
+
+// Human display for a derived facet id; falls back to the raw id.
+const facetLabel = (v: string) => FACET_LABELS[v] ?? v;
 
 export function FilterSidebar({
   index,
@@ -107,15 +111,6 @@ export function FilterSidebar({
                 selected={filter.classes}
                 onToggle={(v) => toggle("classes", v)}
               />
-              <Section
-                title="Properties"
-                icon={ListBulletsIcon}
-                items={index.facets}
-                selected={filter.facets}
-                onToggle={(v) => toggle("facets", v)}
-                onReset={() => clearSection("facets", index.facets)}
-                expandAll
-              />
               {index.classifications.map((section) => (
                 <ClassificationSection
                   key={section.title}
@@ -127,6 +122,20 @@ export function FilterSidebar({
                 />
               ))}
             </>
+          )}
+          {group === "tag" && (
+            // One flat list of natural-language trait pills, static/variable
+            // included. Font type also lives in Axes as a radio (same state).
+            <Section
+              title="Tag"
+              icon={TagIcon}
+              items={index.facets}
+              selected={filter.facets}
+              onToggle={(v) => toggle("facets", v)}
+              onReset={() => clearSection("facets", index.facets)}
+              label={facetLabel}
+              expandAll
+            />
           )}
           {group === "color" && (
             <>

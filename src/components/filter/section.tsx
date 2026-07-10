@@ -23,6 +23,7 @@ export function Section({
   sortable = true,
   grid,
   spread,
+  label,
   expandAll,
   topNSet,
   numericSort,
@@ -36,6 +37,8 @@ export function Section({
   sortable?: boolean;
   grid?: boolean;
   spread?: boolean;
+  // Human display name for a value; the toggle still passes the raw value.
+  label?: (value: string) => string;
   // Show every value at once, with no "more" expander.
   expandAll?: boolean;
   // When provided, only these values show by default; the rest collapse behind
@@ -78,6 +81,7 @@ export function Section({
         onToggle={onToggle}
         grid={grid}
         spread={spread}
+        label={label}
         expandAll={expandAll}
         topNSet={topNSet}
       />

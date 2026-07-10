@@ -73,6 +73,43 @@ export const LICENSE_LABELS: Record<string, string> = {
   UFL: "UFL",
 };
 
+// Plain-language labels for the Tag panel's facet values (kebab-case ids from
+// deriveFacets). The panel is the natural-language shortcut, so it shows these
+// human phrases rather than the raw tag. Unmapped ids fall back to the id.
+export const FACET_LABELS: Record<string, string> = {
+  static: "Static",
+  variable: "Variable",
+  "has-italic": "Italic",
+  ligatures: "Ligatures",
+  "discretionary-ligatures": "Discretionary ligatures",
+  "historical-ligatures": "Historical ligatures",
+  fractions: "Fractions",
+  "tabular-figures": "Tabular figures",
+  "oldstyle-figures": "Oldstyle figures",
+  "slashed-zero": "Slashed zero",
+  "small-caps": "Small caps",
+  "case-sensitive": "Case-sensitive forms",
+  "stylistic-alternates": "Stylistic alternates",
+  titling: "Titling",
+  "weight-axis": "Weight axis",
+  "width-axis": "Width axis",
+  "optical-size-axis": "Optical size axis",
+  "slant-axis": "Slant axis",
+  "italic-axis": "Italic axis",
+  "grade-axis": "Grade axis",
+  monospace: "Monospace",
+  colorful: "Colorful",
+  "noto-family": "Noto",
+  latin: "Latin",
+  cjk: "CJK",
+  arabic: "Arabic",
+  cyrillic: "Cyrillic",
+  greek: "Greek",
+  hebrew: "Hebrew",
+  thai: "Thai",
+  devanagari: "Devanagari",
+};
+
 // Source pills: a radio-style split of the catalog by Noto membership. Every
 // published family is either Noto (Google's global writing-system project) or
 // Others, so these two cover the whole set. (isBrandFont/isOpenSource carry no
@@ -129,12 +166,11 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     [...m.entries()].sort((a, b) => Number(a[0]) - Number(b[0]));
   return {
     classes: sorted(classes),
-    // Properties: every facet except static/variable, which the Axes panel owns
-    // as its Font type radio pair. Excluding them here is what keeps Properties
-    // from offering a second, duplicate entry point to the same filter — and it
-    // scopes the Properties Reset off them too (clearSection only clears the
-    // values its own section shows).
-    facets: sorted(facets).filter(([v]) => !FONT_TYPE_FACETS.includes(v)),
+    // Every facet, INCLUDING static/variable: the Tag panel shows them as plain
+    // multi-select pills (Font type is still a radio in the Axes panel, backed
+    // by the same `facets` state). Static + Variable are mutually exclusive, so
+    // selecting both AND-filters to nothing — accepted, the user's call.
+    facets: sorted(facets),
     features: sorted(features),
     axes: sorted(axes),
     weights: byStep(weights),
