@@ -90,7 +90,14 @@ export function VariableAxesSection({
             !disabled && !on && "hover:border-foreground/40"
           )}
         >
-          <span className="truncate font-mono text-foreground">{tag}</span>
+          <span className="flex min-w-0 items-baseline gap-1.5">
+            <span className="font-mono text-foreground">{tag}</span>
+            {info ? (
+              <span className="truncate text-muted-foreground text-xs">
+                {info.name}
+              </span>
+            ) : null}
+          </span>
           <span className="font-mono text-muted-foreground opacity-60">
             {count}
           </span>
