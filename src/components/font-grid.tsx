@@ -21,20 +21,22 @@ interface Props {
 }
 
 // Grid column count matches the CSS breakpoints (md:2, lg:3). Row mode is always
-// a single column. Measured from the container width.
-function columnsFor(width: number, view: ViewMode): number {
+// a single column. Measured from the container width (not the viewport), so the
+// skeleton can reuse it to match the real grid even when the sidebar narrows
+// the panel below a viewport breakpoint.
+export function columnsFor(width: number, view: ViewMode): number {
   if (view === "row") return 1;
   if (width >= 1024) return 3;
   if (width >= 768) return 2;
   return 1;
 }
 
+// Card/line heights, shared with the loading skeleton so its placeholders match
+// the real cells.
+export const CARD_H = 288; // grid card height (h-72)
+export const LINE_H = 112; // row-mode line height (h-28)
+
 const GAP = 16; // Tailwind gap-4
-// Fixed row heights so every card/line is the same size. Because the size is
-// fixed we don't measure elements, so changing a preview's weight can't reflow
-// the list. Cards/lines clip their own overflow to honor these.
-const CARD_H = 288; // grid card height (h-72)
-const LINE_H = 112; // row-mode line height (h-28)
 
 export function FontGrid({
   fonts,
