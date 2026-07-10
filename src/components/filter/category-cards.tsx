@@ -11,10 +11,6 @@ const classRank = (v: string) => {
     return i === -1 ? CLASS_ORDER.length : i;
 };
 
-// Display label for a class value; the toggle and specimen still use the raw
-// value. Only "Mono" gets spelled out.
-const classLabel = (v: string) => (v === "Mono" ? "Monospaced" : v);
-
 // Category filter as large square, tappable cards. Each card writes "Aa" in a
 // typeface representative of that category, drawn from a static SVG specimen (no
 // webfont load). Multi-select is preserved: a card is a toggle, not a radio.
@@ -40,7 +36,7 @@ export function CategoryCards({
                 {ordered.map(([value, count]) => (
                     <CardButton
                         key={value}
-                        label={classLabel(value)}
+                        label={value}
                         count={count}
                         selected={selected.includes(value)}
                         onToggle={() => onToggle(value)}

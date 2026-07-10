@@ -5,6 +5,7 @@ import {
 } from "@phosphor-icons/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { ActiveFilterChips } from "@/components/filter/active-filter-chips";
 import { FilterRail } from "@/components/filter/filter-rail";
 import { FilterSidebar } from "@/components/filter/filter-sidebar";
 import {
@@ -182,9 +183,11 @@ function App() {
               </EmptyMedia>
               <EmptyTitle>No fonts found</EmptyTitle>
               <EmptyDescription>
-                No fonts match your filters and search. Try broadening them.
+                No fonts match your filters and search. Remove a condition
+                below, or broaden them.
               </EmptyDescription>
             </EmptyHeader>
+            <ActiveFilterChips filter={filter} onChange={setFilter} />
             <Button variant="outline" onClick={reset}>
               Reset
             </Button>

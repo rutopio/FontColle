@@ -1,0 +1,85 @@
+import { featureName } from "@/lib/fonts/features";
+import type { FilterState } from "@/lib/fonts/filter";
+import { languageLabel, scriptLabel } from "@/lib/fonts/labels";
+import { METRIC_SPECS, type MetricKey } from "@/lib/fonts/metrics";
+import { subTagLabel, weightLabel, widthLabel } from "./constants";
+
+// One active-filter chip: what to show, and how to remove just this condition.
+export interface FilterChip {
+  // Stable per condition, for React keys.
+  id: string;
+  // Short section name shown as a muted prefix ("Weight", "Script"…).
+  section: string;
+  // Human-readable value.
+  value: string;
+  // The filter with only this one condition cleared.
+  remove: FilterState;
+}
+
+// Drop a single value from a string[] field.
+const without = (
+  f: FilterState,
+  key: keyof FilterState,
+  value: string
+): FilterState => ({
+  ...f,
+  [key]: (f[key] as string[]).filter((v) => v !== value),
+});
+
+const COLOR_LABEL: Record<string, string> = {
+  color: "Colorful",
+  monochrome: "Monochrome",
+};
+
+// Flatten every active condition into chips, in the sidebar's section order.
+// The text query is intentionally excluded: it has its own input to clear.
+export function describeActiveFilters(f: FilterState): FilterChip[] {
+  const chips: FilterChip[] = [];
+  const push = (
+    id: string,
+    section: string,
+    value: string,
+    remove: FilterState
+  ) => chips.push({ id, section, value, remove });
+
+  for (const v of f.classes)
+    push(`class:${v}`, "Category", v, without(f, "classes", v));
+  for (const v of f.facets)
+    push(`facet:${v}`, "Property", v, without(f, "facets", v));
+  for (const v of f.classifications)
+    push(`cls:${v}`, "Style", subTagLabel(v), without(f, "classifications", v));
+  for (const v of f.color)
+    push(`color:${v}`, "Color", COLOR_LABEL[v] ?? v, without(f, "color", v));
+  for (const v of f.colorFormats)
+    push(`cfmt:${v}`, "Color", v, without(f, "colorFormats", v));
+  for (const v of f.scripts)
+    push(`script:${v}`, "Script", scriptLabel(v), without(f, "scripts", v));
+  for (const v of f.languages)
+    push(`lang:${v}`, "Language", languageLabel(v), without(f, "languages", v));
+  for (const v of f.weights)
+    push(`weight:${v}`, "Weight", weightLabel(v), without(f, "weights", v));
+  for (const v of f.widths)
+    push(`width:${v}`, "Width", widthLabel(v), without(f, "widths", v));
+  for (const v of f.axes) push(`axis:${v}`, "Axis", v, without(f, "axes", v));
+  for (const v of f.features)
+    push(`feat:${v}`, "Feature", featureName(v), without(f, "features", v));
+  for (const v of f.license)
+    push(`lic:${v}`, "License", v, without(f, "license", v));
+
+  for (const key of Object.keys(f.metrics) as MetricKey[]) {
+    const range = f.metrics[key];
+    if (!range) continue;
+    const { [key]: _, ...rest } = f.metrics;
+    push(`metric:${key}`, METRIC_SPECS[key].label, `${range[0]}–${range[1]}`, {
+      ...f,
+      metrics: rest,
+    });
+  }
+
+  if (f.isMonospace)
+    push("mono", "Metrics", "Monospace", { ...f, isMonospace: undefined });
+  if (f.hasHinting)
+    push("hint", "Metrics", "Hinted", { ...f, hasHinting: undefined });
+
+  return chips;
+}
