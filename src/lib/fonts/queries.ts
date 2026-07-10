@@ -71,6 +71,7 @@ function toFontRecord(f: FamilyRow, related: RelatedByFamily): FontRecord {
     trendingRank: f.trendingRank,
     lastModified: f.lastModified,
     specimen: f.specimen,
+    tags: parseJson<Record<string, number>>(f.tags, {}),
   };
 }
 

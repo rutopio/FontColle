@@ -32,12 +32,13 @@ def statements_for(r, now):
     weights = json.dumps(r.get("weights", []))
     cjk_cov = json.dumps(r.get("cjkCoverage", {}))
     color_tables = json.dumps(r.get("colorTables", []))
+    tags = json.dumps(r.get("tags", {}), ensure_ascii=False)
     cols = (
         "family_dir,name,display_name,designer,category,primary_class,license,license_dir,"
         "is_variable,subsets,primary_ttf,version,version_string,created_ms,"
         "modified_ms,date_added,weight_class,width_class,weights,fs_type,glyph_count,"
         "char_count,units_per_em,has_stat,color_tables,primary_script,panose,cjk_coverage,"
-        "is_published,popularity_rank,trending_rank,last_modified,specimen,"
+        "is_published,popularity_rank,trending_rank,last_modified,specimen,tags,"
         "content_hash,updated_at"
     )
     vals = (
@@ -52,7 +53,7 @@ def statements_for(r, now):
         f"{q(r.get('primaryScript'))},{q(r.get('panose'))},{q(cjk_cov)},"
         f"{q(bool(r.get('isPublished', True)))},{q(r.get('popularityRank'))},"
         f"{q(r.get('trendingRank'))},{q(r.get('lastModifiedApi'))},{q(r.get('specimen'))},"
-        f"{q(chash)},{now}"
+        f"{q(tags)},{q(chash)},{now}"
     )
     update = ",".join(
         f"{c}=excluded.{c}"

@@ -64,6 +64,13 @@
       "when": 1783626323016,
       "tag": "0008_thick_whizzer",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1783659290692,
+      "tag": "0009_gifted_liz_osborn",
+      "breakpoints": true
     }
   ]
 }

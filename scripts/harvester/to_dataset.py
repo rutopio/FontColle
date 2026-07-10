@@ -154,6 +154,10 @@ def to_record(r):
         "languages": r.get("languages", []) or [],
         "scripts": r.get("scripts", []) or [],
         "cjkCoverage": r.get("cjk_coverage", {}) or {},
+        # Google Fonts classification tags (google/fonts tags CSV), e.g.
+        # {"/Serif/Fat Face": 90}. Not exposed by the raw harvest; populated by
+        # backfill_tags.py post-harvest. Empty for families it doesn't cover.
+        "tags": r.get("tags", {}) or {},
     }
 
 def write_label_maps(records, out):
