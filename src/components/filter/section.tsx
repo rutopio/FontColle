@@ -19,6 +19,8 @@ export function Section({
   grid,
   spread,
   expandAll,
+  topNSet,
+  numericSort,
 }: {
   title: string;
   icon: Icon;
@@ -31,15 +33,24 @@ export function Section({
   spread?: boolean;
   // Show every value at once, with no "more" expander.
   expandAll?: boolean;
+  // When provided, only these values show by default; the rest collapse behind
+  // the "more" expander (instead of using RARE_THRESHOLD).
+  topNSet?: Set<string> | null;
+  // Sort the non-count mode numerically (largest first) instead of by label
+  // text — right for numeric values like units-per-em, where "1000" must rank
+  // above "16", not below it.
+  numericSort?: boolean;
 }) {
   const [sort, setSort] = useState<SortMode>("count");
 
   const sorted = useMemo(() => {
     if (sort === "alpha") {
-      return [...items].sort((a, b) => a[0].localeCompare(b[0]));
+      return [...items].sort((a, b) =>
+        numericSort ? Number(b[0]) - Number(a[0]) : a[0].localeCompare(b[0])
+      );
     }
     return items;
-  }, [items, sort]);
+  }, [items, sort, numericSort]);
 
   const hasSelection =
     !!onReset && items.some(([value]) => selected.includes(value));
@@ -54,6 +65,7 @@ export function Section({
         canSort={sortable && items.length > 1}
         sort={sort}
         onToggleSort={() => setSort((s) => (s === "count" ? "alpha" : "count"))}
+        numericSort={numericSort}
       />
       <Pills
         items={sorted}
@@ -62,6 +74,7 @@ export function Section({
         grid={grid}
         spread={spread}
         expandAll={expandAll}
+        topNSet={topNSet}
       />
     </div>
   );

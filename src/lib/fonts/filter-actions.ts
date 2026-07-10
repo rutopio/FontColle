@@ -14,7 +14,8 @@ type ArrayKey =
   | "color"
   | "colorFormats"
   | "classifications"
-  | "license";
+  | "license"
+  | "upm";
 
 // Pure filter-state transitions, lifted out of FilterSidebar so the app's
 // trickiest rules (mutual exclusion, implied selections, scoped resets) live in

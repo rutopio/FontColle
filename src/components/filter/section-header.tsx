@@ -60,17 +60,22 @@ export function HeaderButton({
 export function SortToggle({
   sort,
   onToggle,
+  numeric,
 }: {
   sort: SortMode;
   onToggle: () => void;
+  // The values are numeric: the non-count mode sorts by value (largest first),
+  // so label it accordingly rather than as an A–Z name sort.
+  numeric?: boolean;
 }) {
+  const byValueLabel = numeric ? "value" : "name";
   return (
     <HeaderButton
       onClick={onToggle}
-      label={`Sort by ${sort === "count" ? "count" : "name"}, click to change`}
+      label={`Sort by ${sort === "count" ? "count" : byValueLabel}, click to change`}
     >
       <ArrowsDownUpIcon className="size-3" />
-      {sort === "count" ? "123" : "A–Z"}
+      {sort === "count" ? "123" : numeric ? "9–0" : "A–Z"}
     </HeaderButton>
   );
 }
@@ -88,6 +93,7 @@ export function SectionHeader({
   canSort,
   sort,
   onToggleSort,
+  numericSort,
   info,
 }: {
   title: string;
@@ -97,6 +103,8 @@ export function SectionHeader({
   canSort: boolean;
   sort: SortMode;
   onToggleSort: () => void;
+  // Label the sort toggle for numeric values (largest-first) rather than A–Z.
+  numericSort?: boolean;
   // Optional explanatory note shown in a tooltip behind an info icon after the
   // title. Used where the grouping could be misread (e.g. Language by continent).
   info?: React.ReactNode;
@@ -152,7 +160,11 @@ export function SectionHeader({
               {...FADE}
               className="absolute inset-y-0 right-0"
             >
-              <SortToggle sort={sort} onToggle={onToggleSort} />
+              <SortToggle
+                sort={sort}
+                onToggle={onToggleSort}
+                numeric={numericSort}
+              />
             </motion.div>
           ) : null}
         </AnimatePresence>

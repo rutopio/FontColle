@@ -1,4 +1,4 @@
-import { RulerIcon, TextTIcon } from "@phosphor-icons/react";
+import { RulerIcon, TextAaIcon, TextTIcon } from "@phosphor-icons/react";
 import { useMemo } from "react";
 import { RangeSlider } from "@/components/ui/range-slider";
 import {
@@ -6,11 +6,17 @@ import {
   METRIC_ORDER,
   type MetricKey,
   type MetricRange,
+  METRIC_SPECS,
   type MetricSpec,
-  specForCatalog,
 } from "@/lib/fonts/filter";
 import { PillButton } from "./pill-button";
+import { Section } from "./section";
 import { SectionHeader } from "./section-header";
+
+// The units-per-em values shown as pills by default; every other value in the
+// catalog collapses behind the "N more" expander. Fixed list, not top-N by
+// count, so these four are always the visible ones.
+const UPM_DEFAULT = new Set(["1000", "2048", "1024", "2000"]);
 
 // Metrics tab: six derived-value range sliders plus two boolean pills. Each
 // slider is inactive when both thumbs rest on the domain edges (it filters
@@ -30,7 +36,6 @@ function humanBytes(bytes: number): string {
 // Format one thumb value for a metric's readout.
 function formatValue(key: MetricKey, v: number): string {
   if (key === "fileSize") return humanBytes(v);
-  if (key === "upm") return String(Math.round(v));
   return v.toFixed(2);
 }
 
@@ -45,7 +50,7 @@ interface TrackMap {
   fromTrack: (t: number) => number;
 }
 
-function trackMap(spec: MetricSpec, upmValues: number[]): TrackMap {
+function trackMap(spec: MetricSpec): TrackMap {
   if (spec.scale === "log") {
     const lg = (v: number) => Math.log10(v);
     return {
@@ -55,19 +60,6 @@ function trackMap(spec: MetricSpec, upmValues: number[]): TrackMap {
       step: (lg(spec.max) - lg(spec.min)) / 120,
       toTrack: lg,
       fromTrack: (t) => 10 ** t,
-    };
-  }
-  if (spec.scale === "snap") {
-    return {
-      min: 0,
-      max: Math.max(0, upmValues.length - 1),
-      step: 1,
-      // Nearest index for a given upm value (defaults to 0 when absent).
-      toTrack: (v) => {
-        const i = upmValues.indexOf(v);
-        return i >= 0 ? i : 0;
-      },
-      fromTrack: (t) => upmValues[Math.round(t)] ?? spec.min,
     };
   }
   return {
@@ -82,16 +74,14 @@ function trackMap(spec: MetricSpec, upmValues: number[]): TrackMap {
 function MetricRangeRow({
   spec,
   value,
-  upmValues,
   onChange,
 }: {
   spec: MetricSpec;
   // The current stored range, or undefined when the slider is at full extent.
   value: MetricRange | undefined;
-  upmValues: number[];
   onChange: (next: MetricRange | undefined) => void;
 }) {
-  const map = useMemo(() => trackMap(spec, upmValues), [spec, upmValues]);
+  const map = useMemo(() => trackMap(spec), [spec]);
   const [lo, hi] = value ?? [spec.min, spec.max];
   const trackValue: [number, number] = [map.toTrack(lo), map.toTrack(hi)];
 
@@ -130,29 +120,30 @@ function MetricRangeRow({
 
 export function MetricsSection({
   metrics,
-  upmValues,
   onMetricChange,
   onReset,
-  isMonospace,
+  upmCounts,
+  selectedUpm,
+  onToggleUpm,
+  onResetUpm,
   hasHinting,
-  monoCount,
-  hintCount,
-  onToggleMonospace,
-  onToggleHinting,
+  hintedCount,
+  unhintedCount,
+  onSetHinting,
 }: {
   metrics: Partial<Record<MetricKey, MetricRange>>;
-  upmValues: number[];
   onMetricChange: (key: MetricKey, next: MetricRange | undefined) => void;
   onReset: () => void;
-  isMonospace: boolean;
-  hasHinting: boolean;
-  monoCount: number;
-  hintCount: number;
-  onToggleMonospace: () => void;
-  onToggleHinting: () => void;
+  upmCounts: [string, number][];
+  selectedUpm: string[];
+  onToggleUpm: (value: string) => void;
+  onResetUpm: () => void;
+  hasHinting: boolean | undefined;
+  hintedCount: number;
+  unhintedCount: number;
+  onSetHinting: (value: boolean) => void;
 }) {
-  const hasSelection =
-    Object.keys(metrics).length > 0 || isMonospace || hasHinting;
+  const hasSelection = Object.keys(metrics).length > 0;
 
   return (
     <div className="flex flex-col gap-8">
@@ -170,22 +161,30 @@ export function MetricsSection({
           {METRIC_ORDER.map((key) => (
             <MetricRangeRow
               key={key}
-              spec={specForCatalog(key, upmValues)}
+              spec={METRIC_SPECS[key]}
               value={metrics[key]}
-              upmValues={upmValues}
               onChange={(next) => onMetricChange(key, next)}
             />
           ))}
         </div>
       </div>
+      <Section
+        title="Units per em"
+        icon={TextAaIcon}
+        items={upmCounts}
+        selected={selectedUpm}
+        onToggle={onToggleUpm}
+        onReset={onResetUpm}
+        topNSet={UPM_DEFAULT}
+        numericSort
+      />
       <div className="flex flex-col gap-2">
         <SectionHeader
-          title="Traits"
+          title="Hint"
           icon={TextTIcon}
-          hasSelection={isMonospace || hasHinting}
+          hasSelection={hasHinting !== undefined}
           onReset={() => {
-            if (isMonospace) onToggleMonospace();
-            if (hasHinting) onToggleHinting();
+            if (hasHinting !== undefined) onSetHinting(hasHinting);
           }}
           canSort={false}
           sort="count"
@@ -193,19 +192,19 @@ export function MetricsSection({
         />
         <div className="grid grid-cols-2 gap-1.5">
           <PillButton
-            value="monospace"
-            label="Monospace"
-            count={monoCount}
-            selected={isMonospace}
-            onToggle={onToggleMonospace}
+            value="hinted"
+            label="Hinted"
+            count={hintedCount}
+            selected={hasHinting === true}
+            onToggle={() => onSetHinting(true)}
             className="min-w-0"
           />
           <PillButton
-            value="hinted"
-            label="Hinted"
-            count={hintCount}
-            selected={hasHinting}
-            onToggle={onToggleHinting}
+            value="no-hinted"
+            label="No Hinted"
+            count={unhintedCount}
+            selected={hasHinting === false}
+            onToggle={() => onSetHinting(false)}
             className="min-w-0"
           />
         </div>
