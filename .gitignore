@@ -18,3 +18,5 @@ scripts/harvester/*.log
 src/lib/db/seed.*.sql
 
 scripts/harvester/__pycache__/
+# dev-only TTF download cache (harvest.py fetch; delete or TTF_CACHE=0 for release runs)
+scripts/harvester/ttf_cache/

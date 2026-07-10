@@ -39,6 +39,9 @@ def statements_for(r, now):
         "modified_ms,date_added,weight_class,width_class,weights,fs_type,glyph_count,"
         "char_count,units_per_em,has_stat,color_tables,primary_script,panose,cjk_coverage,"
         "is_published,popularity_rank,trending_rank,last_modified,specimen,tags,"
+        "x_height,cap_height,italic_angle,hhea_ascender,hhea_descender,hhea_line_gap,"
+        "typo_ascender,typo_descender,typo_line_gap,win_ascent,win_descent,"
+        "use_typo_metrics,avg_char_width,is_monospace,has_hinting,vendor_id,file_size,"
         "content_hash,updated_at"
     )
     vals = (
@@ -53,7 +56,17 @@ def statements_for(r, now):
         f"{q(r.get('primaryScript'))},{q(r.get('panose'))},{q(cjk_cov)},"
         f"{q(bool(r.get('isPublished', True)))},{q(r.get('popularityRank'))},"
         f"{q(r.get('trendingRank'))},{q(r.get('lastModifiedApi'))},{q(r.get('specimen'))},"
-        f"{q(tags)},{q(chash)},{now}"
+        f"{q(tags)},"
+        f"{q(r.get('xHeight'))},{q(r.get('capHeight'))},{q(r.get('italicAngle'))},"
+        f"{q(r.get('hheaAscender'))},{q(r.get('hheaDescender'))},{q(r.get('hheaLineGap'))},"
+        f"{q(r.get('typoAscender'))},{q(r.get('typoDescender'))},{q(r.get('typoLineGap'))},"
+        f"{q(r.get('winAscent'))},{q(r.get('winDescent'))},"
+        f"{q(bool(r['useTypoMetrics']) if r.get('useTypoMetrics') is not None else None)},"
+        f"{q(r.get('avgCharWidth'))},"
+        f"{q(bool(r['isMonospace']) if r.get('isMonospace') is not None else None)},"
+        f"{q(bool(r['hasHinting']) if r.get('hasHinting') is not None else None)},"
+        f"{q(r.get('vendorId'))},{q(r.get('fileSize'))},"
+        f"{q(chash)},{now}"
     )
     update = ",".join(
         f"{c}=excluded.{c}"
