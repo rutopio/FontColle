@@ -51,8 +51,36 @@ export function deriveFacets(font: FontRecord): string[] {
     if (f) facets.add(f);
   }
 
-  // Script/subset facets (latin/cjk/…) are intentionally not derived here: the
-  // Writing system section covers scripts with real cmap-based coverage.
+  // Plain-language trait tags surfaced in the Tag panel. These duplicate more
+  // precise entry points elsewhere (Color tab, Source tab, isMonospace metric)
+  // on purpose: the Tag panel is the natural-language shortcut for users who
+  // don't know the underlying terms. Derived from existing FontRecord fields,
+  // so no reharvest is needed.
+  if (font.isMonospace) facets.add("monospace");
+  if (font.colorTables.length > 0) facets.add("colorful");
+  if (font.isNoto) facets.add("noto-family");
+
+  // Coarse script/subset tags. The Writing system tab covers scripts with real
+  // cmap-based coverage; these subset-based tags are the plain-language version
+  // for the Tag panel (a font "has a Latin subset"), kept deliberately simpler.
+  if (font.subsets.includes("latin")) facets.add("latin");
+  if (
+    font.subsets.some(
+      (s) => s.startsWith("chinese") || s === "japanese" || s === "korean"
+    )
+  ) {
+    facets.add("cjk");
+  }
+  for (const s of [
+    "arabic",
+    "cyrillic",
+    "greek",
+    "hebrew",
+    "thai",
+    "devanagari",
+  ]) {
+    if (font.subsets.includes(s)) facets.add(s);
+  }
 
   return [...facets].sort();
 }
