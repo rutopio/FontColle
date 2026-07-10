@@ -102,17 +102,21 @@ export function VariableAxesSection({
               {/* Sibling of the pill button, never nested inside it: TooltipTrigger
                   renders its own <button>, and a <button> inside the pill's
                   <button> would be invalid HTML and would double-fire onToggle. */}
+              {/* Fades out once the axis is selected: the slider takes over the
+                  row, and the description has already served its purpose. */}
               {info ? (
                 <Tooltip>
                   <TooltipTrigger
                     type="button"
                     aria-label={`About ${info.name}`}
-                    className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
+                    className={cn(
+                      "shrink-0 text-muted-foreground transition-[color,opacity] hover:text-foreground",
+                      on && "pointer-events-none opacity-0"
+                    )}
                   >
                     <InfoIcon className="size-3.5" />
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs normal-case tracking-normal">
-                    <span className="font-semibold">{info.name}</span>:{" "}
                     {info.description}
                   </TooltipContent>
                 </Tooltip>
