@@ -4,6 +4,8 @@ import {
   TagIcon,
   TextAaIcon,
 } from "@phosphor-icons/react";
+import { AnimatePresence, motion } from "motion/react";
+import { useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   FACET_LABELS,
@@ -95,169 +97,190 @@ export function FilterSidebar({
   // sidebar's position across list <-> detail navigation.
   const viewportRef = useScrollReset<HTMLDivElement>();
 
+  // Each group opens scrolled to its top. This used to come free from
+  // remounting the ScrollArea per group, but that remount blocked the exit
+  // animation, so reset the viewport explicitly on group change instead.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: group is the trigger; viewportRef is stable.
+  useEffect(() => {
+    if (viewportRef.current) viewportRef.current.scrollTop = 0;
+  }, [group]);
+
   return (
     <aside className="flex h-full w-full min-w-0 flex-col text-sidebar-foreground">
-      {/* Remount per group so each one opens scrolled to its top. */}
-      <ScrollArea
-        key={group}
-        viewportRef={viewportRef}
-        className="min-h-0 flex-1"
-      >
-        <div className="flex flex-col gap-12 p-4">
-          {group === "style" && (
-            <>
-              <CategoryCards
-                items={index.classes}
-                selected={filter.classes}
-                onToggle={(v) => toggle("classes", v)}
-              />
-              {index.classifications.map((section) => (
-                <ClassificationSection
-                  key={section.title}
-                  title={section.title}
-                  items={section.items}
-                  selected={filter.classifications}
-                  onToggle={(v) => toggle("classifications", v)}
-                  onReset={() => clearSection("classifications", section.items)}
+      <ScrollArea viewportRef={viewportRef} className="min-h-0 flex-1">
+        {/* Cross-fade + slight rise on group switch. mode="wait" so the old
+            panel fully leaves before the new one enters, avoiding overlap in
+            the shared scroll viewport. The scroll reset (each group opens at
+            the top) is handled by the group-change effect above, not a remount,
+            so AnimatePresence can play the exit. */}
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={group}
+            className="flex flex-col gap-12 p-4"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 0 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+          >
+            {group === "style" && (
+              <>
+                <CategoryCards
+                  items={index.classes}
+                  selected={filter.classes}
+                  onToggle={(v) => toggle("classes", v)}
                 />
-              ))}
-            </>
-          )}
-          {group === "tag" && (
-            // One flat list of natural-language trait pills, static/variable
-            // included. Font type also lives in Axes as a radio (same state).
-            <Section
-              title="Tag"
-              icon={TagIcon}
-              items={index.facets}
-              selected={filter.facets}
-              onToggle={(v) => toggle("facets", v)}
-              onReset={() => clearSection("facets", index.facets)}
-              label={facetLabel}
-              expandAll
-            />
-          )}
-          {group === "color" && (
-            <>
-              <ColorSection
-                items={index.color}
-                selected={colorSelected}
-                onToggle={selectColor}
-                onReset={() =>
-                  onChange({ ...filter, color: [], colorFormats: [] })
-                }
+                {index.classifications.map((section) => (
+                  <ClassificationSection
+                    key={section.title}
+                    title={section.title}
+                    items={section.items}
+                    selected={filter.classifications}
+                    onToggle={(v) => toggle("classifications", v)}
+                    onReset={() =>
+                      clearSection("classifications", section.items)
+                    }
+                  />
+                ))}
+              </>
+            )}
+            {group === "tag" && (
+              // One flat list of natural-language trait pills, static/variable
+              // included. Font type also lives in Axes as a radio (same state).
+              <Section
+                title="Tag"
+                icon={TagIcon}
+                items={index.facets}
+                selected={filter.facets}
+                onToggle={(v) => toggle("facets", v)}
+                onReset={() => clearSection("facets", index.facets)}
+                label={facetLabel}
+                expandAll
               />
-              <ColorFormatSection
-                items={index.colorFormats}
-                selected={filter.colorFormats}
-                onToggle={(v) => toggle("colorFormats", v)}
-                onReset={() => onChange({ ...filter, colorFormats: [] })}
-                disabled={filter.color.includes("monochrome")}
+            )}
+            {group === "color" && (
+              <>
+                <ColorSection
+                  items={index.color}
+                  selected={colorSelected}
+                  onToggle={selectColor}
+                  onReset={() =>
+                    onChange({ ...filter, color: [], colorFormats: [] })
+                  }
+                />
+                <ColorFormatSection
+                  items={index.colorFormats}
+                  selected={filter.colorFormats}
+                  onToggle={(v) => toggle("colorFormats", v)}
+                  onReset={() => onChange({ ...filter, colorFormats: [] })}
+                  disabled={filter.color.includes("monochrome")}
+                />
+              </>
+            )}
+            {group === "language" && (
+              <>
+                <WritingSystemSection
+                  scripts={index.wsScripts}
+                  selectedScripts={filter.scripts}
+                  onToggleScript={(v) => toggle("scripts", v)}
+                  onResetScripts={() => onChange({ ...filter, scripts: [] })}
+                />
+                <LanguageSection
+                  languages={index.languages}
+                  selectedLanguages={filter.languages}
+                  onToggleLanguage={(v) => toggle("languages", v)}
+                  onResetLanguages={() =>
+                    onChange({ ...filter, languages: [] })
+                  }
+                />
+              </>
+            )}
+            {group === "axes" && (
+              <>
+                <FontTypeSection
+                  items={index.fontTypes}
+                  selected={fontTypeSelected}
+                  onToggle={selectFontType}
+                  onReset={resetFontType}
+                />
+                <CardGrid
+                  title="Weight"
+                  icon={TextAaIcon}
+                  items={index.weights}
+                  selected={filter.weights}
+                  onToggle={(v) => select("weights", v)}
+                  onReset={() => onChange({ ...filter, weights: [] })}
+                  label={weightLabel}
+                  axis="wght"
+                />
+                <CardGrid
+                  title="Width"
+                  icon={ArrowsOutLineHorizontalIcon}
+                  items={index.widths}
+                  selected={filter.widths}
+                  onToggle={(v) => select("widths", v)}
+                  onReset={() => onChange({ ...filter, widths: [] })}
+                  label={widthLabel}
+                  axis="wdth"
+                />
+                <VariableAxesSection
+                  icon={SlidersHorizontalIcon}
+                  items={index.axes}
+                  selected={filter.axes}
+                  onToggle={toggleAxis}
+                  onReset={() => clearSection("axes", index.axes)}
+                  sliderValue={axisValues}
+                  onSliderChange={onAxisValueChange}
+                  disabled={filter.facets.includes("static")}
+                />
+              </>
+            )}
+            {group === "features" && (
+              <FeatureSection
+                features={index.features}
+                selectedFeatures={filter.features}
+                onToggleFeature={(v) => toggle("features", v)}
+                onResetFeatures={() => onChange({ ...filter, features: [] })}
               />
-            </>
-          )}
-          {group === "language" && (
-            <>
-              <WritingSystemSection
-                scripts={index.wsScripts}
-                selectedScripts={filter.scripts}
-                onToggleScript={(v) => toggle("scripts", v)}
-                onResetScripts={() => onChange({ ...filter, scripts: [] })}
-              />
-              <LanguageSection
-                languages={index.languages}
-                selectedLanguages={filter.languages}
-                onToggleLanguage={(v) => toggle("languages", v)}
-                onResetLanguages={() => onChange({ ...filter, languages: [] })}
-              />
-            </>
-          )}
-          {group === "axes" && (
-            <>
-              <FontTypeSection
-                items={index.fontTypes}
-                selected={fontTypeSelected}
-                onToggle={selectFontType}
-                onReset={resetFontType}
-              />
-              <CardGrid
-                title="Weight"
-                icon={TextAaIcon}
-                items={index.weights}
-                selected={filter.weights}
-                onToggle={(v) => select("weights", v)}
-                onReset={() => onChange({ ...filter, weights: [] })}
-                label={weightLabel}
-                axis="wght"
-              />
-              <CardGrid
-                title="Width"
-                icon={ArrowsOutLineHorizontalIcon}
-                items={index.widths}
-                selected={filter.widths}
-                onToggle={(v) => select("widths", v)}
-                onReset={() => onChange({ ...filter, widths: [] })}
-                label={widthLabel}
-                axis="wdth"
-              />
-              <VariableAxesSection
-                icon={SlidersHorizontalIcon}
-                items={index.axes}
-                selected={filter.axes}
-                onToggle={toggleAxis}
-                onReset={() => clearSection("axes", index.axes)}
-                sliderValue={axisValues}
-                onSliderChange={onAxisValueChange}
-                disabled={filter.facets.includes("static")}
-              />
-            </>
-          )}
-          {group === "features" && (
-            <FeatureSection
-              features={index.features}
-              selectedFeatures={filter.features}
-              onToggleFeature={(v) => toggle("features", v)}
-              onResetFeatures={() => onChange({ ...filter, features: [] })}
-            />
-          )}
-          {group === "metrics" && (
-            <>
-              <MetricsSection
-                metrics={filter.metrics}
-                onMetricChange={setMetric}
-                onReset={() => onChange({ ...filter, metrics: {} })}
-              />
-              <UnitsPerEmSection
-                upmCounts={index.upmCounts}
-                selectedUpm={filter.upm}
-                onToggleUpm={(v) => toggle("upm", v)}
-                onResetUpm={() => clearSection("upm", index.upmCounts)}
-              />
-              <HintSection
-                hasHinting={filter.hasHinting}
-                hintedCount={index.hintedCount}
-                unhintedCount={index.unhintedCount}
-                onSetHinting={setHinting}
-              />
-            </>
-          )}
-          {group === "other" && (
-            <>
-              <LicenseSection
-                items={index.license}
-                selected={filter.license}
-                onToggle={(v) => toggle("license", v)}
-                onReset={() => onChange({ ...filter, license: [] })}
-              />
-              <SourceSection
-                items={index.flags}
-                selected={filter.flags}
-                onToggle={(v) => onChange(actions.selectFlag(filter, v))}
-                onReset={() => onChange({ ...filter, flags: [] })}
-              />
-            </>
-          )}
-        </div>
+            )}
+            {group === "metrics" && (
+              <>
+                <MetricsSection
+                  metrics={filter.metrics}
+                  onMetricChange={setMetric}
+                  onReset={() => onChange({ ...filter, metrics: {} })}
+                />
+                <UnitsPerEmSection
+                  upmCounts={index.upmCounts}
+                  selectedUpm={filter.upm}
+                  onToggleUpm={(v) => toggle("upm", v)}
+                  onResetUpm={() => clearSection("upm", index.upmCounts)}
+                />
+                <HintSection
+                  hasHinting={filter.hasHinting}
+                  hintedCount={index.hintedCount}
+                  unhintedCount={index.unhintedCount}
+                  onSetHinting={setHinting}
+                />
+              </>
+            )}
+            {group === "other" && (
+              <>
+                <LicenseSection
+                  items={index.license}
+                  selected={filter.license}
+                  onToggle={(v) => toggle("license", v)}
+                  onReset={() => onChange({ ...filter, license: [] })}
+                />
+                <SourceSection
+                  items={index.flags}
+                  selected={filter.flags}
+                  onToggle={(v) => onChange(actions.selectFlag(filter, v))}
+                  onReset={() => onChange({ ...filter, flags: [] })}
+                />
+              </>
+            )}
+          </motion.div>
+        </AnimatePresence>
       </ScrollArea>
     </aside>
   );
