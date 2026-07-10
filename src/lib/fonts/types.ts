@@ -24,6 +24,12 @@ export interface FontRecord {
   license: string | null;
   isVariable: boolean;
   subsets: string[];
+  // Upstream GitHub repo (METADATA.pb source) and provenance flags
+  // (metadata/fonts). Null for older/edge/unpublished families.
+  repositoryUrl: string | null;
+  isNoto: boolean | null;
+  isBrandFont: boolean | null;
+  isOpenSource: boolean | null;
   axes: FontAxis[];
   instances: FontInstance[];
   features: string[];

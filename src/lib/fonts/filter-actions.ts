@@ -15,6 +15,7 @@ type ArrayKey =
   | "colorFormats"
   | "classifications"
   | "license"
+  | "flags"
   | "upm";
 
 // Pure filter-state transitions, lifted out of FilterSidebar so the app's

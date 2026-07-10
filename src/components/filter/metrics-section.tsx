@@ -4,9 +4,9 @@ import { RangeSlider } from "@/components/ui/range-slider";
 import {
   isRangeActive,
   METRIC_ORDER,
+  METRIC_SPECS,
   type MetricKey,
   type MetricRange,
-  METRIC_SPECS,
   type MetricSpec,
 } from "@/lib/fonts/filter";
 import { PillButton } from "./pill-button";

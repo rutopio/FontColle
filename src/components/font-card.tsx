@@ -1,4 +1,8 @@
-import { DownloadSimpleIcon, HeartIcon } from "@phosphor-icons/react";
+import {
+  DownloadSimpleIcon,
+  GithubLogoIcon,
+  HeartIcon,
+} from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { FontTraits } from "@/components/font-traits";
@@ -119,6 +123,26 @@ export function FontCard({
           >
             <DownloadSimpleIcon className="size-5" />
           </button>
+          {/* Only when the family has a known upstream repo. A button, not an
+              <a>, for the same nested-<a> reason as the download button. */}
+          {font.repositoryUrl && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                window.open(
+                  font.repositoryUrl as string,
+                  "_blank",
+                  "noreferrer"
+                );
+              }}
+              aria-label="View source repository"
+              className="text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <GithubLogoIcon className="size-5" />
+            </button>
+          )}
         </div>
       </div>
 

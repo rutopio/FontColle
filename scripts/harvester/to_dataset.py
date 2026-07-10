@@ -120,6 +120,9 @@ def to_record(r):
         "isVariable": bool(ttf.get("is_variable")),
         "subsets": subsets,
         "primaryTtf": r.get("primary_ttf"),
+        # Upstream GitHub repo from METADATA.pb source block (backfill_source.py).
+        # None when the source block is absent (old / API-supplemented families).
+        "repositoryUrl": r.get("repository_url"),
         # archival metadata (flat)
         "version": ttf.get("version"),
         "versionString": ttf.get("version_string"),
@@ -293,6 +296,9 @@ def apply_published_signals(records, published):
             r["popularityRank"] = None
             r["trendingRank"] = None
             r["lastModifiedApi"] = None
+            r["isNoto"] = None
+            r["isBrandFont"] = None
+            r["isOpenSource"] = None
         print("no published.json found — all families marked as published, no ranks")
         return
 
@@ -304,6 +310,10 @@ def apply_published_signals(records, published):
         r["popularityRank"] = sig.get("popularity") if sig else None
         r["trendingRank"] = sig.get("trending") if sig else None
         r["lastModifiedApi"] = sig.get("lastModified") if sig else None
+        # Source/provenance flags from metadata/fonts (null when unpublished).
+        r["isNoto"] = sig.get("isNoto") if sig else None
+        r["isBrandFont"] = sig.get("isBrandFont") if sig else None
+        r["isOpenSource"] = sig.get("isOpenSource") if sig else None
         if sig is not None:
             pub_count += 1
     print(f"published whitelist: {pub_count}/{len(records)} families marked as published")

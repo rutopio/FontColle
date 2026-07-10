@@ -36,17 +36,15 @@ def fetch_sorted(api_key, sort):
     return data.get("items", [])
 
 
-def fetch_display_names():
-    """family name -> displayName, only where displayName differs from the name."""
+def fetch_family_metadata():
+    """family name -> its metadata/fonts entry. This unofficial batch endpoint is
+    the only source of both the full specimen title ("displayName") and the
+    boolean flags (isNoto / isBrandFont / isOpenSource / colorCapabilities),
+    none of which the Developer API or METADATA.pb expose."""
     req = urllib.request.Request(METADATA, headers={"User-Agent": "font-harvester/1.0"})
     with urllib.request.urlopen(req, timeout=30) as r:
         data = json.loads(r.read().decode("utf-8"))
-    out = {}
-    for f in data.get("familyMetadataList", []):
-        fam, dn = f.get("family"), f.get("displayName")
-        if fam and dn and dn != fam:
-            out[fam] = dn
-    return out
+    return {f["family"]: f for f in data.get("familyMetadataList", []) if f.get("family")}
 
 
 def main():
@@ -60,8 +58,8 @@ def main():
     by_pop = fetch_sorted(api_key, "popularity")
     print("fetching trending order…", file=sys.stderr)
     by_trend = fetch_sorted(api_key, "trending")
-    print("fetching display names…", file=sys.stderr)
-    display_names = fetch_display_names()
+    print("fetching family metadata (display names + flags)…", file=sys.stderr)
+    fam_meta = fetch_family_metadata()
 
     # 1-based ranks keyed by display name.
     pop_rank = {it["family"]: i + 1 for i, it in enumerate(by_pop)}
@@ -70,13 +68,21 @@ def main():
     out_map = {}
     for it in by_pop:
         name = it["family"]
+        meta = fam_meta.get(name, {})
+        dn = meta.get("displayName")
         out_map[name] = {
             "popularity": pop_rank.get(name),
             "trending": trend_rank.get(name),
             "lastModified": it.get("lastModified"),
             "category": it.get("category"),
             "variants": len(it.get("variants", [])),
-            "displayName": display_names.get(name),
+            # displayName only when it differs from the plain family name.
+            "displayName": dn if dn and dn != name else None,
+            # Boolean flags from metadata/fonts (absent -> None).
+            "isNoto": meta.get("isNoto"),
+            "isBrandFont": meta.get("isBrandFont"),
+            "isOpenSource": meta.get("isOpenSource"),
+            "colorCapabilities": meta.get("colorCapabilities"),
         }
 
     out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(

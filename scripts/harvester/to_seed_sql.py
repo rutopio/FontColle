@@ -42,6 +42,7 @@ def statements_for(r, now):
         "x_height,cap_height,italic_angle,hhea_ascender,hhea_descender,hhea_line_gap,"
         "typo_ascender,typo_descender,typo_line_gap,win_ascent,win_descent,"
         "use_typo_metrics,avg_char_width,is_monospace,has_hinting,vendor_id,file_size,"
+        "repository_url,is_noto,is_brand_font,is_open_source,"
         "content_hash,updated_at"
     )
     vals = (
@@ -66,6 +67,10 @@ def statements_for(r, now):
         f"{q(bool(r['isMonospace']) if r.get('isMonospace') is not None else None)},"
         f"{q(bool(r['hasHinting']) if r.get('hasHinting') is not None else None)},"
         f"{q(r.get('vendorId'))},{q(r.get('fileSize'))},"
+        f"{q(r.get('repositoryUrl'))},"
+        f"{q(bool(r['isNoto']) if r.get('isNoto') is not None else None)},"
+        f"{q(bool(r['isBrandFont']) if r.get('isBrandFont') is not None else None)},"
+        f"{q(bool(r['isOpenSource']) if r.get('isOpenSource') is not None else None)},"
         f"{q(chash)},{now}"
     )
     update = ",".join(

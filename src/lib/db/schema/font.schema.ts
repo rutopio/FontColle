@@ -24,6 +24,12 @@ export const family = sqliteTable(
     isVariable: integer("is_variable", { mode: "boolean" }).notNull(),
     subsets: text("subsets"), // JSON array of subset names
     primaryTtf: text("primary_ttf"),
+    // Upstream GitHub repo (METADATA.pb source.repository_url) and provenance
+    // flags (metadata/fonts). All nullable: old/unpublished families have none.
+    repositoryUrl: text("repository_url"),
+    isNoto: integer("is_noto", { mode: "boolean" }),
+    isBrandFont: integer("is_brand_font", { mode: "boolean" }),
+    isOpenSource: integer("is_open_source", { mode: "boolean" }),
 
     // --- version tracking (from head + name table) ---
     version: real("version"), // head.fontRevision, e.g. 2.1
