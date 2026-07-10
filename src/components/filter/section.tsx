@@ -18,6 +18,7 @@ export function Section({
   sortable = true,
   grid,
   spread,
+  expandAll,
 }: {
   title: string;
   icon: Icon;
@@ -28,6 +29,8 @@ export function Section({
   sortable?: boolean;
   grid?: boolean;
   spread?: boolean;
+  // Show every value at once, with no "more" expander.
+  expandAll?: boolean;
 }) {
   const [sort, setSort] = useState<SortMode>("count");
 
@@ -58,6 +61,7 @@ export function Section({
         onToggle={onToggle}
         grid={grid}
         spread={spread}
+        expandAll={expandAll}
       />
     </div>
   );
@@ -76,6 +80,7 @@ export function Pills({
   label,
   columns = 3,
   topNSet,
+  expandAll,
 }: {
   items: [string, number][];
   selected: string[];
@@ -92,10 +97,13 @@ export function Pills({
   // When provided, only values in this set are shown by default (instead of
   // using RARE_THRESHOLD). Selected values outside the set are pulled up.
   topNSet?: Set<string> | null;
+  // Show every value at once, with no "more" expander.
+  expandAll?: boolean;
 }) {
   const [showRare, setShowRare] = useState(false);
 
   const isRare = ([value, count]: [string, number]) => {
+    if (expandAll) return false;
     if (topNSet) {
       return !topNSet.has(value) && (showRare || !selected.includes(value));
     }

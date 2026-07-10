@@ -53,7 +53,7 @@ export const CLASSIFICATION_SECTIONS: {
     tags: ["/Slab/Humanist", "/Slab/Clarendon", "/Slab/Geometric"],
   },
   {
-    title: "Calligraphy",
+    title: "Script",
     prefix: "/Script/",
     tags: [
       "/Script/Handwritten",

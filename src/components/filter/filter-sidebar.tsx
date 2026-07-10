@@ -105,6 +105,7 @@ export function FilterSidebar({
                 selected={filter.facets}
                 onToggle={(v) => toggle("facets", v)}
                 onReset={() => clearSection("facets", index.facets)}
+                expandAll
               />
               {index.classifications.map((section) => (
                 <ClassificationSection

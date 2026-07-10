@@ -6,7 +6,7 @@ import { SectionHeader } from "./section-header";
 // path ("/Serif/Didone" -> "Didone").
 const subTagLabel = (path: string) => path.slice(path.lastIndexOf("/") + 1);
 
-// One classification section (Serif, Sans Serif, Slab, Calligraphy): a header
+// One classification section (Serif, Sans Serif, Slab, Script): a header
 // over a wrapping list of its sub-tag pills. Multi-select, OR within the shared
 // `classifications` FilterState field. Pills carry the full tag path as value;
 // only the sub-tag name is shown.
@@ -41,6 +41,7 @@ export function ClassificationSection({
         selected={selected}
         onToggle={onToggle}
         label={subTagLabel}
+        expandAll
       />
     </div>
   );
