@@ -1,4 +1,4 @@
-import { ShapesIcon } from "@phosphor-icons/react";
+import { NoteBlankIcon } from "@phosphor-icons/react";
 import { subTagLabel } from "./constants";
 import { Pills } from "./section";
 import { SectionHeader } from "./section-header";
@@ -26,7 +26,7 @@ export function ClassificationSection({
     <div className="flex flex-col gap-4">
       <SectionHeader
         title={title}
-        icon={ShapesIcon}
+        icon={NoteBlankIcon}
         hasSelection={hasSelection}
         onReset={onReset}
         canSort={false}

@@ -1,4 +1,4 @@
-import { GlobeHemisphereWestIcon } from "@phosphor-icons/react";
+import { GlobeIcon } from "@phosphor-icons/react";
 import { useMemo } from "react";
 import { scriptLabel, scriptPopulation } from "@/lib/fonts/labels";
 import { FacetSearchSection } from "./facet-search-section";
@@ -28,7 +28,7 @@ export function WritingSystemSection({
   return (
     <FacetSearchSection
       title="Writing system"
-      icon={GlobeHemisphereWestIcon}
+      icon={GlobeIcon}
       items={items}
       selected={selectedScripts}
       onToggle={onToggleScript}

@@ -1,4 +1,4 @@
-import { PaletteIcon, StackIcon } from "@phosphor-icons/react";
+import { CircleHalfIcon, StackIcon } from "@phosphor-icons/react";
 import { colorFormatLabel } from "@/lib/fonts/color";
 import { cn } from "@/lib/utils";
 import { PillButton } from "./pill-button";
@@ -24,7 +24,7 @@ export function ColorSection({
   return (
     <RadioPillSection
       title="Color"
-      icon={PaletteIcon}
+      icon={CircleHalfIcon}
       items={items}
       labels={COLOR_LABELS}
       selected={selected}

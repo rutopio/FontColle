@@ -1,4 +1,4 @@
-import { TranslateIcon } from "@phosphor-icons/react";
+import { ChatTextIcon } from "@phosphor-icons/react";
 import { useMemo } from "react";
 import { groupLanguageCountsByRegion, languageLabel } from "@/lib/fonts/labels";
 import { NoMatches, SearchBox } from "./search-box";
@@ -50,7 +50,7 @@ export function LanguageSection({
     <div className="flex flex-col gap-4">
       <SectionHeader
         title="Language"
-        icon={TranslateIcon}
+        icon={ChatTextIcon}
         hasSelection={hasSelection}
         onReset={onResetLanguages}
         canSort={languages.length > 1}
