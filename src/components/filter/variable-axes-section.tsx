@@ -92,15 +92,17 @@ export function VariableAxesSection({
         >
           <span className="flex min-w-0 items-baseline gap-1.5">
             <span className="font-mono text-foreground">{tag}</span>
-            {/* Weight eases via the variable font's wght axis (Inter Variable)
-                so selecting fades regular -> semibold, not a hard font-weight
-                jump. */}
+            {/* The full name fades out once selected: the pill shrinks to 1/3
+                to make room for the slider, too narrow to hold it. Weight also
+                eases via the variable font's wght axis (Inter Variable) so the
+                brief moment before it fades reads as regular -> semibold, not a
+                hard font-weight jump. */}
             {info ? (
               <span
                 className={cn(
-                  "truncate text-muted-foreground text-xs transition-[font-variation-settings] duration-200 ease-out",
+                  "truncate text-muted-foreground text-xs transition-[font-variation-settings,opacity] duration-200 ease-out",
                   on
-                    ? "[font-variation-settings:'wght'_600]"
+                    ? "opacity-0 [font-variation-settings:'wght'_600]"
                     : "[font-variation-settings:'wght'_400]"
                 )}
               >
