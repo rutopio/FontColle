@@ -1,8 +1,8 @@
 import { DownloadSimpleIcon, HeartIcon } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { FontTraits } from "@/components/font-traits";
-import { type FilterSelection, WIDTH_STEP_PCT } from "@/lib/fonts/filter";
+import type { FilterSelection } from "@/lib/fonts/filter";
 import {
   ensureFontLoaded,
   ensureFontRangeLoaded,
@@ -12,6 +12,7 @@ import {
 import { variationSettings } from "@/lib/fonts/preview-style";
 import { specimenFor } from "@/lib/fonts/specimen";
 import type { FontRecord } from "@/lib/fonts/types";
+import { usePreviewCoords } from "@/lib/fonts/use-preview-coords";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -35,48 +36,13 @@ export function FontCard({
   selection,
   axisValues,
 }: Props) {
-  const selectedWeights = selection.weights.map(Number);
-  const selectedWidths = selection.widths.map(Number);
-  const selectedAxes = selection.axes;
-  // Weight/Width are single-select in the sidebar, so the preview simply applies
-  // the selected weight (default 400) and the selected width mapped onto this
-  // font's wdth axis (variable only — static fonts have no adjustable width).
-  const activeWeight = selectedWeights[0] ?? 400;
-
-  const widthCoord = useMemo(() => {
-    const wdth = font.axes.find((a) => a.tag === "wdth");
-    if (!wdth || wdth.min == null || wdth.max == null) return null;
-    const step = selectedWidths[0];
-    if (step == null) return null;
-    const pct = WIDTH_STEP_PCT[step];
-    if (pct == null) return null;
-    return Math.min(wdth.max, Math.max(wdth.min, pct));
-  }, [font.axes, selectedWidths]);
-
-  // Variable-axes sliders: map each selected axis's 0-100% onto this font's own
-  // min-max range (ranges differ per font, e.g. wght 100-900 vs 300-700), so
-  // the same slider position always means "this far across what this font
-  // offers." wght drives font-weight directly instead of a variation setting,
-  // matching how `activeWeight` already works. wdth here overrides the
-  // Width-card coord above when both are in play (the slider is the more
-  // explicit, live-adjusted control).
-  const { axisWeight, variationCoords } = useMemo(() => {
-    let weight: number | null = null;
-    const coords: Record<string, number> = {};
-    for (const tag of selectedAxes) {
-      const axis = font.axes.find((a) => a.tag === tag);
-      if (!axis || axis.min == null || axis.max == null) continue;
-      const pct = axisValues[tag] ?? 50;
-      const value = axis.min + ((axis.max - axis.min) * pct) / 100;
-      if (tag === "wght") weight = value;
-      else coords[tag] = value;
-    }
-    return { axisWeight: weight, variationCoords: coords };
-  }, [font.axes, selectedAxes, axisValues]);
-
-  if (widthCoord != null && !("wdth" in variationCoords)) {
-    variationCoords.wdth = widthCoord;
-  }
+  // Weight/width/axis picks from the sidebar drive the live preview; the
+  // derivation is shared with FontRow via usePreviewCoords.
+  const { weight: activeWeight, variationCoords } = usePreviewCoords(
+    font,
+    selection,
+    axisValues
+  );
 
   // Variable fonts: load the full axis range once so any weight/width the user
   // picks renders from a single variable file. Static fonts: request the actual
@@ -94,9 +60,9 @@ export function FontCard({
   const settings = variationSettings(variationCoords);
   const previewStyle: React.CSSProperties = {
     fontFamily: previewFontFamily(font.name, fontLoaded),
-    // The card drives weight from the sidebar (activeWeight) or the wght slider
-    // (axisWeight), not from a coords map, so it sets font-weight directly.
-    fontWeight: axisWeight ?? activeWeight,
+    // activeWeight already folds in the wght slider; set font-weight directly
+    // (not via a coords map) so the browser can smooth/synthesize it.
+    fontWeight: activeWeight,
     fontVariationSettings: settings || undefined,
     // Smooth the weight/axis change instead of a hard jump.
     transition: "font-weight 200ms ease, font-variation-settings 200ms ease",
