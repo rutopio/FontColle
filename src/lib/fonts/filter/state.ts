@@ -21,12 +21,13 @@ export interface FilterState {
   // font matches when any selected tag scores tags[path] >= 50.
   classifications: string[];
   license: string[]; // license ids ("OFL", "APACHE2", "UFL"), OR within
+  upm: string[]; // units-per-em values ("1000", "2048"…), OR within
   // Derived-metric range sliders (x-height ratio, file size, …), AND across.
   // Only active ranges (a thumb off its domain edge) are present; an absent key
   // filters nothing. See ../metrics for the derivations and domains.
   metrics: Partial<Record<MetricKey, MetricRange>>;
-  // Standalone boolean facets, each its own on/off pill. undefined = off.
-  isMonospace?: boolean;
+  // Hinting trait, a radio-style pair. true = Hinted, false = No Hinted,
+  // undefined = off (no filter).
   hasHinting?: boolean;
 }
 
@@ -52,6 +53,7 @@ export const emptyFilter: FilterState = {
   colorFormats: [],
   classifications: [],
   license: [],
+  upm: [],
   metrics: {},
 };
 
@@ -76,15 +78,14 @@ export interface FilterSearch {
   cfmt?: string;
   cls?: string; // classification tag paths
   lic?: string; // license ids
+  upm?: string; // units-per-em values, comma-joined
   // Metric ranges, each "lo-hi" (e.g. mxh=0.45-0.55). One key per metric.
   mxh?: string; // x-height ratio
   mch?: string; // cap-height ratio
   mlh?: string; // line-height ratio
   maw?: string; // avg width ratio
-  mupm?: string; // units per em (raw)
   mfs?: string; // file size (raw bytes)
-  mono?: string; // "1" when Monospace pill is on
-  hint?: string; // "1" when Hinted pill is on
+  hint?: string; // "1" = Hinted, "0" = No Hinted
   view?: "grid" | "row"; // display preference, not a filter
   sort?: string; // sort key, not a filter
 }
@@ -96,13 +97,12 @@ const splitCsv = (v: string | undefined): string[] =>
 // lossless; negatives never occur in these domains, so "-" is a safe separator.
 // The URL param name per metric. Every one is a string-valued FilterSearch key,
 // so encode can assign a string to it without widening to view/sort.
-type MetricParam = "mxh" | "mch" | "mlh" | "maw" | "mupm" | "mfs";
+type MetricParam = "mxh" | "mch" | "mlh" | "maw" | "mfs";
 const METRIC_PARAM: Record<MetricKey, MetricParam> = {
   xHeight: "mxh",
   capHeight: "mch",
   lineHeight: "mlh",
   avgWidth: "maw",
-  upm: "mupm",
   fileSize: "mfs",
 };
 
@@ -146,9 +146,9 @@ export function searchToFilter(s: FilterSearch): FilterState {
     colorFormats: splitCsv(s.cfmt),
     classifications: splitCsv(s.cls),
     license: splitCsv(s.lic),
+    upm: splitCsv(s.upm),
     metrics: decodeMetrics(s),
-    isMonospace: s.mono === "1" ? true : undefined,
-    hasHinting: s.hint === "1" ? true : undefined,
+    hasHinting: s.hint === "1" ? true : s.hint === "0" ? false : undefined,
   };
 }
 
@@ -167,9 +167,9 @@ export function filterToSearch(f: FilterState): FilterSearch {
   if (f.colorFormats.length) s.cfmt = f.colorFormats.join(",");
   if (f.classifications.length) s.cls = f.classifications.join(",");
   if (f.license.length) s.lic = f.license.join(",");
+  if (f.upm.length) s.upm = f.upm.join(",");
   encodeMetrics(f.metrics, s);
-  if (f.isMonospace) s.mono = "1";
-  if (f.hasHinting) s.hint = "1";
+  if (f.hasHinting !== undefined) s.hint = f.hasHinting ? "1" : "0";
   return s;
 }
 
@@ -189,9 +189,9 @@ export function activeFilterCount(f: FilterState): number {
     f.colorFormats.length +
     f.classifications.length +
     f.license.length +
+    f.upm.length +
     Object.keys(f.metrics).length +
-    (f.isMonospace ? 1 : 0) +
-    (f.hasHinting ? 1 : 0)
+    (f.hasHinting !== undefined ? 1 : 0)
   );
 }
 
@@ -216,13 +216,12 @@ export function parseFilterSearch(raw: Record<string, unknown>): FilterSearch {
     cfmt: str(raw.cfmt),
     cls: str(raw.cls),
     lic: str(raw.lic),
+    upm: numCsv(raw.upm),
     mxh: str(raw.mxh),
     mch: str(raw.mch),
     mlh: str(raw.mlh),
     maw: str(raw.maw),
-    mupm: str(raw.mupm),
     mfs: str(raw.mfs),
-    mono: str(raw.mono),
     hint: str(raw.hint),
     view: raw.view === "row" ? "row" : undefined,
     sort: str(raw.sort),

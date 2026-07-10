@@ -11,7 +11,6 @@ export type MetricKey =
   | "capHeight"
   | "lineHeight"
   | "avgWidth"
-  | "upm"
   | "fileSize";
 
 // A [lo, hi] range, in the metric's own units (ratios for the first four,
@@ -27,10 +26,9 @@ export interface MetricSpec {
   min: number;
   max: number;
   step: number;
-  // "linear": value maps straight onto the track (ratios, fileSize uses log
-  // via `log`). "log": track works in log space. "snap": track is an index
-  // into the sorted distinct catalog values (upm).
-  scale: "linear" | "log" | "snap";
+  // "linear": value maps straight onto the track (ratios). "log": track works
+  // in log space (fileSize).
+  scale: "linear" | "log";
 }
 
 // Ratio domains sized from the p1/median/p99 distribution over the catalog so
@@ -68,15 +66,6 @@ export const METRIC_SPECS: Record<MetricKey, MetricSpec> = {
     step: 0.01,
     scale: "linear",
   },
-  // Domain filled in per-catalog by buildMetricIndex (distinct upm values).
-  upm: {
-    key: "upm",
-    label: "Units per em",
-    min: 0,
-    max: 0,
-    step: 1,
-    scale: "snap",
-  },
   // 16KB … 64MB, log-scaled. Stored/compared in raw bytes.
   fileSize: {
     key: "fileSize",
@@ -94,7 +83,6 @@ export const METRIC_ORDER: MetricKey[] = [
   "capHeight",
   "lineHeight",
   "avgWidth",
-  "upm",
   "fileSize",
 ];
 
@@ -112,8 +100,6 @@ export function derive(font: FontRecord, key: MetricKey): number | null {
       return ratio(font.capHeight, upm);
     case "avgWidth":
       return ratio(font.avgCharWidth, upm);
-    case "upm":
-      return upm != null && upm > 0 ? upm : null;
     case "fileSize":
       return font.fileSize != null && font.fileSize > 0 ? font.fileSize : null;
     case "lineHeight": {
@@ -155,22 +141,16 @@ export function isRangeActive(
   return lo > spec.min || hi < spec.max;
 }
 
-/** Effective spec for a metric, given the catalog: fills the upm domain with
- *  the sorted distinct values present so its slider snaps across them. */
-export function specForCatalog(
-  key: MetricKey,
-  upmValues: number[]
-): MetricSpec {
-  const spec = METRIC_SPECS[key];
-  if (key !== "upm" || upmValues.length === 0) return spec;
-  return { ...spec, min: upmValues[0], max: upmValues[upmValues.length - 1] };
-}
-
-/** The sorted distinct unitsPerEm values in the catalog (ascending). Drives
- *  the upm slider's snap points and its effective domain. */
-export function catalogUpmValues(fonts: FontRecord[]): number[] {
-  const set = new Set<number>();
+/** Per-catalog upm pill items: [value, family count], sorted by count desc
+ *  then value asc. Drives the Units-per-em pill list in the Metrics tab. */
+export function catalogUpmCounts(fonts: FontRecord[]): [string, number][] {
+  const counts = new Map<string, number>();
   for (const f of fonts)
-    if (f.unitsPerEm != null && f.unitsPerEm > 0) set.add(f.unitsPerEm);
-  return [...set].sort((a, b) => a - b);
+    if (f.unitsPerEm != null && f.unitsPerEm > 0) {
+      const k = String(f.unitsPerEm);
+      counts.set(k, (counts.get(k) ?? 0) + 1);
+    }
+  return [...counts.entries()].sort(
+    (a, b) => b[1] - a[1] || Number(a[0]) - Number(b[0])
+  );
 }

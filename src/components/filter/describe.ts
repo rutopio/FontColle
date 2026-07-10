@@ -94,6 +94,9 @@ export function describeActiveFilters(f: FilterState): FilterChip[] {
   for (const v of f.license)
     push(`lic:${v}`, "License", v, without(f, "license", v));
 
+  for (const v of f.upm)
+    push(`upm:${v}`, "Units per em", v, without(f, "upm", v));
+
   for (const key of Object.keys(f.metrics) as MetricKey[]) {
     const range = f.metrics[key];
     if (!range) continue;
@@ -104,10 +107,11 @@ export function describeActiveFilters(f: FilterState): FilterChip[] {
     });
   }
 
-  if (f.isMonospace)
-    push("mono", "Traits", "Monospace", { ...f, isMonospace: undefined });
-  if (f.hasHinting)
-    push("hint", "Traits", "Hinted", { ...f, hasHinting: undefined });
+  if (f.hasHinting !== undefined)
+    push("hint", "Hint", f.hasHinting ? "Hinted" : "No Hinted", {
+      ...f,
+      hasHinting: undefined,
+    });
 
   return chips;
 }

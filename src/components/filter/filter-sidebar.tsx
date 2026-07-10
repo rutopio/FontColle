@@ -75,8 +75,12 @@ export function FilterSidebar({
     else delete metrics[key];
     onChange({ ...filter, metrics });
   };
-  const toggleBool = (key: "isMonospace" | "hasHinting") =>
-    onChange({ ...filter, [key]: filter[key] ? undefined : true });
+  // Hint: radio-style toggle. Re-selecting the active value clears it.
+  const setHinting = (value: boolean) =>
+    onChange({
+      ...filter,
+      hasHinting: filter.hasHinting === value ? undefined : value,
+    });
 
   // Always open at the top; don't let router scroll restoration carry the
   // sidebar's position across list <-> detail navigation.
@@ -205,22 +209,16 @@ export function FilterSidebar({
           {group === "metrics" && (
             <MetricsSection
               metrics={filter.metrics}
-              upmValues={index.upmValues}
               onMetricChange={setMetric}
-              onReset={() =>
-                onChange({
-                  ...filter,
-                  metrics: {},
-                  isMonospace: undefined,
-                  hasHinting: undefined,
-                })
-              }
-              isMonospace={filter.isMonospace ?? false}
-              hasHinting={filter.hasHinting ?? false}
-              monoCount={index.monospaceCount}
-              hintCount={index.hintedCount}
-              onToggleMonospace={() => toggleBool("isMonospace")}
-              onToggleHinting={() => toggleBool("hasHinting")}
+              onReset={() => onChange({ ...filter, metrics: {} })}
+              upmCounts={index.upmCounts}
+              selectedUpm={filter.upm}
+              onToggleUpm={(v) => toggle("upm", v)}
+              onResetUpm={() => clearSection("upm", index.upmCounts)}
+              hasHinting={filter.hasHinting}
+              hintedCount={index.hintedCount}
+              unhintedCount={index.unhintedCount}
+              onSetHinting={setHinting}
             />
           )}
           {group === "other" && (

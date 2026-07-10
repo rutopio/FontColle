@@ -1,11 +1,6 @@
 // Filtering and search relevance: turn a FilterState into the matching subset.
 import { isColorFont } from "../color";
-import {
-  catalogUpmValues,
-  type MetricKey,
-  matchesRange,
-  specForCatalog,
-} from "../metrics";
+import { type MetricKey, matchesRange, METRIC_SPECS } from "../metrics";
 import type { FontRecord } from "../types";
 import { TAG_MEMBERSHIP_THRESHOLD } from "./facets";
 import type { FilterState } from "./state";
@@ -50,11 +45,7 @@ export function applyFilters(
   f: FilterState
 ): FontRecord[] {
   const q = f.query.trim().toLowerCase();
-  // Effective specs per active metric: upm's domain edges are the catalog's
-  // min/max distinct values, so matchesRange treats the catalog edges (not the
-  // placeholder 0/0) as "unbounded". Computed once, only when a range is set.
   const metricKeys = Object.keys(f.metrics) as MetricKey[];
-  const upmValues = metricKeys.includes("upm") ? catalogUpmValues(fonts) : [];
   return fonts.filter((font) => {
     // Match the family name, its Google Fonts display name, or the designer.
     if (
@@ -120,17 +111,19 @@ export function applyFilters(
     // OR within license: family's license is one of the selected ids.
     if (f.license.length && !(font.license && f.license.includes(font.license)))
       return false;
+    // OR within upm: family's units-per-em is one of the selected values.
+    if (f.upm.length && !f.upm.includes(String(font.unitsPerEm)))
+      return false;
     // AND across metric ranges: the font's derived value must fall in every
     // active range. A font with a null input to an active metric is excluded.
     for (const key of metricKeys) {
       const range = f.metrics[key];
       if (!range) continue;
-      const spec = specForCatalog(key, upmValues);
-      if (!matchesRange(font, spec, range)) return false;
+      if (!matchesRange(font, METRIC_SPECS[key], range)) return false;
     }
-    // Boolean facets: require the trait when the pill is on.
-    if (f.isMonospace && font.isMonospace !== true) return false;
-    if (f.hasHinting && font.hasHinting !== true) return false;
+    // Hinting: true requires the trait, false requires its absence.
+    if (f.hasHinting === true && font.hasHinting !== true) return false;
+    if (f.hasHinting === false && font.hasHinting === true) return false;
     return true;
   });
 }
