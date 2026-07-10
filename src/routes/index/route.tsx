@@ -193,15 +193,22 @@ function App() {
             </Button>
           </Empty>
         ) : (
-          <FontGrid
-            fonts={results}
-            previewText={previewText}
-            favorites={favorites}
-            onToggleFavorite={toggle}
-            view={view}
-            selection={filter}
-            axisValues={axisValues}
-          />
+          <>
+            <ActiveFilterChips
+              filter={filter}
+              onChange={setFilter}
+              align="left"
+            />
+            <FontGrid
+              fonts={results}
+              previewText={previewText}
+              favorites={favorites}
+              onToggleFavorite={toggle}
+              view={view}
+              selection={filter}
+              axisValues={axisValues}
+            />
+          </>
         )}
       </Column>
     </FilterLayout>
