@@ -62,6 +62,10 @@ function App() {
   const { setFilter: setSharedFilter, listScrollY } = useFilter();
   const facetIndex = useMemo(() => buildFacetIndex(fonts), [fonts]);
 
+  // The results list scrolls inside the Column's ScrollArea viewport, not the
+  // window. The virtualizer and scroll restore both bind to this element.
+  const scrollRef = useRef<HTMLDivElement>(null);
+
   // Two-layer filter state so tapping a pill feels instant and stays decoupled
   // from the expensive re-filter of the whole catalog:
   //  - `filter` (pending) updates synchronously on every tap, driving the pills,
@@ -137,7 +141,7 @@ function App() {
     setSharedFilter(filter);
   }, [filter, setSharedFilter]);
 
-  useListScrollRestore(listScrollY);
+  useListScrollRestore(scrollRef, listScrollY);
 
   // Display prefs (view, sort) still write the URL immediately — they're cheap
   // and don't gate on the deferred filter. They carry the current pending
@@ -177,6 +181,8 @@ function App() {
       }
     >
       <Column
+        scroll
+        scrollViewportRef={scrollRef}
         header={
           <>
             <SearchInput
@@ -261,6 +267,7 @@ function App() {
               view={view}
               selection={deferredFilter}
               axisValues={axisValues}
+              scrollRef={scrollRef}
             />
           </>
         )}
