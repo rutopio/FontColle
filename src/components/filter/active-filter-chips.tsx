@@ -4,13 +4,13 @@ import type { FilterState } from "@/lib/fonts/filter";
 import { cn } from "@/lib/utils";
 import { describeActiveFilters } from "./describe";
 
-// Each chip pops in on add and shrinks out on remove; `layout` slides the
-// survivors into the freed space so the row reflows smoothly.
+// Each chip fades in on add and out on remove; `layout` slides the survivors
+// into the freed space so the row reflows smoothly.
 const CHIP_MOTION = {
   layout: true,
-  initial: { opacity: 0, scale: 0.8 },
-  animate: { opacity: 1, scale: 1 },
-  exit: { opacity: 0, scale: 0.8 },
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
   transition: { duration: 0.15, ease: "easeOut" },
 } as const;
 
