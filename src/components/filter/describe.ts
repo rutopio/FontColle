@@ -1,3 +1,4 @@
+import { colorFormatLabel } from "@/lib/fonts/color";
 import { featureName } from "@/lib/fonts/features";
 import { CLASSIFICATION_SECTIONS, type FilterState } from "@/lib/fonts/filter";
 import { languageLabel, scriptLabel } from "@/lib/fonts/labels";
@@ -51,7 +52,7 @@ export function describeActiveFilters(f: FilterState): FilterChip[] {
   for (const v of f.classes)
     push(`class:${v}`, "Category", v, without(f, "classes", v));
   for (const v of f.facets)
-    push(`facet:${v}`, "Property", v, without(f, "facets", v));
+    push(`facet:${v}`, "Properties", v, without(f, "facets", v));
   for (const v of f.classifications)
     push(
       `cls:${v}`,
@@ -62,18 +63,34 @@ export function describeActiveFilters(f: FilterState): FilterChip[] {
   for (const v of f.color)
     push(`color:${v}`, "Color", COLOR_LABEL[v] ?? v, without(f, "color", v));
   for (const v of f.colorFormats)
-    push(`cfmt:${v}`, "Color", v, without(f, "colorFormats", v));
+    push(
+      `cfmt:${v}`,
+      "Color format",
+      colorFormatLabel(v),
+      without(f, "colorFormats", v)
+    );
   for (const v of f.scripts)
-    push(`script:${v}`, "Script", scriptLabel(v), without(f, "scripts", v));
+    push(
+      `script:${v}`,
+      "Writing system",
+      scriptLabel(v),
+      without(f, "scripts", v)
+    );
   for (const v of f.languages)
     push(`lang:${v}`, "Language", languageLabel(v), without(f, "languages", v));
   for (const v of f.weights)
     push(`weight:${v}`, "Weight", weightLabel(v), without(f, "weights", v));
   for (const v of f.widths)
     push(`width:${v}`, "Width", widthLabel(v), without(f, "widths", v));
-  for (const v of f.axes) push(`axis:${v}`, "Axis", v, without(f, "axes", v));
+  for (const v of f.axes)
+    push(`axis:${v}`, "Variable axes", v, without(f, "axes", v));
   for (const v of f.features)
-    push(`feat:${v}`, "Feature", featureName(v), without(f, "features", v));
+    push(
+      `feat:${v}`,
+      "OpenType features",
+      featureName(v),
+      without(f, "features", v)
+    );
   for (const v of f.license)
     push(`lic:${v}`, "License", v, without(f, "license", v));
 
@@ -88,9 +105,9 @@ export function describeActiveFilters(f: FilterState): FilterChip[] {
   }
 
   if (f.isMonospace)
-    push("mono", "Metrics", "Monospace", { ...f, isMonospace: undefined });
+    push("mono", "Traits", "Monospace", { ...f, isMonospace: undefined });
   if (f.hasHinting)
-    push("hint", "Metrics", "Hinted", { ...f, hasHinting: undefined });
+    push("hint", "Traits", "Hinted", { ...f, hasHinting: undefined });
 
   return chips;
 }
