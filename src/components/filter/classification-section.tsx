@@ -2,9 +2,23 @@ import { ShapesIcon } from "@phosphor-icons/react";
 import { Pills } from "./section";
 import { SectionHeader } from "./section-header";
 
+// A few sub-tags carry a longer internal name than Google Fonts shows on its
+// own UI. The tag path stays the harvest key; only the pill label is aligned
+// to Google Fonts' shorter wording.
+const GF_LABEL: Record<string, string> = {
+  "Old Style Garalde": "Old Style",
+  "Humanist Venetian": "Humanist",
+  "Fat Face": "Fatface",
+  "Upright Script": "Upright",
+};
+
 // The sub-tag name shown on a pill: the last path segment of the full tag
-// path ("/Serif/Didone" -> "Didone").
-const subTagLabel = (path: string) => path.slice(path.lastIndexOf("/") + 1);
+// path ("/Serif/Didone" -> "Didone"), overridden by GF_LABEL where it differs
+// from Google Fonts' own label.
+const subTagLabel = (path: string) => {
+  const seg = path.slice(path.lastIndexOf("/") + 1);
+  return GF_LABEL[seg] ?? seg;
+};
 
 // One classification section (Serif, Sans Serif, Slab, Script): a header
 // over a wrapping list of its sub-tag pills. Multi-select, OR within the shared
@@ -41,6 +55,9 @@ export function ClassificationSection({
         selected={selected}
         onToggle={onToggle}
         label={subTagLabel}
+        grid
+        columns={2}
+        spread
         expandAll
       />
     </div>
