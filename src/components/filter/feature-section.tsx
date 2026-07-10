@@ -78,6 +78,13 @@ export function FeatureSection({
                 grid
                 spread
                 mono
+                // The pill shows the 4-letter tag; the tooltip its full name.
+                // Unknown tags map to themselves, so skip the tooltip there
+                // (it would just repeat the label).
+                title={(tag) => {
+                  const name = featureName(tag);
+                  return name === tag ? "" : name;
+                }}
               />
             </div>
           ))}

@@ -23,7 +23,11 @@ import { FontTypeSection } from "./font-type-section";
 import type { FilterGroupId } from "./groups";
 import { LanguageSection } from "./language-section";
 import { LicenseSection } from "./license-section";
-import { MetricsSection } from "./metrics-section";
+import {
+  HintSection,
+  MetricsSection,
+  UnitsPerEmSection,
+} from "./metrics-section";
 import { Section } from "./section";
 import { SourceSection } from "./source-section";
 import { VariableAxesSection } from "./variable-axes-section";
@@ -208,19 +212,25 @@ export function FilterSidebar({
             />
           )}
           {group === "metrics" && (
-            <MetricsSection
-              metrics={filter.metrics}
-              onMetricChange={setMetric}
-              onReset={() => onChange({ ...filter, metrics: {} })}
-              upmCounts={index.upmCounts}
-              selectedUpm={filter.upm}
-              onToggleUpm={(v) => toggle("upm", v)}
-              onResetUpm={() => clearSection("upm", index.upmCounts)}
-              hasHinting={filter.hasHinting}
-              hintedCount={index.hintedCount}
-              unhintedCount={index.unhintedCount}
-              onSetHinting={setHinting}
-            />
+            <>
+              <MetricsSection
+                metrics={filter.metrics}
+                onMetricChange={setMetric}
+                onReset={() => onChange({ ...filter, metrics: {} })}
+              />
+              <UnitsPerEmSection
+                upmCounts={index.upmCounts}
+                selectedUpm={filter.upm}
+                onToggleUpm={(v) => toggle("upm", v)}
+                onResetUpm={() => clearSection("upm", index.upmCounts)}
+              />
+              <HintSection
+                hasHinting={filter.hasHinting}
+                hintedCount={index.hintedCount}
+                unhintedCount={index.unhintedCount}
+                onSetHinting={setHinting}
+              />
+            </>
           )}
           {group === "other" && (
             <>
