@@ -1,6 +1,7 @@
 // Build the set of selectable filter values with family counts, from the full
 // dataset — the data behind every sidebar section's pills.
 import { COLOR_FORMATS, isColorFont } from "../color";
+import { catalogUpmValues } from "../metrics";
 import type { FontRecord } from "../types";
 import { FONT_TYPE_FACETS } from "./state";
 import { familyWeightSet, familyWidthSet } from "./weights";
@@ -86,10 +87,14 @@ export function buildFacetIndex(fonts: FontRecord[]) {
   const colorFormats = new Map<string, number>();
   const classifications = new Map<string, number>();
   const license = new Map<string, number>();
+  let monospaceCount = 0;
+  let hintedCount = 0;
   const bump = (m: Map<string, number>, k: string) =>
     m.set(k, (m.get(k) ?? 0) + 1);
 
   for (const font of fonts) {
+    if (font.isMonospace === true) monospaceCount++;
+    if (font.hasHinting === true) hintedCount++;
     bump(classes, font.class);
     for (const x of font.facets) bump(facets, x);
     for (const x of font.features) bump(features, x);
@@ -151,5 +156,10 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     license: LICENSE_VALUES.map(
       (v) => [v, license.get(v) ?? 0] as [string, number]
     ),
+    // Sorted distinct unitsPerEm values, driving the Metrics upm snap slider.
+    upmValues: catalogUpmValues(fonts),
+    // Family counts for the Metrics boolean pills.
+    monospaceCount,
+    hintedCount,
   };
 }

@@ -5,7 +5,12 @@ import {
   TextAaIcon,
 } from "@phosphor-icons/react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import type { FacetIndex, FilterState } from "@/lib/fonts/filter";
+import type {
+  FacetIndex,
+  FilterState,
+  MetricKey,
+  MetricRange,
+} from "@/lib/fonts/filter";
 import * as actions from "@/lib/fonts/filter-actions";
 import { useScrollReset } from "@/lib/use-scroll-reset";
 import { CardGrid } from "./card-grid";
@@ -18,6 +23,7 @@ import { FontTypeSection } from "./font-type-section";
 import type { FilterGroupId } from "./groups";
 import { LanguageSection } from "./language-section";
 import { LicenseSection } from "./license-section";
+import { MetricsSection } from "./metrics-section";
 import { Section } from "./section";
 import { VariableAxesSection } from "./variable-axes-section";
 import { WritingSystemSection } from "./writing-system-section";
@@ -44,7 +50,7 @@ export function FilterSidebar({
 }: Props) {
   // Thin wrappers: every rule lives in filter-actions.ts (pure, testable); the
   // component only feeds the current filter in and pushes the result back out.
-  const toggle = (key: keyof Omit<FilterState, "query">, value: string) =>
+  const toggle = (key: Parameters<typeof actions.toggle>[1], value: string) =>
     onChange(actions.toggle(filter, key, value));
   const toggleAxis = (tag: string) => onChange(actions.toggleAxis(filter, tag));
   const select = (key: "weights" | "widths", value: string) =>
@@ -55,12 +61,22 @@ export function FilterSidebar({
     onChange(actions.selectFontType(filter, value));
   const resetFontType = () => onChange(actions.resetFontType(filter));
   const clearSection = (
-    key: keyof Omit<FilterState, "query">,
+    key: Parameters<typeof actions.clearSection>[1],
     items: [string, number][]
   ) => onChange(actions.clearSection(filter, key, items));
 
   const colorSelected = actions.colorSelection(filter);
   const fontTypeSelected = actions.fontTypeSelection(filter);
+
+  // Metrics: set or clear one range key; toggle a boolean facet (off = absent).
+  const setMetric = (key: MetricKey, next: MetricRange | undefined) => {
+    const metrics = { ...filter.metrics };
+    if (next) metrics[key] = next;
+    else delete metrics[key];
+    onChange({ ...filter, metrics });
+  };
+  const toggleBool = (key: "isMonospace" | "hasHinting") =>
+    onChange({ ...filter, [key]: filter[key] ? undefined : true });
 
   // Always open at the top; don't let router scroll restoration carry the
   // sidebar's position across list <-> detail navigation.
@@ -183,6 +199,27 @@ export function FilterSidebar({
               selectedFeatures={filter.features}
               onToggleFeature={(v) => toggle("features", v)}
               onResetFeatures={() => onChange({ ...filter, features: [] })}
+            />
+          )}
+          {group === "metrics" && (
+            <MetricsSection
+              metrics={filter.metrics}
+              upmValues={index.upmValues}
+              onMetricChange={setMetric}
+              onReset={() =>
+                onChange({
+                  ...filter,
+                  metrics: {},
+                  isMonospace: undefined,
+                  hasHinting: undefined,
+                })
+              }
+              isMonospace={filter.isMonospace ?? false}
+              hasHinting={filter.hasHinting ?? false}
+              monoCount={index.monospaceCount}
+              hintCount={index.hintedCount}
+              onToggleMonospace={() => toggleBool("isMonospace")}
+              onToggleHinting={() => toggleBool("hasHinting")}
             />
           )}
           {group === "other" && (

@@ -2,6 +2,7 @@ import {
   DotsThreeOutlineIcon,
   type Icon,
   PaletteIcon,
+  RulerIcon,
   ShapesIcon,
   SlidersHorizontalIcon,
   ToggleRightIcon,
@@ -19,6 +20,7 @@ export type FilterGroupId =
   | "color"
   | "axes"
   | "features"
+  | "metrics"
   | "other";
 
 export interface FilterGroup {
@@ -63,6 +65,12 @@ export const FILTER_GROUPS: FilterGroup[] = [
     keys: ["features"],
   },
   {
+    id: "metrics",
+    label: "Metrics",
+    icon: RulerIcon,
+    keys: ["metrics", "isMonospace", "hasHinting"],
+  },
+  {
     id: "other",
     label: "Others",
     icon: DotsThreeOutlineIcon,
@@ -80,6 +88,9 @@ function countKey(
   key: keyof Omit<FilterState, "query">,
   filter: FilterState
 ) {
+  // Metric ranges: one count per active slider. Boolean facets: one when on.
+  if (key === "metrics") return Object.keys(filter.metrics).length;
+  if (key === "isMonospace" || key === "hasHinting") return filter[key] ? 1 : 0;
   if (key !== "facets") return filter[key].length;
   const isFontType = (v: string) => FONT_TYPE_FACETS.includes(v);
   return filter.facets.filter(
