@@ -5,11 +5,14 @@ import { FontTraits } from "@/components/font-traits";
 import type { FilterSelection } from "@/lib/fonts/filter";
 import {
   ensureFontLoaded,
+  ensureFontRangeLoaded,
   previewFontFamily,
   useFontLoaded,
 } from "@/lib/fonts/loader";
+import { variationSettings } from "@/lib/fonts/preview-style";
 import { specimenFor } from "@/lib/fonts/specimen";
 import type { FontRecord } from "@/lib/fonts/types";
+import { usePreviewCoords } from "@/lib/fonts/use-preview-coords";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -20,6 +23,9 @@ interface Props {
   // Active filter slice, so footer badges highlight when they match — mirrors
   // FontCard.
   selection: FilterSelection;
+  // Session slider positions (0-100%) per selected variable axis, same as
+  // FontCard: each font maps the percent onto its own axis range for preview.
+  axisValues: Record<string, number>;
 }
 
 // Row layout (Google Fonts style): one family per full-width row. Family name +
@@ -30,13 +36,29 @@ export function FontRow({
   isFavorite,
   onToggleFavorite,
   selection,
+  axisValues,
 }: Props) {
+  // Same weight/width/axis derivation as FontCard, so the row previews the
+  // sidebar's picks identically.
+  const { weight: activeWeight, variationCoords } = usePreviewCoords(
+    font,
+    selection,
+    axisValues
+  );
+
+  // Variable fonts: load the full axis range once so any picked weight/width
+  // renders from one variable file. Static fonts: request the selected weight
+  // cut so the preview doesn't stay on an old one for lack of that file.
   useEffect(() => {
-    const weights = font.instances.map((i) => i.coords.wght ?? 400);
-    ensureFontLoaded(font.name, weights.length ? weights : [400]);
-  }, [font.name, font.instances]);
+    if (font.isVariable) {
+      ensureFontRangeLoaded(font.name, font.axes);
+    } else {
+      ensureFontLoaded(font.name, [activeWeight]);
+    }
+  }, [font.name, font.isVariable, font.axes, activeWeight]);
 
   const fontLoaded = useFontLoaded(font.name);
+  const settings = variationSettings(variationCoords);
 
   return (
     <Link
@@ -101,7 +123,13 @@ export function FontRow({
       {fontLoaded ? (
         <p
           dir="auto"
-          style={{ fontFamily: previewFontFamily(font.name, fontLoaded) }}
+          style={{
+            fontFamily: previewFontFamily(font.name, fontLoaded),
+            fontWeight: activeWeight,
+            fontVariationSettings: settings || undefined,
+            transition:
+              "font-weight 200ms ease, font-variation-settings 200ms ease",
+          }}
           className="truncate text-3xl leading-tight"
         >
           {previewText || specimenFor(font)}

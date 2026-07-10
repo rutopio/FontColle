@@ -114,6 +114,7 @@ export function FontGrid({
         isFavorite={favorites.includes(font.id)}
         onToggleFavorite={onToggleFavorite}
         selection={selection}
+        axisValues={axisValues}
       />
     ) : (
       <FontCard
