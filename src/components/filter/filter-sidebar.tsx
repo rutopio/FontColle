@@ -5,17 +5,19 @@ import {
   TextAaIcon,
 } from "@phosphor-icons/react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import * as actions from "@/lib/fonts/filter-actions";
 import type { FacetIndex, FilterState } from "@/lib/fonts/filter";
+import * as actions from "@/lib/fonts/filter-actions";
 import { useScrollReset } from "@/lib/use-scroll-reset";
 import { CardGrid } from "./card-grid";
 import { CategoryCards } from "./category-cards";
+import { ClassificationSection } from "./classification-section";
 import { ColorFormatSection, ColorSection } from "./color-section";
 import { weightLabel, widthLabel } from "./constants";
 import { FeatureSection } from "./feature-section";
 import { FontTypeSection } from "./font-type-section";
 import type { FilterGroupId } from "./groups";
 import { LanguageSection } from "./language-section";
+import { LicenseSection } from "./license-section";
 import { Section } from "./section";
 import { VariableAxesSection } from "./variable-axes-section";
 import { WritingSystemSection } from "./writing-system-section";
@@ -88,6 +90,16 @@ export function FilterSidebar({
                 onToggle={(v) => toggle("facets", v)}
                 onReset={() => clearSection("facets", index.facets)}
               />
+              {index.classifications.map((section) => (
+                <ClassificationSection
+                  key={section.title}
+                  title={section.title}
+                  items={section.items}
+                  selected={filter.classifications}
+                  onToggle={(v) => toggle("classifications", v)}
+                  onReset={() => clearSection("classifications", section.items)}
+                />
+              ))}
             </>
           )}
           {group === "color" && (
@@ -171,6 +183,14 @@ export function FilterSidebar({
               selectedFeatures={filter.features}
               onToggleFeature={(v) => toggle("features", v)}
               onResetFeatures={() => onChange({ ...filter, features: [] })}
+            />
+          )}
+          {group === "other" && (
+            <LicenseSection
+              items={index.license}
+              selected={filter.license}
+              onToggle={(v) => toggle("license", v)}
+              onReset={() => onChange({ ...filter, license: [] })}
             />
           )}
         </div>

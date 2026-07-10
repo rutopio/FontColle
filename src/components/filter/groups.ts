@@ -1,4 +1,5 @@
 import {
+  DotsThreeOutlineIcon,
   type Icon,
   PaletteIcon,
   ShapesIcon,
@@ -17,7 +18,8 @@ export type FilterGroupId =
   | "language"
   | "color"
   | "axes"
-  | "features";
+  | "features"
+  | "other";
 
 export interface FilterGroup {
   id: FilterGroupId;
@@ -31,7 +33,7 @@ export const FILTER_GROUPS: FilterGroup[] = [
     id: "style",
     label: "Style",
     icon: ShapesIcon,
-    keys: ["classes", "facets"],
+    keys: ["classes", "facets", "classifications"],
   },
   {
     id: "language",
@@ -59,6 +61,12 @@ export const FILTER_GROUPS: FilterGroup[] = [
     label: "Features",
     icon: ToggleRightIcon,
     keys: ["features"],
+  },
+  {
+    id: "other",
+    label: "Others",
+    icon: DotsThreeOutlineIcon,
+    keys: ["license"],
   },
 ];
 
