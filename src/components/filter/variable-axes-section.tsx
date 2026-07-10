@@ -21,8 +21,9 @@ const TOP_N = 4;
 const PCT_PRESETS = [0, 25, 50, 75, 100];
 
 // Variable axes, one full-width pill per row, count-sorted. The top 4 show by
-// default; the rest collapse behind a "more" expander (selected axes are always
-// shown, pulled up out of the collapsed tail).
+// default; the rest collapse behind a "more" expander. Selecting a tail axis
+// never reorders the list (it animates in place); collapsing the tail pins any
+// selected tail axes just below the top rows so the choice stays visible.
 // Selecting a pill animates it shrinking to a third of the row, then fades in a
 // relative-position slider (0-100%, default 50) in the freed space, driving the
 // live preview. The slider is always mounted (faded out when unselected) so the
@@ -55,17 +56,19 @@ export function VariableAxesSection({
   const [showMore, setShowMore] = useState(false);
   const hasSelection = items.some(([value]) => selected.includes(value));
 
-  // Top N by count show by default; the rest hide behind the expander, except
-  // any selected axis, which is always pulled up so it never gets stranded in
-  // the collapsed tail.
-  const { common, rare } = useMemo(() => {
-    const isCommon = (tag: string, i: number) =>
-      i < TOP_N || selected.includes(tag);
-    return {
-      common: items.filter(([tag], i) => isCommon(tag, i)),
-      rare: items.filter(([tag], i) => !isCommon(tag, i)),
-    };
-  }, [items, selected]);
+  // Grouping is by count only, never by selection, so selecting an axis in the
+  // expanded tail never reorders the list — the pill plays its shrink animation
+  // in place. The top N always show; the rest live behind the expander.
+  const common = useMemo(() => items.slice(0, TOP_N), [items]);
+  const rare = useMemo(() => items.slice(TOP_N), [items]);
+
+  // When collapsed, a selected axis from the tail would otherwise vanish. Pin
+  // those below the top rows (not inside the collapsing region) so the choice
+  // stays visible. Empty while expanded — the tail already shows them in place.
+  const pinned = useMemo(
+    () => (showMore ? [] : rare.filter(([tag]) => selected.includes(tag))),
+    [rare, selected, showMore]
+  );
 
   const renderRow = ([tag, count]: [string, number]) => {
     const on = selected.includes(tag);
@@ -186,6 +189,9 @@ export function VariableAxesSection({
                 </div>
               </div>
             </div>
+            {/* Selected tail axes, kept visible below the top rows while the
+                tail is collapsed. */}
+            {pinned.map(renderRow)}
             <button
               type="button"
               onClick={() => setShowMore((v) => !v)}
