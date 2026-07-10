@@ -1,5 +1,11 @@
-import { useWindowVirtualizer } from "@tanstack/react-virtual";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import {
+  type RefObject,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { FontCard } from "@/components/font-card";
 import { FontRow } from "@/components/font-row";
 import type { FilterSelection } from "@/lib/fonts/filter";
@@ -18,6 +24,10 @@ interface Props {
   selection: FilterSelection;
   // Session slider positions (0-100%) per selected variable axis.
   axisValues: Record<string, number>;
+  // The scroll container (the Column's ScrollArea viewport) the virtualizer
+  // scrolls within. The list lives inside it, so measurement and scrolling are
+  // element-based, not window-based.
+  scrollRef: RefObject<HTMLDivElement | null>;
 }
 
 // Grid column count matches the CSS breakpoints (md:2, lg:3). Row mode is always
@@ -46,12 +56,12 @@ export function FontGrid({
   view,
   selection,
   axisValues,
+  scrollRef,
 }: Props) {
   const listRef = useRef<HTMLDivElement>(null);
   const [cols, setCols] = useState(view === "row" ? 1 : 3);
-  const [scrollMargin, setScrollMargin] = useState(0);
   // SSR renders a fixed first batch so crawlers/no-JS see content; after mount
-  // the window virtualizer takes over.
+  // the element virtualizer takes over.
   const [mounted, setMounted] = useState(false);
 
   // Card entrance animation only fires right after the result set changes
@@ -74,9 +84,6 @@ export function FontGrid({
     const measure = () => {
       if (!listRef.current) return;
       setCols(columnsFor(listRef.current.offsetWidth, view));
-      setScrollMargin(
-        listRef.current.getBoundingClientRect().top + window.scrollY
-      );
     };
     measure();
     setMounted(true);
@@ -86,17 +93,17 @@ export function FontGrid({
 
   const rowCount = Math.ceil(fonts.length / cols);
 
-  const virtualizer = useWindowVirtualizer({
+  const virtualizer = useVirtualizer({
     count: rowCount,
+    getScrollElement: () => scrollRef.current,
     estimateSize: () => (view === "row" ? LINE_H : CARD_H + GAP),
     overscan: 4,
-    scrollMargin,
   });
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: cols/scrollMargin/view are the re-measure triggers, not read in the body — a change to any must re-run measurement.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: cols/view are the re-measure triggers, not read in the body — a change to either must re-run measurement.
   useEffect(() => {
     virtualizer.measure();
-  }, [cols, scrollMargin, view, virtualizer]);
+  }, [cols, view, virtualizer]);
 
   const renderCell = (font: FontRecord) =>
     view === "row" ? (
@@ -172,7 +179,7 @@ export function FontGrid({
                 top: 0,
                 left: 0,
                 width: "100%",
-                transform: `translateY(${row.start - virtualizer.options.scrollMargin}px)`,
+                transform: `translateY(${row.start}px)`,
               }}
             >
               {view === "row" ? (
