@@ -15,6 +15,7 @@ import {
 import { Column, FilterLayout } from "@/components/filter-layout";
 import { FontGrid, type ViewMode } from "@/components/font-grid";
 import { FontGridSkeleton } from "@/components/font-grid-skeleton";
+import { PreviewBar } from "@/components/preview-dock";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -221,6 +222,7 @@ function App() {
             </div>
           </>
         }
+        footer={<PreviewBar />}
       >
         {isFiltering ? (
           // Filtering the whole catalog is deferred; show a skeleton for the
