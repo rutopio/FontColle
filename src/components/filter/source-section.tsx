@@ -21,7 +21,7 @@ export function SourceSection({
   return (
     <div className="flex flex-col gap-2">
       <SectionHeader
-        title="Source"
+        title="Noto Family"
         icon={GoogleLogoIcon}
         hasSelection={selected.length > 0}
         onReset={onReset}
