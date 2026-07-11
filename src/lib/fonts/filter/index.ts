@@ -4,5 +4,6 @@
 export * from "../metrics";
 export * from "./apply";
 export * from "./facets";
+export * from "./match-mode";
 export * from "./state";
 export * from "./weights";

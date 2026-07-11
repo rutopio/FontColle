@@ -1,4 +1,5 @@
 import { NoteBlankIcon } from "@phosphor-icons/react";
+import type { MatchMode } from "@/lib/fonts/filter";
 import { subTagLabel } from "./constants";
 import { Pills } from "./section";
 import { SectionHeader } from "./section-header";
@@ -13,6 +14,8 @@ export function ClassificationSection({
   selected,
   onToggle,
   onReset,
+  mode,
+  onToggleMode,
 }: {
   title: string;
   // [full tag path, count], in fixed order.
@@ -20,6 +23,10 @@ export function ClassificationSection({
   selected: string[];
   onToggle: (v: string) => void;
   onReset: () => void;
+  // OR/AND toggle. All classification sub-sections share one `classifications`
+  // state key, so the sidebar passes these to just one of them.
+  mode?: MatchMode;
+  onToggleMode?: () => void;
 }) {
   const hasSelection = items.some(([value]) => selected.includes(value));
   return (
@@ -32,6 +39,8 @@ export function ClassificationSection({
         canSort={false}
         sort="count"
         onToggleSort={() => {}}
+        mode={mode}
+        onToggleMode={onToggleMode}
       />
       <Pills
         items={items}

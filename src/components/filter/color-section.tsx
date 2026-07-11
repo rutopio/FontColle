@@ -1,5 +1,6 @@
 import { CircleHalfIcon, StackIcon } from "@phosphor-icons/react";
 import { colorFormatLabel } from "@/lib/fonts/color";
+import type { MatchMode } from "@/lib/fonts/filter";
 import { cn } from "@/lib/utils";
 import { PillButton } from "./pill-button";
 import { RadioPillSection } from "./radio-pill-section";
@@ -54,6 +55,8 @@ export function ColorFormatSection({
   onToggle,
   onReset,
   disabled = false,
+  mode,
+  onToggleMode,
 }: {
   // [formatId, count], e.g. ["COLR", 21]. Fixed order, zero counts included.
   items: [string, number][];
@@ -61,6 +64,8 @@ export function ColorFormatSection({
   onToggle: (v: string) => void;
   onReset: () => void;
   disabled?: boolean;
+  mode?: MatchMode;
+  onToggleMode?: () => void;
 }) {
   return (
     <div className="flex flex-col gap-2">
@@ -72,6 +77,8 @@ export function ColorFormatSection({
         canSort={false}
         sort="count"
         onToggleSort={() => {}}
+        mode={mode}
+        onToggleMode={onToggleMode}
       />
       <div
         className={cn(

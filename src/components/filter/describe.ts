@@ -93,12 +93,7 @@ export function describeActiveFilters(f: FilterState): FilterChip[] {
   for (const v of f.axes)
     push(`axis:${v}`, "Variable axes", v, without(f, "axes", v));
   for (const v of f.features)
-    push(
-      `feat:${v}`,
-      "OpenType features",
-      featureName(v),
-      without(f, "features", v)
-    );
+    push(`feat:${v}`, "Features", featureName(v), without(f, "features", v));
   for (const v of f.designers)
     push(`dsr:${v}`, "Designer", v, without(f, "designers", v));
   for (const v of f.vendors)

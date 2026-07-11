@@ -1,6 +1,7 @@
 import { CodeIcon } from "@phosphor-icons/react";
 import { useMemo } from "react";
 import { featureName, groupFeatures } from "@/lib/fonts/features";
+import type { MatchMode } from "@/lib/fonts/filter";
 import { NoMatches, SearchBox } from "./search-box";
 import { Pills } from "./section";
 import { SectionHeader } from "./section-header";
@@ -18,11 +19,15 @@ export function FeatureSection({
   selectedFeatures,
   onToggleFeature,
   onResetFeatures,
+  mode,
+  onToggleMode,
 }: {
   features: [string, number][];
   selectedFeatures: string[];
   onToggleFeature: (v: string) => void;
   onResetFeatures: () => void;
+  mode?: MatchMode;
+  onToggleMode?: () => void;
 }) {
   const { sort, toggleSort, query, setQuery, q } = useSearchSort();
 
@@ -43,13 +48,15 @@ export function FeatureSection({
   return (
     <div className="flex flex-col gap-4">
       <SectionHeader
-        title="OpenType features"
+        title="Features"
         icon={CodeIcon}
         hasSelection={hasSelection}
         onReset={onResetFeatures}
         canSort={features.length > 1}
         sort={sort}
         onToggleSort={toggleSort}
+        mode={mode}
+        onToggleMode={onToggleMode}
       />
       <SearchBox
         value={query}

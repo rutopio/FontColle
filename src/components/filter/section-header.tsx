@@ -2,6 +2,8 @@ import {
   ArrowsDownUpIcon,
   type Icon,
   InfoIcon,
+  IntersectIcon,
+  UniteIcon,
   XIcon,
 } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from "motion/react";
@@ -10,6 +12,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import type { MatchMode } from "@/lib/fonts/filter";
 import { cn } from "@/lib/utils";
 
 // Shared fade for header actions that swap in/out (Reset <-> Sort). Fast and
@@ -80,6 +83,32 @@ export function SortToggle({
   );
 }
 
+// A ghost OR/AND toggle for a multi-select section: Unite = match any (OR),
+// Intersect = match all (AND). Sits left of the reset/sort slot; rendered only
+// for sections that pass a mode (the ones where both rules are meaningful).
+export function MatchModeToggle({
+  mode,
+  onToggle,
+}: {
+  mode: MatchMode;
+  onToggle: () => void;
+}) {
+  const isAny = mode === "any";
+  return (
+    <HeaderButton
+      onClick={onToggle}
+      label={`Match ${isAny ? "any (OR)" : "all (AND)"}, click to change`}
+    >
+      {isAny ? (
+        <UniteIcon className="size-3.5" />
+      ) : (
+        <IntersectIcon className="size-3.5" />
+      )}
+      {isAny ? "Any" : "All"}
+    </HeaderButton>
+  );
+}
+
 // A section header with a title and a right-side action that flips between a
 // Reset button (when values are selected) and a SortToggle (when not). The
 // action slot always renders (invisible when neither applies) so its height
@@ -95,6 +124,8 @@ export function SectionHeader({
   onToggleSort,
   numericSort,
   info,
+  mode,
+  onToggleMode,
 }: {
   title: string;
   icon: Icon;
@@ -108,6 +139,10 @@ export function SectionHeader({
   // Optional explanatory note shown in a tooltip behind an info icon after the
   // title. Used where the grouping could be misread (e.g. Language by continent).
   info?: React.ReactNode;
+  // OR/AND toggle: pass both to show it (multi-select sections only). The
+  // toggle sits left of the reset/sort slot and is always visible when passed.
+  mode?: MatchMode;
+  onToggleMode?: () => void;
 }) {
   return (
     <div className="flex items-center justify-between gap-2">
@@ -129,45 +164,53 @@ export function SectionHeader({
           </Tooltip>
         ) : null}
       </h2>
-      {/* Reserve the action slot's height/width up front with an invisible
+      <div className="flex shrink-0 items-center gap-0.5">
+        {/* OR/AND toggle, left of the reset/sort slot. Only for sections that
+            pass a mode, and only once something is selected — combining is
+            moot with zero or one pick, so it appears alongside Reset. */}
+        {mode && onToggleMode && hasSelection ? (
+          <MatchModeToggle mode={mode} onToggle={onToggleMode} />
+        ) : null}
+        {/* Reserve the action slot's height/width up front with an invisible
           Reset, then cross-fade the live action (Reset <-> Sort) over it so a
           button appearing on first selection never shifts the layout. */}
-      <div className="relative shrink-0">
-        <HeaderButton
-          onClick={() => {}}
-          label=""
-          aria-hidden
-          className="invisible"
-        >
-          <XIcon className="size-3" />
-          Reset
-        </HeaderButton>
-        <AnimatePresence initial={false} mode="popLayout">
-          {hasSelection ? (
-            <motion.div
-              key="reset"
-              {...FADE}
-              className="absolute inset-y-0 right-0"
-            >
-              <HeaderButton onClick={onReset} label={`Reset ${title}`}>
-                <XIcon className="size-3" />
-                Reset
-              </HeaderButton>
-            </motion.div>
-          ) : canSort ? (
-            <motion.div
-              key="sort"
-              {...FADE}
-              className="absolute inset-y-0 right-0"
-            >
-              <SortToggle
-                sort={sort}
-                onToggle={onToggleSort}
-                numeric={numericSort}
-              />
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
+        <div className="relative shrink-0">
+          <HeaderButton
+            onClick={() => {}}
+            label=""
+            aria-hidden
+            className="invisible"
+          >
+            <XIcon className="size-3" />
+            Reset
+          </HeaderButton>
+          <AnimatePresence initial={false} mode="popLayout">
+            {hasSelection ? (
+              <motion.div
+                key="reset"
+                {...FADE}
+                className="absolute inset-y-0 right-0"
+              >
+                <HeaderButton onClick={onReset} label={`Reset ${title}`}>
+                  <XIcon className="size-3" />
+                  Reset
+                </HeaderButton>
+              </motion.div>
+            ) : canSort ? (
+              <motion.div
+                key="sort"
+                {...FADE}
+                className="absolute inset-y-0 right-0"
+              >
+                <SortToggle
+                  sort={sort}
+                  onToggle={onToggleSort}
+                  numeric={numericSort}
+                />
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );

@@ -15,6 +15,8 @@ import {
   ITALIC_LABELS,
   type MetricKey,
   type MetricRange,
+  type ModeKey,
+  matchMode,
 } from "@/lib/fonts/filter";
 import * as actions from "@/lib/fonts/filter-actions";
 import { useScrollReset } from "@/lib/use-scroll-reset";
@@ -77,6 +79,10 @@ export function FilterSidebar({
     onChange(actions.selectFontType(filter, value));
   const selectItalic = (value: string) =>
     onChange(actions.selectItalic(filter, value));
+  // OR/AND toggle for a multi-select section, plus the current mode to show.
+  const toggleMode = (key: ModeKey) =>
+    onChange(actions.toggleMatchMode(filter, key));
+  const modeOf = (key: ModeKey) => matchMode(filter, key);
   const resetFontType = () => onChange(actions.resetFontType(filter));
   const clearSection = (
     key: Parameters<typeof actions.clearSection>[1],
@@ -170,7 +176,7 @@ export function FilterSidebar({
                   onToggle={selectItalic}
                   onReset={() => onChange({ ...filter, italic: [] })}
                 />
-                {index.classifications.map((section) => (
+                {index.classifications.map((section, i) => (
                   <ClassificationSection
                     key={section.title}
                     title={section.title}
@@ -179,6 +185,12 @@ export function FilterSidebar({
                     onToggle={(v) => toggle("classifications", v)}
                     onReset={() =>
                       clearSection("classifications", section.items)
+                    }
+                    // All sub-sections share the `classifications` mode; show the
+                    // toggle on the first one only.
+                    mode={i === 0 ? modeOf("classifications") : undefined}
+                    onToggleMode={
+                      i === 0 ? () => toggleMode("classifications") : undefined
                     }
                   />
                 ))}
@@ -196,6 +208,8 @@ export function FilterSidebar({
                 onReset={() => clearSection("facets", index.facets)}
                 label={facetLabel}
                 expandAll
+                mode={modeOf("facets")}
+                onToggleMode={() => toggleMode("facets")}
               />
             )}
             {group === "color" && (
@@ -214,6 +228,8 @@ export function FilterSidebar({
                   onToggle={(v) => toggle("colorFormats", v)}
                   onReset={() => onChange({ ...filter, colorFormats: [] })}
                   disabled={filter.color.includes("monochrome")}
+                  mode={modeOf("colorFormats")}
+                  onToggleMode={() => toggleMode("colorFormats")}
                 />
               </>
             )}
@@ -224,6 +240,8 @@ export function FilterSidebar({
                   selectedScripts={filter.scripts}
                   onToggleScript={(v) => toggle("scripts", v)}
                   onResetScripts={() => onChange({ ...filter, scripts: [] })}
+                  mode={modeOf("scripts")}
+                  onToggleMode={() => toggleMode("scripts")}
                 />
                 <LanguageSection
                   languages={index.languages}
@@ -232,6 +250,8 @@ export function FilterSidebar({
                   onResetLanguages={() =>
                     onChange({ ...filter, languages: [] })
                   }
+                  mode={modeOf("languages")}
+                  onToggleMode={() => toggleMode("languages")}
                 />
               </>
             )}
@@ -272,6 +292,8 @@ export function FilterSidebar({
                   sliderValue={axisValues}
                   onSliderChange={onAxisValueChange}
                   disabled={filter.facets.includes("static")}
+                  mode={modeOf("axes")}
+                  onToggleMode={() => toggleMode("axes")}
                 />
               </>
             )}
@@ -281,6 +303,8 @@ export function FilterSidebar({
                 selectedFeatures={filter.features}
                 onToggleFeature={(v) => toggle("features", v)}
                 onResetFeatures={() => onChange({ ...filter, features: [] })}
+                mode={modeOf("features")}
+                onToggleMode={() => toggleMode("features")}
               />
             )}
             {group === "metrics" && (

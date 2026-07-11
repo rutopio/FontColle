@@ -8,6 +8,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import axesData from "@/data/axes.json";
+import type { MatchMode } from "@/lib/fonts/filter";
 import { cn } from "@/lib/utils";
 import { SectionHeader } from "./section-header";
 
@@ -52,6 +53,8 @@ export function VariableAxesSection({
   sliderValue,
   onSliderChange,
   disabled = false,
+  mode,
+  onToggleMode,
 }: {
   icon: Icon;
   items: [string, number][];
@@ -61,6 +64,8 @@ export function VariableAxesSection({
   sliderValue: Record<string, number>;
   onSliderChange: (tag: string, pct: number) => void;
   disabled?: boolean;
+  mode?: MatchMode;
+  onToggleMode?: () => void;
 }) {
   const [showMore, setShowMore] = useState(false);
   const hasSelection = items.some(([value]) => selected.includes(value));
@@ -203,6 +208,8 @@ export function VariableAxesSection({
         canSort={false}
         sort="count"
         onToggleSort={() => {}}
+        mode={mode}
+        onToggleMode={onToggleMode}
       />
       <div
         className={cn(

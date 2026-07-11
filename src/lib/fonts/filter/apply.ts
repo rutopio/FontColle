@@ -8,6 +8,7 @@ import {
   repoHost,
   TAG_MEMBERSHIP_THRESHOLD,
 } from "./facets";
+import { matchMode } from "./match-mode";
 import type { FilterState } from "./state";
 import { familyWeightSet, familyWidthSet } from "./weights";
 
@@ -51,6 +52,14 @@ export function applyFilters(
 ): FontRecord[] {
   const q = f.query.trim().toLowerCase();
   const metricKeys = Object.keys(f.metrics) as MetricKey[];
+  // Combine a section's selected values by its OR/AND mode: "any" passes when at
+  // least one matches, "all" when every one does. Empty selections are handled
+  // by the caller's length guard, so `has` runs over a non-empty list.
+  const combine = <T>(
+    key: Parameters<typeof matchMode>[1],
+    values: T[],
+    has: (v: T) => boolean
+  ) => (matchMode(f, key) === "any" ? values.some(has) : values.every(has));
   return fonts.filter((font) => {
     // Match the family name, its Google Fonts display name, or the designer.
     if (
@@ -61,16 +70,19 @@ export function applyFilters(
     )
       return false;
     if (f.classes.length && !f.classes.includes(font.class)) return false;
-    if (f.facets.length && !f.facets.every((x) => font.facets.includes(x)))
+    if (
+      f.facets.length &&
+      !combine("facets", f.facets, (x) => font.facets.includes(x))
+    )
       return false;
     if (
       f.features.length &&
-      !f.features.every((x) => font.features.includes(x))
+      !combine("features", f.features, (x) => font.features.includes(x))
     )
       return false;
     if (
       f.axes.length &&
-      !f.axes.every((tag) => font.axes.some((a) => a.tag === tag))
+      !combine("axes", f.axes, (tag) => font.axes.some((a) => a.tag === tag))
     )
       return false;
     // OR within weights: family must offer at least one selected weight step.
@@ -83,13 +95,16 @@ export function applyFilters(
       const set = familyWidthSet(font);
       if (!f.widths.some((w) => set.includes(Number(w)))) return false;
     }
-    // AND across scripts: family must cover every selected writing system.
-    if (f.scripts.length && !f.scripts.every((s) => font.scripts.includes(s)))
+    // Writing systems: AND by default (cover every selected), OR when toggled.
+    if (
+      f.scripts.length &&
+      !combine("scripts", f.scripts, (s) => font.scripts.includes(s))
+    )
       return false;
-    // AND across languages: family must support every selected language.
+    // Languages: AND by default (support every selected), OR when toggled.
     if (
       f.languages.length &&
-      !f.languages.every((l) => font.languages.includes(l))
+      !combine("languages", f.languages, (l) => font.languages.includes(l))
     )
       return false;
     // Color: at most one of "color" / "monochrome" (radio-style).
@@ -97,18 +112,22 @@ export function applyFilters(
       const wantColor = f.color.includes("color");
       if (isColorFont(font) !== wantColor) return false;
     }
-    // AND across color formats: a font must carry every selected format's
-    // table. Selecting COLR + SVG yields only the dual-format families.
+    // Color formats: AND by default (carry every selected table, so COLR + SVG
+    // yields only dual-format families), OR when toggled.
     if (
       f.colorFormats.length &&
-      !f.colorFormats.every((t) => font.colorTables.includes(t))
+      !combine("colorFormats", f.colorFormats, (t) =>
+        font.colorTables.includes(t)
+      )
     )
       return false;
-    // OR within classifications: family matches when it carries any selected
-    // tag with a score of at least 50.
+    // Classifications: OR by default (carry any selected tag scoring >= 50),
+    // AND when toggled.
     if (
       f.classifications.length &&
-      !f.classifications.some(
+      !combine(
+        "classifications",
+        f.classifications,
         (t) => (font.tags[t] ?? 0) >= TAG_MEMBERSHIP_THRESHOLD
       )
     )
