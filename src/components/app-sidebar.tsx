@@ -4,11 +4,13 @@ import type * as React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Sidebar,
+  SidebarFooter,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 // sidebar-09 layout: a parent icon-collapsible sidebar holding two child
 // sidebars side by side. First child is the icon rail (the home link, plus
@@ -52,6 +54,12 @@ export function AppSidebar({
             <div className="pb-2">{rail}</div>
           </ScrollArea>
         )}
+        {/* mt-auto pins the toggle to the rail's bottom whether or not a rail
+            fills the space above it. p-0 lets the toggle's own nav padding
+            match the rail buttons above (px-1.5). */}
+        <SidebarFooter className="mt-auto p-0 pb-2">
+          <ThemeToggle />
+        </SidebarFooter>
       </Sidebar>
 
       {/* Second sidebar: the page's own panel, filling the remaining width. The
