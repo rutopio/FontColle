@@ -38,42 +38,29 @@ export function FilterLayout({
   );
 }
 
-// Right side of both pages, matching sidebar-09: a full-width header flush to
-// the inset edge (the page's header content), then the page body constrained to
-// max-w below it. The sidebar stays open, so there's no trigger.
-//
-// `scroll` puts the body inside its own ScrollArea so only the list scrolls and
-// its scrollbar sits under the fixed header, not through it. The whole Column
-// then owns the viewport height (`h-svh`), the header is a shrink-0 flex child
-// (no sticky needed — the parent no longer scrolls), and `scrollViewportRef`
-// exposes the scroll container so a virtualizer can bind to it. Without `scroll`
-// the page scrolls as before (the detail page keeps that).
+// Right side of both pages, matching sidebar-09: a fixed header flush to the
+// inset edge, a body that scrolls inside its own ScrollArea, and a fixed footer
+// bar. The header and footer stay put while only the body scrolls, so the
+// scrollbar sits between them rather than running through the chrome. The whole
+// Column owns the viewport height; `scrollViewportRef` exposes the scroll
+// container so a virtualizer (the list) can bind to it.
 export function Column({
   header,
   headerClassName,
   footer,
   children,
-  scroll = false,
   scrollViewportRef,
 }: {
   header: React.ReactNode;
   headerClassName?: string;
-  // Optional bottom bar, a mirror of the header: same height, flush to the
-  // inset edge, border on top instead of bottom. Only rendered in `scroll`
-  // mode (the non-scrolling detail page has no fixed bottom). The list uses it
-  // for a full-width search bar.
+  // Bottom bar, a mirror of the header: same height, flush to the inset edge,
+  // border on top instead of bottom. Both pages use it for the preview field.
   footer?: React.ReactNode;
   children: React.ReactNode;
-  scroll?: boolean;
   scrollViewportRef?: Ref<HTMLDivElement>;
 }) {
   const headerEl = (
-    <header
-      className={cn(
-        "flex h-16 shrink-0 items-center gap-2 border-border border-b bg-background px-4",
-        !scroll && "sticky top-0 z-10"
-      )}
-    >
+    <header className="flex h-16 shrink-0 items-center gap-2 border-border border-b bg-background px-4">
       <div className={cn("flex flex-1 items-center gap-3", headerClassName)}>
         {header}
       </div>
@@ -81,15 +68,7 @@ export function Column({
   );
 
   const footerEl = footer ? (
-    <footer
-      className={cn(
-        "flex h-16 shrink-0 items-center gap-2 border-border border-t bg-background px-4",
-        // In scroll mode the footer is a flex sibling below the ScrollArea; in
-        // the page-scrolls mode (detail) it sticks to the viewport bottom, the
-        // mirror of the header's sticky top.
-        !scroll && "sticky bottom-0 z-10"
-      )}
-    >
+    <footer className="flex h-16 shrink-0 items-center gap-2 border-border border-t bg-background px-4">
       <div className="flex flex-1 items-center gap-3">{footer}</div>
     </footer>
   ) : null;
@@ -108,36 +87,20 @@ export function Column({
     </div>
   );
 
-  if (scroll) {
-    // The list scrolls inside its own container. The wrapper is positioned
-    // absolutely to fill the inset without contributing to its flex height —
-    // otherwise the (pre-virtualization) list height blows out the shared
-    // `min-h-svh` shell and the container never gets a finite height to cap the
-    // ScrollArea. A relative spacer keeps the inset's own box intact.
-    return (
-      <div className="relative min-w-0 flex-1">
-        <div className="absolute inset-0 flex flex-col">
-          {headerEl}
-          <ScrollArea
-            viewportRef={scrollViewportRef}
-            className="min-h-0 flex-1"
-          >
-            {body}
-          </ScrollArea>
-          {footerEl}
-        </div>
-      </div>
-    );
-  }
-
+  // The body scrolls inside its own container. The wrapper is positioned
+  // absolutely to fill the inset without contributing to its flex height —
+  // otherwise the (pre-virtualization) list height blows out the shared
+  // `min-h-svh` shell and the container never gets a finite height to cap the
+  // ScrollArea. A relative spacer keeps the inset's own box intact.
   return (
-    <div className="flex min-w-0 flex-1 flex-col">
-      {headerEl}
-      {/* Let the body take the remaining height so the footer sits at the
-          bottom even when content is short, instead of trailing the content
-          with a gap below it. */}
-      <div className="flex min-h-0 flex-1 flex-col">{body}</div>
-      {footerEl}
+    <div className="relative min-w-0 flex-1">
+      <div className="absolute inset-0 flex flex-col">
+        {headerEl}
+        <ScrollArea viewportRef={scrollViewportRef} className="min-h-0 flex-1">
+          {body}
+        </ScrollArea>
+        {footerEl}
+      </div>
     </div>
   );
 }
