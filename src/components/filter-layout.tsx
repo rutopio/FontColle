@@ -47,12 +47,18 @@ export function FilterLayout({
 export function Column({
   header,
   headerClassName,
+  footer,
   children,
   scroll = false,
   scrollViewportRef,
 }: {
   header: React.ReactNode;
   headerClassName?: string;
+  // Optional bottom bar, a mirror of the header: same height, flush to the
+  // inset edge, border on top instead of bottom. Only rendered in `scroll`
+  // mode (the non-scrolling detail page has no fixed bottom). The list uses it
+  // for a full-width search bar.
+  footer?: React.ReactNode;
   children: React.ReactNode;
   scroll?: boolean;
   scrollViewportRef?: Ref<HTMLDivElement>;
@@ -70,8 +76,30 @@ export function Column({
     </header>
   );
 
+  const footerEl = footer ? (
+    <footer
+      className={cn(
+        "flex h-16 shrink-0 items-center gap-2 border-border border-t bg-background px-4",
+        // In scroll mode the footer is a flex sibling below the ScrollArea; in
+        // the page-scrolls mode (detail) it sticks to the viewport bottom, the
+        // mirror of the header's sticky top.
+        !scroll && "sticky bottom-0 z-10"
+      )}
+    >
+      <div className="flex flex-1 items-center gap-3">{footer}</div>
+    </footer>
+  ) : null;
+
   const body = (
-    <div className="mx-auto flex w-full max-w-(--breakpoint-2xl) flex-col gap-6 p-6 pb-24">
+    <div
+      className={cn(
+        "mx-auto flex w-full max-w-(--breakpoint-2xl) flex-col gap-6 p-6",
+        // A solid footer bar sits below the scroll area, so content needs no
+        // extra clearance. Without one, the floating preview dock overlaps the
+        // last rows, so keep the tall bottom padding to clear it.
+        footerEl ? "pb-6" : "pb-24"
+      )}
+    >
       {children}
     </div>
   );
@@ -92,6 +120,7 @@ export function Column({
           >
             {body}
           </ScrollArea>
+          {footerEl}
         </div>
       </div>
     );
@@ -101,6 +130,7 @@ export function Column({
     <div className="flex min-w-0 flex-1 flex-col">
       {headerEl}
       {body}
+      {footerEl}
     </div>
   );
 }

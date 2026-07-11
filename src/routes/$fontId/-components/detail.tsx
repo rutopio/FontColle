@@ -2,6 +2,7 @@ import { ArrowLeftIcon } from "@phosphor-icons/react";
 import { Link, useCanGoBack, useRouter } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Column } from "@/components/filter-layout";
+import { PreviewBar } from "@/components/preview-dock";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { buildFeatureSettings } from "@/lib/fonts/features";
@@ -128,6 +129,7 @@ export function Detail({
           </div>
         </>
       }
+      footer={<PreviewBar />}
     >
       {(font.designer || font.class) && (
         <div className="flex flex-wrap items-center gap-2">
