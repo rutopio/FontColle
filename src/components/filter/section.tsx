@@ -1,4 +1,5 @@
 import { CaretDownIcon, type Icon } from "@phosphor-icons/react";
+import { AnimatePresence, motion } from "motion/react";
 import { Fragment, useMemo, useState } from "react";
 import {
   Tooltip,
@@ -198,19 +199,22 @@ export function Pills({
       <div className={rowClass}>{common.map(renderPill)}</div>
       {rare.length > 0 && (
         <>
-          {/* Animate the rare row open/closed by transitioning grid rows
-              0fr -> 1fr. The inner wrapper needs overflow-hidden so the
-              collapsed content is clipped rather than spilling out. */}
-          <div
-            className={cn(
-              "grid transition-[grid-template-rows] duration-200 ease-out",
-              showRare ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+          {/* Motion collapses the rare row by animating height auto <-> 0;
+              overflow-hidden clips the content while it slides. */}
+          <AnimatePresence initial={false}>
+            {showRare && (
+              <motion.div
+                key="rare"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="overflow-hidden"
+              >
+                <div className={rowClass}>{rare.map(renderPill)}</div>
+              </motion.div>
             )}
-          >
-            <div className="min-h-0 overflow-hidden">
-              <div className={rowClass}>{rare.map(renderPill)}</div>
-            </div>
-          </div>
+          </AnimatePresence>
           <button
             type="button"
             onClick={() => setShowRare((v) => !v)}
