@@ -182,7 +182,6 @@ function App() {
       }
     >
       <Column
-        scroll
         scrollViewportRef={scrollRef}
         header={
           <>
