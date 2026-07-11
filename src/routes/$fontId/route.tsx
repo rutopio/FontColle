@@ -6,6 +6,7 @@ import { DEFAULT_ON } from "@/lib/fonts/features";
 import { getFontById } from "@/lib/fonts/queries";
 import { pageTitle } from "@/lib/site";
 import { Detail } from "./-components/detail";
+import { DetailRail } from "./-components/detail-rail";
 import { DetailSidebar } from "./-components/detail-sidebar";
 
 export const Route = createFileRoute("/$fontId")({
@@ -79,8 +80,13 @@ function DetailPage() {
   // Preview font size lives here too, since its control is in the sidebar.
   const [size, setSize] = useState(72);
 
+  // Which detail view is active. Lives here so the sidebar can host the trigger
+  // and the Detail body reacts to it.
+  const [tab, setTab] = useState<"sample" | "detail">("sample");
+
   return (
     <FilterLayout
+      rail={<DetailRail active={tab} onSelect={setTab} />}
       sidebar={
         <DetailSidebar
           size={size}
@@ -98,6 +104,7 @@ function DetailPage() {
     >
       <Detail
         font={font}
+        tab={tab}
         size={size}
         axisState={axisState}
         italic={italic}

@@ -1,6 +1,6 @@
 import { ArrowLeftIcon } from "@phosphor-icons/react";
 import { Link, useCanGoBack, useRouter } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { Column } from "@/components/filter-layout";
 import { PreviewBar } from "@/components/preview-dock";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +20,7 @@ import { TypeTester } from "./type-tester";
 
 export function Detail({
   font,
+  tab,
   size,
   axisState,
   italic,
@@ -27,6 +28,7 @@ export function Detail({
   featureState,
 }: {
   font: FontRecord;
+  tab: "sample" | "detail";
   size: number;
   axisState: Record<string, number>;
   italic: boolean;
@@ -36,7 +38,6 @@ export function Detail({
   const { text, setText } = usePreview();
   const router = useRouter();
   const canGoBack = useCanGoBack();
-  const [tab, setTab] = useState<"sample" | "detail">("sample");
   const specimen = text || specimenFor(font);
   const hasItalic = useMemo(
     () => font.instances.some((i) => i.italic),
@@ -97,22 +98,6 @@ export function Detail({
             </h1>
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <div className="flex items-center gap-0.5 rounded-lg bg-muted p-0.5 text-muted-foreground/72">
-              {(["sample", "detail"] as const).map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => setTab(t)}
-                  className={`rounded-md px-3 py-1.5 font-medium text-sm capitalize transition-colors ${
-                    tab === t
-                      ? "bg-background text-foreground shadow-sm/5 dark:bg-input"
-                      : "hover:text-foreground"
-                  }`}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
             <Button
               render={
                 // biome-ignore lint/a11y/useAnchorContent: Button injects its children into this anchor via the render prop (aria-label also set); the static rule can't see through it.
@@ -215,7 +200,26 @@ export function Detail({
               {font.version != null && (
                 <Spec label="Version" value={String(font.version)} />
               )}
-              {font.dateAdded && <Spec label="Added" value={font.dateAdded} />}
+              {font.dateAdded && (
+                <Spec
+                  label="Added"
+                  value={font.dateAdded}
+                  badge={
+                    versionOnDate(font.versionHistory, font.dateAdded) ??
+                    undefined
+                  }
+                />
+              )}
+              {font.lastModified && (
+                <Spec
+                  label="Last updated"
+                  value={font.lastModified}
+                  badge={
+                    versionOnDate(font.versionHistory, font.lastModified) ??
+                    undefined
+                  }
+                />
+              )}
               {font.license && <Spec label="License" value={font.license} />}
             </Panel>
             <Panel label="Subsets">
@@ -242,6 +246,24 @@ export function Detail({
             )}
           </div>
 
+          {/* VERSION HISTORY — release timeline from google/fonts git history,
+              newest first. Hidden entirely when none could be extracted. */}
+          {font.versionHistory.length > 0 && (
+            <Panel label="Version history" count={font.versionHistory.length}>
+              <ol className="flex flex-col">
+                {[...font.versionHistory].reverse().map((v) => (
+                  <li
+                    key={v.version}
+                    className="flex items-baseline justify-between border-border border-t py-1.5 text-sm first:border-t-0"
+                  >
+                    <span className="font-mono">v{v.version}</span>
+                    <span className="text-muted-foreground">{v.date}</span>
+                  </li>
+                ))}
+              </ol>
+            </Panel>
+          )}
+
           {/* LANGUAGES — full width. */}
           {font.languages.length > 0 && <LanguageSupport font={font} />}
         </>
@@ -250,11 +272,41 @@ export function Detail({
   );
 }
 
-function Spec({ label, value }: { label: string; value: string }) {
+function Spec({
+  label,
+  value,
+  badge,
+}: {
+  label: string;
+  value: string;
+  badge?: string;
+}) {
   return (
-    <div className="flex justify-between border-border border-t py-1.5 text-sm first:border-t-0">
+    <div className="flex items-center justify-between gap-2 border-border border-t py-1.5 text-sm first:border-t-0">
       <span>{label}</span>
-      <span className="font-mono">{value}</span>
+      <span className="flex items-center gap-2">
+        {badge && (
+          <Badge variant="secondary" className="font-mono">
+            v{badge}
+          </Badge>
+        )}
+        <span className="font-mono">{value}</span>
+      </span>
     </div>
   );
+}
+
+// The version shipped on (or most recently before) a given "yyyy-MM-dd" date,
+// read off the git-history timeline. Null when no version predates the date.
+function versionOnDate(
+  history: { version: string; date: string }[],
+  date: string
+): string | null {
+  let match: string | null = null;
+  // history is ascending by date; the last entry that isn't after `date` wins.
+  for (const v of history) {
+    if (v.date <= date) match = v.version;
+    else break;
+  }
+  return match;
 }
