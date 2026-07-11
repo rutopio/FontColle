@@ -8,7 +8,7 @@ import {
   repoHost,
   TAG_MEMBERSHIP_THRESHOLD,
 } from "./facets";
-import { matchMode } from "./match-mode";
+import { MODE_KEYS, type ModeKey, matchMode } from "./match-mode";
 import type { FilterState } from "./state";
 import { familyWeightSet, familyWidthSet } from "./weights";
 
@@ -52,14 +52,17 @@ export function applyFilters(
 ): FontRecord[] {
   const q = f.query.trim().toLowerCase();
   const metricKeys = Object.keys(f.metrics) as MetricKey[];
-  // Combine a section's selected values by its OR/AND mode: "any" passes when at
-  // least one matches, "all" when every one does. Empty selections are handled
-  // by the caller's length guard, so `has` runs over a non-empty list.
-  const combine = <T>(
-    key: Parameters<typeof matchMode>[1],
-    values: T[],
-    has: (v: T) => boolean
-  ) => (matchMode(f, key) === "any" ? values.some(has) : values.every(has));
+  // Each section's OR/AND mode depends only on the filter, not the font, so
+  // resolve the toggleable sections once here rather than per font in the
+  // 2000+-iteration loop below.
+  const isAny = Object.fromEntries(
+    MODE_KEYS.map((k) => [k, matchMode(f, k) === "any"])
+  ) as Record<ModeKey, boolean>;
+  // Combine a section's selected values by its mode: "any" passes when at least
+  // one matches, "all" when every one does. Empty selections are handled by the
+  // caller's length guard, so `has` runs over a non-empty list.
+  const combine = <T>(key: ModeKey, values: T[], has: (v: T) => boolean) =>
+    isAny[key] ? values.some(has) : values.every(has);
   return fonts.filter((font) => {
     // Match the family name, its Google Fonts display name, or the designer.
     if (

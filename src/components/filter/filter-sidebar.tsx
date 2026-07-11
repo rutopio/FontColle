@@ -186,8 +186,10 @@ export function FilterSidebar({
                     onReset={() =>
                       clearSection("classifications", section.items)
                     }
-                    // All sub-sections share the `classifications` mode; show the
-                    // toggle on the first one only.
+                    // Serif/Sans/Expressive/… are separate visual sections but
+                    // share one `classifications` state key, so they share one
+                    // OR/AND mode. Host that single toggle on the first section's
+                    // header (the group has no header of its own to carry it).
                     mode={i === 0 ? modeOf("classifications") : undefined}
                     onToggleMode={
                       i === 0 ? () => toggleMode("classifications") : undefined
