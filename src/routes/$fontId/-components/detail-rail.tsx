@@ -20,7 +20,7 @@ export function DetailRail({
   onSelect: (id: DetailTab) => void;
 }) {
   return (
-    <nav aria-label="Detail views" className="flex flex-col gap-1 px-1.5">
+    <nav aria-label="Detail views" className="flex flex-col gap-1">
       {TABS.map((tab) => {
         const on = tab.id === active;
         return (

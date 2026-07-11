@@ -3,6 +3,7 @@ import type * as React from "react";
 import { LogoIcon } from "@/components/logo-icon";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import { Sidebar, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
 
 // sidebar-09 layout: a parent icon-collapsible sidebar holding two child
@@ -31,25 +32,28 @@ export function AppSidebar({
             styling. px-1.5 matches the rail nav below so it lines up with and
             spans the same width as the group buttons. aspect-square keeps it a
             square tile. */}
-        <SidebarHeader className="mb-8 p-2">
+        <SidebarHeader className=" ">
           <Link
             to="/"
             aria-label="All fonts"
-            className="group/logo flex aspect-square w-full flex-col items-center justify-center rounded-lg text-primary"
+            className="group/logo flex aspect-square w-full flex-col items-center justify-center gap-1 rounded-lg text-primary"
           >
             <LogoIcon className="size-8 transition-[stroke-width] group-hover/logo:[stroke-width:2.5]" />
             <span className="font-mono text-[9px]">FontColle</span>
           </Link>
         </SidebarHeader>
+        <Separator className="" />
         {rail && (
-          <ScrollArea className="min-h-0 flex-1">
+          <ScrollArea className="min-h-0 flex-1 p-2">
             <div className="pb-2">{rail}</div>
           </ScrollArea>
         )}
         {/* mt-auto pins the toggle to the rail's bottom whether or not a rail
             fills the space above it. p-0 lets the toggle's own nav padding
             match the rail buttons above (px-1.5). */}
-        <SidebarFooter className="mt-auto p-0 pb-2">
+        <Separator className="" />
+
+        <SidebarFooter className="mt-auto p-2">
           <ThemeToggle />
         </SidebarFooter>
       </Sidebar>

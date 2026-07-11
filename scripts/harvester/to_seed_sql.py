@@ -34,12 +34,13 @@ def statements_for(r, now):
     color_tables = json.dumps(r.get("colorTables", []))
     tags = json.dumps(r.get("tags", {}), ensure_ascii=False)
     version_history = json.dumps(r.get("versionHistory", []), ensure_ascii=False)
+    designer_profiles = json.dumps(r.get("designerProfiles", []), ensure_ascii=False)
     cols = (
         "family_dir,name,display_name,designer,category,primary_class,license,license_dir,"
         "is_variable,subsets,primary_ttf,version,version_string,created_ms,"
         "modified_ms,date_added,first_commit_date,weight_class,width_class,weights,fs_type,glyph_count,"
         "char_count,units_per_em,has_stat,color_tables,primary_script,panose,cjk_coverage,"
-        "is_published,popularity_rank,trending_rank,last_modified,version_history,specimen,tags,"
+        "is_published,popularity_rank,trending_rank,last_modified,version_history,specimen,about,designer_profiles,tags,"
         "x_height,cap_height,italic_angle,hhea_ascender,hhea_descender,hhea_line_gap,"
         "typo_ascender,typo_descender,typo_line_gap,win_ascent,win_descent,"
         "use_typo_metrics,avg_char_width,contrast,is_monospace,has_hinting,vendor_id,file_size,"
@@ -58,6 +59,7 @@ def statements_for(r, now):
         f"{q(r.get('primaryScript'))},{q(r.get('panose'))},{q(cjk_cov)},"
         f"{q(bool(r.get('isPublished', True)))},{q(r.get('popularityRank'))},"
         f"{q(r.get('trendingRank'))},{q(r.get('lastModifiedApi'))},{q(version_history)},{q(r.get('specimen'))},"
+        f"{q(r.get('about'))},{q(designer_profiles)},"
         f"{q(tags)},"
         f"{q(r.get('xHeight'))},{q(r.get('capHeight'))},{q(r.get('italicAngle'))},"
         f"{q(r.get('hheaAscender'))},{q(r.get('hheaDescender'))},{q(r.get('hheaLineGap'))},"
