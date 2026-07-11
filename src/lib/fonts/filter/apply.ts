@@ -2,7 +2,7 @@
 import { isColorFont } from "../color";
 import { METRIC_SPECS, type MetricKey, matchesRange } from "../metrics";
 import type { FontRecord } from "../types";
-import { TAG_MEMBERSHIP_THRESHOLD } from "./facets";
+import { designerTokens, foldVendor, TAG_MEMBERSHIP_THRESHOLD } from "./facets";
 import type { FilterState } from "./state";
 import { familyWeightSet, familyWidthSet } from "./weights";
 
@@ -108,6 +108,18 @@ export function applyFilters(
       )
     )
       return false;
+    // OR within designers: family lists at least one selected designer (its
+    // designer field is comma-joined, so match on the split tokens).
+    if (
+      f.designers.length &&
+      !designerTokens(font).some((d) => f.designers.includes(d))
+    )
+      return false;
+    // OR within vendors: family's folded vendor id is one of the selected.
+    if (f.vendors.length) {
+      const vnd = foldVendor(font.vendorId);
+      if (!vnd || !f.vendors.includes(vnd)) return false;
+    }
     // OR within license: family's license is one of the selected ids.
     if (f.license.length && !(font.license && f.license.includes(font.license)))
       return false;

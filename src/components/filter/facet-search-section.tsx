@@ -25,6 +25,8 @@ export function FacetSearchSection({
   searchPlaceholder,
   rankBy,
   topN,
+  pillTitle,
+  info,
 }: {
   title: string;
   icon: Icon;
@@ -37,6 +39,12 @@ export function FacetSearchSection({
   // lookup like speaker population to rank by that instead.
   rankBy?: (value: string) => number;
   topN: number;
+  // Optional hover/focus tooltip per value (e.g. the raw vendor code behind a
+  // foundry-name label). Omitted for facets whose label already says it all.
+  pillTitle?: (value: string) => string;
+  // Optional note shown in an info-icon tooltip beside the title (e.g. the data
+  // source). Forwarded to SectionHeader.
+  info?: React.ReactNode;
 }) {
   const { sort, toggleSort, query, setQuery, q } = useSearchSort();
 
@@ -85,6 +93,7 @@ export function FacetSearchSection({
       <SectionHeader
         title={title}
         icon={icon}
+        info={info}
         hasSelection={selected.length > 0}
         onReset={onReset}
         canSort={items.length > 1}
@@ -110,6 +119,7 @@ export function FacetSearchSection({
           onToggle={onToggle}
           topNSet={topNSet}
           label={(value) => labelOf.get(value) ?? value}
+          title={pillTitle}
           columns={2}
           grid
           spread

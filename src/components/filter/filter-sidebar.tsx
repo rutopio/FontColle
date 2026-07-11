@@ -21,6 +21,7 @@ import { CategoryCards } from "./category-cards";
 import { ClassificationSection } from "./classification-section";
 import { ColorFormatSection, ColorSection } from "./color-section";
 import { weightLabel, widthLabel } from "./constants";
+import { DesignerSection } from "./designer-section";
 import { FeatureSection } from "./feature-section";
 import { FontTypeSection } from "./font-type-section";
 import type { FilterGroupId } from "./groups";
@@ -263,21 +264,36 @@ export function FilterSidebar({
                 />
               </>
             )}
-            {group === "other" && (
+            {group === "designer" && (
               <>
-                <LicenseSection
-                  items={index.license}
-                  selected={filter.license}
-                  onToggle={(v) => toggle("license", v)}
-                  onReset={() => onChange({ ...filter, license: [] })}
-                />
                 <SourceSection
                   items={index.flags}
                   selected={filter.flags}
                   onToggle={(v) => onChange(actions.selectFlag(filter, v))}
                   onReset={() => onChange({ ...filter, flags: [] })}
                 />
+                <DesignerSection
+                  designers={index.designers}
+                  vendors={index.vendors}
+                  selectedDesigners={filter.designers}
+                  selectedVendors={filter.vendors}
+                  onToggleDesigner={(v) => toggle("designers", v)}
+                  onToggleVendor={(v) => toggle("vendors", v)}
+                  onResetDesigners={() =>
+                    onChange({ ...filter, designers: [] })
+                  }
+                  onResetVendors={() => onChange({ ...filter, vendors: [] })}
+                  vendorCasing={index.vendorCasing}
+                />
               </>
+            )}
+            {group === "other" && (
+              <LicenseSection
+                items={index.license}
+                selected={filter.license}
+                onToggle={(v) => toggle("license", v)}
+                onReset={() => onChange({ ...filter, license: [] })}
+              />
             )}
           </motion.div>
         </AnimatePresence>

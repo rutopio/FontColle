@@ -14,6 +14,8 @@ type ArrayKey =
   | "color"
   | "colorFormats"
   | "classifications"
+  | "designers"
+  | "vendors"
   | "license"
   | "upm";
 
