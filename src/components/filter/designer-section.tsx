@@ -55,9 +55,6 @@ export function DesignerSection({
         onReset={onResetDesigners}
         searchPlaceholder="Search designers"
         topN={12}
-        // 700+ designers: virtualize the pill list so searching doesn't flood
-        // the DOM with hundreds of buttons.
-        virtualize
       />
       <FacetSearchSection
         title="Vendor"
