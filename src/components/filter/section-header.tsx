@@ -167,10 +167,16 @@ export function SectionHeader({
       <div className="flex shrink-0 items-center gap-0.5">
         {/* OR/AND toggle, left of the reset/sort slot. Only for sections that
             pass a mode, and only once something is selected — combining is
-            moot with zero or one pick, so it appears alongside Reset. */}
-        {mode && onToggleMode && hasSelection ? (
-          <MatchModeToggle mode={mode} onToggle={onToggleMode} />
-        ) : null}
+            moot with zero or one pick, so it appears alongside Reset. Fades
+            with the same timing as the Reset/Sort slot so the two never look
+            like they animate on different clocks. */}
+        <AnimatePresence initial={false}>
+          {mode && onToggleMode && hasSelection ? (
+            <motion.div key="mode" {...FADE}>
+              <MatchModeToggle mode={mode} onToggle={onToggleMode} />
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
         {/* Reserve the action slot's height/width up front with an invisible
           Reset, then cross-fade the live action (Reset <-> Sort) over it so a
           button appearing on first selection never shifts the layout. */}

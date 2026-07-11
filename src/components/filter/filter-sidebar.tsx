@@ -191,6 +191,7 @@ export function FilterSidebar({
                 <CategoryCards
                   cards={categoryCards}
                   onToggle={toggleCategory}
+                  onReset={() => clearSection("classes", index.classes)}
                 />
                 {index.classifications
                   .filter((s) => s.group === "style")
