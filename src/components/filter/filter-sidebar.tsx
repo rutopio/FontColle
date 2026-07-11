@@ -4,7 +4,6 @@ import {
   SlidersHorizontalIcon,
   TagIcon,
   TextAaIcon,
-  TextItalicIcon,
 } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect } from "react";
@@ -14,7 +13,6 @@ import {
   FACET_LABELS,
   type FacetIndex,
   type FilterState,
-  ITALIC_LABELS,
   type MetricKey,
   type MetricRange,
   type ModeKey,
@@ -79,8 +77,35 @@ export function FilterSidebar({
     onChange(actions.selectColor(filter, value));
   const selectFontType = (value: string) =>
     onChange(actions.selectFontType(filter, value));
-  const selectItalic = (value: string) =>
-    onChange(actions.selectItalic(filter, value));
+
+  // Category cards are mostly primary classes (Slab and Emoji are now their own
+  // classes, mutually exclusive with Sans/Serif/…). One card, Italic, is a
+  // cross-cutting trait backed by the radio-style `italic` state instead.
+  // Display order is fixed; Slab/Italic/Emoji slot in before the odd-one-out
+  // Graphics.
+  const classCount = (v: string) =>
+    index.classes.find(([c]) => c === v)?.[1] ?? 0;
+  const italicCount = index.italic.find(([v]) => v === "italic")?.[1] ?? 0;
+  const classCard = (v: string) => ({
+    value: v,
+    count: classCount(v),
+    selected: filter.classes.includes(v),
+  });
+  const categoryCards = [
+    ...["Sans", "Serif", "Mono", "Display", "Script", "Slab"].map(classCard),
+    {
+      value: "Italic",
+      count: italicCount,
+      selected: filter.italic.includes("italic"),
+    },
+    ...["Emoji", "Graphics"].map(classCard),
+  ].filter((c) => c.count > 0 || c.selected);
+  const toggleCategory = (value: string) => {
+    // Italic reuses the existing radio-style `italic` state (has-italic vs not).
+    if (value === "Italic")
+      return onChange(actions.selectItalic(filter, "italic"));
+    return toggle("classes", value);
+  };
   // OR/AND toggle for a multi-select section, plus the current mode to show.
   const toggleMode = (key: ModeKey) =>
     onChange(actions.toggleMatchMode(filter, key));
@@ -165,20 +190,36 @@ export function FilterSidebar({
             {group === "style" && (
               <>
                 <CategoryCards
-                  items={index.classes}
-                  selected={filter.classes}
-                  onToggle={(v) => toggle("classes", v)}
+                  cards={categoryCards}
+                  onToggle={toggleCategory}
                 />
-                <RadioPillSection
-                  title="Italic"
-                  icon={TextItalicIcon}
-                  items={index.italic}
-                  labels={ITALIC_LABELS}
-                  selected={filter.italic}
-                  onToggle={selectItalic}
-                  onReset={() => onChange({ ...filter, italic: [] })}
-                />
-                {index.classifications.map((section, i) => (
+                {index.classifications
+                  .filter((s) => s.group === "style")
+                  .map((section, i) => (
+                    <ClassificationSection
+                      key={section.title}
+                      title={section.title}
+                      items={section.items}
+                      selected={filter.classifications}
+                      onToggle={(v) => toggle("classifications", v)}
+                      onReset={() =>
+                        clearSection("classifications", section.items)
+                      }
+                      // Serif/Sans/Script share one `classifications` state key,
+                      // so they share one OR/AND mode. Host that single toggle on
+                      // the first section's header.
+                      mode={i === 0 ? modeOf("classifications") : undefined}
+                      onToggleMode={
+                        i === 0 ? () => toggleMode("classifications") : undefined
+                      }
+                    />
+                  ))}
+              </>
+            )}
+            {group === "mood" &&
+              index.classifications
+                .filter((s) => s.group === "mood")
+                .map((section, i) => (
                   <ClassificationSection
                     key={section.title}
                     title={section.title}
@@ -188,18 +229,14 @@ export function FilterSidebar({
                     onReset={() =>
                       clearSection("classifications", section.items)
                     }
-                    // Serif/Sans/Expressive/… are separate visual sections but
-                    // share one `classifications` state key, so they share one
-                    // OR/AND mode. Host that single toggle on the first section's
-                    // header (the group has no header of its own to carry it).
+                    // Shares the single classifications OR/AND mode with Style;
+                    // host the toggle on this group's first section too.
                     mode={i === 0 ? modeOf("classifications") : undefined}
                     onToggleMode={
                       i === 0 ? () => toggleMode("classifications") : undefined
                     }
                   />
                 ))}
-              </>
-            )}
             {group === "tag" && (
               // One flat list of natural-language trait pills, static/variable
               // included. Font type also lives in Axes as a radio (same state).

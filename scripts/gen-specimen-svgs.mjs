@@ -61,12 +61,15 @@ const INCONSOLATA_WGHT = { min: 200, max: 900 };
 const INCONSOLATA_WDTH = { min: 50, max: 200 };
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
-// Ask the CSS2 API for a family (optionally at a wght/wdth tuple) and return the
-// first font URL in the returned stylesheet.
-async function fontUrl(family, { wght, wdth } = {}) {
+// Ask the CSS2 API for a family (optionally at a wght/wdth tuple, or italic) and
+// return the first font URL in the returned stylesheet.
+async function fontUrl(family, { wght, wdth, ital } = {}) {
   const fam = family.trim().replace(/\s+/g, "+");
   let spec = fam;
-  if (wght != null && wdth != null) {
+  if (ital) {
+    // css2 puts ital first (alphabetical): ital@1 for the italic style.
+    spec = wght != null ? `${fam}:ital,wght@1,${wght}` : `${fam}:ital@1`;
+  } else if (wght != null && wdth != null) {
     // css2 requires axis tags in alphabetical order: wdth before wght.
     spec = `${fam}:wdth,wght@${wdth},${wght}`;
   } else if (wght != null) {
@@ -140,6 +143,21 @@ async function main() {
     writeFileSync(resolve(OUT_DIR, name), svg);
     written.push(name);
     console.log(`  ${name}  <- ${family}`);
+  }
+
+  // Extra Category cards that aren't a primary class: Slab (a slab serif face)
+  // and Italic (an italic face). Emoji has no meaningful "Aa", so it uses an
+  // icon in the UI instead of a specimen SVG.
+  {
+    const slab = await loadFont("Roboto Slab");
+    writeFileSync(resolve(OUT_DIR, "category-slab.svg"), specimenSvg(slab));
+    written.push("category-slab.svg");
+    console.log("  category-slab.svg  <- Roboto Slab");
+
+    const ital = await loadFont("Playfair Display", { ital: true });
+    writeFileSync(resolve(OUT_DIR, "category-italic.svg"), specimenSvg(ital));
+    written.push("category-italic.svg");
+    console.log("  category-italic.svg  <- Playfair Display italic");
   }
 
   // Weight cards: Inconsolata "Aa" at each weight step (wdth fixed at 100),

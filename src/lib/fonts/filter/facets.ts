@@ -13,17 +13,21 @@ export type FacetIndex = ReturnType<typeof buildFacetIndex>;
 // with applyFilters so counts and results agree.
 export const TAG_MEMBERSHIP_THRESHOLD = 50;
 
-// The four classification sections, in display order, each an ordered list of
-// its sub-tag paths (the only groups surfaced for now). Sub-tag order is by
-// family count descending, taken from the current dataset.
+// The classification sections, in display order, each an ordered list of its
+// sub-tag paths. Sub-tag order is by family count descending, from the current
+// dataset. `group` routes the section to a rail panel: "style" (form: Serif /
+// Sans Serif / Script) or "mood" (feel: Expressive / Theme / Seasonal). Both
+// share the one `classifications` state; group only decides where it renders.
 export const CLASSIFICATION_SECTIONS: {
   title: string;
   prefix: string;
+  group: "style" | "mood";
   tags: string[];
 }[] = [
   {
     title: "Serif",
     prefix: "/Serif/",
+    group: "style",
     tags: [
       "/Serif/Transitional",
       "/Serif/Old Style Garalde",
@@ -37,6 +41,7 @@ export const CLASSIFICATION_SECTIONS: {
   {
     title: "Sans Serif",
     prefix: "/Sans/",
+    group: "style",
     tags: [
       "/Sans/Humanist",
       "/Sans/Geometric",
@@ -48,13 +53,9 @@ export const CLASSIFICATION_SECTIONS: {
     ],
   },
   {
-    title: "Slab",
-    prefix: "/Slab/",
-    tags: ["/Slab/Humanist", "/Slab/Clarendon", "/Slab/Geometric"],
-  },
-  {
     title: "Script",
     prefix: "/Script/",
+    group: "style",
     tags: [
       "/Script/Handwritten",
       "/Script/Informal",
@@ -68,6 +69,7 @@ export const CLASSIFICATION_SECTIONS: {
     // several, so these OR within like every other classification section.
     title: "Expressive",
     prefix: "/Expressive/",
+    group: "mood",
     tags: [
       "/Expressive/Rugged",
       "/Expressive/Vintage",
@@ -94,6 +96,7 @@ export const CLASSIFICATION_SECTIONS: {
   {
     title: "Theme",
     prefix: "/Theme/",
+    group: "mood",
     tags: [
       "/Theme/Wacky",
       "/Theme/Techno",
@@ -115,6 +118,7 @@ export const CLASSIFICATION_SECTIONS: {
   {
     title: "Seasonal",
     prefix: "/Seasonal/",
+    group: "mood",
     tags: [
       "/Seasonal/Valentine's Day",
       "/Seasonal/Holi",
@@ -127,6 +131,14 @@ export const CLASSIFICATION_SECTIONS: {
     ],
   },
 ];
+
+// Which rail panel a classification tag path belongs to ("style" vs "mood"),
+// matched by section prefix. Lets a group's badge count only its own tags even
+// though every classification shares the one `classifications` state.
+export function classificationGroupOf(tag: string): "style" | "mood" | null {
+  const section = CLASSIFICATION_SECTIONS.find((s) => tag.startsWith(s.prefix));
+  return section?.group ?? null;
+}
 
 // The license pills, in fixed order. Records with a null license never match
 // and get no pill.
@@ -364,6 +376,7 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     // each [full tag path, count].
     classifications: CLASSIFICATION_SECTIONS.map((section) => ({
       title: section.title,
+      group: section.group,
       items: section.tags.map(
         (t) => [t, classifications.get(t) ?? 0] as [string, number]
       ),
