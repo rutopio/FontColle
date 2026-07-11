@@ -69,6 +69,9 @@ export interface FontRecord {
     bio: string | null; // HTML
     imageUrl: string | null;
   }[];
+  // OFL copyright header (per-family); null for Apache/UFL. The License tab
+  // prepends it to the shared boilerplate for that license.
+  licenseHeader: string | null;
   // Google Fonts classification tags (google/fonts tags CSV, e.g.
   // "/Serif/Fat Face"), not exposed by the Developer API. Scores are 0-100.
   // Empty for families the CSV doesn't cover.

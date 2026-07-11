@@ -1,15 +1,17 @@
-import { EyeIcon, InfoIcon, UserIcon } from "@phosphor-icons/react";
+import { EyeIcon, InfoIcon, ScrollIcon, UserIcon } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 
-export type DetailTab = "sample" | "detail" | "designer";
+export type DetailTab = "sample" | "detail" | "designer" | "license";
 
 // The icon-rail switcher for the detail page, matching the list's FilterRail:
 // one button per view (the type-tester sample vs. the font's specs vs. the
-// designer). Icons are chosen to not collide with the list's FilterRail set.
+// designer vs. the license). Icons are chosen to not collide with the list's
+// FilterRail set.
 const TABS = [
   { id: "sample" as const, label: "Sample", icon: EyeIcon },
   { id: "detail" as const, label: "Detail", icon: InfoIcon },
   { id: "designer" as const, label: "Designer", icon: UserIcon },
+  { id: "license" as const, label: "License", icon: ScrollIcon },
 ];
 
 export function DetailRail({
