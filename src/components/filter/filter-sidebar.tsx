@@ -4,6 +4,7 @@ import {
   SlidersHorizontalIcon,
   TagIcon,
   TextAaIcon,
+  TextItalicIcon,
 } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect } from "react";
@@ -13,6 +14,7 @@ import {
   FACET_LABELS,
   type FacetIndex,
   type FilterState,
+  ITALIC_LABELS,
   type MetricKey,
   type MetricRange,
   type ModeKey,
@@ -78,34 +80,31 @@ export function FilterSidebar({
   const selectFontType = (value: string) =>
     onChange(actions.selectFontType(filter, value));
 
-  // Category cards are mostly primary classes (Slab and Emoji are now their own
-  // classes, mutually exclusive with Sans/Serif/…). One card, Italic, is a
-  // cross-cutting trait backed by the radio-style `italic` state instead.
-  // Display order is fixed; Slab/Italic/Emoji slot in before the odd-one-out
-  // Graphics.
+  // Category cards are the primary classes, each mutually exclusive (Slab and
+  // Emoji are their own classes now). Fixed display order; Slab/Emoji slot in
+  // before the odd-one-out Graphics. Italic is a separate section below, not a
+  // Category card.
   const classCount = (v: string) =>
     index.classes.find(([c]) => c === v)?.[1] ?? 0;
-  const italicCount = index.italic.find(([v]) => v === "italic")?.[1] ?? 0;
-  const classCard = (v: string) => ({
-    value: v,
-    count: classCount(v),
-    selected: filter.classes.includes(v),
-  });
   const categoryCards = [
-    ...["Sans", "Serif", "Mono", "Display", "Script", "Slab"].map(classCard),
-    {
-      value: "Italic",
-      count: italicCount,
-      selected: filter.italic.includes("italic"),
-    },
-    ...["Emoji", "Graphics"].map(classCard),
-  ].filter((c) => c.count > 0 || c.selected);
-  const toggleCategory = (value: string) => {
-    // Italic reuses the existing radio-style `italic` state (has-italic vs not).
-    if (value === "Italic")
-      return onChange(actions.selectItalic(filter, "italic"));
-    return toggle("classes", value);
-  };
+    "Sans",
+    "Serif",
+    "Mono",
+    "Display",
+    "Script",
+    "Slab",
+    "Emoji",
+    "Graphics",
+  ]
+    .map((v) => ({
+      value: v,
+      count: classCount(v),
+      selected: filter.classes.includes(v),
+    }))
+    .filter((c) => c.count > 0 || c.selected);
+  const toggleCategory = (value: string) => toggle("classes", value);
+  const selectItalic = (value: string) =>
+    onChange(actions.selectItalic(filter, value));
   // OR/AND toggle for a multi-select section, plus the current mode to show.
   const toggleMode = (key: ModeKey) =>
     onChange(actions.toggleMatchMode(filter, key));
@@ -303,6 +302,15 @@ export function FilterSidebar({
                   selected={fontTypeSelected}
                   onToggle={selectFontType}
                   onReset={resetFontType}
+                />
+                <RadioPillSection
+                  title="Italic"
+                  icon={TextItalicIcon}
+                  items={index.italic}
+                  labels={ITALIC_LABELS}
+                  selected={filter.italic}
+                  onToggle={selectItalic}
+                  onReset={() => onChange({ ...filter, italic: [] })}
                 />
                 <CardGrid
                   title="Weight"

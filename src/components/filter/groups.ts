@@ -1,10 +1,10 @@
 import {
   DotsThreeOutlineIcon,
   type Icon,
+  IntersectThreeIcon,
   PaletteIcon,
   RulerIcon,
   ShapesIcon,
-  SlidersHorizontalIcon,
   SparkleIcon,
   TagIcon,
   ToggleRightIcon,
@@ -40,9 +40,11 @@ export interface FilterGroup {
   keys: (keyof Omit<FilterState, "query">)[];
 }
 
+// Rail order, top to bottom: Tag, Mood, Style, Variant, Language, Color,
+// Feature, Designer, Metric, More.
 export const FILTER_GROUPS: FilterGroup[] = [
-  // Natural-language trait tags: one flat list of plain-language pills (Italic,
-  // Ligatures, Monospace, Colorful, Noto, Latin, Static/Variable, …). The Tag
+  // Natural-language trait tags: one flat list of plain-language pills
+  // (Ligatures, Monospace, Colorful, Noto, Latin, Static/Variable, …). The Tag
   // panel owns the whole `facets` state; Font type is also shown as a radio in
   // the Variant panel (group id "axes"), backed by the same state.
   {
@@ -50,13 +52,6 @@ export const FILTER_GROUPS: FilterGroup[] = [
     label: "Tag",
     icon: TagIcon,
     keys: ["facets"],
-  },
-  {
-    id: "style",
-    label: "Style",
-    icon: ShapesIcon,
-    // classes + the Slab/Italic Category cards (classifications / italic).
-    keys: ["classes", "classifications", "italic"],
   },
   // Feel, not form: the Expressive / Theme / Seasonal classification sections.
   // Shares the `classifications` state with Style; countKey splits by prefix so
@@ -66,6 +61,21 @@ export const FILTER_GROUPS: FilterGroup[] = [
     label: "Mood",
     icon: SparkleIcon,
     keys: ["classifications"],
+  },
+  {
+    id: "style",
+    label: "Style",
+    icon: ShapesIcon,
+    keys: ["classes", "classifications"],
+  },
+  // Weight/Width and the wght/wdth variable axes are mutually exclusive — one
+  // clears the other — so they have to share a panel. Also owns Font type (the
+  // static/variable facets) and Italic (the has-italic radio).
+  {
+    id: "axes",
+    label: "Variant",
+    icon: IntersectThreeIcon,
+    keys: ["weights", "widths", "axes", "facets", "italic"],
   },
   {
     id: "language",
@@ -79,26 +89,11 @@ export const FILTER_GROUPS: FilterGroup[] = [
     icon: PaletteIcon,
     keys: ["color", "colorFormats"],
   },
-  // Weight/Width and the wght/wdth variable axes are mutually exclusive — one
-  // clears the other — so they have to share a panel, or the clearing happens
-  // out of sight. Also owns Font type (the static/variable facets).
-  {
-    id: "axes",
-    label: "Variant",
-    icon: SlidersHorizontalIcon,
-    keys: ["weights", "widths", "axes", "facets"],
-  },
   {
     id: "features",
     label: "Feature",
     icon: ToggleRightIcon,
     keys: ["features"],
-  },
-  {
-    id: "metrics",
-    label: "Metric",
-    icon: RulerIcon,
-    keys: ["metrics", "upm", "hasHinting"],
   },
   // Browse by who made the font: Source (Noto / Non-Noto), designer names, and
   // the OS/2 vendor id.
@@ -107,6 +102,12 @@ export const FILTER_GROUPS: FilterGroup[] = [
     label: "Designer",
     icon: UserIcon,
     keys: ["flags", "designers", "vendors"],
+  },
+  {
+    id: "metrics",
+    label: "Metric",
+    icon: RulerIcon,
+    keys: ["metrics", "upm", "hasHinting"],
   },
   {
     id: "other",

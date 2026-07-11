@@ -120,7 +120,9 @@ function MetricRangeRow({
     <div className="flex flex-col gap-1.5">
       <div className="flex items-baseline justify-between text-xs">
         <span className="flex items-center gap-1.5">
-          <span className="text-foreground">{spec.label}</span>
+          <h3 className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+            {spec.label}
+          </h3>
           <Tooltip>
             <TooltipTrigger
               type="button"
