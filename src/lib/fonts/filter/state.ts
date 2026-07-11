@@ -33,6 +33,9 @@ export interface FilterState {
   license: string[]; // license ids ("OFL", "APACHE2", "UFL"), OR within
   // Repository host buckets ("github","gitlab","sourcehut","none"), OR within.
   repoHosts: string[];
+  // Maintenance-activity buckets ("active","recent","dormant","unknown"),
+  // radio-style (at most one; they partition the catalog).
+  activity: string[];
   // Source: radio-style Noto / Others, stored as a 0- or 1-length array.
   flags: string[];
   // Italic: radio-style, stored as a 0- or 1-length array. "italic" = family
@@ -78,6 +81,7 @@ export const emptyFilter: FilterState = {
   vendors: [],
   license: [],
   repoHosts: [],
+  activity: [],
   flags: [],
   italic: [],
   upm: [],
@@ -109,6 +113,7 @@ export interface FilterSearch {
   vnd?: string; // vendor ids (folded), comma-joined
   lic?: string; // license ids
   repo?: string; // repository host buckets, comma-joined
+  act?: string; // activity radio: "active" | "recent" | "dormant" | "unknown"
   flag?: string; // source radio: "noto" | "others"
   ital?: string; // italic radio: "italic" | "upright"
   upm?: string; // units-per-em values, comma-joined
@@ -212,6 +217,7 @@ export function searchToFilter(s: FilterSearch): FilterState {
     vendors: splitCsv(s.vnd),
     license: splitCsv(s.lic),
     repoHosts: splitCsv(s.repo),
+    activity: splitCsv(s.act),
     flags: splitCsv(s.flag),
     italic: splitCsv(s.ital),
     upm: splitCsv(s.upm),
@@ -239,6 +245,7 @@ export function filterToSearch(f: FilterState): FilterSearch {
   if (f.vendors.length) s.vnd = f.vendors.join(",");
   if (f.license.length) s.lic = f.license.join(",");
   if (f.repoHosts.length) s.repo = f.repoHosts.join(",");
+  if (f.activity.length) s.act = f.activity.join(",");
   if (f.flags.length) s.flag = f.flags.join(",");
   if (f.italic.length) s.ital = f.italic.join(",");
   if (f.upm.length) s.upm = f.upm.join(",");
@@ -268,6 +275,7 @@ export function activeFilterCount(f: FilterState): number {
     f.vendors.length +
     f.license.length +
     f.repoHosts.length +
+    f.activity.length +
     f.flags.length +
     f.italic.length +
     f.upm.length +
@@ -300,6 +308,7 @@ export function parseFilterSearch(raw: Record<string, unknown>): FilterSearch {
     vnd: str(raw.vnd),
     lic: str(raw.lic),
     repo: str(raw.repo),
+    act: str(raw.act),
     flag: str(raw.flag),
     ital: str(raw.ital),
     upm: numCsv(raw.upm),

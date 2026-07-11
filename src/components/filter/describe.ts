@@ -1,6 +1,7 @@
 import { colorFormatLabel } from "@/lib/fonts/color";
 import { featureName } from "@/lib/fonts/features";
 import {
+  ACTIVITY_LABELS,
   CLASSIFICATION_SECTIONS,
   type FilterState,
   MODE_KEYS,
@@ -89,6 +90,8 @@ export function describeActiveFilters(f: FilterState): FilterChip[] {
   for (const v of f.license) push(`lic:${v}`, "License", v, "license", v);
   for (const v of f.repoHosts)
     push(`repo:${v}`, "Github", REPO_HOST_LABELS[v] ?? v, "repoHosts", v);
+  for (const v of f.activity)
+    push(`act:${v}`, "Activity", ACTIVITY_LABELS[v] ?? v, "activity", v);
   for (const v of f.italic)
     push(
       `ital:${v}`,

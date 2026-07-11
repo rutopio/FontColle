@@ -1,5 +1,6 @@
 import {
   ArrowsOutLineHorizontalIcon,
+  ClockCounterClockwiseIcon,
   SlidersHorizontalIcon,
   TagIcon,
   TextAaIcon,
@@ -9,6 +10,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
+  ACTIVITY_LABELS,
   FACET_LABELS,
   type FacetIndex,
   type FilterState,
@@ -366,6 +368,15 @@ export function FilterSidebar({
                   selected={filter.repoHosts}
                   onToggle={(v) => toggle("repoHosts", v)}
                   onReset={() => onChange({ ...filter, repoHosts: [] })}
+                />
+                <RadioPillSection
+                  title="Activity"
+                  icon={ClockCounterClockwiseIcon}
+                  items={index.activity}
+                  labels={ACTIVITY_LABELS}
+                  selected={filter.activity}
+                  onToggle={(v) => onChange(actions.selectActivity(filter, v))}
+                  onReset={() => onChange({ ...filter, activity: [] })}
                 />
               </>
             )}

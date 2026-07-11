@@ -96,7 +96,7 @@ export const FILTER_GROUPS: FilterGroup[] = [
     id: "other",
     label: "More",
     icon: DotsThreeOutlineIcon,
-    keys: ["license", "repoHosts"],
+    keys: ["license", "repoHosts", "activity"],
   },
 ];
 
