@@ -117,7 +117,9 @@ export const FILTER_GROUPS: FilterGroup[] = [
   },
 ];
 
-export const DEFAULT_FILTER_GROUP: FilterGroupId = "tag";
+// The rail opens on Style even though it sits third in the rail order — form
+// (Serif / Sans / Script) is the most common entry point into browsing.
+export const DEFAULT_FILTER_GROUP: FilterGroupId = "style";
 
 // `facets` is shared by two panels: the Tag panel shows the whole list (so its
 // badge counts every selected facet), while the Variant panel (group id "axes")
