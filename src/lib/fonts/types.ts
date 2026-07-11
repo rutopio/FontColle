@@ -60,6 +60,15 @@ export interface FontRecord {
   // Release timeline from google/fonts git history, ascending by date.
   versionHistory: { version: string; date: string }[];
   specimen: string | null; // native-script sample text (null for Latin-only)
+  // Google Fonts family "about" prose (HTML), from the metadata endpoint. Null
+  // when Google has no description for the family.
+  about: string | null;
+  // Per-designer bios/avatars from the metadata endpoint. Empty when none.
+  designerProfiles: {
+    name: string | null;
+    bio: string | null; // HTML
+    imageUrl: string | null;
+  }[];
   // Google Fonts classification tags (google/fonts tags CSV, e.g.
   // "/Serif/Fat Face"), not exposed by the Developer API. Scores are 0-100.
   // Empty for families the CSV doesn't cover.

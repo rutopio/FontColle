@@ -3,10 +3,10 @@ import { useState } from "react";
 import { FilterLayout } from "@/components/filter-layout";
 import { deriveFacets } from "@/lib/fonts/facets";
 import { DEFAULT_ON } from "@/lib/fonts/features";
-import { getFontById, getFontsByDesigner } from "@/lib/fonts/queries";
+import { getFontById, getFontsByDesigners } from "@/lib/fonts/queries";
 import { pageTitle } from "@/lib/site";
 import { Detail } from "./-components/detail";
-import { DetailRail } from "./-components/detail-rail";
+import { DetailRail, type DetailTab } from "./-components/detail-rail";
 import { DetailSidebar } from "./-components/detail-sidebar";
 
 export const Route = createFileRoute("/$fontId")({
@@ -17,14 +17,20 @@ export const Route = createFileRoute("/$fontId")({
     // axes/features, not derived facets) for parity with the list.
     const font = await getFontById({ data: params.fontId });
     if (!font) throw notFound();
-    // Other families by the same designer, for the Designer tab. Empty when the
-    // designer is unknown or has no siblings in the catalog.
-    const designerSiblings = font.designer
-      ? await getFontsByDesigner({
-          data: { designer: font.designer, excludeId: font.id },
-        })
-      : [];
-    return { font: { ...font, facets: deriveFacets(font) }, designerSiblings };
+    // Other families per credited designer, for the Designer tab. Keyed by name
+    // so each designer's bio can list their own siblings. Empty when unknown.
+    const names = (font.designer ?? "")
+      .split(",")
+      .map((d) => d.trim())
+      .filter(Boolean);
+    const siblingsByDesigner =
+      names.length > 0
+        ? await getFontsByDesigners({ data: { names, excludeId: font.id } })
+        : {};
+    return {
+      font: { ...font, facets: deriveFacets(font) },
+      siblingsByDesigner,
+    };
   },
   head: ({ loaderData }) => {
     const name = loaderData?.font.name;
@@ -55,7 +61,7 @@ export const Route = createFileRoute("/$fontId")({
 });
 
 function DetailPage() {
-  const { font, designerSiblings } = Route.useLoaderData();
+  const { font, siblingsByDesigner } = Route.useLoaderData();
 
   // Feature/axis state live at the page level so the sidebar controls and the
   // type tester share one source of truth. The W3C default state seeds default-on
@@ -89,7 +95,7 @@ function DetailPage() {
 
   // Which detail view is active. Lives here so the sidebar can host the trigger
   // and the Detail body reacts to it.
-  const [tab, setTab] = useState<"sample" | "detail" | "designer">("sample");
+  const [tab, setTab] = useState<DetailTab>("sample");
 
   return (
     <FilterLayout
@@ -116,7 +122,7 @@ function DetailPage() {
       <Detail
         font={font}
         tab={tab}
-        designerSiblings={designerSiblings}
+        siblingsByDesigner={siblingsByDesigner}
         size={size}
         axisState={axisState}
         italic={italic}

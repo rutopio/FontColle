@@ -1,11 +1,18 @@
-import { ArrowLeftIcon } from "@phosphor-icons/react";
+import {
+  ArrowLeftIcon,
+  ArrowUpRightIcon,
+  FunnelIcon,
+} from "@phosphor-icons/react";
 import { Link, useCanGoBack, useRouter } from "@tanstack/react-router";
-import { useEffect, useMemo } from "react";
+import { Fragment, useEffect, useMemo } from "react";
 import { Column } from "@/components/filter-layout";
 import { PreviewBar } from "@/components/preview-dock";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { buildFeatureSettings } from "@/lib/fonts/features";
+import { emptyFilter, filterToSearch } from "@/lib/fonts/filter/state";
 import { scriptLabel } from "@/lib/fonts/labels";
 import { ensureFontRangeLoaded, useFontLoaded } from "@/lib/fonts/loader";
 import { previewStyle } from "@/lib/fonts/preview-style";
@@ -13,6 +20,7 @@ import type { DesignerSibling } from "@/lib/fonts/queries";
 import { specimenFor } from "@/lib/fonts/specimen";
 import type { FontRecord } from "@/lib/fonts/types";
 import { usePreview } from "@/lib/preview/context";
+import { sanitizeHtml } from "@/lib/sanitize-html";
 import type { DetailTab } from "./detail-rail";
 import { InstanceChips } from "./instance-chips";
 import { InstanceRow } from "./instance-row";
@@ -23,7 +31,7 @@ import { TypeTester } from "./type-tester";
 export function Detail({
   font,
   tab,
-  designerSiblings,
+  siblingsByDesigner,
   size,
   axisState,
   italic,
@@ -32,7 +40,7 @@ export function Detail({
 }: {
   font: FontRecord;
   tab: DetailTab;
-  designerSiblings: DesignerSibling[];
+  siblingsByDesigner: Record<string, DesignerSibling[]>;
   size: number;
   axisState: Record<string, number>;
   italic: boolean;
@@ -53,6 +61,39 @@ export function Detail({
   }, [font.name, font.axes, hasItalic]);
 
   const fontLoaded = useFontLoaded(font.name);
+
+  // Real script subsets, minus the synthetic "menu" entry. Used for both the
+  // Subsets list and its count.
+  const subsets = font.subsets.filter((s) => s !== "menu");
+
+  // Specs table rows, built as data so optional rows can be filtered out. The
+  // "Added" row carries a version badge; "Last updated" deliberately omits one
+  // (the git-tag history lags the font's own version, so they'd disagree).
+  const specRows: SpecRow[] = [
+    { label: "Variable", value: font.isVariable ? "Yes" : "No" },
+    { label: "Axes", value: String(font.axes.length) },
+    { label: "Named instances", value: String(font.instances.length) },
+    { label: "OpenType features", value: String(font.features.length) },
+    font.glyphCount != null && {
+      label: "Glyphs",
+      value: font.glyphCount.toLocaleString(),
+    },
+    font.charCount != null && {
+      label: "Characters",
+      value: font.charCount.toLocaleString(),
+    },
+    font.version != null && { label: "Version", value: String(font.version) },
+    font.dateAdded && {
+      label: "Added",
+      value: formatDate(font.dateAdded),
+      badge: versionOnDate(font.versionHistory, font.dateAdded) ?? undefined,
+    },
+    font.lastModified && {
+      label: "Last updated",
+      value: formatDate(font.lastModified),
+    },
+    font.license && { label: "License", value: font.license },
+  ].filter(Boolean) as SpecRow[];
 
   const specimenStyle: React.CSSProperties = useMemo(() => {
     // Preview at every axis's current value; add the size + feature settings
@@ -113,7 +154,8 @@ export function Detail({
                 />
               }
             >
-              Download ↗
+              <ArrowUpRightIcon />
+              Download
             </Button>
           </div>
         </>
@@ -186,58 +228,21 @@ export function Detail({
               a quarter-width column. */}
           <div className="grid gap-4 md:grid-cols-4">
             <Panel label="Specs" className="md:col-span-1">
-              <Spec label="Variable" value={font.isVariable ? "Yes" : "No"} />
-              <Spec label="Axes" value={String(font.axes.length)} />
-              <Spec
-                label="Named instances"
-                value={String(font.instances.length)}
-              />
-              <Spec
-                label="OpenType features"
-                value={String(font.features.length)}
-              />
-              {font.glyphCount != null && (
-                <Spec label="Glyphs" value={font.glyphCount.toLocaleString()} />
-              )}
-              {font.charCount != null && (
-                <Spec
-                  label="Characters"
-                  value={font.charCount.toLocaleString()}
-                />
-              )}
-              {font.version != null && (
-                <Spec label="Version" value={String(font.version)} />
-              )}
-              {font.dateAdded && (
-                <Spec
-                  label="Added"
-                  value={formatDate(font.dateAdded)}
-                  badge={
-                    versionOnDate(font.versionHistory, font.dateAdded) ??
-                    undefined
-                  }
-                />
-              )}
-              {font.lastModified && (
-                // No version badge here: it would be derived from the git-tag
-                // history, which lags behind the font file's own version (shown
-                // in the Version row), so the two would disagree and mislead.
-                <Spec
-                  label="Last updated"
-                  value={formatDate(font.lastModified)}
-                />
-              )}
-              {font.license && <Spec label="License" value={font.license} />}
+              <SpecTable rows={specRows} />
             </Panel>
-            <Panel label="Subsets" className="md:col-span-1">
+            <Panel
+              label="Subsets"
+              // "menu" is a synthetic subset (the family name glyphs), not a
+              // real script subset, so exclude it from the list and the count.
+              count={subsets.length || undefined}
+              className="md:col-span-1"
+            >
               <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-sm">
-                {font.subsets
-                  .filter((s) => s !== "menu")
-                  .map((s) => (
-                    <span key={s} className="truncate text-muted-foreground">
-                      {s}
-                    </span>
-                  ))}
+                {subsets.map((s) => (
+                  <span key={s} className="truncate text-muted-foreground">
+                    {s}
+                  </span>
+                ))}
               </div>
             </Panel>
             {font.scripts.length > 0 && (
@@ -264,19 +269,20 @@ export function Detail({
                 count={font.versionHistory.length}
                 className="md:col-span-1"
               >
-                <ol className="flex flex-col">
-                  {[...font.versionHistory].reverse().map((v) => (
-                    <li
-                      key={v.version}
-                      className="flex items-baseline justify-between border-border border-t py-1.5 text-sm first:border-t-0"
-                    >
-                      <span className="font-mono">v{v.version}</span>
-                      <span className="font-mono text-muted-foreground">
-                        {formatDate(v.date)}
-                      </span>
-                    </li>
-                  ))}
-                </ol>
+                <Table>
+                  <TableBody>
+                    {[...font.versionHistory].reverse().map((v) => (
+                      <TableRow key={v.version}>
+                        <TableCell className="px-0 py-1.5 font-mono text-sm">
+                          v{v.version}
+                        </TableCell>
+                        <TableCell className="px-0 py-1.5 text-right font-mono text-muted-foreground text-sm">
+                          {formatDate(v.date)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </Panel>
             )}
           </div>
@@ -287,21 +293,39 @@ export function Detail({
       )}
 
       {tab === "designer" && (
-        <DesignerPanel font={font} siblings={designerSiblings} />
+        <DesignerPanel font={font} siblingsByDesigner={siblingsByDesigner} />
       )}
     </Column>
   );
 }
 
-// The Designer view: who made the family, a link out to their Google Fonts
-// page, and the other families they authored in the catalog. We only have the
-// designer's name (no bio in the DB), so this stays a lean who/where/what.
+// The About view: Google Fonts' family description prose. The source is HTML, so
+// we sanitize to a safe tag allowlist before rendering (see sanitize-html.ts).
+// Renders nothing when Google has no description, so it stays out of the way on
+// the Detail view for families without one.
+function AboutPanel({ font }: { font: FontRecord }) {
+  const html = sanitizeHtml(font.about);
+  if (!html) return null;
+  return (
+    <Panel label="About">
+      <div
+        className="prose-about text-sm leading-relaxed [&_a:hover]:decoration-foreground [&_a]:underline [&_a]:decoration-muted-foreground/50 [&_p]:my-3 first:[&_p]:mt-0"
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: content is sanitized to an allowlist in sanitizeHtml.
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
+    </Panel>
+  );
+}
+
+// The Designer view: who made the family, each designer's Google Fonts bio and
+// avatar when available, a link out to their page, and the other families they
+// authored in the catalog.
 function DesignerPanel({
   font,
-  siblings,
+  siblingsByDesigner,
 }: {
   font: FontRecord;
-  siblings: DesignerSibling[];
+  siblingsByDesigner: Record<string, DesignerSibling[]>;
 }) {
   // The DB stores designers as one string; Google Fonts credits several as a
   // comma-separated list. Split so each gets their own credit + profile link.
@@ -310,27 +334,121 @@ function DesignerPanel({
     .map((d) => d.trim())
     .filter(Boolean);
 
+  // Bios/avatars come keyed by designer name from the metadata endpoint; match
+  // by trimmed name so each credit can show its profile.
+  const profileByName = new Map(
+    font.designerProfiles
+      .filter((p) => p.name)
+      .map((p) => [p.name?.trim() ?? "", p])
+  );
+
   return (
-    <>
-      <Panel label="Designer">
+    <div className="grid gap-4 md:grid-cols-2">
+      {/* LEFT — the family "about" prose. */}
+      <AboutPanel font={font} />
+
+      {/* RIGHT — one block per credited designer: bio + their other families. */}
+      <Panel
+        label={designers.length > 1 ? "Designers" : "Designer"}
+        count={designers.length || undefined}
+      >
         {designers.length > 0 ? (
-          <div className="flex flex-col">
-            {designers.map((name) => (
-              <div
-                key={name}
-                className="flex items-center justify-between gap-2 border-border border-t py-2 text-sm first:border-t-0"
-              >
-                <span>{name}</span>
-                <a
-                  href={`https://fonts.google.com/?query=${encodeURIComponent(name)}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  Google Fonts ↗
-                </a>
-              </div>
-            ))}
+          <div className="flex flex-col gap-4">
+            {designers.map((name, index) => {
+              const profile = profileByName.get(name);
+              const bio = sanitizeHtml(profile?.bio);
+              const siblings = siblingsByDesigner[name] ?? [];
+              return (
+                <Fragment key={name}>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between gap-2 text-sm">
+                      <div className="flex items-center gap-2.5">
+                        {profile?.imageUrl && (
+                          <img
+                            src={profile.imageUrl}
+                            alt=""
+                            loading="lazy"
+                            className="size-8 shrink-0 rounded-full object-cover"
+                          />
+                        )}
+                        <span>{name}</span>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-1">
+                        {/* Filter the list to just this
+                                                    designer: reset every filter,
+                                                    then select their capsule. */}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-muted-foreground"
+                          render={
+                            <Link
+                              to="/"
+                              search={filterToSearch({
+                                ...emptyFilter,
+                                designers: [name],
+                              })}
+                              aria-label={`Show ${name}'s fonts in the list`}
+                            />
+                          }
+                        >
+                          <FunnelIcon />
+                          Filter
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-muted-foreground"
+                          render={
+                            // biome-ignore lint/a11y/useAnchorContent: Button injects its children into this anchor via the render prop (aria-label also set); the static rule can't see through it.
+                            <a
+                              href={`https://fonts.google.com/?query=${encodeURIComponent(name)}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              aria-label={`${name} on Google Fonts`}
+                            />
+                          }
+                        >
+                          <ArrowUpRightIcon />
+                          Google Fonts
+                        </Button>
+                      </div>
+                    </div>
+                    {bio && (
+                      <div
+                        className="text-primary text-sm leading-relaxed [&_a]:underline"
+                        // biome-ignore lint/security/noDangerouslySetInnerHtml: content is sanitized to an allowlist in sanitizeHtml.
+                        dangerouslySetInnerHTML={{ __html: bio }}
+                      />
+                    )}
+                    {siblings.length > 0 && (
+                      <div className="mt-8">
+                        <p className="mb-1 text-muted-foreground text-xs">
+                          More by {name} ({siblings.length})
+                        </p>
+                        <ul className="flex list-disc flex-col gap-1 pl-5 marker:text-muted-foreground">
+                          {siblings.map((s) => (
+                            <li key={s.id}>
+                              <Link
+                                to="/$fontId"
+                                params={{ fontId: s.id }}
+                                className="truncate py-0.5 text-sm hover:text-foreground"
+                                style={{
+                                  fontFamily: `"${s.name}", sans-serif`,
+                                }}
+                              >
+                                {s.name}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                  {index < designers.length - 1 && <Separator />}
+                </Fragment>
+              );
+            })}
           </div>
         ) : (
           <p className="py-2 text-muted-foreground text-sm">
@@ -338,54 +456,39 @@ function DesignerPanel({
           </p>
         )}
       </Panel>
-
-      <Panel label="More by this designer" count={siblings.length || undefined}>
-        {siblings.length > 0 ? (
-          <div className="grid gap-x-3 gap-y-1 sm:grid-cols-2 lg:grid-cols-3">
-            {siblings.map((s) => (
-              <Link
-                key={s.id}
-                to="/$fontId"
-                params={{ fontId: s.id }}
-                className="truncate py-1 text-sm hover:text-foreground"
-                style={{ fontFamily: `"${s.name}", sans-serif` }}
-              >
-                {s.name}
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <p className="py-2 text-muted-foreground text-sm">
-            No other families by {designers[0] ?? "this designer"} in the
-            catalog.
-          </p>
-        )}
-      </Panel>
-    </>
+    </div>
   );
 }
 
-function Spec({
-  label,
-  value,
-  badge,
-}: {
+interface SpecRow {
   label: string;
   value: string;
-  badge?: string;
-}) {
+  badge?: string; // version tag, rendered as "v{badge}"
+}
+
+// The Specs list as a shadcn table: label left, value (with an optional version
+// badge) right-aligned. Borderless rows keep the compact spec look.
+function SpecTable({ rows }: { rows: SpecRow[] }) {
   return (
-    <div className="flex items-center justify-between gap-2 border-border border-t py-1.5 text-sm first:border-t-0">
-      <span>{label}</span>
-      <span className="flex items-center gap-2">
-        {badge && (
-          <Badge variant="secondary" className="font-mono">
-            v{badge}
-          </Badge>
-        )}
-        <span className="font-mono">{value}</span>
-      </span>
-    </div>
+    <Table>
+      <TableBody>
+        {rows.map((row) => (
+          <TableRow key={row.label}>
+            <TableCell className="px-0 py-1.5 text-sm">{row.label}</TableCell>
+            <TableCell className="px-0 py-1.5 text-right">
+              <span className="flex items-center justify-end gap-2">
+                {row.badge && (
+                  <Badge variant="secondary" className="font-mono">
+                    v{row.badge}
+                  </Badge>
+                )}
+                <span className="font-mono text-sm">{row.value}</span>
+              </span>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 }
 

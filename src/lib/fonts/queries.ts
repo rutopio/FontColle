@@ -80,6 +80,11 @@ function toFontRecord(f: FamilyRow, related: RelatedByFamily): FontRecord {
       []
     ),
     specimen: f.specimen,
+    about: f.about,
+    designerProfiles: parseJson<FontRecord["designerProfiles"]>(
+      f.designerProfiles,
+      []
+    ),
     tags: parseJson<Record<string, number>>(f.tags, {}),
     unitsPerEm: f.unitsPerEm,
     xHeight: f.xHeight,
@@ -165,32 +170,63 @@ export const getFontById = createServerFn({ method: "GET" })
   .validator((id: string) => id)
   .handler(({ data: id }): Promise<FontRecord | null> => loadFontById(id));
 
-// The designer tab lists other families by the same designer. We only need each
-// sibling's id + name for a link, so select just those columns rather than
+// The designer tab lists other families by each credited designer. We only need
+// each sibling's id + name for a link, so select just those columns rather than
 // stitching full records. `excludeId` drops the family currently being viewed.
 export interface DesignerSibling {
   id: string;
   name: string;
 }
 
-async function loadFontsByDesigner(
-  designer: string,
-  excludeId: string
-): Promise<DesignerSibling[]> {
-  const rows = await db
-    .select({ id: family.familyDir, name: family.name })
-    .from(family)
-    .where(and(eq(family.designer, designer), eq(family.isPublished, true)));
-  return rows
-    .filter((r) => r.id !== excludeId)
-    .sort((a, b) => a.name.localeCompare(b.name));
+// Split a family's `designer` string (Google Fonts joins co-designers with
+// commas) into individual, trimmed names. Matching is per-name, not on the whole
+// string, so "Meir Sadan" pulls in every family crediting them, regardless of
+// which other designers share the credit.
+function splitDesigners(designer: string | null): string[] {
+  return (designer ?? "")
+    .split(",")
+    .map((d) => d.trim())
+    .filter(Boolean);
 }
 
-export const getFontsByDesigner = createServerFn({ method: "GET" })
-  .validator((input: { designer: string; excludeId: string }) => input)
+// For each requested designer name, the other families crediting that name,
+// keyed by name. One DB round-trip: load every published family's designer
+// string once, then bucket in JS by comma-split name.
+async function loadFontsByDesigners(
+  names: string[],
+  excludeId: string
+): Promise<Record<string, DesignerSibling[]>> {
+  const wanted = new Set(names);
+  const result: Record<string, DesignerSibling[]> = {};
+  for (const name of names) result[name] = [];
+  if (wanted.size === 0) return result;
+
+  const rows = await db
+    .select({
+      id: family.familyDir,
+      name: family.name,
+      designer: family.designer,
+    })
+    .from(family)
+    .where(eq(family.isPublished, true));
+
+  for (const row of rows) {
+    if (row.id === excludeId) continue;
+    for (const d of splitDesigners(row.designer)) {
+      if (wanted.has(d)) result[d].push({ id: row.id, name: row.name });
+    }
+  }
+  for (const name of names) {
+    result[name].sort((a, b) => a.name.localeCompare(b.name));
+  }
+  return result;
+}
+
+export const getFontsByDesigners = createServerFn({ method: "GET" })
+  .validator((input: { names: string[]; excludeId: string }) => input)
   .handler(
-    ({ data }): Promise<DesignerSibling[]> =>
-      loadFontsByDesigner(data.designer, data.excludeId)
+    ({ data }): Promise<Record<string, DesignerSibling[]>> =>
+      loadFontsByDesigners(data.names, data.excludeId)
   );
 
 function groupBy<T, K>(rows: T[], key: (row: T) => K): Map<K, T[]> {

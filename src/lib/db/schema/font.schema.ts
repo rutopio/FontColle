@@ -82,6 +82,12 @@ export const family = sqliteTable(
     // Sample text in the font's own script (gflanguages), like Google Fonts'
     // non-Latin previews. Null for Latin-only fonts (frontend uses its default).
     specimen: text("specimen"),
+    // The Google Fonts family "about" prose (HTML) from the metadata endpoint,
+    // not in the repo/API. Null when Google has no description (backfill_about.py).
+    about: text("about"),
+    // Per-designer bios/avatars, JSON array of {name,bio,imageUrl}. Empty array
+    // when none are credited with a profile (backfill_about.py).
+    designerProfiles: text("designer_profiles"),
     // Google Fonts classification tags (google/fonts tags CSV, not exposed by
     // the Developer API) as JSON {"<full tag path>": score}, e.g.
     // {"/Serif/Fat Face": 90}. Scores are 0-100. Empty object when uncovered.

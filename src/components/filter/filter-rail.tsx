@@ -15,7 +15,7 @@ export function FilterRail({
   onSelect: (id: FilterGroupId) => void;
 }) {
   return (
-    <nav aria-label="Filter groups" className="flex flex-col gap-1 px-1.5">
+    <nav aria-label="Filter groups" className="flex flex-col gap-1">
       {FILTER_GROUPS.map((group) => {
         const on = group.id === active;
         const count = groupActiveCount(group, filter);
