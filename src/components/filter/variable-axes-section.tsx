@@ -14,7 +14,16 @@ import { SectionHeader } from "./section-header";
 // Official display name + description per axis tag, from Google Fonts'
 // axisregistry (see scripts/gen-axes-data.mjs). Tags not in the registry
 // (mostly newer or vendor-specific axes) render with no info icon.
-const AXES: Record<string, { name: string; description: string }> = axesData;
+const AXES: Record<
+  string,
+  {
+    name: string;
+    description: string;
+    // Named stops on the axis (e.g. CTRS: Reversed −100 / None 0 / High 100),
+    // from axisregistry. Empty for axes with no named fallbacks.
+    fallbacks?: { name: string; value: number }[];
+  }
+> = axesData;
 
 const TOP_N = 4;
 // Relative-position presets offered in the editable % readout's dropdown.
@@ -117,22 +126,32 @@ export function VariableAxesSection({
         {/* Sibling of the pill button, never nested inside it: TooltipTrigger
                   renders its own <button>, and a <button> inside the pill's
                   <button> would be invalid HTML and would double-fire onToggle. */}
-        {/* Fades out once the axis is selected: the slider takes over the
-                  row, and the description has already served its purpose. */}
-        {info ? (
+        {/* Unmounted once the axis is selected (not just faded): opacity-0 still
+                  reserved its box + the row's gap, narrowing the slider. Gone
+                  now, so the slider gets the full freed width. */}
+        {info && !on ? (
           <Tooltip>
             <TooltipTrigger
               type="button"
               aria-label={`About ${info.name}`}
-              className={cn(
-                "shrink-0 text-muted-foreground transition-[color,opacity] hover:text-foreground",
-                on && "pointer-events-none opacity-0"
-              )}
+              className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
             >
               <InfoIcon className="size-3.5" />
             </TooltipTrigger>
             <TooltipContent className="max-w-xs normal-case tracking-normal">
               {info.description}
+              {info.fallbacks && info.fallbacks.length > 0 ? (
+                // Named stops on the axis, so the bare slider number reads as a
+                // labeled position (e.g. Reversed −100 · None 0 · High 100).
+                <span className="mt-1.5 block font-mono text-[11px] text-muted-foreground">
+                  {info.fallbacks.map((fb, i) => (
+                    <span key={fb.name}>
+                      {i > 0 ? " · " : ""}
+                      {fb.name} {fb.value}
+                    </span>
+                  ))}
+                </span>
+              ) : null}
             </TooltipContent>
           </Tooltip>
         ) : null}

@@ -64,6 +64,22 @@ function parseTextproto(text) {
     return m ? Number(m[1]) : null;
   };
 
+  // Named fallback stops: repeated `fallback { name: "..." value: N }` blocks
+  // that label positions on the axis (e.g. CTRS: Reversed/None/High). Order is
+  // as declared in the file. Blocks with fallback_only aside, we keep every one.
+  const fallbacks = [];
+  for (const blk of text.matchAll(/fallback\s*\{([^}]*)\}/g)) {
+    const body = blk[1];
+    const fn = body.match(/name:\s*"((?:\\.|[^"\\])*)"/);
+    const fv = body.match(/value:\s*(-?[\d.]+)/);
+    if (fn && fv) {
+      fallbacks.push({
+        name: unescapeProtoString(fn[1]),
+        value: Number(fv[1]),
+      });
+    }
+  }
+
   return {
     tag: unescapeProtoString(tagMatch[1]),
     name: unescapeProtoString(nameMatch[1]),
@@ -71,6 +87,7 @@ function parseTextproto(text) {
     min: num("min_value"),
     default: num("default_value"),
     max: num("max_value"),
+    fallbacks,
   };
 }
 
@@ -98,6 +115,7 @@ async function main() {
       min: parsed.min,
       default: parsed.default,
       max: parsed.max,
+      fallbacks: parsed.fallbacks,
     };
   }
 
