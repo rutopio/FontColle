@@ -24,9 +24,12 @@ function RangeSlider({
       )}
       {...props}
     >
+      {/* px-1.5 = half the 12px thumb, so the track ends inset by the thumb
+          radius and the thumbs sit inside the sidebar's padding instead of
+          spilling to (and past) its edge at the 0%/100% positions. */}
       <SliderPrimitive.Control
         data-slot="slider-control"
-        className="flex w-full items-center py-2"
+        className="flex w-full items-center px-1.5 py-2"
       >
         <SliderPrimitive.Track
           data-slot="slider-track"

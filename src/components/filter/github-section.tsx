@@ -1,4 +1,4 @@
-import { GithubLogoIcon } from "@phosphor-icons/react";
+import { DresserIcon } from "@phosphor-icons/react";
 import { REPO_HOST_LABELS } from "@/lib/fonts/filter";
 import { PillButton } from "./pill-button";
 import { SectionHeader } from "./section-header";
@@ -23,8 +23,8 @@ export function GithubSection({
   return (
     <div className="flex flex-col gap-2">
       <SectionHeader
-        title="Github"
-        icon={GithubLogoIcon}
+        title="Source Repo"
+        icon={DresserIcon}
         hasSelection={selected.length > 0}
         onReset={onReset}
         canSort={false}
