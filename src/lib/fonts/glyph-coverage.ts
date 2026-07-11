@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 import { BMP_BLOCKS, type UnicodeBlock } from "./unicode-blocks";
 
 // Per-font Unicode coverage, driving the Glyphs page. The backfill script
@@ -53,34 +53,28 @@ export function blocksWithCoverage(ranges: Range[]): CoveredBlock[] {
   return out;
 }
 
+// Query for a font's coverage ranges. Coverage files are immutable per font, so
+// they never go stale — cache them forever, so revisiting a font is a cache hit.
+export function glyphCoverageQueryOptions(fontId: string) {
+  return queryOptions({
+    queryKey: ["glyph-coverage", fontId],
+    queryFn: async ({ signal }): Promise<Range[]> => {
+      const r = await fetch(`/glyphs/${fontId}.json`, { signal });
+      if (!r.ok) return [];
+      const d = (await r.json()) as Coverage;
+      return d.ranges ?? [];
+    },
+    staleTime: Number.POSITIVE_INFINITY,
+    gcTime: Number.POSITIVE_INFINITY,
+  });
+}
+
 // Fetch a font's coverage ranges (empty until loaded, and on error). Keyed by
-// font id; refetches when the id changes.
+// font id; React Query cancels the in-flight request and refetches on change.
 export function useGlyphCoverage(fontId: string): {
   ranges: Range[];
   loading: boolean;
 } {
-  const [ranges, setRanges] = useState<Range[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setRanges([]);
-    fetch(`/glyphs/${fontId}.json`)
-      .then((r) => (r.ok ? (r.json() as Promise<Coverage>) : { ranges: [] }))
-      .then((d) => {
-        if (!cancelled) setRanges(d.ranges ?? []);
-      })
-      .catch(() => {
-        if (!cancelled) setRanges([]);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [fontId]);
-
-  return { ranges, loading };
+  const { data, isPending } = useQuery(glyphCoverageQueryOptions(fontId));
+  return { ranges: data ?? [], loading: isPending };
 }
