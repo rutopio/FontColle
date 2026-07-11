@@ -182,8 +182,9 @@ export function Detail({
 
       {tab === "detail" && (
         <>
-          {/* SPECS + SUBSETS + WRITING SYSTEMS — one row, 2:1:1 columns. */}
-          <div className="grid gap-4 md:grid-cols-3">
+          {/* SPECS + SUBSETS + WRITING SYSTEMS + VERSION HISTORY — one row, each
+              a quarter-width column. */}
+          <div className="grid gap-4 md:grid-cols-4">
             <Panel label="Specs" className="md:col-span-1">
               <Spec label="Variable" value={font.isVariable ? "Yes" : "No"} />
               <Spec label="Axes" value={String(font.axes.length)} />
@@ -210,7 +211,7 @@ export function Detail({
               {font.dateAdded && (
                 <Spec
                   label="Added"
-                  value={font.dateAdded}
+                  value={formatDate(font.dateAdded)}
                   badge={
                     versionOnDate(font.versionHistory, font.dateAdded) ??
                     undefined
@@ -218,18 +219,17 @@ export function Detail({
                 />
               )}
               {font.lastModified && (
+                // No version badge here: it would be derived from the git-tag
+                // history, which lags behind the font file's own version (shown
+                // in the Version row), so the two would disagree and mislead.
                 <Spec
                   label="Last updated"
-                  value={font.lastModified}
-                  badge={
-                    versionOnDate(font.versionHistory, font.lastModified) ??
-                    undefined
-                  }
+                  value={formatDate(font.lastModified)}
                 />
               )}
               {font.license && <Spec label="License" value={font.license} />}
             </Panel>
-            <Panel label="Subsets">
+            <Panel label="Subsets" className="md:col-span-1">
               <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-sm">
                 {font.subsets
                   .filter((s) => s !== "menu")
@@ -241,7 +241,11 @@ export function Detail({
               </div>
             </Panel>
             {font.scripts.length > 0 && (
-              <Panel label="Writing systems" count={font.scripts.length}>
+              <Panel
+                label="Writing systems"
+                count={font.scripts.length}
+                className="md:col-span-1"
+              >
                 <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-sm">
                   {font.scripts.map((s) => (
                     <span key={s} className="truncate text-muted-foreground">
@@ -251,25 +255,31 @@ export function Detail({
                 </div>
               </Panel>
             )}
-          </div>
 
-          {/* VERSION HISTORY — release timeline from google/fonts git history,
-              newest first. Hidden entirely when none could be extracted. */}
-          {font.versionHistory.length > 0 && (
-            <Panel label="Version history" count={font.versionHistory.length}>
-              <ol className="flex flex-col">
-                {[...font.versionHistory].reverse().map((v) => (
-                  <li
-                    key={v.version}
-                    className="flex items-baseline justify-between border-border border-t py-1.5 text-sm first:border-t-0"
-                  >
-                    <span className="font-mono">v{v.version}</span>
-                    <span className="text-muted-foreground">{v.date}</span>
-                  </li>
-                ))}
-              </ol>
-            </Panel>
-          )}
+            {/* VERSION HISTORY — release timeline from google/fonts git history,
+                newest first. Hidden entirely when none could be extracted. */}
+            {font.versionHistory.length > 0 && (
+              <Panel
+                label="Version history"
+                count={font.versionHistory.length}
+                className="md:col-span-1"
+              >
+                <ol className="flex flex-col">
+                  {[...font.versionHistory].reverse().map((v) => (
+                    <li
+                      key={v.version}
+                      className="flex items-baseline justify-between border-border border-t py-1.5 text-sm first:border-t-0"
+                    >
+                      <span className="font-mono">v{v.version}</span>
+                      <span className="font-mono text-muted-foreground">
+                        {formatDate(v.date)}
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              </Panel>
+            )}
+          </div>
 
           {/* LANGUAGES — full width. */}
           {font.languages.length > 0 && <LanguageSupport font={font} />}
@@ -377,6 +387,22 @@ function Spec({
       </span>
     </div>
   );
+}
+
+// en-US short date, e.g. "Apr 9, 2025". UTC pins the day so a "yyyy-MM-dd"
+// string isn't shifted back by the local zone.
+const DATE_FMT = new Intl.DateTimeFormat("en-US", {
+  year: "numeric",
+  month: "short",
+  day: "numeric",
+  timeZone: "UTC",
+});
+
+// Render a "yyyy-MM-dd" string as "Apr 9, 2025". Falls back to the raw string
+// if it isn't the expected shape.
+function formatDate(iso: string): string {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso;
+  return DATE_FMT.format(new Date(`${iso}T00:00:00Z`));
 }
 
 // The version shipped on (or most recently before) a given "yyyy-MM-dd" date,
