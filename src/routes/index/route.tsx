@@ -45,6 +45,7 @@ import { getAllFonts } from "@/lib/fonts/queries";
 import { DEFAULT_SORT, type SortKey, sortFonts } from "@/lib/fonts/sort";
 import { usePreview } from "@/lib/preview/context";
 import { useListScrollRestore } from "@/lib/use-list-scroll-restore";
+import { useLocalStorageState } from "@/lib/use-local-storage-state";
 import { SortControl } from "./-components/sort-control";
 
 export const Route = createFileRoute("/")({
@@ -105,7 +106,14 @@ function App() {
     setAxisValues((s) => ({ ...s, [tag]: pct }));
   // Which filter group the sidebar panel shows. Session-only UI state.
   const [group, setGroup] = useState<FilterGroupId>(DEFAULT_FILTER_GROUP);
-  const view: ViewMode = search.view === "row" ? "row" : "grid";
+  // View mode is a personal-device preference, kept in localStorage rather than
+  // the URL so a shared link never forces the recipient into your grid/row
+  // choice. Sort stays in the URL — it can carry result meaning worth sharing.
+  const [viewPref, setViewPref] = useLocalStorageState(
+    "font-finder.view",
+    "grid"
+  );
+  const view: ViewMode = viewPref === "row" ? "row" : "grid";
   const sort = (search.sort as SortKey) ?? DEFAULT_SORT;
 
   const results = useMemo(() => {
@@ -131,7 +139,7 @@ function App() {
     const cur = filterToSearch(searchToFilter(search));
     if (JSON.stringify(next) === JSON.stringify(cur)) return;
     navigate({
-      search: { ...next, view: search.view, sort: search.sort },
+      search: { ...next, sort: search.sort },
       replace: true,
     });
   }, [deferredFilter, navigate]);
@@ -144,24 +152,20 @@ function App() {
 
   useListScrollRestore(scrollRef, listScrollY);
 
-  // Display prefs (view, sort) still write the URL immediately — they're cheap
-  // and don't gate on the deferred filter. They carry the current pending
-  // filter along so the URL keeps a consistent shape.
-  const setPref = (prefs: Partial<Pick<FilterSearch, "view" | "sort">>) => {
+  // Sort writes the URL immediately — it's cheap and doesn't gate on the
+  // deferred filter. It carries the current pending filter along so the URL
+  // keeps a consistent shape.
+  const setSort = (next: SortKey) => {
     navigate({
       search: {
         ...filterToSearch(filter),
-        view: "view" in prefs ? prefs.view : search.view,
-        sort: "sort" in prefs ? prefs.sort : search.sort,
+        sort: next === DEFAULT_SORT ? undefined : next,
       },
       replace: true,
     });
   };
 
-  const setView = (next: ViewMode) =>
-    setPref({ view: next === "row" ? "row" : undefined });
-  const setSort = (next: SortKey) =>
-    setPref({ sort: next === DEFAULT_SORT ? undefined : next });
+  const setView = (next: ViewMode) => setViewPref(next);
   // Clear every filter and the search query, keeping only display prefs.
   const reset = () => setFilter(emptyFilter);
 
