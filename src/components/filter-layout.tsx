@@ -1,3 +1,4 @@
+import { motion } from "motion/react";
 import type { Ref } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -79,19 +80,24 @@ export function Column({
   );
 
   const footerEl = footer ? (
-    // h-16 when shown, h-0 + translate-y-full when hidden: the bar slides down
-    // past its own edge and collapses, handing its height back to the body. The
-    // transition animates both so it reads as a slide-away, not a pop.
-    <footer
+    // Shown: 4rem tall, slid to y:0, top border. Hidden: collapses to 0 height
+    // and slides down past its own edge, handing the height back to the body.
+    // Motion drives height + y together so it reads as a slide-away, not a pop,
+    // and lands every frame instead of a reflow-y CSS transition dropping the
+    // first one. overflow-hidden clips the field while it collapses.
+    <motion.footer
+      initial={false}
+      animate={
+        footerHidden ? { height: 0, y: "100%" } : { height: "4rem", y: "0%" }
+      }
+      transition={{ duration: 0.2, ease: "easeOut" }}
       className={cn(
-        "flex shrink-0 items-center gap-2 overflow-hidden border-border bg-background px-4 transition-[height,transform] duration-200 ease-linear",
-        footerHidden
-          ? "h-0 translate-y-full border-t-0"
-          : "h-16 translate-y-0 border-t"
+        "flex shrink-0 items-center gap-2 overflow-hidden bg-background px-4",
+        footerHidden ? "border-t-0" : "border-border border-t"
       )}
     >
       <div className="flex flex-1 items-center gap-3">{footer}</div>
-    </footer>
+    </motion.footer>
   ) : null;
 
   const body = (

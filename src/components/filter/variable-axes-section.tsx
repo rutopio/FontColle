@@ -1,4 +1,5 @@
 import { CaretDownIcon, type Icon, InfoIcon } from "@phosphor-icons/react";
+import { AnimatePresence, motion } from "motion/react";
 import { useMemo, useState } from "react";
 import { EditableValue } from "@/components/ui/editable-value";
 import { Slider } from "@/components/ui/slider";
@@ -91,16 +92,20 @@ export function VariableAxesSection({
 
     return (
       <div key={tag} className="flex items-center gap-1.5">
-        <button
+        <motion.button
           type="button"
           onClick={() => onToggle(tag)}
           disabled={disabled}
+          // Motion animates flex-basis (the pill shrinks to 1/3 when selected,
+          // expanding back to full when cleared); border/background stay CSS
+          // transitions since they're color micro-changes, not layout.
+          initial={false}
+          animate={{ flexBasis: on ? "33.333333%" : "100%" }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
           className={cn(
-            "flex min-w-0 flex-1 items-center justify-between gap-1 rounded-md border px-2.5 py-1 text-xs transition-[flex-basis,border-color,background-color] duration-200 ease-out",
+            "flex min-w-0 flex-1 items-center justify-between gap-1 rounded-md border px-2.5 py-1 text-xs transition-[border-color,background-color] duration-200 ease-out",
             disabled && "cursor-not-allowed",
-            on
-              ? "basis-1/3 border-primary bg-muted"
-              : "basis-full border-input",
+            on ? "border-primary bg-muted" : "border-input",
             !disabled && !on && "hover:border-foreground/40"
           )}
         >
@@ -127,7 +132,7 @@ export function VariableAxesSection({
           <span className="font-mono text-muted-foreground opacity-60">
             {count}
           </span>
-        </button>
+        </motion.button>
         {/* Sibling of the pill button, never nested inside it: TooltipTrigger
                   renders its own <button>, and a <button> inside the pill's
                   <button> would be invalid HTML and would double-fire onToggle. */}
@@ -165,12 +170,28 @@ export function VariableAxesSection({
                   shrinks / expands, this grows / collapses), while opacity fades
                   the slider in behind the shrink (delay) and out ahead of the
                   push-back. pointer-events-none keeps it inert while hidden. */}
-        <div
+        {/* Motion animates flex-basis + opacity + padding opposite the pill:
+            it grows from 0 to 2/3 and fades in as the pill shrinks. The fade
+            trails the shrink on select (opacity delay) and leads the push-back
+            on clear (shorter duration), matching the original hand-tuned feel. */}
+        <motion.div
+          initial={false}
+          animate={{
+            flexBasis: on ? "66.666667%" : "0%",
+            paddingLeft: on ? "0.625rem" : "0rem",
+            paddingRight: on ? "0.625rem" : "0rem",
+            opacity: on ? 1 : 0,
+          }}
+          transition={{
+            duration: on ? 0.2 : 0.15,
+            ease: "easeOut",
+            opacity: on
+              ? { duration: 0.2, ease: "easeOut", delay: 0.05 }
+              : { duration: 0.15, ease: "easeOut" },
+          }}
           className={cn(
-            "flex min-w-0 flex-1 items-center gap-3 overflow-hidden text-xs transition-[flex-basis,opacity] duration-200 ease-out",
-            on
-              ? "basis-2/3 px-2.5 opacity-100 delay-[50ms]"
-              : "pointer-events-none basis-0 px-0 opacity-0 duration-150"
+            "flex min-w-0 flex-1 items-center gap-3 overflow-hidden text-xs",
+            !on && "pointer-events-none"
           )}
         >
           <Slider
@@ -193,7 +214,7 @@ export function VariableAxesSection({
               ariaLabel={`${tag} relative position`}
             />
           </span>
-        </div>
+        </motion.div>
       </div>
     );
   };
@@ -220,20 +241,24 @@ export function VariableAxesSection({
         {common.map(renderRow)}
         {rare.length > 0 && (
           <>
-            {/* Collapse the rare tail by animating grid rows 0fr -> 1fr; the
-                inner wrapper needs overflow-hidden so it clips while closed. */}
-            <div
-              className={cn(
-                "grid transition-[grid-template-rows] duration-200 ease-out",
-                showMore ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+            {/* Motion collapses the rare tail by animating height auto <-> 0;
+                overflow-hidden clips it while closed. */}
+            <AnimatePresence initial={false}>
+              {showMore && (
+                <motion.div
+                  key="tail"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  className="overflow-hidden"
+                >
+                  <div className="flex flex-col gap-1.5">
+                    {rare.map(renderRow)}
+                  </div>
+                </motion.div>
               )}
-            >
-              <div className="min-h-0 overflow-hidden">
-                <div className="flex flex-col gap-1.5">
-                  {rare.map(renderRow)}
-                </div>
-              </div>
-            </div>
+            </AnimatePresence>
             {/* Selected tail axes, kept visible below the top rows while the
                 tail is collapsed. */}
             {pinned.map(renderRow)}

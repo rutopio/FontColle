@@ -1,4 +1,5 @@
 import { CaretDownIcon } from "@phosphor-icons/react";
+import { AnimatePresence, motion } from "motion/react";
 import { Fragment, useMemo, useState } from "react";
 import { Separator } from "@/components/ui/separator";
 import { groupLanguagesByRegion, languageLabel } from "@/lib/fonts/labels";
@@ -56,24 +57,27 @@ function RegionAccordion({
           {ids.length}
         </span>
       </button>
-      {/* Animate open/closed by transitioning grid rows 0fr -> 1fr; the inner
-          wrapper clips the collapsed content. */}
-      <div
-        className={cn(
-          "grid transition-[grid-template-rows] duration-200 ease-out",
-          open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+      {/* Motion collapses the region open/closed by animating height auto <-> 0;
+          overflow-hidden clips the content while it slides. */}
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="overflow-hidden"
+          >
+            <div className="grid grid-cols-4 gap-x-3 gap-y-1 pb-3 text-sm">
+              {ids.map((id) => (
+                <span key={id} className="truncate text-muted-foreground">
+                  {languageLabel(id)}
+                </span>
+              ))}
+            </div>
+          </motion.div>
         )}
-      >
-        <div className="min-h-0 overflow-hidden">
-          <div className="grid grid-cols-4 gap-x-3 gap-y-1 pb-3 text-sm">
-            {ids.map((id) => (
-              <span key={id} className="truncate text-muted-foreground">
-                {languageLabel(id)}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
+      </AnimatePresence>
     </div>
   );
 }
