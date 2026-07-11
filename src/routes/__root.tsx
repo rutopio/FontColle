@@ -6,6 +6,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import { RouteTransition } from "@/components/route-transition";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { FilterProvider } from "@/lib/filter/context";
 import { PreviewProvider } from "@/lib/preview/context";
@@ -64,7 +65,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body>
         <TooltipProvider>
           <FilterProvider>
-            <PreviewProvider>{children}</PreviewProvider>
+            <PreviewProvider>
+              <RouteTransition>{children}</RouteTransition>
+            </PreviewProvider>
           </FilterProvider>
         </TooltipProvider>
         <TanStackDevtools
