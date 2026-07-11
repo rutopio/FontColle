@@ -12,13 +12,19 @@ export function FilterLayout({
   rail,
   sidebar,
   children,
+  panelOpen = true,
 }: {
   rail?: React.ReactNode;
   sidebar: React.ReactNode;
   children: React.ReactNode;
+  // When false, the two-level sidebar collapses to just its icon rail, so the
+  // inset reclaims the panel's width. The detail page closes it on the read-only
+  // Detail view, which has no controls to host.
+  panelOpen?: boolean;
 }) {
   return (
     <SidebarProvider
+      open={panelOpen}
       style={
         {
           // A wider icon rail: it carries labelled group buttons, not just the
@@ -48,6 +54,7 @@ export function Column({
   header,
   headerClassName,
   footer,
+  footerHidden = false,
   children,
   scrollViewportRef,
 }: {
@@ -56,6 +63,10 @@ export function Column({
   // Bottom bar, a mirror of the header: same height, flush to the inset edge,
   // border on top instead of bottom. Both pages use it for the preview field.
   footer?: React.ReactNode;
+  // When true, the footer slides down out of view and gives its height back to
+  // the scroll body — used on the detail page's non-Sample views, where the
+  // shared preview field is irrelevant.
+  footerHidden?: boolean;
   children: React.ReactNode;
   scrollViewportRef?: Ref<HTMLDivElement>;
 }) {
@@ -68,7 +79,17 @@ export function Column({
   );
 
   const footerEl = footer ? (
-    <footer className="flex h-16 shrink-0 items-center gap-2 border-border border-t bg-background px-4">
+    // h-16 when shown, h-0 + translate-y-full when hidden: the bar slides down
+    // past its own edge and collapses, handing its height back to the body. The
+    // transition animates both so it reads as a slide-away, not a pop.
+    <footer
+      className={cn(
+        "flex shrink-0 items-center gap-2 overflow-hidden border-border bg-background px-4 transition-[height,transform] duration-200 ease-linear",
+        footerHidden
+          ? "h-0 translate-y-full border-t-0"
+          : "h-16 translate-y-0 border-t"
+      )}
+    >
       <div className="flex flex-1 items-center gap-3">{footer}</div>
     </footer>
   ) : null;

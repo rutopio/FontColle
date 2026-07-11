@@ -165,6 +165,34 @@ export const getFontById = createServerFn({ method: "GET" })
   .validator((id: string) => id)
   .handler(({ data: id }): Promise<FontRecord | null> => loadFontById(id));
 
+// The designer tab lists other families by the same designer. We only need each
+// sibling's id + name for a link, so select just those columns rather than
+// stitching full records. `excludeId` drops the family currently being viewed.
+export interface DesignerSibling {
+  id: string;
+  name: string;
+}
+
+async function loadFontsByDesigner(
+  designer: string,
+  excludeId: string
+): Promise<DesignerSibling[]> {
+  const rows = await db
+    .select({ id: family.familyDir, name: family.name })
+    .from(family)
+    .where(and(eq(family.designer, designer), eq(family.isPublished, true)));
+  return rows
+    .filter((r) => r.id !== excludeId)
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+export const getFontsByDesigner = createServerFn({ method: "GET" })
+  .validator((input: { designer: string; excludeId: string }) => input)
+  .handler(
+    ({ data }): Promise<DesignerSibling[]> =>
+      loadFontsByDesigner(data.designer, data.excludeId)
+  );
+
 function groupBy<T, K>(rows: T[], key: (row: T) => K): Map<K, T[]> {
   const map = new Map<K, T[]>();
   for (const row of rows) {
