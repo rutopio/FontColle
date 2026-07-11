@@ -1,6 +1,10 @@
 import { colorFormatLabel } from "@/lib/fonts/color";
 import { featureName } from "@/lib/fonts/features";
-import { CLASSIFICATION_SECTIONS, type FilterState } from "@/lib/fonts/filter";
+import {
+  CLASSIFICATION_SECTIONS,
+  type FilterState,
+  REPO_HOST_LABELS,
+} from "@/lib/fonts/filter";
 import { languageLabel, scriptLabel, vendorLabel } from "@/lib/fonts/labels";
 import {
   formatMetricValue,
@@ -101,6 +105,13 @@ export function describeActiveFilters(f: FilterState): FilterChip[] {
     push(`vnd:${v}`, "Vendor", vendorLabel(v), without(f, "vendors", v));
   for (const v of f.license)
     push(`lic:${v}`, "License", v, without(f, "license", v));
+  for (const v of f.repoHosts)
+    push(
+      `repo:${v}`,
+      "Github",
+      REPO_HOST_LABELS[v] ?? v,
+      without(f, "repoHosts", v)
+    );
 
   for (const v of f.upm)
     push(`upm:${v}`, "Units per em", v, without(f, "upm", v));

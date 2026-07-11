@@ -24,6 +24,7 @@ import { weightLabel, widthLabel } from "./constants";
 import { DesignerSection } from "./designer-section";
 import { FeatureSection } from "./feature-section";
 import { FontTypeSection } from "./font-type-section";
+import { GithubSection } from "./github-section";
 import type { FilterGroupId } from "./groups";
 import { LanguageSection } from "./language-section";
 import { LicenseSection } from "./license-section";
@@ -288,12 +289,20 @@ export function FilterSidebar({
               </>
             )}
             {group === "other" && (
-              <LicenseSection
-                items={index.license}
-                selected={filter.license}
-                onToggle={(v) => toggle("license", v)}
-                onReset={() => onChange({ ...filter, license: [] })}
-              />
+              <>
+                <LicenseSection
+                  items={index.license}
+                  selected={filter.license}
+                  onToggle={(v) => toggle("license", v)}
+                  onReset={() => onChange({ ...filter, license: [] })}
+                />
+                <GithubSection
+                  items={index.repoHosts}
+                  selected={filter.repoHosts}
+                  onToggle={(v) => toggle("repoHosts", v)}
+                  onReset={() => onChange({ ...filter, repoHosts: [] })}
+                />
+              </>
             )}
           </motion.div>
         </AnimatePresence>

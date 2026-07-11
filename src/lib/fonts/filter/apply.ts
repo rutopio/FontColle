@@ -2,7 +2,12 @@
 import { isColorFont } from "../color";
 import { METRIC_SPECS, type MetricKey, matchesRange } from "../metrics";
 import type { FontRecord } from "../types";
-import { designerTokens, foldVendor, TAG_MEMBERSHIP_THRESHOLD } from "./facets";
+import {
+  designerTokens,
+  foldVendor,
+  repoHost,
+  TAG_MEMBERSHIP_THRESHOLD,
+} from "./facets";
 import type { FilterState } from "./state";
 import { familyWeightSet, familyWidthSet } from "./weights";
 
@@ -122,6 +127,12 @@ export function applyFilters(
     }
     // OR within license: family's license is one of the selected ids.
     if (f.license.length && !(font.license && f.license.includes(font.license)))
+      return false;
+    // OR within repo hosts: family's repository host is one of the selected.
+    if (
+      f.repoHosts.length &&
+      !f.repoHosts.includes(repoHost(font.repositoryUrl))
+    )
       return false;
     // Source: radio-style Noto / Others (at most one). Every published family
     // is one or the other, so this partitions the catalog.

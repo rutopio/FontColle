@@ -73,6 +73,29 @@ export const LICENSE_LABELS: Record<string, string> = {
   UFL: "UFL",
 };
 
+// Source-repository host pills, in fixed order (None trails, as the absence
+// bucket). The catalog is ~99% GitHub with a handful of GitLab/SourceHut and a
+// few families with no repository_url at all.
+export const REPO_HOST_VALUES = ["github", "gitlab", "sourcehut", "none"];
+export const REPO_HOST_LABELS: Record<string, string> = {
+  github: "GitHub",
+  gitlab: "GitLab",
+  sourcehut: "SourceHut",
+  none: "None",
+};
+
+/** The host bucket a family's repository_url falls into. Every family maps to
+ *  exactly one value (an absent/unknown URL is "none"), so the four pills
+ *  partition the catalog. Shared by the facet index and applyFilters. */
+export function repoHost(url: string | null): string {
+  if (!url) return "none";
+  const u = url.toLowerCase();
+  if (u.includes("github.com")) return "github";
+  if (u.includes("gitlab.com")) return "gitlab";
+  if (u.includes("sr.ht")) return "sourcehut";
+  return "none";
+}
+
 // Plain-language labels for the Tag panel's facet values (kebab-case ids from
 // deriveFacets). The panel is the natural-language shortcut, so it shows these
 // human phrases rather than the raw tag. Unmapped ids fall back to the id.
@@ -165,6 +188,7 @@ export function buildFacetIndex(fonts: FontRecord[]) {
   // code as the font actually embeds it, so we remember what we saw.
   const vendorCasings = new Map<string, Map<string, number>>();
   const license = new Map<string, number>();
+  const repoHosts = new Map<string, number>();
   const flags = new Map<string, number>();
   let hintedCount = 0;
   let unhintedCount = 0;
@@ -197,6 +221,7 @@ export function buildFacetIndex(fonts: FontRecord[]) {
       vendorCasings.set(vnd, seen);
     }
     if (font.license) bump(license, font.license);
+    bump(repoHosts, repoHost(font.repositoryUrl));
     bump(flags, font.isNoto ? "noto" : "others");
   }
   const sorted = (m: Map<string, number>) =>
@@ -259,6 +284,10 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     // License pills in fixed order (OFL / Apache 2.0 / UFL).
     license: LICENSE_VALUES.map(
       (v) => [v, license.get(v) ?? 0] as [string, number]
+    ),
+    // Repository-host pills in fixed order (GitHub / GitLab / SourceHut / None).
+    repoHosts: REPO_HOST_VALUES.map(
+      (v) => [v, repoHosts.get(v) ?? 0] as [string, number]
     ),
     // Source pills in fixed order (Noto / Others).
     flags: FLAG_VALUES.map((v) => [v, flags.get(v) ?? 0] as [string, number]),
