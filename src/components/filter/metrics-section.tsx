@@ -172,8 +172,9 @@ function MetricRangeRow({
         getAriaLabel={(i) => `${spec.label} ${i === 0 ? "minimum" : "maximum"}`}
       />
       {/* Quartile quick-select: each pill sets the slider to a range holding
-          ~1/4 of the catalog (Q1 = smallest, Q4 = largest). */}
-      <div className="grid grid-cols-4 gap-1">
+          ~1/4 of the catalog (Q1 = smallest, Q4 = largest). The trailing All
+          pill clears the range back to full extent. */}
+      <div className="grid grid-cols-5 gap-1">
         {quartiles.map((q, i) => {
           const active = value != null && rangesEqual(value, q);
           return (
@@ -208,6 +209,19 @@ function MetricRangeRow({
             </Tooltip>
           );
         })}
+        <button
+          type="button"
+          onClick={() => onChange(undefined)}
+          aria-pressed={value == null}
+          className={cn(
+            "rounded border py-0.5 text-center text-[11px] transition-colors",
+            value == null
+              ? "border-primary bg-muted font-semibold text-foreground"
+              : "text-muted-foreground hover:border-foreground hover:text-foreground"
+          )}
+        >
+          All
+        </button>
       </div>
     </div>
   );
