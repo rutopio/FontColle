@@ -113,6 +113,14 @@ export function describeActiveFilters(f: FilterState): FilterChip[] {
       without(f, "repoHosts", v)
     );
 
+  for (const v of f.italic)
+    push(
+      `ital:${v}`,
+      "Italic",
+      v === "italic" ? "Italic" : "Non-Italic",
+      without(f, "italic", v)
+    );
+
   for (const v of f.upm)
     push(`upm:${v}`, "Units per em", v, without(f, "upm", v));
 

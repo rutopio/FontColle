@@ -11,6 +11,9 @@ export interface PreviewCoords {
   weight: number;
   // Non-weight variation coords (wdth and any other selected axes).
   variationCoords: Record<string, number>;
+  // Whether to render the preview italic, from the Italic radio. Only the
+  // "italic" pick turns it on; "upright" and no pick leave it off.
+  italic: boolean;
 }
 
 /** Derive the preview weight + variation coords a FilterSelection implies for a
@@ -59,5 +62,7 @@ export function usePreviewCoords(
     variationCoords.wdth = widthCoord;
   }
 
-  return { weight: axisWeight ?? activeWeight, variationCoords };
+  const italic = selection.italic.includes("italic");
+
+  return { weight: axisWeight ?? activeWeight, variationCoords, italic };
 }

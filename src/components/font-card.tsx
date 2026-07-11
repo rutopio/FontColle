@@ -43,11 +43,11 @@ export function FontCard({
 }: Props) {
   // Weight/width/axis picks from the sidebar drive the live preview; the
   // derivation is shared with FontRow via usePreviewCoords.
-  const { weight: activeWeight, variationCoords } = usePreviewCoords(
-    font,
-    selection,
-    axisValues
-  );
+  const {
+    weight: activeWeight,
+    variationCoords,
+    italic: previewItalic,
+  } = usePreviewCoords(font, selection, axisValues);
 
   // Variable fonts: load the full axis range once so any weight/width the user
   // picks renders from a single variable file. Static fonts: request the actual
@@ -55,11 +55,15 @@ export function FontCard({
   // one for lack of that file.
   useEffect(() => {
     if (font.isVariable) {
-      ensureFontRangeLoaded(font.name, font.axes);
+      ensureFontRangeLoaded(
+        font.name,
+        font.axes,
+        font.facets.includes("has-italic")
+      );
     } else {
       ensureFontLoaded(font.name, [activeWeight]);
     }
-  }, [font.name, font.isVariable, font.axes, activeWeight]);
+  }, [font.name, font.isVariable, font.axes, font.facets, activeWeight]);
 
   const fontLoaded = useFontLoaded(font.name);
   const settings = variationSettings(variationCoords);
@@ -68,6 +72,7 @@ export function FontCard({
     // activeWeight already folds in the wght slider; set font-weight directly
     // (not via a coords map) so the browser can smooth/synthesize it.
     fontWeight: activeWeight,
+    fontStyle: previewItalic ? "italic" : undefined,
     fontVariationSettings: settings || undefined,
     // Smooth the weight/axis change instead of a hard jump.
     transition: "font-weight 200ms ease, font-variation-settings 200ms ease",

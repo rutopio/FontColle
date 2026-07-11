@@ -159,6 +159,13 @@ export function selectFlag(filter: FilterState, value: string): FilterState {
   return { ...filter, flags: next };
 }
 
+/** Radio-style Italic select (Italic / Non-Italic): at most one value;
+ *  re-clicking the active one clears it. Stored in `italic`. */
+export function selectItalic(filter: FilterState, value: string): FilterState {
+  const next = filter.italic.includes(value) ? [] : [value];
+  return { ...filter, italic: next };
+}
+
 /** Clear only the values a given section shows. Several sections share one
  *  FilterState key (Properties and Font type both live in `facets`), so scope
  *  the reset to the items that section actually renders. */

@@ -45,22 +45,26 @@ export function FontRow({
 }: Props) {
   // Same weight/width/axis derivation as FontCard, so the row previews the
   // sidebar's picks identically.
-  const { weight: activeWeight, variationCoords } = usePreviewCoords(
-    font,
-    selection,
-    axisValues
-  );
+  const {
+    weight: activeWeight,
+    variationCoords,
+    italic: previewItalic,
+  } = usePreviewCoords(font, selection, axisValues);
 
   // Variable fonts: load the full axis range once so any picked weight/width
   // renders from one variable file. Static fonts: request the selected weight
   // cut so the preview doesn't stay on an old one for lack of that file.
   useEffect(() => {
     if (font.isVariable) {
-      ensureFontRangeLoaded(font.name, font.axes);
+      ensureFontRangeLoaded(
+        font.name,
+        font.axes,
+        font.facets.includes("has-italic")
+      );
     } else {
       ensureFontLoaded(font.name, [activeWeight]);
     }
-  }, [font.name, font.isVariable, font.axes, activeWeight]);
+  }, [font.name, font.isVariable, font.axes, font.facets, activeWeight]);
 
   const fontLoaded = useFontLoaded(font.name);
   const settings = variationSettings(variationCoords);
@@ -152,6 +156,7 @@ export function FontRow({
           style={{
             fontFamily: previewFontFamily(font.name, fontLoaded),
             fontWeight: activeWeight,
+            fontStyle: previewItalic ? "italic" : undefined,
             fontVariationSettings: settings || undefined,
             transition:
               "font-weight 200ms ease, font-variation-settings 200ms ease",

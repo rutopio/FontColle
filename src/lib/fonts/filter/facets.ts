@@ -62,6 +62,70 @@ export const CLASSIFICATION_SECTIONS: {
       "/Script/Formal",
     ],
   },
+  {
+    // Google Fonts' subjective "expressive" trait ratings (mood/personality),
+    // ordered by how many families carry each. Not a taxonomy — a family scores
+    // several, so these OR within like every other classification section.
+    title: "Expressive",
+    prefix: "/Expressive/",
+    tags: [
+      "/Expressive/Rugged",
+      "/Expressive/Vintage",
+      "/Expressive/Business",
+      "/Expressive/Loud",
+      "/Expressive/Sincere",
+      "/Expressive/Stiff",
+      "/Expressive/Calm",
+      "/Expressive/Playful",
+      "/Expressive/Futuristic",
+      "/Expressive/Competent",
+      "/Expressive/Awkward",
+      "/Expressive/Happy",
+      "/Expressive/Active",
+      "/Expressive/Excited",
+      "/Expressive/Cute",
+      "/Expressive/Innovative",
+      "/Expressive/Artistic",
+      "/Expressive/Childlike",
+      "/Expressive/Sophisticated",
+      "/Expressive/Fancy",
+    ],
+  },
+  {
+    title: "Theme",
+    prefix: "/Theme/",
+    tags: [
+      "/Theme/Wacky",
+      "/Theme/Techno",
+      "/Theme/Brush",
+      "/Theme/Distressed",
+      "/Theme/Pixel",
+      "/Theme/Woodtype",
+      "/Theme/Blobby",
+      "/Theme/Blackletter",
+      "/Theme/Inline",
+      "/Theme/Medieval",
+      "/Theme/Stencil",
+      "/Theme/Art Deco",
+      "/Theme/Shaded",
+      "/Theme/Tuscan",
+      "/Theme/Art Nouveau",
+    ],
+  },
+  {
+    title: "Seasonal",
+    prefix: "/Seasonal/",
+    tags: [
+      "/Seasonal/Valentine's Day",
+      "/Seasonal/Holi",
+      "/Seasonal/Diwali",
+      "/Seasonal/Kwanzaa",
+      "/Seasonal/Lunar New Year",
+      "/Seasonal/Christmas",
+      "/Seasonal/Halloween",
+      "/Seasonal/Hanukkah",
+    ],
+  },
 ];
 
 // The license pills, in fixed order. Records with a null license never match
@@ -144,6 +208,14 @@ export const FLAG_LABELS: Record<string, string> = {
   others: "Non-Noto",
 };
 
+// Italic radio: whether a family offers an italic style (the has-italic facet)
+// or not. The two partition the whole catalog.
+export const ITALIC_VALUES = ["italic", "upright"];
+export const ITALIC_LABELS: Record<string, string> = {
+  italic: "Italic",
+  upright: "Non-Italic",
+};
+
 // Vendor ids that mean "unknown", not a foundry — dropped from the Vendor
 // facet so they don't masquerade as a real source.
 const UNKNOWN_VENDORS = new Set(["NONE", "UKWN", "----", ""]);
@@ -190,6 +262,7 @@ export function buildFacetIndex(fonts: FontRecord[]) {
   const license = new Map<string, number>();
   const repoHosts = new Map<string, number>();
   const flags = new Map<string, number>();
+  const italic = new Map<string, number>();
   let hintedCount = 0;
   let unhintedCount = 0;
   const bump = (m: Map<string, number>, k: string) =>
@@ -223,6 +296,7 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     if (font.license) bump(license, font.license);
     bump(repoHosts, repoHost(font.repositoryUrl));
     bump(flags, font.isNoto ? "noto" : "others");
+    bump(italic, font.facets.includes("has-italic") ? "italic" : "upright");
   }
   const sorted = (m: Map<string, number>) =>
     [...m.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
@@ -291,6 +365,9 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     ),
     // Source pills in fixed order (Noto / Others).
     flags: FLAG_VALUES.map((v) => [v, flags.get(v) ?? 0] as [string, number]),
+    italic: ITALIC_VALUES.map(
+      (v) => [v, italic.get(v) ?? 0] as [string, number]
+    ),
     // Units-per-em pill items ([value, family count]) for the Metrics tab.
     upmCounts: catalogUpmCounts(fonts),
     // Family counts for the Hint pills.

@@ -3,6 +3,7 @@ import {
   SlidersHorizontalIcon,
   TagIcon,
   TextAaIcon,
+  TextItalicIcon,
 } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect } from "react";
@@ -11,6 +12,7 @@ import {
   FACET_LABELS,
   type FacetIndex,
   type FilterState,
+  ITALIC_LABELS,
   type MetricKey,
   type MetricRange,
 } from "@/lib/fonts/filter";
@@ -33,6 +35,7 @@ import {
   MetricsSection,
   UnitsPerEmSection,
 } from "./metrics-section";
+import { RadioPillSection } from "./radio-pill-section";
 import { Section } from "./section";
 import { SourceSection } from "./source-section";
 import { VariableAxesSection } from "./variable-axes-section";
@@ -72,6 +75,8 @@ export function FilterSidebar({
     onChange(actions.selectColor(filter, value));
   const selectFontType = (value: string) =>
     onChange(actions.selectFontType(filter, value));
+  const selectItalic = (value: string) =>
+    onChange(actions.selectItalic(filter, value));
   const resetFontType = () => onChange(actions.resetFontType(filter));
   const clearSection = (
     key: Parameters<typeof actions.clearSection>[1],
@@ -155,6 +160,15 @@ export function FilterSidebar({
                   items={index.classes}
                   selected={filter.classes}
                   onToggle={(v) => toggle("classes", v)}
+                />
+                <RadioPillSection
+                  title="Italic"
+                  icon={TextItalicIcon}
+                  items={index.italic}
+                  labels={ITALIC_LABELS}
+                  selected={filter.italic}
+                  onToggle={selectItalic}
+                  onReset={() => onChange({ ...filter, italic: [] })}
                 />
                 {index.classifications.map((section) => (
                   <ClassificationSection
