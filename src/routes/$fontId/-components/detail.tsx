@@ -9,9 +9,11 @@ import { buildFeatureSettings } from "@/lib/fonts/features";
 import { scriptLabel } from "@/lib/fonts/labels";
 import { ensureFontRangeLoaded, useFontLoaded } from "@/lib/fonts/loader";
 import { previewStyle } from "@/lib/fonts/preview-style";
+import type { DesignerSibling } from "@/lib/fonts/queries";
 import { specimenFor } from "@/lib/fonts/specimen";
 import type { FontRecord } from "@/lib/fonts/types";
 import { usePreview } from "@/lib/preview/context";
+import type { DetailTab } from "./detail-rail";
 import { InstanceChips } from "./instance-chips";
 import { InstanceRow } from "./instance-row";
 import { LanguageSupport } from "./language-support";
@@ -21,6 +23,7 @@ import { TypeTester } from "./type-tester";
 export function Detail({
   font,
   tab,
+  designerSiblings,
   size,
   axisState,
   italic,
@@ -28,7 +31,8 @@ export function Detail({
   featureState,
 }: {
   font: FontRecord;
-  tab: "sample" | "detail";
+  tab: DetailTab;
+  designerSiblings: DesignerSibling[];
   size: number;
   axisState: Record<string, number>;
   italic: boolean;
@@ -115,6 +119,9 @@ export function Detail({
         </>
       }
       footer={<PreviewBar />}
+      // The preview sentence field is only relevant to the Sample tester; on the
+      // other views it slides away.
+      footerHidden={tab !== "sample"}
     >
       {(font.designer || font.class) && (
         <div className="flex flex-wrap items-center gap-2">
@@ -268,7 +275,83 @@ export function Detail({
           {font.languages.length > 0 && <LanguageSupport font={font} />}
         </>
       )}
+
+      {tab === "designer" && (
+        <DesignerPanel font={font} siblings={designerSiblings} />
+      )}
     </Column>
+  );
+}
+
+// The Designer view: who made the family, a link out to their Google Fonts
+// page, and the other families they authored in the catalog. We only have the
+// designer's name (no bio in the DB), so this stays a lean who/where/what.
+function DesignerPanel({
+  font,
+  siblings,
+}: {
+  font: FontRecord;
+  siblings: DesignerSibling[];
+}) {
+  // The DB stores designers as one string; Google Fonts credits several as a
+  // comma-separated list. Split so each gets their own credit + profile link.
+  const designers = (font.designer ?? "")
+    .split(",")
+    .map((d) => d.trim())
+    .filter(Boolean);
+
+  return (
+    <>
+      <Panel label="Designer">
+        {designers.length > 0 ? (
+          <div className="flex flex-col">
+            {designers.map((name) => (
+              <div
+                key={name}
+                className="flex items-center justify-between gap-2 border-border border-t py-2 text-sm first:border-t-0"
+              >
+                <span>{name}</span>
+                <a
+                  href={`https://fonts.google.com/?query=${encodeURIComponent(name)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  Google Fonts ↗
+                </a>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="py-2 text-muted-foreground text-sm">
+            No designer credited.
+          </p>
+        )}
+      </Panel>
+
+      <Panel label="More by this designer" count={siblings.length || undefined}>
+        {siblings.length > 0 ? (
+          <div className="grid gap-x-3 gap-y-1 sm:grid-cols-2 lg:grid-cols-3">
+            {siblings.map((s) => (
+              <Link
+                key={s.id}
+                to="/$fontId"
+                params={{ fontId: s.id }}
+                className="truncate py-1 text-sm hover:text-foreground"
+                style={{ fontFamily: `"${s.name}", sans-serif` }}
+              >
+                {s.name}
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <p className="py-2 text-muted-foreground text-sm">
+            No other families by {designers[0] ?? "this designer"} in the
+            catalog.
+          </p>
+        )}
+      </Panel>
+    </>
   );
 }
 

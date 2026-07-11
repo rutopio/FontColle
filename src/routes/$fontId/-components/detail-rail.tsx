@@ -1,20 +1,23 @@
-import { EyeIcon, InfoIcon } from "@phosphor-icons/react";
+import { EyeIcon, InfoIcon, UserIcon } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 
+export type DetailTab = "sample" | "detail" | "designer";
+
 // The icon-rail switcher for the detail page, matching the list's FilterRail:
-// one button per view (the type-tester sample vs. the font's specs/detail).
-// Icons are chosen to not collide with the list's FilterRail set.
+// one button per view (the type-tester sample vs. the font's specs vs. the
+// designer). Icons are chosen to not collide with the list's FilterRail set.
 const TABS = [
   { id: "sample" as const, label: "Sample", icon: EyeIcon },
   { id: "detail" as const, label: "Detail", icon: InfoIcon },
+  { id: "designer" as const, label: "Designer", icon: UserIcon },
 ];
 
 export function DetailRail({
   active,
   onSelect,
 }: {
-  active: "sample" | "detail";
-  onSelect: (id: "sample" | "detail") => void;
+  active: DetailTab;
+  onSelect: (id: DetailTab) => void;
 }) {
   return (
     <nav aria-label="Detail views" className="flex flex-col gap-1 px-1.5">
