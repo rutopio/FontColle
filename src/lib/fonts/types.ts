@@ -79,6 +79,9 @@ export interface FontRecord {
   // governs line height.
   useTypoMetrics: boolean | null;
   avgCharWidth: number | null; // OS/2 xAvgCharWidth
+  // Stroke-contrast ratio (thick/thin) at regular weight, from google/fonts
+  // quant.csv. ~1.0 monolinear, 3+ high-contrast Didone. Null when unmeasured.
+  contrast: number | null;
   isMonospace: boolean | null; // post isFixedPitch
   hasHinting: boolean | null; // TrueType instructions present
   vendorId: string | null; // OS/2 achVendID, e.g. "GOOG"

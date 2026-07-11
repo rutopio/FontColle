@@ -41,7 +41,7 @@ def statements_for(r, now):
         "is_published,popularity_rank,trending_rank,last_modified,specimen,tags,"
         "x_height,cap_height,italic_angle,hhea_ascender,hhea_descender,hhea_line_gap,"
         "typo_ascender,typo_descender,typo_line_gap,win_ascent,win_descent,"
-        "use_typo_metrics,avg_char_width,is_monospace,has_hinting,vendor_id,file_size,"
+        "use_typo_metrics,avg_char_width,contrast,is_monospace,has_hinting,vendor_id,file_size,"
         "repository_url,is_noto,is_brand_font,is_open_source,"
         "content_hash,updated_at"
     )
@@ -63,7 +63,7 @@ def statements_for(r, now):
         f"{q(r.get('typoAscender'))},{q(r.get('typoDescender'))},{q(r.get('typoLineGap'))},"
         f"{q(r.get('winAscent'))},{q(r.get('winDescent'))},"
         f"{q(bool(r['useTypoMetrics']) if r.get('useTypoMetrics') is not None else None)},"
-        f"{q(r.get('avgCharWidth'))},"
+        f"{q(r.get('avgCharWidth'))},{q(r.get('contrast'))},"
         f"{q(bool(r['isMonospace']) if r.get('isMonospace') is not None else None)},"
         f"{q(bool(r['hasHinting']) if r.get('hasHinting') is not None else None)},"
         f"{q(r.get('vendorId'))},{q(r.get('fileSize'))},"

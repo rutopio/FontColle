@@ -1,0 +1,1 @@
+ALTER TABLE `family` ADD `contrast` real;
