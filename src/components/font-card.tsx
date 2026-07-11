@@ -6,6 +6,7 @@ import {
 import { Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { FontTraits } from "@/components/font-traits";
+import { HoverBoldIcon } from "@/components/hover-bold-icon";
 import type { FilterSelection } from "@/lib/fonts/filter";
 import {
   ensureFontLoaded,
@@ -99,7 +100,8 @@ export function FontCard({
             }
             className="text-muted-foreground transition-colors hover:text-foreground"
           >
-            <HeartIcon
+            <HoverBoldIcon
+              icon={HeartIcon}
               weight={isFavorite ? "fill" : "regular"}
               className={cn("size-5", isFavorite && "text-red-500")}
             />
@@ -121,7 +123,7 @@ export function FontCard({
             aria-label="Download on Google Fonts"
             className="text-muted-foreground transition-colors hover:text-foreground"
           >
-            <DownloadSimpleIcon className="size-5" />
+            <HoverBoldIcon icon={DownloadSimpleIcon} className="size-5" />
           </button>
           {/* Only when the family has a known upstream repo. A button, not an
               <a>, for the same nested-<a> reason as the download button. */}
@@ -140,7 +142,7 @@ export function FontCard({
               aria-label="View source repository"
               className="text-muted-foreground transition-colors hover:text-foreground"
             >
-              <GithubLogoIcon className="size-5" />
+              <HoverBoldIcon icon={GithubLogoIcon} className="size-5" />
             </button>
           )}
         </div>
