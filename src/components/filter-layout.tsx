@@ -129,7 +129,10 @@ export function Column({
   return (
     <div className="flex min-w-0 flex-1 flex-col">
       {headerEl}
-      {body}
+      {/* Let the body take the remaining height so the footer sits at the
+          bottom even when content is short, instead of trailing the content
+          with a gap below it. */}
+      <div className="flex min-h-0 flex-1 flex-col">{body}</div>
       {footerEl}
     </div>
   );
