@@ -5,6 +5,7 @@ import { NoMatches, SearchBox } from "./search-box";
 import { Pills } from "./section";
 import { SectionHeader } from "./section-header";
 import { useSearchSort } from "./use-facet-search";
+import { VirtualPills } from "./virtual-pills";
 
 /** A labelled facet value: [value, family count, human label]. */
 export type FacetItem = readonly [string, number, string];
@@ -30,6 +31,7 @@ export function FacetSearchSection({
   info,
   mode,
   onToggleMode,
+  virtualize,
 }: {
   title: string;
   icon: Icon;
@@ -51,6 +53,10 @@ export function FacetSearchSection({
   // Optional note shown in an info-icon tooltip beside the title (e.g. the data
   // source). Forwarded to SectionHeader.
   info?: React.ReactNode;
+  // Row-virtualize the pill list instead of the topN + "N more" expander. For
+  // very high-cardinality facets (Designer, 700+) where searching would
+  // otherwise flood the DOM. Renders every match in a scrollable box.
+  virtualize?: boolean;
 }) {
   const { sort, toggleSort, query, setQuery, q } = useSearchSort();
 
@@ -119,6 +125,13 @@ export function FacetSearchSection({
           title="Nothing found"
           description={`No ${title.toLowerCase()} matches “${query.trim()}”.`}
           onClear={() => setQuery("")}
+        />
+      ) : virtualize ? (
+        <VirtualPills
+          items={pills}
+          selected={selected}
+          onToggle={onToggle}
+          label={(value) => labelOf.get(value) ?? value}
         />
       ) : (
         <Pills
