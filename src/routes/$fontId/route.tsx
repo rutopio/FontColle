@@ -1,13 +1,18 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FilterLayout } from "@/components/filter-layout";
 import { deriveFacets } from "@/lib/fonts/facets";
 import { DEFAULT_ON } from "@/lib/fonts/features";
+import {
+  blocksWithCoverage,
+  useGlyphCoverage,
+} from "@/lib/fonts/glyph-coverage";
 import { getFontById, getFontsByDesigners } from "@/lib/fonts/queries";
 import { pageTitle } from "@/lib/site";
 import { Detail } from "./-components/detail";
 import { DetailRail, type DetailTab } from "./-components/detail-rail";
 import { DetailSidebar } from "./-components/detail-sidebar";
+import { GlyphsSidebar } from "./-components/glyphs-sidebar";
 
 export const Route = createFileRoute("/$fontId")({
   component: DetailPage,
@@ -97,26 +102,55 @@ function DetailPage() {
   // and the Detail body reacts to it.
   const [tab, setTab] = useState<DetailTab>("sample");
 
+  // Glyphs view: fetch the font's Unicode coverage, and derive the blocks it
+  // actually covers. Active block lives here so its sidebar (the block list) and
+  // the grid body stay in sync, the same way size/axis state is shared with the
+  // Sample sidebar.
+  const { ranges, loading: glyphLoading } = useGlyphCoverage(font.id);
+  const coveredBlocks = useMemo(() => blocksWithCoverage(ranges), [ranges]);
+  const [glyphBlock, setGlyphBlock] = useState("");
+
+  // Once coverage loads (or the font changes), pin the active block to the
+  // first covered one unless the current selection is still valid — the font
+  // may not cover Basic Latin, so there's no fixed default.
+  useEffect(() => {
+    if (coveredBlocks.length === 0) return;
+    setGlyphBlock((prev) =>
+      coveredBlocks.some((c) => c.block.name === prev)
+        ? prev
+        : coveredBlocks[0].block.name
+    );
+  }, [coveredBlocks]);
+
   return (
     <FilterLayout
-      // The Detail view is read-only specs with no controls, so collapse the
-      // panel to just the icon rail; only the Sample view's tester needs the
-      // size/axis/feature controls.
-      panelOpen={tab === "sample"}
+      // Read-only spec views (Detail/Designer/License) collapse the panel to
+      // just the icon rail; Sample needs the tester controls and Glyphs needs
+      // the block list, so both keep the sidebar open.
+      panelOpen={tab === "sample" || tab === "glyphs"}
       rail={<DetailRail active={tab} onSelect={setTab} />}
       sidebar={
-        <DetailSidebar
-          size={size}
-          onSizeChange={setSize}
-          axes={font.axes}
-          axisState={axisState}
-          onAxisChange={setAxis}
-          onResetAxes={resetAxes}
-          features={font.features}
-          featureState={featureState}
-          onToggleFeature={toggleFeature}
-          onResetFeatures={resetFeatures}
-        />
+        tab === "glyphs" ? (
+          <GlyphsSidebar
+            blocks={coveredBlocks}
+            loading={glyphLoading}
+            active={glyphBlock}
+            onSelect={setGlyphBlock}
+          />
+        ) : (
+          <DetailSidebar
+            size={size}
+            onSizeChange={setSize}
+            axes={font.axes}
+            axisState={axisState}
+            onAxisChange={setAxis}
+            onResetAxes={resetAxes}
+            features={font.features}
+            featureState={featureState}
+            onToggleFeature={toggleFeature}
+            onResetFeatures={resetFeatures}
+          />
+        )
       }
     >
       <Detail
@@ -128,6 +162,9 @@ function DetailPage() {
         italic={italic}
         onLoadInstance={loadInstance}
         featureState={featureState}
+        glyphBlock={glyphBlock}
+        glyphRanges={ranges}
+        glyphLoading={glyphLoading}
       />
     </FilterLayout>
   );

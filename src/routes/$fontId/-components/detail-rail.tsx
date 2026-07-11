@@ -1,7 +1,13 @@
-import { EyeIcon, InfoIcon, ScrollIcon, UserIcon } from "@phosphor-icons/react";
+import {
+  EyeIcon,
+  InfoIcon,
+  ScrollIcon,
+  SquaresFourIcon,
+  UserIcon,
+} from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 
-export type DetailTab = "sample" | "detail" | "designer" | "license";
+export type DetailTab = "sample" | "glyphs" | "detail" | "designer" | "license";
 
 // The icon-rail switcher for the detail page, matching the list's FilterRail:
 // one button per view (the type-tester sample vs. the font's specs vs. the
@@ -9,6 +15,7 @@ export type DetailTab = "sample" | "detail" | "designer" | "license";
 // FilterRail set.
 const TABS = [
   { id: "sample" as const, label: "Sample", icon: EyeIcon },
+  { id: "glyphs" as const, label: "Glyphs", icon: SquaresFourIcon },
   { id: "detail" as const, label: "Detail", icon: InfoIcon },
   { id: "designer" as const, label: "Designer", icon: UserIcon },
   { id: "license" as const, label: "License", icon: ScrollIcon },
