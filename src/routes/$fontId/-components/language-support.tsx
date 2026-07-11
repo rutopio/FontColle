@@ -1,5 +1,6 @@
 import { CaretDownIcon } from "@phosphor-icons/react";
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
+import { Separator } from "@/components/ui/separator";
 import { groupLanguagesByRegion, languageLabel } from "@/lib/fonts/labels";
 import type { FontRecord } from "@/lib/fonts/types";
 import { cn } from "@/lib/utils";
@@ -18,12 +19,10 @@ export function LanguageSupport({ font }: { font: FontRecord }) {
     <Panel label="Languages" count={font.languages.length}>
       <div className="flex flex-col">
         {regions.map(({ region, ids }, i) => (
-          <RegionAccordion
-            key={region}
-            region={region}
-            ids={ids}
-            defaultOpen={i === 0}
-          />
+          <Fragment key={region}>
+            {i > 0 && <Separator />}
+            <RegionAccordion region={region} ids={ids} defaultOpen={false} />
+          </Fragment>
         ))}
       </div>
     </Panel>
@@ -42,7 +41,7 @@ function RegionAccordion({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <div className="border-border border-t first:border-t-0">
+    <div>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}

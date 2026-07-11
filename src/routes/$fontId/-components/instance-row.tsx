@@ -26,7 +26,7 @@ export function InstanceRow({
   });
 
   return (
-    <div className="flex flex-col gap-4 overflow-hidden border-border border-t py-3 first:border-t-0">
+    <div className="flex flex-col gap-4 overflow-hidden py-3">
       <span className="flex items-baseline gap-2">
         <span className="text-sm">{inst.name}</span>
         <span className="truncate font-mono text-muted-foreground text-xs">
