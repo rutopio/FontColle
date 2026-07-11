@@ -37,6 +37,10 @@ export const family = sqliteTable(
     createdMs: integer("created_ms"), // font head.created (epoch ms)
     modifiedMs: integer("modified_ms"), // font head.modified (epoch ms)
     dateAdded: text("date_added"), // METADATA date_added, "2011-05-11"
+    // Earliest commit touching the family in google/fonts, "yyyy-MM-dd". The
+    // font's true repo debut — more reliable than the hand-entered date_added
+    // (backfill_version_history.py). Null when no commit was found.
+    firstCommitDate: text("first_commit_date"),
 
     // --- classification / metrics (from OS/2 + head + maxp + cmap) ---
     weightClass: integer("weight_class"), // OS/2 usWeightClass
@@ -71,6 +75,10 @@ export const family = sqliteTable(
     popularityRank: integer("popularity_rank"),
     trendingRank: integer("trending_rank"),
     lastModified: text("last_modified"), // API "yyyy-MM-dd", more current than date_added
+    // Release timeline from google/fonts git history, JSON array of
+    // {version,date} ascending, e.g. [{"version":"3.011","date":"2025-03-12"}].
+    // Empty array when no version could be extracted (backfill_version_history.py).
+    versionHistory: text("version_history"),
     // Sample text in the font's own script (gflanguages), like Google Fonts'
     // non-Latin previews. Null for Latin-only fonts (frontend uses its default).
     specimen: text("specimen"),

@@ -46,6 +46,7 @@ export interface FontRecord {
   version: number | null;
   versionString: string | null;
   dateAdded: string | null;
+  firstCommitDate: string | null; // repo debut from git history, "yyyy-MM-dd"
   weightClass: number | null;
   widthClass: number | null;
   weights: number[];
@@ -56,6 +57,8 @@ export interface FontRecord {
   popularityRank: number | null; // 1 = most popular
   trendingRank: number | null; // 1 = fastest-growing usage
   lastModified: string | null; // API "yyyy-MM-dd"
+  // Release timeline from google/fonts git history, ascending by date.
+  versionHistory: { version: string; date: string }[];
   specimen: string | null; // native-script sample text (null for Latin-only)
   // Google Fonts classification tags (google/fonts tags CSV, e.g.
   // "/Serif/Fat Face"), not exposed by the Developer API. Scores are 0-100.
