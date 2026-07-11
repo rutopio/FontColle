@@ -5,6 +5,7 @@ import type { FontRecord } from "../types";
 import {
   designerTokens,
   foldVendor,
+  fontActivity,
   repoHost,
   TAG_MEMBERSHIP_THRESHOLD,
 } from "./facets";
@@ -155,6 +156,9 @@ export function applyFilters(
       f.repoHosts.length &&
       !f.repoHosts.includes(repoHost(font.repositoryUrl))
     )
+      return false;
+    // Activity: radio-style; family's maintenance bucket is the selected one.
+    if (f.activity.length && !f.activity.includes(fontActivity(font)))
       return false;
     // Source: radio-style Noto / Others (at most one). Every published family
     // is one or the other, so this partitions the catalog.

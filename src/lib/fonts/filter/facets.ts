@@ -148,6 +148,32 @@ export const REPO_HOST_LABELS: Record<string, string> = {
   none: "None",
 };
 
+// Maintenance-activity buckets, by how long ago the family last shipped an
+// update. "unknown" collects families with no known update date. The four
+// values partition the catalog, so they render as radio-style pills.
+export const ACTIVITY_VALUES = ["active", "recent", "dormant", "unknown"];
+export const ACTIVITY_LABELS: Record<string, string> = {
+  active: "Active (≤1y)",
+  recent: "Recent (≤3y)",
+  dormant: "Dormant (3y+)",
+  unknown: "Unknown",
+};
+
+/** The activity bucket a family falls into, from how many months ago it last
+ *  updated. Uses lastModified (the served version's date) when present, else
+ *  the git first-commit date as a floor; "unknown" when neither is known.
+ *  Every family maps to exactly one value. Shared by the index and applyFilters. */
+export function fontActivity(font: FontRecord): string {
+  const date = font.lastModified ?? font.firstCommitDate;
+  if (!date) return "unknown";
+  const then = Date.parse(date);
+  if (Number.isNaN(then)) return "unknown";
+  const months = (Date.now() - then) / (1000 * 60 * 60 * 24 * 30.44);
+  if (months <= 12) return "active";
+  if (months <= 36) return "recent";
+  return "dormant";
+}
+
 /** The host bucket a family's repository_url falls into. Every family maps to
  *  exactly one value (an absent/unknown URL is "none"), so the four pills
  *  partition the catalog. Shared by the facet index and applyFilters. */
@@ -261,6 +287,7 @@ export function buildFacetIndex(fonts: FontRecord[]) {
   const vendorCasings = new Map<string, Map<string, number>>();
   const license = new Map<string, number>();
   const repoHosts = new Map<string, number>();
+  const activity = new Map<string, number>();
   const flags = new Map<string, number>();
   const italic = new Map<string, number>();
   let hintedCount = 0;
@@ -295,6 +322,7 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     }
     if (font.license) bump(license, font.license);
     bump(repoHosts, repoHost(font.repositoryUrl));
+    bump(activity, fontActivity(font));
     bump(flags, font.isNoto ? "noto" : "others");
     bump(italic, font.facets.includes("has-italic") ? "italic" : "upright");
   }
@@ -362,6 +390,10 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     // Repository-host pills in fixed order (GitHub / GitLab / SourceHut / None).
     repoHosts: REPO_HOST_VALUES.map(
       (v) => [v, repoHosts.get(v) ?? 0] as [string, number]
+    ),
+    // Maintenance-activity pills in fixed order (Active / Recent / Dormant / Unknown).
+    activity: ACTIVITY_VALUES.map(
+      (v) => [v, activity.get(v) ?? 0] as [string, number]
     ),
     // Source pills in fixed order (Noto / Others).
     flags: FLAG_VALUES.map((v) => [v, flags.get(v) ?? 0] as [string, number]),

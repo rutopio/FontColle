@@ -171,6 +171,16 @@ export function selectItalic(filter: FilterState, value: string): FilterState {
   return { ...filter, italic: next };
 }
 
+/** Radio-style Activity select (Active / Recent / Dormant / Unknown): at most
+ *  one value; re-clicking the active one clears it. Stored in `activity`. */
+export function selectActivity(
+  filter: FilterState,
+  value: string
+): FilterState {
+  const next = filter.activity.includes(value) ? [] : [value];
+  return { ...filter, activity: next };
+}
+
 /** Flip a section's OR/AND mode. Stores the override only while it differs from
  *  the section default, so returning to the default drops the entry (keeping a
  *  pristine filter's matchModes empty). */
