@@ -1,4 +1,4 @@
-# Font Finder
+# FontColle
 
 A Google Fonts alternative that filters by what fonts.google.com can't: real
 OpenType features, variable-font axes, weight/width steps, writing systems,
