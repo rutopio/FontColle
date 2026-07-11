@@ -29,7 +29,11 @@ export function FilterLayout({
       }
     >
       <AppSidebar rail={rail}>{sidebar}</AppSidebar>
-      <SidebarInset>{children}</SidebarInset>
+      {/* min-w-0 lets the inset shrink to the space left by the fixed-width
+          sidebar instead of forcing 100vw (w-full) and pushing itself past the
+          viewport — otherwise wide content (e.g. a heavy display font's
+          specimen) makes the whole page overflow horizontally. */}
+      <SidebarInset className="min-w-0">{children}</SidebarInset>
     </SidebarProvider>
   );
 }
