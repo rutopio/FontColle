@@ -156,7 +156,8 @@ function MetricRangeRow({
           </span>
         ) : (
           <span className="font-mono text-muted-foreground">
-            {formatMetricValue(spec.key, lo)} – {formatMetricValue(spec.key, hi)}
+            {formatMetricValue(spec.key, lo)} –{" "}
+            {formatMetricValue(spec.key, hi)}
           </span>
         )}
       </div>

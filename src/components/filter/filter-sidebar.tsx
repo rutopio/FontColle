@@ -107,6 +107,27 @@ export function FilterSidebar({
     if (viewportRef.current) viewportRef.current.scrollTop = 0;
   }, [group]);
 
+  // Base UI's ScrollArea re-evaluates overflow on scroll, but not when the
+  // panel content is swapped by AnimatePresence. Switching away from a group
+  // that was scrolled (its scrollbar showing) into a shorter group leaves the
+  // scrollbar stuck visible even though nothing overflows. Once the outgoing
+  // panel has left and the new one is measured, nudge a scroll event so the
+  // primitive recomputes and hides the now-unneeded scrollbar.
+  const resetScrollbar = () => {
+    // The incoming panel isn't laid out on the same frame the exit completes;
+    // it swaps in a few frames later. Nudge a scroll event across a short run
+    // of frames so at least one lands after the new (non-overflowing) content
+    // is measured, letting Base UI drop the now-unneeded scrollbar.
+    let frame = 0;
+    const nudge = () => {
+      viewportRef.current?.dispatchEvent(
+        new Event("scroll", { bubbles: true })
+      );
+      if (++frame < 10) requestAnimationFrame(nudge);
+    };
+    requestAnimationFrame(nudge);
+  };
+
   return (
     <aside className="flex h-full w-full min-w-0 flex-col text-sidebar-foreground">
       <ScrollArea viewportRef={viewportRef} className="min-h-0 flex-1">
@@ -115,7 +136,11 @@ export function FilterSidebar({
             the shared scroll viewport. The scroll reset (each group opens at
             the top) is handled by the group-change effect above, not a remount,
             so AnimatePresence can play the exit. */}
-        <AnimatePresence mode="wait" initial={false}>
+        <AnimatePresence
+          mode="wait"
+          initial={false}
+          onExitComplete={resetScrollbar}
+        >
           <motion.div
             key={group}
             className="flex flex-col gap-12 p-4"
