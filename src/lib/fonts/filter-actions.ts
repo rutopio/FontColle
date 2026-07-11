@@ -17,6 +17,7 @@ type ArrayKey =
   | "designers"
   | "vendors"
   | "license"
+  | "repoHosts"
   | "upm";
 
 // Pure filter-state transitions, lifted out of FilterSidebar so the app's

@@ -25,6 +25,8 @@ export interface FilterState {
   designers: string[];
   vendors: string[];
   license: string[]; // license ids ("OFL", "APACHE2", "UFL"), OR within
+  // Repository host buckets ("github","gitlab","sourcehut","none"), OR within.
+  repoHosts: string[];
   // Source: radio-style Noto / Others, stored as a 0- or 1-length array.
   flags: string[];
   upm: string[]; // units-per-em values ("1000", "2048"…), OR within
@@ -61,6 +63,7 @@ export const emptyFilter: FilterState = {
   designers: [],
   vendors: [],
   license: [],
+  repoHosts: [],
   flags: [],
   upm: [],
   metrics: {},
@@ -89,6 +92,7 @@ export interface FilterSearch {
   dsr?: string; // designer names, comma-joined
   vnd?: string; // vendor ids (folded), comma-joined
   lic?: string; // license ids
+  repo?: string; // repository host buckets, comma-joined
   flag?: string; // source radio: "noto" | "others"
   upm?: string; // units-per-em values, comma-joined
   // Metric ranges, each "lo-hi" (e.g. mxh=0.45-0.55). One key per metric.
@@ -162,6 +166,7 @@ export function searchToFilter(s: FilterSearch): FilterState {
     designers: splitCsv(s.dsr),
     vendors: splitCsv(s.vnd),
     license: splitCsv(s.lic),
+    repoHosts: splitCsv(s.repo),
     flags: splitCsv(s.flag),
     upm: splitCsv(s.upm),
     metrics: decodeMetrics(s),
@@ -186,6 +191,7 @@ export function filterToSearch(f: FilterState): FilterSearch {
   if (f.designers.length) s.dsr = f.designers.join(",");
   if (f.vendors.length) s.vnd = f.vendors.join(",");
   if (f.license.length) s.lic = f.license.join(",");
+  if (f.repoHosts.length) s.repo = f.repoHosts.join(",");
   if (f.flags.length) s.flag = f.flags.join(",");
   if (f.upm.length) s.upm = f.upm.join(",");
   encodeMetrics(f.metrics, s);
@@ -211,6 +217,7 @@ export function activeFilterCount(f: FilterState): number {
     f.designers.length +
     f.vendors.length +
     f.license.length +
+    f.repoHosts.length +
     f.flags.length +
     f.upm.length +
     Object.keys(f.metrics).length +
@@ -241,6 +248,7 @@ export function parseFilterSearch(raw: Record<string, unknown>): FilterSearch {
     dsr: str(raw.dsr),
     vnd: str(raw.vnd),
     lic: str(raw.lic),
+    repo: str(raw.repo),
     flag: str(raw.flag),
     upm: numCsv(raw.upm),
     mxh: str(raw.mxh),
