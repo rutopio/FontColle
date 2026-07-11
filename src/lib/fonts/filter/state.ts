@@ -20,6 +20,10 @@ export interface FilterState {
   // Google Fonts classification tag paths ("/Serif/Didone", …), OR within: a
   // font matches when any selected tag scores tags[path] >= 50.
   classifications: string[];
+  // Designer names, OR within: a family matches when any of its (comma-split)
+  // designers is selected. Vendor is the folded OS/2 achVendID, also OR within.
+  designers: string[];
+  vendors: string[];
   license: string[]; // license ids ("OFL", "APACHE2", "UFL"), OR within
   // Source: radio-style Noto / Others, stored as a 0- or 1-length array.
   flags: string[];
@@ -54,6 +58,8 @@ export const emptyFilter: FilterState = {
   color: [],
   colorFormats: [],
   classifications: [],
+  designers: [],
+  vendors: [],
   license: [],
   flags: [],
   upm: [],
@@ -80,6 +86,8 @@ export interface FilterSearch {
   color?: string;
   cfmt?: string;
   cls?: string; // classification tag paths
+  dsr?: string; // designer names, comma-joined
+  vnd?: string; // vendor ids (folded), comma-joined
   lic?: string; // license ids
   flag?: string; // source radio: "noto" | "others"
   upm?: string; // units-per-em values, comma-joined
@@ -88,6 +96,7 @@ export interface FilterSearch {
   mch?: string; // cap-height ratio
   mlh?: string; // line-height ratio
   maw?: string; // avg width ratio
+  mct?: string; // contrast ratio
   mfs?: string; // file size (raw bytes)
   hint?: string; // "1" = Hinted, "0" = No Hinted
   view?: "grid" | "row"; // display preference, not a filter
@@ -101,12 +110,13 @@ const splitCsv = (v: string | undefined): string[] =>
 // lossless; negatives never occur in these domains, so "-" is a safe separator.
 // The URL param name per metric. Every one is a string-valued FilterSearch key,
 // so encode can assign a string to it without widening to view/sort.
-type MetricParam = "mxh" | "mch" | "mlh" | "maw" | "mfs";
+type MetricParam = "mxh" | "mch" | "mlh" | "maw" | "mct" | "mfs";
 const METRIC_PARAM: Record<MetricKey, MetricParam> = {
   xHeight: "mxh",
   capHeight: "mch",
   lineHeight: "mlh",
   avgWidth: "maw",
+  contrast: "mct",
   fileSize: "mfs",
 };
 
@@ -149,6 +159,8 @@ export function searchToFilter(s: FilterSearch): FilterState {
     color: splitCsv(s.color),
     colorFormats: splitCsv(s.cfmt),
     classifications: splitCsv(s.cls),
+    designers: splitCsv(s.dsr),
+    vendors: splitCsv(s.vnd),
     license: splitCsv(s.lic),
     flags: splitCsv(s.flag),
     upm: splitCsv(s.upm),
@@ -171,6 +183,8 @@ export function filterToSearch(f: FilterState): FilterSearch {
   if (f.color.length) s.color = f.color.join(",");
   if (f.colorFormats.length) s.cfmt = f.colorFormats.join(",");
   if (f.classifications.length) s.cls = f.classifications.join(",");
+  if (f.designers.length) s.dsr = f.designers.join(",");
+  if (f.vendors.length) s.vnd = f.vendors.join(",");
   if (f.license.length) s.lic = f.license.join(",");
   if (f.flags.length) s.flag = f.flags.join(",");
   if (f.upm.length) s.upm = f.upm.join(",");
@@ -194,6 +208,8 @@ export function activeFilterCount(f: FilterState): number {
     f.color.length +
     f.colorFormats.length +
     f.classifications.length +
+    f.designers.length +
+    f.vendors.length +
     f.license.length +
     f.flags.length +
     f.upm.length +
@@ -222,6 +238,8 @@ export function parseFilterSearch(raw: Record<string, unknown>): FilterSearch {
     color: str(raw.color),
     cfmt: str(raw.cfmt),
     cls: str(raw.cls),
+    dsr: str(raw.dsr),
+    vnd: str(raw.vnd),
     lic: str(raw.lic),
     flag: str(raw.flag),
     upm: numCsv(raw.upm),
@@ -229,6 +247,7 @@ export function parseFilterSearch(raw: Record<string, unknown>): FilterSearch {
     mch: str(raw.mch),
     mlh: str(raw.mlh),
     maw: str(raw.maw),
+    mct: str(raw.mct),
     mfs: str(raw.mfs),
     hint: str(raw.hint),
     view: raw.view === "row" ? "row" : undefined,

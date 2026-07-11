@@ -121,6 +121,30 @@ export const FLAG_LABELS: Record<string, string> = {
   others: "Non-Noto",
 };
 
+// Vendor ids that mean "unknown", not a foundry — dropped from the Vendor
+// facet so they don't masquerade as a real source.
+const UNKNOWN_VENDORS = new Set(["NONE", "UKWN", "----", ""]);
+
+/** A font's designers as trimmed tokens. The source field comma-joins
+ *  collaborators ("Veronika Burian, José Scaglione"); each token filters
+ *  independently. Empty when no designer is recorded. */
+export function designerTokens(font: FontRecord): string[] {
+  if (!font.designer) return [];
+  return font.designer
+    .split(",")
+    .map((d) => d.trim())
+    .filter(Boolean);
+}
+
+/** A font's vendor as a folded OS/2 achVendID, or null when unknown. Uppercased
+ *  so pyrs/PYRS collapse to one; the placeholder codes (NONE/UKWN/…) become
+ *  null so they never get a pill. */
+export function foldVendor(vendorId: string | null): string | null {
+  if (!vendorId) return null;
+  const v = vendorId.trim().toUpperCase();
+  return UNKNOWN_VENDORS.has(v) ? null : v;
+}
+
 /** Build the set of selectable values with counts, from the full dataset. */
 export function buildFacetIndex(fonts: FontRecord[]) {
   const classes = new Map<string, number>();
@@ -134,6 +158,12 @@ export function buildFacetIndex(fonts: FontRecord[]) {
   const color = new Map<string, number>();
   const colorFormats = new Map<string, number>();
   const classifications = new Map<string, number>();
+  const designers = new Map<string, number>();
+  const vendors = new Map<string, number>();
+  // Folded vendor code -> its original casings with counts. The pill groups by
+  // the uppercased code (so pyrs/PYRS merge), but the tooltip should show the
+  // code as the font actually embeds it, so we remember what we saw.
+  const vendorCasings = new Map<string, Map<string, number>>();
   const license = new Map<string, number>();
   const flags = new Map<string, number>();
   let hintedCount = 0;
@@ -156,6 +186,16 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     for (const t of font.colorTables) bump(colorFormats, t);
     for (const [path, score] of Object.entries(font.tags))
       if (score >= TAG_MEMBERSHIP_THRESHOLD) bump(classifications, path);
+    for (const d of designerTokens(font)) bump(designers, d);
+    const vnd = foldVendor(font.vendorId);
+    if (vnd) {
+      bump(vendors, vnd);
+      // Record the raw (unfolded) casing so the tooltip can show it verbatim.
+      const raw = (font.vendorId ?? "").trim();
+      const seen = vendorCasings.get(vnd) ?? new Map<string, number>();
+      seen.set(raw, (seen.get(raw) ?? 0) + 1);
+      vendorCasings.set(vnd, seen);
+    }
     if (font.license) bump(license, font.license);
     bump(flags, font.isNoto ? "noto" : "others");
   }
@@ -201,6 +241,21 @@ export function buildFacetIndex(fonts: FontRecord[]) {
         (t) => [t, classifications.get(t) ?? 0] as [string, number]
       ),
     })),
+    // Designers and vendors, count-sorted. Label = value for both (real names,
+    // 4-char codes). The Designer panel renders these via FacetSearchSection.
+    designers: sorted(designers),
+    vendors: sorted(vendors),
+    // Folded vendor code -> the code as most fonts embed it (the most common
+    // original casing), so the tooltip shows "pyrs" when that's what the fonts
+    // use, not the forced-uppercase grouping key.
+    vendorCasing: new Map(
+      [...vendorCasings].map(([code, seen]) => {
+        const best = [...seen.entries()].sort(
+          (a, b) => b[1] - a[1] || a[0].localeCompare(b[0])
+        )[0][0];
+        return [code, best];
+      })
+    ),
     // License pills in fixed order (OFL / Apache 2.0 / UFL).
     license: LICENSE_VALUES.map(
       (v) => [v, license.get(v) ?? 0] as [string, number]

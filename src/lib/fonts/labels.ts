@@ -3,6 +3,7 @@
 // readable names without shipping gftools. See the language-support task.
 import languagesRaw from "@/data/languages.json";
 import scriptsRaw from "@/data/scripts.json";
+import vendorsRaw from "@/data/vendors.json";
 
 export interface LanguageMeta {
   name: string;
@@ -24,6 +25,9 @@ export const LANGUAGE_REGIONS = [
 
 const scripts = scriptsRaw as Record<string, string>;
 const languages = languagesRaw as Record<string, LanguageMeta>;
+// OS/2 achVendID -> foundry name, from Microsoft's vendor registry
+// (scripts/gen-vendors-data.mjs). Keyed by the uppercased 4-char code.
+const vendors = vendorsRaw as Record<string, string>;
 
 // Google Fonts' website shows a curated MAJOR-language subset; population>=5M
 // reproduces it cleanly. The UI defaults to these, with a "show all" expander.
@@ -37,6 +41,12 @@ export function scriptLabel(code: string): string {
 /** "en_Latn" -> "English"; unknown ids pass through unchanged. */
 export function languageLabel(id: string): string {
   return languages[id]?.name ?? id;
+}
+
+/** "PYRS" -> "PYRS Fontlab"; codes with no registered foundry return the code
+ *  itself, so the pill still shows something meaningful. */
+export function vendorLabel(code: string): string {
+  return vendors[code] ?? code;
 }
 
 export function languagePopulation(id: string): number {

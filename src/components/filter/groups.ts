@@ -8,6 +8,7 @@ import {
   TagIcon,
   ToggleRightIcon,
   TranslateIcon,
+  UserIcon,
 } from "@phosphor-icons/react";
 import { type FilterState, FONT_TYPE_FACETS } from "@/lib/fonts/filter";
 
@@ -23,6 +24,7 @@ export type FilterGroupId =
   | "axes"
   | "features"
   | "metrics"
+  | "designer"
   | "other";
 
 export interface FilterGroup {
@@ -82,11 +84,19 @@ export const FILTER_GROUPS: FilterGroup[] = [
     icon: RulerIcon,
     keys: ["metrics", "upm", "hasHinting"],
   },
+  // Browse by who made the font: Source (Noto / Non-Noto), designer names, and
+  // the OS/2 vendor id.
+  {
+    id: "designer",
+    label: "Designer",
+    icon: UserIcon,
+    keys: ["flags", "designers", "vendors"],
+  },
   {
     id: "other",
     label: "Others",
     icon: DotsThreeOutlineIcon,
-    keys: ["license", "flags"],
+    keys: ["license"],
   },
 ];
 

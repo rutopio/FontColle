@@ -1,8 +1,12 @@
 import { colorFormatLabel } from "@/lib/fonts/color";
 import { featureName } from "@/lib/fonts/features";
 import { CLASSIFICATION_SECTIONS, type FilterState } from "@/lib/fonts/filter";
-import { languageLabel, scriptLabel } from "@/lib/fonts/labels";
-import { METRIC_SPECS, type MetricKey } from "@/lib/fonts/metrics";
+import { languageLabel, scriptLabel, vendorLabel } from "@/lib/fonts/labels";
+import {
+  formatMetricValue,
+  METRIC_SPECS,
+  type MetricKey,
+} from "@/lib/fonts/metrics";
 import { subTagLabel, weightLabel, widthLabel } from "./constants";
 
 // The classification section a tag path belongs to ("/Serif/Old Style Garalde"
@@ -91,6 +95,10 @@ export function describeActiveFilters(f: FilterState): FilterChip[] {
       featureName(v),
       without(f, "features", v)
     );
+  for (const v of f.designers)
+    push(`dsr:${v}`, "Designer", v, without(f, "designers", v));
+  for (const v of f.vendors)
+    push(`vnd:${v}`, "Vendor", vendorLabel(v), without(f, "vendors", v));
   for (const v of f.license)
     push(`lic:${v}`, "License", v, without(f, "license", v));
 
@@ -101,7 +109,8 @@ export function describeActiveFilters(f: FilterState): FilterChip[] {
     const range = f.metrics[key];
     if (!range) continue;
     const { [key]: _, ...rest } = f.metrics;
-    push(`metric:${key}`, METRIC_SPECS[key].label, `${range[0]}–${range[1]}`, {
+    const label = `${formatMetricValue(key, range[0])}–${formatMetricValue(key, range[1])}`;
+    push(`metric:${key}`, METRIC_SPECS[key].label, label, {
       ...f,
       metrics: rest,
     });
