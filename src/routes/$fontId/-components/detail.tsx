@@ -4,8 +4,9 @@ import {
   FunnelIcon,
 } from "@phosphor-icons/react";
 import { Link, useCanGoBack, useRouter } from "@tanstack/react-router";
-import { Fragment, useEffect, useMemo } from "react";
+import { Fragment, useEffect, useMemo, useRef } from "react";
 import { Column } from "@/components/filter-layout";
+import { FontTraits } from "@/components/font-traits";
 import { PreviewBar } from "@/components/preview-dock";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ import type { FontRecord } from "@/lib/fonts/types";
 import { usePreview } from "@/lib/preview/context";
 import { sanitizeHtml } from "@/lib/sanitize-html";
 import type { DetailTab } from "./detail-rail";
+import { GlyphsPanel } from "./glyphs";
 import { InstanceChips } from "./instance-chips";
 import { InstanceRow } from "./instance-row";
 import { LanguageSupport } from "./language-support";
@@ -38,6 +40,9 @@ export function Detail({
   italic,
   onLoadInstance,
   featureState,
+  glyphBlock,
+  glyphRanges,
+  glyphLoading,
 }: {
   font: FontRecord;
   tab: DetailTab;
@@ -47,11 +52,18 @@ export function Detail({
   italic: boolean;
   onLoadInstance: (coords: Record<string, number>, isItalic?: boolean) => void;
   featureState: Record<string, boolean>;
+  glyphBlock: string;
+  glyphRanges: [number, number][];
+  glyphLoading: boolean;
 }) {
   const { text, setText } = usePreview();
   const router = useRouter();
   const canGoBack = useCanGoBack();
   const specimen = text || specimenFor(font);
+  // The Column's ScrollArea viewport, shared with the Glyphs grid so its
+  // row-virtualizer scrolls in the same container the rest of the page does
+  // (matching how the list's FontGrid scrolls in its Column).
+  const scrollRef = useRef<HTMLDivElement>(null);
   const hasItalic = useMemo(
     () => font.instances.some((i) => i.italic),
     [font.instances]
@@ -112,6 +124,7 @@ export function Detail({
   return (
     <Column
       headerClassName="justify-between"
+      scrollViewportRef={scrollRef}
       header={
         <>
           <div className="flex min-w-0 items-center gap-3">
@@ -136,14 +149,25 @@ export function Detail({
                 <ArrowLeftIcon />
               </Button>
             )}
-            <h1
-              className="truncate font-semibold text-2xl leading-tight"
-              style={{ fontFamily: `"${font.name}", sans-serif` }}
-            >
-              {font.name}
-            </h1>
+            <div className="flex min-w-0 flex-col gap-1">
+              <h1
+                className="truncate font-semibold text-lg leading-tight"
+                style={{ fontFamily: `"${font.name}", sans-serif` }}
+              >
+                {font.name}
+              </h1>
+              {font.designer && (
+                <p className="truncate text-muted-foreground text-xs">
+                  {font.designer}
+                </p>
+              )}
+            </div>
           </div>
           <div className="flex shrink-0 items-center gap-2">
+            {/* Trait badges, same order as the list card/row (class, Variable/
+                Static, color, feature count), plus the family's license. */}
+            <FontTraits font={font} selection={emptyFilter} />
+            {font.license && <Badge variant="outline">{font.license}</Badge>}
             <Button
               render={
                 // biome-ignore lint/a11y/useAnchorContent: Button injects its children into this anchor via the render prop (aria-label also set); the static rule can't see through it.
@@ -166,19 +190,6 @@ export function Detail({
       // other views it slides away.
       footerHidden={tab !== "sample"}
     >
-      {(font.designer || font.class) && (
-        <div className="flex flex-wrap items-center gap-2">
-          {font.designer && (
-            <span className="text-muted-foreground text-sm">
-              by {font.designer}
-            </span>
-          )}
-          <Badge variant="secondary">{font.class}</Badge>
-          {font.isVariable && <Badge variant="secondary">Variable</Badge>}
-          {font.license && <Badge variant="outline">{font.license}</Badge>}
-        </div>
-      )}
-
       {tab === "sample" && (
         <>
           {/* TYPE TESTER — named-instance chips set the preview axes; the
@@ -223,6 +234,17 @@ export function Detail({
             </Panel>
           )}
         </>
+      )}
+
+      {tab === "glyphs" && (
+        <GlyphsPanel
+          font={font}
+          fontLoaded={fontLoaded}
+          blockName={glyphBlock}
+          ranges={glyphRanges}
+          loading={glyphLoading}
+          scrollRef={scrollRef}
+        />
       )}
 
       {tab === "detail" && (
