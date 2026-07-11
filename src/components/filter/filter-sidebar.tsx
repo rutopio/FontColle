@@ -210,7 +210,9 @@ export function FilterSidebar({
                       // the first section's header.
                       mode={i === 0 ? modeOf("classifications") : undefined}
                       onToggleMode={
-                        i === 0 ? () => toggleMode("classifications") : undefined
+                        i === 0
+                          ? () => toggleMode("classifications")
+                          : undefined
                       }
                     />
                   ))}

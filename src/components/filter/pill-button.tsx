@@ -41,11 +41,11 @@ export function PillButton({
       aria-pressed={selected}
       disabled={disabled}
       className={cn(
-        "flex items-center gap-1 rounded-md border px-2.5 duration-200 py-1 text-xs transition-colors",
+        "flex items-center gap-1 rounded-md border px-2.5 py-1 text-xs transition-colors duration-200",
         spread ? "justify-between" : "justify-center",
         disabled && "cursor-not-allowed",
         selected
-          ? "border-primary bg-muted text-foreground font-semibold"
+          ? "border-primary bg-muted font-semibold text-foreground"
           : "text-muted-foreground",
         !disabled &&
           !selected &&
