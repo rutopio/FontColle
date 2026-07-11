@@ -108,7 +108,7 @@ export interface FilterSearch {
   lang?: string;
   color?: string;
   cfmt?: string;
-  cls?: string; // classification tag paths
+  cls?: string; // classification tag paths, "Section.Subtag"-joined by "_"
   dsr?: string; // designer names, comma-joined
   vnd?: string; // vendor ids (folded), comma-joined
   lic?: string; // license ids
@@ -127,12 +127,49 @@ export interface FilterSearch {
   hint?: string; // "1" = Hinted, "0" = No Hinted
   // Non-default section modes, comma-joined "key:mode" (e.g. "facets:any").
   mode?: string;
-  view?: "grid" | "row"; // display preference, not a filter
-  sort?: string; // sort key, not a filter
+  sort?: string; // sort key, not a filter (view mode lives in localStorage)
 }
 
 const splitCsv = (v: string | undefined): string[] =>
   v ? v.split(",").filter(Boolean) : [];
+
+// Most list params comma-join, but "," is a URL sub-delimiter that encodes to
+// %2C, so a multi-select reads as ?class=Emoji%2CScript%2CSlab. For params whose
+// value domain never contains "_" (class, facet, weight, script, …) we join with
+// "_" instead, which URLSearchParams leaves literal: ?class=Emoji_Script_Slab.
+// Two params keep the comma because their values already contain the alternates:
+// `dsr` (designer names carry "," and ".") and `lang` (ids are "en_Latn", full of
+// "_"). Decode accepts either separator so links shared before this change — and
+// the always-comma dsr/lang — still parse.
+const joinUnderscore = (xs: string[]): string => xs.join("_");
+
+const splitUnderscore = (v: string | undefined): string[] => {
+  if (!v) return [];
+  // Legacy links (and any hand-typed URL) use commas; honour them.
+  const sep = v.includes(",") ? "," : "_";
+  return v.split(sep).filter(Boolean);
+};
+
+// The `cls` param carries classification tag paths ("/Serif/Didone", …). Comma-
+// joining them like every other list makes an unreadable URL, because both the
+// "," between entries and the "/" inside each path percent-encode (?cls=%2FSerif
+// %2FDidone%2C…). Every path is exactly "/Section/Subtag" (no path has three
+// segments and no segment contains "." or "_"), so a friendlier lossless form is
+// to drop the leading "/", write the inner "/" as ".", and join entries with
+// "_": ?cls=Serif.Didone_Sans.Humanist. Decode still accepts the legacy comma
+// form so URLs shared before this change keep working.
+const encodeClasses = (paths: string[]): string =>
+  paths.map((p) => p.replace(/^\//, "").replace(/\//g, ".")).join("_");
+
+const decodeClasses = (v: string | undefined): string[] => {
+  if (!v) return [];
+  // Legacy form still contains raw slashes; split on comma and keep as-is.
+  if (v.includes("/")) return v.split(",").filter(Boolean);
+  return v
+    .split("_")
+    .filter(Boolean)
+    .map((seg) => `/${seg.replace(/\./g, "/")}`);
+};
 
 // URL <-> metric-range codec. "lo-hi", each a plain number so the round-trip is
 // lossless; negatives never occur in these domains, so "-" is a safe separator.
@@ -202,25 +239,27 @@ function encodeModes(modes: FilterState["matchModes"]): string | undefined {
 export function searchToFilter(s: FilterSearch): FilterState {
   return {
     query: s.q ?? "",
-    classes: splitCsv(s.class),
-    facets: splitCsv(s.facet),
-    features: splitCsv(s.feature),
-    axes: splitCsv(s.axis),
-    weights: splitCsv(s.weight),
-    widths: splitCsv(s.width),
-    scripts: splitCsv(s.script),
+    classes: splitUnderscore(s.class),
+    facets: splitUnderscore(s.facet),
+    features: splitUnderscore(s.feature),
+    axes: splitUnderscore(s.axis),
+    weights: splitUnderscore(s.weight),
+    widths: splitUnderscore(s.width),
+    scripts: splitUnderscore(s.script),
+    // dsr and lang keep the comma: designer names contain "," and ".", language
+    // ids contain "_", so neither has a safe underscore separator.
     languages: splitCsv(s.lang),
-    color: splitCsv(s.color),
-    colorFormats: splitCsv(s.cfmt),
-    classifications: splitCsv(s.cls),
+    color: splitUnderscore(s.color),
+    colorFormats: splitUnderscore(s.cfmt),
+    classifications: decodeClasses(s.cls),
     designers: splitCsv(s.dsr),
-    vendors: splitCsv(s.vnd),
-    license: splitCsv(s.lic),
-    repoHosts: splitCsv(s.repo),
-    activity: splitCsv(s.act),
-    flags: splitCsv(s.flag),
-    italic: splitCsv(s.ital),
-    upm: splitCsv(s.upm),
+    vendors: splitUnderscore(s.vnd),
+    license: splitUnderscore(s.lic),
+    repoHosts: splitUnderscore(s.repo),
+    activity: splitUnderscore(s.act),
+    flags: splitUnderscore(s.flag),
+    italic: splitUnderscore(s.ital),
+    upm: splitUnderscore(s.upm),
     metrics: decodeMetrics(s),
     hasHinting: s.hint === "1" ? true : s.hint === "0" ? false : undefined,
     matchModes: decodeModes(s.mode),
@@ -230,25 +269,26 @@ export function searchToFilter(s: FilterSearch): FilterState {
 export function filterToSearch(f: FilterState): FilterSearch {
   const s: FilterSearch = {};
   if (f.query) s.q = f.query;
-  if (f.classes.length) s.class = f.classes.join(",");
-  if (f.facets.length) s.facet = f.facets.join(",");
-  if (f.features.length) s.feature = f.features.join(",");
-  if (f.axes.length) s.axis = f.axes.join(",");
-  if (f.weights.length) s.weight = f.weights.join(",");
-  if (f.widths.length) s.width = f.widths.join(",");
-  if (f.scripts.length) s.script = f.scripts.join(",");
+  if (f.classes.length) s.class = joinUnderscore(f.classes);
+  if (f.facets.length) s.facet = joinUnderscore(f.facets);
+  if (f.features.length) s.feature = joinUnderscore(f.features);
+  if (f.axes.length) s.axis = joinUnderscore(f.axes);
+  if (f.weights.length) s.weight = joinUnderscore(f.weights);
+  if (f.widths.length) s.width = joinUnderscore(f.widths);
+  if (f.scripts.length) s.script = joinUnderscore(f.scripts);
+  // dsr and lang keep the comma (see searchToFilter).
   if (f.languages.length) s.lang = f.languages.join(",");
-  if (f.color.length) s.color = f.color.join(",");
-  if (f.colorFormats.length) s.cfmt = f.colorFormats.join(",");
-  if (f.classifications.length) s.cls = f.classifications.join(",");
+  if (f.color.length) s.color = joinUnderscore(f.color);
+  if (f.colorFormats.length) s.cfmt = joinUnderscore(f.colorFormats);
+  if (f.classifications.length) s.cls = encodeClasses(f.classifications);
   if (f.designers.length) s.dsr = f.designers.join(",");
-  if (f.vendors.length) s.vnd = f.vendors.join(",");
-  if (f.license.length) s.lic = f.license.join(",");
-  if (f.repoHosts.length) s.repo = f.repoHosts.join(",");
-  if (f.activity.length) s.act = f.activity.join(",");
-  if (f.flags.length) s.flag = f.flags.join(",");
-  if (f.italic.length) s.ital = f.italic.join(",");
-  if (f.upm.length) s.upm = f.upm.join(",");
+  if (f.vendors.length) s.vnd = joinUnderscore(f.vendors);
+  if (f.license.length) s.lic = joinUnderscore(f.license);
+  if (f.repoHosts.length) s.repo = joinUnderscore(f.repoHosts);
+  if (f.activity.length) s.act = joinUnderscore(f.activity);
+  if (f.flags.length) s.flag = joinUnderscore(f.flags);
+  if (f.italic.length) s.ital = joinUnderscore(f.italic);
+  if (f.upm.length) s.upm = joinUnderscore(f.upm);
   encodeMetrics(f.metrics, s);
   if (f.hasHinting !== undefined) s.hint = f.hasHinting ? "1" : "0";
   const mode = encodeModes(f.matchModes);
@@ -320,7 +360,6 @@ export function parseFilterSearch(raw: Record<string, unknown>): FilterSearch {
     mfs: str(raw.mfs),
     hint: str(raw.hint),
     mode: str(raw.mode),
-    view: raw.view === "row" ? "row" : undefined,
     sort: str(raw.sort),
   };
 }
