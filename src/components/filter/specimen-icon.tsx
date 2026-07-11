@@ -1,3 +1,5 @@
+import { SmileyIcon } from "@phosphor-icons/react";
+
 // Static "Aa" specimens for the Category / Weight / Width filter cards. The
 // outlines were traced from the representative faces once (see
 // scripts/gen-specimen-svgs.mjs) into public/specimens/*.svg, so the cards no
@@ -17,6 +19,14 @@ function SpecimenImg({ src, className }: { src: string; className?: string }) {
 const boxClass = "h-6 w-full text-foreground [&>img]:mx-auto [&>img]:h-full";
 
 export function CategorySpecimen({ category }: { category: string }) {
+  // Emoji has no meaningful "Aa" specimen, so it shows an icon instead.
+  if (category === "Emoji") {
+    return (
+      <span className={boxClass}>
+        <SmileyIcon className="mx-auto size-6" aria-hidden />
+      </span>
+    );
+  }
   return (
     <span className={boxClass}>
       <SpecimenImg src={`/specimens/category-${category.toLowerCase()}.svg`} />

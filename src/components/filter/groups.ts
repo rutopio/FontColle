@@ -5,12 +5,17 @@ import {
   RulerIcon,
   ShapesIcon,
   SlidersHorizontalIcon,
+  SparkleIcon,
   TagIcon,
   ToggleRightIcon,
   TranslateIcon,
   UserIcon,
 } from "@phosphor-icons/react";
-import { type FilterState, FONT_TYPE_FACETS } from "@/lib/fonts/filter";
+import {
+  classificationGroupOf,
+  type FilterState,
+  FONT_TYPE_FACETS,
+} from "@/lib/fonts/filter";
 
 // The filter panel used to stack every section in one long scroll. It's now
 // split into groups, one per icon-rail button: the rail switches which group
@@ -19,6 +24,7 @@ import { type FilterState, FONT_TYPE_FACETS } from "@/lib/fonts/filter";
 export type FilterGroupId =
   | "style"
   | "tag"
+  | "mood"
   | "language"
   | "color"
   | "axes"
@@ -49,7 +55,17 @@ export const FILTER_GROUPS: FilterGroup[] = [
     id: "style",
     label: "Style",
     icon: ShapesIcon,
-    keys: ["classes", "classifications"],
+    // classes + the Slab/Italic Category cards (classifications / italic).
+    keys: ["classes", "classifications", "italic"],
+  },
+  // Feel, not form: the Expressive / Theme / Seasonal classification sections.
+  // Shares the `classifications` state with Style; countKey splits by prefix so
+  // each rail badge counts only its own sections.
+  {
+    id: "mood",
+    label: "Mood",
+    icon: SparkleIcon,
+    keys: ["classifications"],
   },
   {
     id: "language",
@@ -117,6 +133,14 @@ function countKey(
   // Section OR/AND modes are modifiers, not conditions — never counted. (No
   // group lists this key anyway; the guard is here to satisfy the type union.)
   if (key === "matchModes") return 0;
+  // Style and Mood share the `classifications` state; each counts only the tags
+  // whose section belongs to it (Style = form, Mood = feel).
+  if (key === "classifications") {
+    const want = group.id === "mood" ? "mood" : "style";
+    return filter.classifications.filter(
+      (t) => classificationGroupOf(t) === want
+    ).length;
+  }
   if (key !== "facets") return filter[key].length;
   if (group.id === "axes") {
     const isFontType = (v: string) => FONT_TYPE_FACETS.includes(v);

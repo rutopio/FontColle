@@ -2,30 +2,26 @@ import { ShapesIcon } from "@phosphor-icons/react";
 import { CardButton } from "./card-button";
 import { CategorySpecimen } from "./specimen-icon";
 
-// Fixed display order for the Category cards (not by count): Graphics last,
-// since it's the odd one out (symbol/emoji/icon faces). Unknown classes sort
-// after these, alphabetically.
-const CLASS_ORDER = ["Sans", "Serif", "Mono", "Display", "Script", "Graphics"];
-const classRank = (v: string) => {
-  const i = CLASS_ORDER.indexOf(v);
-  return i === -1 ? CLASS_ORDER.length : i;
-};
+// One Category card. Most are primary classes, but a few are cross-cutting
+// traits surfaced as cards too (Italic -> has-italic facet, Slab -> /Slab/*
+// classification). `value` doubles as the specimen key (category-<value>.svg).
+export interface CategoryCard {
+  value: string;
+  count: number;
+  selected: boolean;
+}
 
 // Category filter as large square, tappable cards. Each card writes "Aa" in a
-// typeface representative of that category, drawn from a static SVG specimen (no
-// webfont load). Multi-select is preserved: a card is a toggle, not a radio.
+// typeface representative of that category (a static SVG specimen, no webfont
+// load); Emoji uses an icon. Cards are toggles, not radios; the caller decides
+// which filter key each card's value maps to.
 export function CategoryCards({
-  items,
-  selected,
+  cards,
   onToggle,
 }: {
-  items: [string, number][];
-  selected: string[];
-  onToggle: (v: string) => void;
+  cards: CategoryCard[];
+  onToggle: (value: string) => void;
 }) {
-  const ordered = [...items].sort(
-    ([a], [b]) => classRank(a) - classRank(b) || a.localeCompare(b)
-  );
   return (
     <div className="flex flex-col gap-2">
       <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase tracking-wide">
@@ -33,15 +29,15 @@ export function CategoryCards({
         Category
       </h2>
       <div className="grid grid-cols-3 gap-3">
-        {ordered.map(([value, count]) => (
+        {cards.map((card) => (
           <CardButton
-            key={value}
-            label={value}
-            count={count}
-            selected={selected.includes(value)}
-            onToggle={() => onToggle(value)}
+            key={card.value}
+            label={card.value}
+            count={card.count}
+            selected={card.selected}
+            onToggle={() => onToggle(card.value)}
           >
-            <CategorySpecimen category={value} />
+            <CategorySpecimen category={card.value} />
           </CardButton>
         ))}
       </div>

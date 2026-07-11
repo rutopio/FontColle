@@ -92,14 +92,9 @@ export function describeActiveFilters(f: FilterState): FilterChip[] {
     push(`repo:${v}`, "Github", REPO_HOST_LABELS[v] ?? v, "repoHosts", v);
   for (const v of f.activity)
     push(`act:${v}`, "Activity", ACTIVITY_LABELS[v] ?? v, "activity", v);
-  for (const v of f.italic)
-    push(
-      `ital:${v}`,
-      "Italic",
-      v === "italic" ? "Italic" : "Non-Italic",
-      "italic",
-      v
-    );
+  // Italic is a Category card now (backed by the italic state, only ever the
+  // "italic" value), so its chip reads "Category · Italic" like the others.
+  for (const v of f.italic) push(`ital:${v}`, "Category", "Italic", "italic", v);
   for (const v of f.upm) push(`upm:${v}`, "Units per em", v, "upm", v);
 
   for (const key of Object.keys(f.metrics) as MetricKey[]) {
