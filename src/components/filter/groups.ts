@@ -38,7 +38,7 @@ export const FILTER_GROUPS: FilterGroup[] = [
   // Natural-language trait tags: one flat list of plain-language pills (Italic,
   // Ligatures, Monospace, Colorful, Noto, Latin, Static/Variable, …). The Tag
   // panel owns the whole `facets` state; Font type is also shown as a radio in
-  // the Axes panel, backed by the same state.
+  // the Variant panel (group id "axes"), backed by the same state.
   {
     id: "tag",
     label: "Tag",
@@ -68,19 +68,19 @@ export const FILTER_GROUPS: FilterGroup[] = [
   // out of sight. Also owns Font type (the static/variable facets).
   {
     id: "axes",
-    label: "Axes",
+    label: "Variant",
     icon: SlidersHorizontalIcon,
     keys: ["weights", "widths", "axes", "facets"],
   },
   {
     id: "features",
-    label: "Features",
+    label: "Feature",
     icon: ToggleRightIcon,
     keys: ["features"],
   },
   {
     id: "metrics",
-    label: "Metrics",
+    label: "Metric",
     icon: RulerIcon,
     keys: ["metrics", "upm", "hasHinting"],
   },
@@ -94,7 +94,7 @@ export const FILTER_GROUPS: FilterGroup[] = [
   },
   {
     id: "other",
-    label: "Others",
+    label: "More",
     icon: DotsThreeOutlineIcon,
     keys: ["license", "repoHosts"],
   },
@@ -103,8 +103,9 @@ export const FILTER_GROUPS: FilterGroup[] = [
 export const DEFAULT_FILTER_GROUP: FilterGroupId = "tag";
 
 // `facets` is shared by two panels: the Tag panel shows the whole list (so its
-// badge counts every selected facet), while Axes shows only static/variable as
-// a Font type radio (so its badge counts just those). Split accordingly.
+// badge counts every selected facet), while the Variant panel (group id "axes")
+// shows only static/variable as a Font type radio (so its badge counts just
+// those). Split accordingly.
 function countKey(
   group: FilterGroup,
   key: keyof Omit<FilterState, "query">,
