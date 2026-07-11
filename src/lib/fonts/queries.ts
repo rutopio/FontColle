@@ -65,6 +65,7 @@ function toFontRecord(f: FamilyRow, related: RelatedByFamily): FontRecord {
     version: f.version,
     versionString: f.versionString,
     dateAdded: f.dateAdded,
+    firstCommitDate: f.firstCommitDate,
     weightClass: f.weightClass,
     widthClass: f.widthClass,
     weights: parseJson<number[]>(f.weights, []),
@@ -74,6 +75,10 @@ function toFontRecord(f: FamilyRow, related: RelatedByFamily): FontRecord {
     popularityRank: f.popularityRank,
     trendingRank: f.trendingRank,
     lastModified: f.lastModified,
+    versionHistory: parseJson<{ version: string; date: string }[]>(
+      f.versionHistory,
+      []
+    ),
     specimen: f.specimen,
     tags: parseJson<Record<string, number>>(f.tags, {}),
     unitsPerEm: f.unitsPerEm,
