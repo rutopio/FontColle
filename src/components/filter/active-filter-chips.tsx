@@ -1,8 +1,9 @@
 import { XIcon } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from "motion/react";
+import { Fragment } from "react";
 import type { FilterState } from "@/lib/fonts/filter";
 import { cn } from "@/lib/utils";
-import { describeActiveFilters } from "./describe";
+import { groupActiveFilters } from "./describe";
 
 // Each chip fades in on add and out on remove; `layout` slides the survivors
 // into the freed space so the row reflows smoothly.
@@ -27,8 +28,8 @@ export function ActiveFilterChips({
   // "center" caps the width for the empty state; "left" fills the list header.
   align?: "center" | "left";
 }) {
-  const chips = describeActiveFilters(filter);
-  if (chips.length === 0) return null;
+  const groups = groupActiveFilters(filter);
+  if (groups.length === 0) return null;
   return (
     <div
       className={cn(
@@ -37,17 +38,26 @@ export function ActiveFilterChips({
       )}
     >
       <AnimatePresence initial={false} mode="popLayout">
-        {chips.map((chip) => (
+        {groups.map((group) => (
           <motion.button
-            key={chip.id}
+            key={group.id}
             {...CHIP_MOTION}
             type="button"
-            onClick={() => onChange(chip.remove)}
+            onClick={() => onChange(group.removeAll)}
             className="flex items-center gap-1.5 rounded-md border border-input px-2.5 py-1 text-muted-foreground text-xs transition-colors hover:border-foreground hover:text-foreground"
-            aria-label={`Remove filter ${chip.section}: ${chip.value}`}
+            aria-label={`Remove filter ${group.section}: ${group.values
+              .map((v) => v.value)
+              .join(` ${group.joiner} `)}`}
           >
-            <span className="opacity-60">{chip.section}</span>
-            <span className="text-foreground">{chip.value}</span>
+            <span className="opacity-60">{group.section}</span>
+            {/* Values joined by the section's combine word; the joiner is muted
+                like the section label and flips with the OR/AND toggle. */}
+            {group.values.map((v, i) => (
+              <Fragment key={v.id}>
+                {i > 0 && <span className="opacity-60">{group.joiner}</span>}
+                <span className="text-foreground">{v.value}</span>
+              </Fragment>
+            ))}
             <XIcon className="size-3 opacity-60" />
           </motion.button>
         ))}
