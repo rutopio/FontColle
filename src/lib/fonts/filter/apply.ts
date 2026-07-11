@@ -140,6 +140,12 @@ export function applyFilters(
       const wantNoto = f.flags.includes("noto");
       if (!!font.isNoto !== wantNoto) return false;
     }
+    // Italic: radio-style. "italic" keeps families that offer an italic style
+    // (carry the has-italic facet); "upright" keeps the rest.
+    if (f.italic.length) {
+      const wantItalic = f.italic.includes("italic");
+      if (font.facets.includes("has-italic") !== wantItalic) return false;
+    }
     // OR within upm: family's units-per-em is one of the selected values.
     if (f.upm.length && !f.upm.includes(String(font.unitsPerEm))) return false;
     // AND across metric ranges: the font's derived value must fall in every

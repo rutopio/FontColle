@@ -29,6 +29,10 @@ export interface FilterState {
   repoHosts: string[];
   // Source: radio-style Noto / Others, stored as a 0- or 1-length array.
   flags: string[];
+  // Italic: radio-style, stored as a 0- or 1-length array. "italic" = family
+  // offers an italic style (carries the has-italic facet), "upright" = it does
+  // not. The two partition the whole catalog.
+  italic: string[];
   upm: string[]; // units-per-em values ("1000", "2048"…), OR within
   // Derived-metric range sliders (x-height ratio, file size, …), AND across.
   // Only active ranges (a thumb off its domain edge) are present; an absent key
@@ -44,7 +48,7 @@ export interface FilterState {
 // the grid passes one object instead of six loose arrays.
 export type FilterSelection = Pick<
   FilterState,
-  "classes" | "facets" | "color" | "axes" | "weights" | "widths"
+  "classes" | "facets" | "color" | "axes" | "weights" | "widths" | "italic"
 >;
 
 export const emptyFilter: FilterState = {
@@ -65,6 +69,7 @@ export const emptyFilter: FilterState = {
   license: [],
   repoHosts: [],
   flags: [],
+  italic: [],
   upm: [],
   metrics: {},
 };
@@ -94,6 +99,7 @@ export interface FilterSearch {
   lic?: string; // license ids
   repo?: string; // repository host buckets, comma-joined
   flag?: string; // source radio: "noto" | "others"
+  ital?: string; // italic radio: "italic" | "upright"
   upm?: string; // units-per-em values, comma-joined
   // Metric ranges, each "lo-hi" (e.g. mxh=0.45-0.55). One key per metric.
   mxh?: string; // x-height ratio
@@ -168,6 +174,7 @@ export function searchToFilter(s: FilterSearch): FilterState {
     license: splitCsv(s.lic),
     repoHosts: splitCsv(s.repo),
     flags: splitCsv(s.flag),
+    italic: splitCsv(s.ital),
     upm: splitCsv(s.upm),
     metrics: decodeMetrics(s),
     hasHinting: s.hint === "1" ? true : s.hint === "0" ? false : undefined,
@@ -193,6 +200,7 @@ export function filterToSearch(f: FilterState): FilterSearch {
   if (f.license.length) s.lic = f.license.join(",");
   if (f.repoHosts.length) s.repo = f.repoHosts.join(",");
   if (f.flags.length) s.flag = f.flags.join(",");
+  if (f.italic.length) s.ital = f.italic.join(",");
   if (f.upm.length) s.upm = f.upm.join(",");
   encodeMetrics(f.metrics, s);
   if (f.hasHinting !== undefined) s.hint = f.hasHinting ? "1" : "0";
@@ -219,6 +227,7 @@ export function activeFilterCount(f: FilterState): number {
     f.license.length +
     f.repoHosts.length +
     f.flags.length +
+    f.italic.length +
     f.upm.length +
     Object.keys(f.metrics).length +
     (f.hasHinting !== undefined ? 1 : 0)
@@ -250,6 +259,7 @@ export function parseFilterSearch(raw: Record<string, unknown>): FilterSearch {
     lic: str(raw.lic),
     repo: str(raw.repo),
     flag: str(raw.flag),
+    ital: str(raw.ital),
     upm: numCsv(raw.upm),
     mxh: str(raw.mxh),
     mch: str(raw.mch),
