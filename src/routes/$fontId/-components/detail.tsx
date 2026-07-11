@@ -14,6 +14,7 @@ import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { buildFeatureSettings } from "@/lib/fonts/features";
 import { emptyFilter, filterToSearch } from "@/lib/fonts/filter/state";
 import { scriptLabel } from "@/lib/fonts/labels";
+import { LICENSE_BOILERPLATE } from "@/lib/fonts/license-text";
 import { ensureFontRangeLoaded, useFontLoaded } from "@/lib/fonts/loader";
 import { previewStyle } from "@/lib/fonts/preview-style";
 import type { DesignerSibling } from "@/lib/fonts/queries";
@@ -206,15 +207,17 @@ export function Detail({
           {font.instances.length > 0 && (
             <Panel label="Named instances" count={font.instances.length}>
               <div className="flex flex-col">
-                {font.instances.map((inst) => (
-                  <InstanceRow
-                    key={`row:${inst.italic ? "i" : "u"}:${inst.name}`}
-                    inst={inst}
-                    specimen={specimen}
-                    fontName={font.name}
-                    fontLoaded={fontLoaded}
-                    onEditText={setText}
-                  />
+                {font.instances.map((inst, i) => (
+                  <Fragment key={`row:${inst.italic ? "i" : "u"}:${inst.name}`}>
+                    {i > 0 && <Separator />}
+                    <InstanceRow
+                      inst={inst}
+                      specimen={specimen}
+                      fontName={font.name}
+                      fontLoaded={fontLoaded}
+                      onEditText={setText}
+                    />
+                  </Fragment>
                 ))}
               </div>
             </Panel>
@@ -295,6 +298,8 @@ export function Detail({
       {tab === "designer" && (
         <DesignerPanel font={font} siblingsByDesigner={siblingsByDesigner} />
       )}
+
+      {tab === "license" && <LicensePanel font={font} />}
     </Column>
   );
 }
@@ -313,6 +318,35 @@ function AboutPanel({ font }: { font: FontRecord }) {
         // biome-ignore lint/security/noDangerouslySetInnerHtml: content is sanitized to an allowlist in sanitizeHtml.
         dangerouslySetInnerHTML={{ __html: html }}
       />
+    </Panel>
+  );
+}
+
+// The License view: the family's full license text, mirroring Google Fonts'
+// /specimen/<Family>/license page. We assemble it from the per-family OFL
+// copyright header (licenseHeader) plus the shared boilerplate for that license
+// (LICENSE_BOILERPLATE) — Apache/UFL have no per-family header. Plain text, so
+// it renders verbatim in a monospace, scrollable block.
+function LicensePanel({ font }: { font: FontRecord }) {
+  const boilerplate = font.license
+    ? LICENSE_BOILERPLATE[font.license]
+    : undefined;
+  const text = [font.licenseHeader, boilerplate]
+    .filter(Boolean)
+    .join("\n\n")
+    .trim();
+
+  return (
+    <Panel label={font.license ? `License · ${font.license}` : "License"}>
+      {text ? (
+        <pre className="overflow-auto whitespace-pre-wrap font-mono text-muted-foreground text-xs leading-relaxed">
+          {text}
+        </pre>
+      ) : (
+        <p className="py-2 text-muted-foreground text-sm">
+          No license text available for this family.
+        </p>
+      )}
     </Panel>
   );
 }

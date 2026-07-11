@@ -85,6 +85,7 @@ function toFontRecord(f: FamilyRow, related: RelatedByFamily): FontRecord {
       f.designerProfiles,
       []
     ),
+    licenseHeader: f.licenseHeader,
     tags: parseJson<Record<string, number>>(f.tags, {}),
     unitsPerEm: f.unitsPerEm,
     xHeight: f.xHeight,

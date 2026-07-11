@@ -88,6 +88,10 @@ export const family = sqliteTable(
     // Per-designer bios/avatars, JSON array of {name,bio,imageUrl}. Empty array
     // when none are credited with a profile (backfill_about.py).
     designerProfiles: text("designer_profiles"),
+    // Per-family copyright header of the OFL license file (the only part that
+    // varies per family). Null for Apache/UFL, whose files are pure boilerplate.
+    // The frontend prepends this to the shared boilerplate (backfill_license.py).
+    licenseHeader: text("license_header"),
     // Google Fonts classification tags (google/fonts tags CSV, not exposed by
     // the Developer API) as JSON {"<full tag path>": score}, e.g.
     // {"/Serif/Fat Face": 90}. Scores are 0-100. Empty object when uncovered.
