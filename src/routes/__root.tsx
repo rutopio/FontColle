@@ -8,6 +8,11 @@ import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
 
 import appCss from "../styles.css?url";
 
+// Applies the saved theme before first paint so an SSR'd light shell doesn't
+// flash before a dark preference hydrates. Default is light: the class is added
+// only when the user explicitly chose dark. Static string, no user input.
+const themeScript = `try{if(localStorage.theme==='dark')document.documentElement.classList.add('dark')}catch(e){}`;
+
 export const Route = createRootRoute({
   head: () => ({
     meta: [
@@ -45,6 +50,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
+        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: static themeScript, no user input; must run blocking in <head> pre-hydration. */}
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <HeadContent />
       </head>
       <body>
