@@ -314,8 +314,8 @@ function SearchInput({
           composing.current = false;
           onQueryChange(e.currentTarget.value);
         }}
-        placeholder="Search family or creator"
-        aria-label="Search fonts by family or creator"
+        placeholder="Search family or designer"
+        aria-label="Search fonts by family or designer"
         className="h-9 pl-8"
       />
     </div>

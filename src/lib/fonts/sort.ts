@@ -33,7 +33,7 @@ export const SORT_OPTIONS: { group: string; items: [SortKey, string][] }[] = [
     ],
   },
   {
-    group: "Creator",
+    group: "Designer",
     items: [
       ["creator-asc", "A → Z"],
       ["creator-desc", "Z → A"],
@@ -103,7 +103,7 @@ export const SORT_GROUPS: SortGroup[] = [
     descLabel: "Z → A",
   },
   {
-    group: "Creator",
+    group: "Designer",
     asc: "creator-asc",
     desc: "creator-desc",
     ascLabel: "A → Z",
