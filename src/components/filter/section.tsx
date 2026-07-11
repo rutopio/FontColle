@@ -5,6 +5,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import type { MatchMode } from "@/lib/fonts/filter";
 import { cn } from "@/lib/utils";
 import { RARE_THRESHOLD } from "./constants";
 import { PillButton } from "./pill-button";
@@ -27,6 +28,8 @@ export function Section({
   expandAll,
   topNSet,
   numericSort,
+  mode,
+  onToggleMode,
 }: {
   title: string;
   icon: Icon;
@@ -35,6 +38,9 @@ export function Section({
   onToggle: (v: string) => void;
   onReset?: () => void;
   sortable?: boolean;
+  // OR/AND toggle, forwarded to the header. Pass both to show it.
+  mode?: MatchMode;
+  onToggleMode?: () => void;
   grid?: boolean;
   spread?: boolean;
   // Human display name for a value; the toggle still passes the raw value.
@@ -74,6 +80,8 @@ export function Section({
         sort={sort}
         onToggleSort={() => setSort((s) => (s === "count" ? "alpha" : "count"))}
         numericSort={numericSort}
+        mode={mode}
+        onToggleMode={onToggleMode}
       />
       <Pills
         items={sorted}

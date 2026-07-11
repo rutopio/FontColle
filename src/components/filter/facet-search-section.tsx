@@ -1,5 +1,6 @@
 import type { Icon } from "@phosphor-icons/react";
 import { useMemo } from "react";
+import type { MatchMode } from "@/lib/fonts/filter";
 import { NoMatches, SearchBox } from "./search-box";
 import { Pills } from "./section";
 import { SectionHeader } from "./section-header";
@@ -27,6 +28,8 @@ export function FacetSearchSection({
   topN,
   pillTitle,
   info,
+  mode,
+  onToggleMode,
 }: {
   title: string;
   icon: Icon;
@@ -35,6 +38,9 @@ export function FacetSearchSection({
   onToggle: (v: string) => void;
   onReset: () => void;
   searchPlaceholder: string;
+  // OR/AND toggle, forwarded to the header. Pass both to show it.
+  mode?: MatchMode;
+  onToggleMode?: () => void;
   // How to pick which values show up front. Defaults to font count; pass a
   // lookup like speaker population to rank by that instead.
   rankBy?: (value: string) => number;
@@ -99,6 +105,8 @@ export function FacetSearchSection({
         canSort={items.length > 1}
         sort={sort}
         onToggleSort={toggleSort}
+        mode={mode}
+        onToggleMode={onToggleMode}
       />
       <SearchBox
         value={query}

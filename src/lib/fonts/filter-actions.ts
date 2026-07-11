@@ -1,4 +1,9 @@
-import { type FilterState, FONT_TYPE_FACETS } from "./filter";
+import {
+  type FilterState,
+  FONT_TYPE_FACETS,
+  type ModeKey,
+  SECTION_DEFAULT_MODE,
+} from "./filter";
 
 // The FilterState fields that hold a plain string[] — the ones toggle/
 // clearSection operate on. Excludes `metrics` (object) and the boolean facets.
@@ -164,6 +169,21 @@ export function selectFlag(filter: FilterState, value: string): FilterState {
 export function selectItalic(filter: FilterState, value: string): FilterState {
   const next = filter.italic.includes(value) ? [] : [value];
   return { ...filter, italic: next };
+}
+
+/** Flip a section's OR/AND mode. Stores the override only while it differs from
+ *  the section default, so returning to the default drops the entry (keeping a
+ *  pristine filter's matchModes empty). */
+export function toggleMatchMode(
+  filter: FilterState,
+  key: ModeKey
+): FilterState {
+  const current = filter.matchModes[key] ?? SECTION_DEFAULT_MODE[key];
+  const next = current === "any" ? "all" : "any";
+  const matchModes = { ...filter.matchModes };
+  if (next === SECTION_DEFAULT_MODE[key]) delete matchModes[key];
+  else matchModes[key] = next;
+  return { ...filter, matchModes };
 }
 
 /** Clear only the values a given section shows. Several sections share one

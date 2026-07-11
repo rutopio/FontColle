@@ -2,6 +2,12 @@
 // live in the URL so they persist across list <-> detail navigation and the
 // detail sidebar can link back to the list with a filter applied.
 import type { MetricKey, MetricRange } from "../metrics";
+import {
+  type MatchMode,
+  MODE_KEYS,
+  type ModeKey,
+  SECTION_DEFAULT_MODE,
+} from "./match-mode";
 
 export interface FilterState {
   query: string;
@@ -41,6 +47,10 @@ export interface FilterState {
   // Hinting trait, a radio-style pair. true = Hinted, false = No Hinted,
   // undefined = off (no filter).
   hasHinting?: boolean;
+  // Per-section OR/AND override. Only sections whose mode differs from their
+  // default appear here, so a pristine filter has an empty object and existing
+  // shared URLs keep their original combine behaviour. See ./match-mode.
+  matchModes: Partial<Record<ModeKey, MatchMode>>;
 }
 
 // The slice of the filter a preview (card/row) needs to know about, to both
@@ -72,6 +82,7 @@ export const emptyFilter: FilterState = {
   italic: [],
   upm: [],
   metrics: {},
+  matchModes: {},
 };
 
 // The two `facets` values that say whether a family is a variable font. They
@@ -109,6 +120,8 @@ export interface FilterSearch {
   mct?: string; // contrast ratio
   mfs?: string; // file size (raw bytes)
   hint?: string; // "1" = Hinted, "0" = No Hinted
+  // Non-default section modes, comma-joined "key:mode" (e.g. "facets:any").
+  mode?: string;
   view?: "grid" | "row"; // display preference, not a filter
   sort?: string; // sort key, not a filter
 }
@@ -155,6 +168,32 @@ function encodeMetrics(metrics: FilterState["metrics"], s: FilterSearch): void {
   }
 }
 
+// URL <-> matchModes codec. "key:mode" pairs; only keys that are real ModeKeys
+// with a valid mode that differs from the section default are kept (a default
+// value would be redundant and is dropped so the object stays minimal).
+const MODE_KEY_SET = new Set<string>(MODE_KEYS);
+
+function decodeModes(v: string | undefined): FilterState["matchModes"] {
+  const out: FilterState["matchModes"] = {};
+  if (!v) return out;
+  for (const pair of v.split(",")) {
+    const [key, mode] = pair.split(":");
+    if (!MODE_KEY_SET.has(key)) continue;
+    if (mode !== "any" && mode !== "all") continue;
+    const k = key as ModeKey;
+    if (mode !== SECTION_DEFAULT_MODE[k]) out[k] = mode;
+  }
+  return out;
+}
+
+function encodeModes(modes: FilterState["matchModes"]): string | undefined {
+  const parts = MODE_KEYS.flatMap((k) => {
+    const m = modes[k];
+    return m && m !== SECTION_DEFAULT_MODE[k] ? [`${k}:${m}`] : [];
+  });
+  return parts.length ? parts.join(",") : undefined;
+}
+
 export function searchToFilter(s: FilterSearch): FilterState {
   return {
     query: s.q ?? "",
@@ -178,6 +217,7 @@ export function searchToFilter(s: FilterSearch): FilterState {
     upm: splitCsv(s.upm),
     metrics: decodeMetrics(s),
     hasHinting: s.hint === "1" ? true : s.hint === "0" ? false : undefined,
+    matchModes: decodeModes(s.mode),
   };
 }
 
@@ -204,6 +244,8 @@ export function filterToSearch(f: FilterState): FilterSearch {
   if (f.upm.length) s.upm = f.upm.join(",");
   encodeMetrics(f.metrics, s);
   if (f.hasHinting !== undefined) s.hint = f.hasHinting ? "1" : "0";
+  const mode = encodeModes(f.matchModes);
+  if (mode) s.mode = mode;
   return s;
 }
 
@@ -268,6 +310,7 @@ export function parseFilterSearch(raw: Record<string, unknown>): FilterSearch {
     mct: str(raw.mct),
     mfs: str(raw.mfs),
     hint: str(raw.hint),
+    mode: str(raw.mode),
     view: raw.view === "row" ? "row" : undefined,
     sort: str(raw.sort),
   };

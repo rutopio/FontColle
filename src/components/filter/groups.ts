@@ -113,6 +113,9 @@ function countKey(
   // Metric ranges: one count per active slider. Boolean facets: one when on.
   if (key === "metrics") return Object.keys(filter.metrics).length;
   if (key === "hasHinting") return filter.hasHinting !== undefined ? 1 : 0;
+  // Section OR/AND modes are modifiers, not conditions — never counted. (No
+  // group lists this key anyway; the guard is here to satisfy the type union.)
+  if (key === "matchModes") return 0;
   if (key !== "facets") return filter[key].length;
   if (group.id === "axes") {
     const isFontType = (v: string) => FONT_TYPE_FACETS.includes(v);

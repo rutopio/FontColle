@@ -1,5 +1,6 @@
 import { GlobeIcon } from "@phosphor-icons/react";
 import { useMemo } from "react";
+import type { MatchMode } from "@/lib/fonts/filter";
 import { scriptLabel, scriptPopulation } from "@/lib/fonts/labels";
 import { FacetSearchSection } from "./facet-search-section";
 
@@ -12,11 +13,15 @@ export function WritingSystemSection({
   selectedScripts,
   onToggleScript,
   onResetScripts,
+  mode,
+  onToggleMode,
 }: {
   scripts: [string, number][];
   selectedScripts: string[];
   onToggleScript: (v: string) => void;
   onResetScripts: () => void;
+  mode?: MatchMode;
+  onToggleMode?: () => void;
 }) {
   // Label scripts with human names; keep counts. Already count-sorted.
   const items = useMemo(
@@ -36,6 +41,8 @@ export function WritingSystemSection({
       searchPlaceholder="Search writing systems"
       rankBy={scriptPopulation}
       topN={10}
+      mode={mode}
+      onToggleMode={onToggleMode}
     />
   );
 }

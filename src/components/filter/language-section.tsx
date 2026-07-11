@@ -1,5 +1,6 @@
 import { ChatTextIcon } from "@phosphor-icons/react";
 import { useMemo } from "react";
+import type { MatchMode } from "@/lib/fonts/filter";
 import { groupLanguageCountsByRegion, languageLabel } from "@/lib/fonts/labels";
 import { NoMatches, SearchBox } from "./search-box";
 import { Pills } from "./section";
@@ -19,11 +20,15 @@ export function LanguageSection({
   selectedLanguages,
   onToggleLanguage,
   onResetLanguages,
+  mode,
+  onToggleMode,
 }: {
   languages: [string, number][];
   selectedLanguages: string[];
   onToggleLanguage: (v: string) => void;
   onResetLanguages: () => void;
+  mode?: MatchMode;
+  onToggleMode?: () => void;
 }) {
   const { sort, toggleSort, query, setQuery, q } = useSearchSort();
 
@@ -57,6 +62,8 @@ export function LanguageSection({
         sort={sort}
         onToggleSort={toggleSort}
         info="Grouped by continent using each language's primary region in CLDR, matching Google Fonts. A language appears under one continent only, so widely spoken ones can land somewhere unexpected — English sits under Americas because its main territory is the US. Use search to find any language directly."
+        mode={mode}
+        onToggleMode={onToggleMode}
       />
       <SearchBox
         value={query}
