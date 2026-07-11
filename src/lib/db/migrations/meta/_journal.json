@@ -85,6 +85,13 @@
       "when": 1783712090534,
       "tag": "0011_deep_synch",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1783754823110,
+      "tag": "0012_chemical_hardball",
+      "breakpoints": true
     }
   ]
 }

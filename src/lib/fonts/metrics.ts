@@ -11,6 +11,7 @@ export type MetricKey =
   | "capHeight"
   | "lineHeight"
   | "avgWidth"
+  | "contrast"
   | "fileSize";
 
 // A [lo, hi] range, in the metric's own units (ratios for the first four,
@@ -82,6 +83,20 @@ export const METRIC_SPECS: Record<MetricKey, MetricSpec> = {
     quantiles: [0.497, 0.563, 0.635],
     hint: "Average character width relative to the em (OS/2 average). Higher means a wider, more spacious font; lower is condensed and fits more per line.",
   },
+  // Stroke-contrast ratio (thick/thin) at the regular weight, from google/fonts
+  // quant.csv. Domain clipped at the catalog p1/p99 (1.02 / 8.52, computed
+  // 2026-07-11); the long Didone tail past 8.5 still matches when the top thumb
+  // rests on the edge. Value is already a ratio, so derive() passes it through.
+  contrast: {
+    key: "contrast",
+    label: "Contrast",
+    min: 1,
+    max: 8.5,
+    step: 0.05,
+    scale: "linear",
+    quantiles: [1.21, 1.32, 2.09],
+    hint: "Stroke-weight difference between the thick and thin parts of letters, at the regular weight. Near 1.0 is monolinear (even strokes — most sans and mono); higher means sharper thick/thin contrast, up to Didone display serifs.",
+  },
   // 16KB … 64MB, log-scaled. Stored/compared in raw bytes.
   fileSize: {
     key: "fileSize",
@@ -95,12 +110,29 @@ export const METRIC_SPECS: Record<MetricKey, MetricSpec> = {
   },
 };
 
+/** Humanize a byte count for the fileSize readout (e.g. 3.5MB, 512KB). */
+export function humanBytes(bytes: number): string {
+  if (bytes >= 1024 * 1024) {
+    const mb = bytes / (1024 * 1024);
+    return `${mb >= 10 ? Math.round(mb) : mb.toFixed(1)}MB`;
+  }
+  return `${Math.round(bytes / 1024)}KB`;
+}
+
+/** Format one metric value for display: fileSize as KB/MB, every other metric
+ *  as a 2-dp ratio. Shared by the sidebar readouts/quartile pills and the
+ *  active-filter chips so a range reads the same everywhere (see describe.ts). */
+export function formatMetricValue(key: MetricKey, v: number): string {
+  return key === "fileSize" ? humanBytes(v) : v.toFixed(2);
+}
+
 // The order the metrics render in the sidebar.
 export const METRIC_ORDER: MetricKey[] = [
   "xHeight",
   "capHeight",
   "lineHeight",
   "avgWidth",
+  "contrast",
   "fileSize",
 ];
 
@@ -118,6 +150,8 @@ export function derive(font: FontRecord, key: MetricKey): number | null {
       return ratio(font.capHeight, upm);
     case "avgWidth":
       return ratio(font.avgCharWidth, upm);
+    case "contrast":
+      return font.contrast;
     case "fileSize":
       return font.fileSize != null && font.fileSize > 0 ? font.fileSize : null;
     case "lineHeight": {

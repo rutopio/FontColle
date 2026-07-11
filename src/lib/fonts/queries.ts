@@ -90,6 +90,7 @@ function toFontRecord(f: FamilyRow, related: RelatedByFamily): FontRecord {
     winDescent: f.winDescent,
     useTypoMetrics: f.useTypoMetrics,
     avgCharWidth: f.avgCharWidth,
+    contrast: f.contrast,
     isMonospace: f.isMonospace,
     hasHinting: f.hasHinting,
     vendorId: f.vendorId,

@@ -97,6 +97,10 @@ export const family = sqliteTable(
     // governs line height.
     useTypoMetrics: integer("use_typo_metrics", { mode: "boolean" }),
     avgCharWidth: integer("avg_char_width"), // OS/2 xAvgCharWidth
+    // Stroke-contrast ratio (thick/thin) at the regular weight, from google/fonts
+    // tags/all/quant.csv machine measurements. ~1.0 monolinear, 3+ high-contrast
+    // Didone. Null for families absent from quant.csv (backfill_contrast.py).
+    contrast: real("contrast"),
     isMonospace: integer("is_monospace", { mode: "boolean" }), // post isFixedPitch
     hasHinting: integer("has_hinting", { mode: "boolean" }), // TrueType instructions present
     vendorId: text("vendor_id"), // OS/2 achVendID, e.g. "GOOG"

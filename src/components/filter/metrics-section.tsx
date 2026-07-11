@@ -13,6 +13,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
+  formatMetricValue,
   isRangeActive,
   METRIC_ORDER,
   METRIC_SPECS,
@@ -37,21 +38,6 @@ const UPM_DEFAULT = new Set(["1000", "2048", "1024", "2000"]);
 // nothing then), and stores only active ranges in the filter/URL. Snap (upm)
 // and log (fileSize) scales are mapped to/from the slider's track here so the
 // stored value is always the real metric value.
-
-// Humanize a byte count for the fileSize readout.
-function humanBytes(bytes: number): string {
-  if (bytes >= 1024 * 1024) {
-    const mb = bytes / (1024 * 1024);
-    return `${mb >= 10 ? Math.round(mb) : mb.toFixed(1)}MB`;
-  }
-  return `${Math.round(bytes / 1024)}KB`;
-}
-
-// Format one thumb value for a metric's readout.
-function formatValue(key: MetricKey, v: number): string {
-  if (key === "fileSize") return humanBytes(v);
-  return v.toFixed(2);
-}
 
 // Round a value to the metric's step so the editable readout shows a clean
 // number (0.46, not 0.4640000001) and the field round-trips losslessly.
@@ -170,7 +156,7 @@ function MetricRangeRow({
           </span>
         ) : (
           <span className="font-mono text-muted-foreground">
-            {formatValue(spec.key, lo)} – {formatValue(spec.key, hi)}
+            {formatMetricValue(spec.key, lo)} – {formatMetricValue(spec.key, hi)}
           </span>
         )}
       </div>
@@ -213,7 +199,8 @@ function MetricRangeRow({
                 }
               />
               <TooltipContent className="font-mono normal-case tracking-normal">
-                {formatValue(spec.key, q[0])} – {formatValue(spec.key, q[1])}
+                {formatMetricValue(spec.key, q[0])} –{" "}
+                {formatMetricValue(spec.key, q[1])}
               </TooltipContent>
             </Tooltip>
           );
