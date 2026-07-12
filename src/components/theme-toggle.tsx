@@ -31,14 +31,20 @@ export function ThemeToggle() {
   const Icon = isDark ? SunIcon : MoonIcon;
 
   return (
-    <nav aria-label="Theme" className="flex flex-col gap-1 px-1.5">
+    <nav aria-label="Theme" className="flex flex-col gap-1">
       <button
         type="button"
         onClick={toggle}
         aria-label={`Switch to ${target.toLowerCase()} theme`}
-        className="relative flex cursor-pointer flex-col items-center gap-1 rounded-md py-2 text-muted-foreground outline-none transition-colors hover:bg-sidebar-accent/50 hover:text-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+        className="group/rail-btn relative flex cursor-pointer flex-col items-center gap-1 rounded-md py-2 text-muted-foreground outline-none transition-colors hover:bg-sidebar-accent/50 hover:text-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring"
       >
-        <Icon className="size-5" />
+        {/* Phosphor weight is a prop, not CSS, so hover-swaps the icon:
+            the base icon hides on hover and the duotone twin shows. */}
+        <Icon className="size-5 group-hover/rail-btn:hidden" />
+        <Icon
+          className="hidden size-5 group-hover/rail-btn:block"
+          weight="duotone"
+        />
         <span className="text-[10px] leading-none">{target}</span>
       </button>
     </nav>

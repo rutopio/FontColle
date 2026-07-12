@@ -31,13 +31,22 @@ export function FilterRail({
                 : `${group.label} filters`
             }
             className={cn(
-              "relative flex cursor-pointer flex-col items-center gap-1 rounded-md py-2 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-sidebar-ring",
+              "group/rail-btn relative flex cursor-pointer flex-col items-center gap-1 rounded-md py-2 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-sidebar-ring",
               on
                 ? "bg-black/10 text-sidebar-accent-foreground dark:bg-white/12"
                 : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground"
             )}
           >
-            <group.icon className="size-5" weight={on ? "fill" : "regular"} />
+            {/* Phosphor weight is a prop, not CSS, so hover-swaps the icon:
+                the base icon hides on hover and the bold twin shows. */}
+            <group.icon
+              className="size-5 group-hover/rail-btn:hidden"
+              weight={on ? "fill" : "regular"}
+            />
+            <group.icon
+              className="hidden size-5 group-hover/rail-btn:block"
+              weight="duotone"
+            />
             <span className="text-[10px] leading-none">{group.label}</span>
             {count > 0 && (
               <span
