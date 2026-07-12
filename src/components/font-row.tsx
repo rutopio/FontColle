@@ -1,12 +1,9 @@
-import {
-  DownloadSimpleIcon,
-  GithubLogoIcon,
-  HeartIcon,
-} from "@phosphor-icons/react";
+import { DownloadSimpleIcon, HeartIcon } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { FontTraits } from "@/components/font-traits";
 import { HoverBoldIcon } from "@/components/hover-bold-icon";
+import { repoHostIcon } from "@/components/repo-host-icon";
 import type { FilterSelection } from "@/lib/fonts/filter";
 import {
   ensureFontLoaded,
@@ -145,7 +142,10 @@ export function FontRow({
               aria-label="View source repository"
               className="text-muted-foreground transition-colors hover:text-foreground"
             >
-              <HoverBoldIcon icon={GithubLogoIcon} className="size-5" />
+              <HoverBoldIcon
+                icon={repoHostIcon(font.repositoryUrl)}
+                className="size-5"
+              />
             </button>
           )}
         </div>
