@@ -49,6 +49,7 @@
     "@cloudflare/vite-plugin": "1.40.0",
     "@cloudflare/workers-types": "4.20260609.1",
     "@tanstack/devtools-vite": "latest",
+    "@tanstack/react-query-devtools": "5.101.2",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^22",
