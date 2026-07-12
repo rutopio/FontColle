@@ -33,6 +33,7 @@ import { InstanceRow } from "./instance-row";
 import { LanguageSupport } from "./language-support";
 import { Panel } from "./panel";
 import { TypeTester } from "./type-tester";
+import { UsePanel } from "./use";
 
 export function Detail({
   font,
@@ -272,6 +273,8 @@ export function Detail({
           scrollRef={scrollRef}
         />
       )}
+
+      {tab === "use" && <UsePanel font={font} />}
 
       {tab === "detail" && (
         <>
