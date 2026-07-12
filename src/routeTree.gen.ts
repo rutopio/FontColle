@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as FontIdRouteRouteImport } from './routes/$fontId/route'
 import { Route as IndexRouteRouteImport } from './routes/index/route'
+import { Route as TabFontIdRouteRouteImport } from './routes/$tab.$fontId/route'
 
 const FontIdRouteRoute = FontIdRouteRouteImport.update({
   id: '/$fontId',
@@ -22,31 +23,40 @@ const IndexRouteRoute = IndexRouteRouteImport.update({
   path: '',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TabFontIdRouteRoute = TabFontIdRouteRouteImport.update({
+  id: '/$tab/$fontId',
+  path: '/$tab/$fontId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRouteRoute
   '/$fontId': typeof FontIdRouteRoute
+  '/$tab/$fontId': typeof TabFontIdRouteRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRouteRoute
   '/$fontId': typeof FontIdRouteRoute
+  '/$tab/$fontId': typeof TabFontIdRouteRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRouteRoute
   '/$fontId': typeof FontIdRouteRoute
+  '/$tab/$fontId': typeof TabFontIdRouteRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/$fontId'
+  fullPaths: '/' | '/$fontId' | '/$tab/$fontId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/$fontId'
-  id: '__root__' | '/' | '/$fontId'
+  to: '/' | '/$fontId' | '/$tab/$fontId'
+  id: '__root__' | '/' | '/$fontId' | '/$tab/$fontId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRouteRoute: typeof IndexRouteRoute
   FontIdRouteRoute: typeof FontIdRouteRoute
+  TabFontIdRouteRoute: typeof TabFontIdRouteRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +75,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$tab/$fontId': {
+      id: '/$tab/$fontId'
+      path: '/$tab/$fontId'
+      fullPath: '/$tab/$fontId'
+      preLoaderRoute: typeof TabFontIdRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRouteRoute: IndexRouteRoute,
   FontIdRouteRoute: FontIdRouteRoute,
+  TabFontIdRouteRoute: TabFontIdRouteRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

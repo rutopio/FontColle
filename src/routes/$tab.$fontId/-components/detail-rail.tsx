@@ -1,9 +1,9 @@
 import {
+  BookOpenIcon,
   EyeIcon,
   InfoIcon,
   ScrollIcon,
   SquaresFourIcon,
-  UserIcon,
 } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 
@@ -13,13 +13,42 @@ export type DetailTab = "sample" | "glyphs" | "detail" | "designer" | "license";
 // one button per view (the type-tester sample vs. the font's specs vs. the
 // designer vs. the license). Icons are chosen to not collide with the list's
 // FilterRail set.
+//
+// `slug` is the URL segment (/{slug}/{fontId}); it differs from the internal
+// tab id where the user-facing name diverged (specimen/about) from the
+// original code names (sample/designer).
 const TABS = [
-  { id: "sample" as const, label: "Sample", icon: EyeIcon },
-  { id: "glyphs" as const, label: "Glyphs", icon: SquaresFourIcon },
-  { id: "detail" as const, label: "Detail", icon: InfoIcon },
-  { id: "designer" as const, label: "Designer", icon: UserIcon },
-  { id: "license" as const, label: "License", icon: ScrollIcon },
+  { id: "sample" as const, slug: "specimen", label: "Specimen", icon: EyeIcon },
+  {
+    id: "glyphs" as const,
+    slug: "glyphs",
+    label: "Glyphs",
+    icon: SquaresFourIcon,
+  },
+  {
+    id: "detail" as const,
+    slug: "detail",
+    label: "Detail",
+    icon: BookOpenIcon,
+  },
+  { id: "designer" as const, slug: "about", label: "About", icon: InfoIcon },
+  {
+    id: "license" as const,
+    slug: "license",
+    label: "License",
+    icon: ScrollIcon,
+  },
 ];
+
+export type TabSlug = (typeof TABS)[number]["slug"];
+
+const BY_SLUG = new Map(TABS.map((t) => [t.slug, t.id]));
+const BY_ID = new Map(TABS.map((t) => [t.id, t.slug]));
+
+// Resolve a URL segment to a tab id, or undefined for an unknown slug.
+export const tabFromSlug = (slug: string): DetailTab | undefined =>
+  BY_SLUG.get(slug);
+export const slugFromTab = (id: DetailTab): TabSlug => BY_ID.get(id) as TabSlug;
 
 export function DetailRail({
   active,

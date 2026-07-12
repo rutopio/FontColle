@@ -8,6 +8,7 @@ import { Fragment, useEffect, useMemo, useRef } from "react";
 import { Column } from "@/components/filter-layout";
 import { FontTraits } from "@/components/font-traits";
 import { PreviewBar } from "@/components/preview-dock";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -19,6 +20,7 @@ import { LICENSE_BOILERPLATE } from "@/lib/fonts/license-text";
 import { ensureFontRangeLoaded, useFontLoaded } from "@/lib/fonts/loader";
 import { previewStyle } from "@/lib/fonts/preview-style";
 import type { DesignerSibling } from "@/lib/fonts/queries";
+import { fontSlug } from "@/lib/fonts/slug";
 import { specimenFor } from "@/lib/fonts/specimen";
 import type { FontRecord } from "@/lib/fonts/types";
 import { usePreview } from "@/lib/preview/context";
@@ -128,8 +130,10 @@ export function Detail({
       header={
         <>
           <div className="flex min-w-0 items-center gap-3">
-            {/* Going back (not a fresh /) lets the router restore the list's
-                scroll position and filter URL. Fall back to / on deep links. */}
+            {/* Back returns to the list. If we arrived from it, go back in
+                history so its filter URL + scroll position are restored; on a
+                deep/shared link (no history to go back to) fall back to the
+                default, unfiltered list. */}
             {canGoBack ? (
               <Button
                 variant="ghost"
@@ -419,14 +423,16 @@ function DesignerPanel({
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center justify-between gap-2 text-sm">
                       <div className="flex items-center gap-2.5">
-                        {profile?.imageUrl && (
-                          <img
-                            src={profile.imageUrl}
-                            alt=""
-                            loading="lazy"
-                            className="size-8 shrink-0 rounded-full object-cover"
-                          />
-                        )}
+                        <Avatar>
+                          {profile?.imageUrl && (
+                            <AvatarImage
+                              src={profile.imageUrl}
+                              alt=""
+                              loading="lazy"
+                            />
+                          )}
+                          <AvatarFallback>{initials(name)}</AvatarFallback>
+                        </Avatar>
                         <span>{name}</span>
                       </div>
                       <div className="flex shrink-0 items-center gap-1">
@@ -486,8 +492,11 @@ function DesignerPanel({
                           {siblings.map((s) => (
                             <li key={s.id}>
                               <Link
-                                to="/$fontId"
-                                params={{ fontId: s.id }}
+                                to="/$tab/$fontId"
+                                params={{
+                                  tab: "specimen",
+                                  fontId: fontSlug(s.name),
+                                }}
                                 className="truncate py-0.5 text-sm hover:text-foreground"
                                 style={{
                                   fontFamily: `"${s.name}", sans-serif`,
@@ -562,6 +571,16 @@ const DATE_FMT = new Intl.DateTimeFormat("en-US", {
 function formatDate(iso: string): string {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso;
   return DATE_FMT.format(new Date(`${iso}T00:00:00Z`));
+}
+
+// Up to two initials from a designer name, for the avatar fallback when there's
+// no profile image. Uses the first and last words so "Erik Spiekermann" -> "ES".
+function initials(name: string): string {
+  const words = name.split(/\s+/).filter(Boolean);
+  if (words.length === 0) return "";
+  const first = words[0][0];
+  const last = words.length > 1 ? words[words.length - 1][0] : "";
+  return (first + last).toUpperCase();
 }
 
 // The version shipped on (or most recently before) a given "yyyy-MM-dd" date,
