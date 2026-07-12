@@ -8,6 +8,7 @@ import { Fragment, useEffect, useMemo, useRef } from "react";
 import { Column } from "@/components/filter-layout";
 import { FontTraits } from "@/components/font-traits";
 import { PreviewBar } from "@/components/preview-dock";
+import { repoHostIcon } from "@/components/repo-host-icon";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -80,6 +81,10 @@ export function Detail({
   // Real script subsets, minus the synthetic "menu" entry. Used for both the
   // Subsets list and its count.
   const subsets = font.subsets.filter((s) => s !== "menu");
+
+  // Repo button icon, by host (GitHub / GitLab / SourceHut), like the list
+  // card/row. Only rendered when the family has a known upstream repo.
+  const RepoIcon = repoHostIcon(font.repositoryUrl);
 
   // Specs table rows, built as data so optional rows can be filtered out. The
   // "Added" row carries a version badge; "Last updated" deliberately omits one
@@ -172,6 +177,23 @@ export function Detail({
                 Static, color, feature count), plus the family's license. */}
             <FontTraits font={font} selection={emptyFilter} />
             {font.license && <Badge variant="outline">{font.license}</Badge>}
+            {font.repositoryUrl && (
+              <Button
+                variant="outline"
+                render={
+                  // biome-ignore lint/a11y/useAnchorContent: Button injects its children into this anchor via the render prop (aria-label also set); the static rule can't see through it.
+                  <a
+                    href={font.repositoryUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`View ${font.name}'s source repository`}
+                  />
+                }
+              >
+                <RepoIcon />
+                Repo
+              </Button>
+            )}
             <Button
               render={
                 // biome-ignore lint/a11y/useAnchorContent: Button injects its children into this anchor via the render prop (aria-label also set); the static rule can't see through it.
