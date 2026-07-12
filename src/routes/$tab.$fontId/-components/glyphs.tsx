@@ -121,9 +121,25 @@ function BlockGrid({
     if (popGlyphRef.current)
       popGlyphRef.current.textContent = String.fromCodePoint(cp);
     if (popLabelRef.current) popLabelRef.current.textContent = `U+${hex(cp)}`;
-    pop.style.left = `${x + 16}px`;
-    pop.style.top = `${y + 16}px`;
+    // Show first so it has measurable dimensions, then flip toward whichever
+    // side has room: below/right of the cursor by default, but above/left
+    // when the popover would overflow the viewport edge (e.g. hovering a cell
+    // near the bottom after scrolling down). 16px gap from the cursor, 8px
+    // min margin from the edge.
     pop.style.display = "flex";
+    const CURSOR_GAP = 16;
+    const MARGIN = 8;
+    const { offsetWidth: w, offsetHeight: h } = pop;
+    const left =
+      x + CURSOR_GAP + w + MARGIN > window.innerWidth
+        ? x - CURSOR_GAP - w
+        : x + CURSOR_GAP;
+    const top =
+      y + CURSOR_GAP + h + MARGIN > window.innerHeight
+        ? y - CURSOR_GAP - h
+        : y + CURSOR_GAP;
+    pop.style.left = `${Math.max(MARGIN, left)}px`;
+    pop.style.top = `${Math.max(MARGIN, top)}px`;
   };
   const hide = () => {
     if (popRef.current) popRef.current.style.display = "none";
@@ -205,7 +221,7 @@ function BlockGrid({
                     key={cp}
                     data-cp={cp}
                     title={`U+${hex(cp)}`}
-                    className="flex items-center justify-center bg-card leading-none hover:bg-muted"
+                    className="flex items-center justify-center border-primary bg-card leading-none hover:border"
                     // Glyph fills ~1/2 of the (square) cell, so it scales with
                     // the measured cell size instead of a fixed font-size.
                     style={{ ...style, fontSize: cellSize * 0.4 }}
