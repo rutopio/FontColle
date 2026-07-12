@@ -1,6 +1,7 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { FilterLayout } from "@/components/filter-layout";
+import { NotFound } from "@/components/not-found";
 import { deriveFacets } from "@/lib/fonts/facets";
 import { DEFAULT_ON } from "@/lib/fonts/features";
 import {
@@ -53,15 +54,10 @@ export const Route = createFileRoute("/$fontId")({
     };
   },
   notFoundComponent: () => (
-    <div className="mx-auto w-full max-w-(--breakpoint-2xl) p-6">
-      <Link
-        to="/"
-        className="text-muted-foreground text-sm hover:text-foreground"
-      >
-        ← All fonts
-      </Link>
-      <p className="py-16 text-center text-muted-foreground">Font not found.</p>
-    </div>
+    <NotFound
+      title="Font not found"
+      description="This font family isn't in the catalog. It may have been renamed or removed."
+    />
   ),
 });
 
