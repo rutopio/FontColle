@@ -33,7 +33,7 @@ export interface FilterState {
   license: string[]; // license ids ("OFL", "APACHE2", "UFL"), OR within
   // Repository host buckets ("github","gitlab","sourcehut","none"), OR within.
   repoHosts: string[];
-  // Maintenance-activity buckets ("active","recent","dormant","unknown"),
+  // Maintenance-activity buckets ("latest","active","recent","dormant"),
   // radio-style (at most one; they partition the catalog).
   activity: string[];
   // Source: radio-style Noto / Others, stored as a 0- or 1-length array.
@@ -113,7 +113,7 @@ export interface FilterSearch {
   vnd?: string; // vendor ids (folded), comma-joined
   lic?: string; // license ids
   repo?: string; // repository host buckets, comma-joined
-  act?: string; // activity radio: "active" | "recent" | "dormant" | "unknown"
+  act?: string; // activity radio: "latest" | "active" | "recent" | "dormant"
   flag?: string; // source radio: "noto" | "others"
   ital?: string; // italic radio: "italic" | "upright"
   upm?: string; // units-per-em values, comma-joined

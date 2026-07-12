@@ -161,26 +161,30 @@ export const REPO_HOST_LABELS: Record<string, string> = {
 };
 
 // Maintenance-activity buckets, by how long ago the family last shipped an
-// update. "unknown" collects families with no known update date. The four
-// values partition the catalog, so they render as radio-style pills.
-export const ACTIVITY_VALUES = ["active", "recent", "dormant", "unknown"];
+// update. The four values partition the catalog, so they render as radio-style
+// pills. (Every published family has a known date, so there's no "unknown"
+// bucket — it was always empty.)
+export const ACTIVITY_VALUES = ["latest", "active", "recent", "dormant"];
 export const ACTIVITY_LABELS: Record<string, string> = {
+  latest: "Latest (≤6m)",
   active: "Active (≤1y)",
   recent: "Recent (≤3y)",
   dormant: "Dormant (3y+)",
-  unknown: "Unknown",
 };
 
 /** The activity bucket a family falls into, from how many months ago it last
  *  updated. Uses lastModified (the served version's date) when present, else
- *  the git first-commit date as a floor; "unknown" when neither is known.
- *  Every family maps to exactly one value. Shared by the index and applyFilters. */
+ *  the git first-commit date as a floor. Every published family has one of
+ *  these dates, so it always maps to exactly one bucket. The ranges are
+ *  disjoint (≤6m / 6-12m / 1-3y / 3y+) to keep the radio partition valid.
+ *  Shared by the index and applyFilters. */
 export function fontActivity(font: FontRecord): string {
   const date = font.lastModified ?? font.firstCommitDate;
-  if (!date) return "unknown";
+  if (!date) return "dormant";
   const then = Date.parse(date);
-  if (Number.isNaN(then)) return "unknown";
+  if (Number.isNaN(then)) return "dormant";
   const months = (Date.now() - then) / (1000 * 60 * 60 * 24 * 30.44);
+  if (months <= 6) return "latest";
   if (months <= 12) return "active";
   if (months <= 36) return "recent";
   return "dormant";
@@ -404,7 +408,7 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     repoHosts: REPO_HOST_VALUES.map(
       (v) => [v, repoHosts.get(v) ?? 0] as [string, number]
     ),
-    // Maintenance-activity pills in fixed order (Active / Recent / Dormant / Unknown).
+    // Maintenance-activity pills in fixed order (Latest / Active / Recent / Dormant).
     activity: ACTIVITY_VALUES.map(
       (v) => [v, activity.get(v) ?? 0] as [string, number]
     ),
