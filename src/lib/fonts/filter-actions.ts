@@ -171,7 +171,7 @@ export function selectItalic(filter: FilterState, value: string): FilterState {
   return { ...filter, italic: next };
 }
 
-/** Radio-style Activity select (Active / Recent / Dormant / Unknown): at most
+/** Radio-style Activity select (Latest / Active / Recent / Dormant): at most
  *  one value; re-clicking the active one clears it. Stored in `activity`. */
 export function selectActivity(
   filter: FilterState,

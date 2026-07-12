@@ -86,8 +86,8 @@ export function FontCard({
       className="flex h-72 flex-col gap-4 overflow-hidden rounded-lg border bg-card p-5 transition-colors hover:border-foreground focus-visible:border-foreground focus-visible:outline-none"
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 flex-col gap-2">
-          <h3 className="truncate font-medium text-sm">{font.name}</h3>
+        <div className="flex min-w-0 flex-col gap-1">
+          <h3 className="truncate">{font.name}</h3>
           {font.designer && (
             <p className="truncate text-muted-foreground text-xs">
               {font.designer}

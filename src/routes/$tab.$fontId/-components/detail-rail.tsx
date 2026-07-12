@@ -76,7 +76,9 @@ export function DetailRail({
             )}
           >
             <tab.icon className="size-5" weight={on ? "fill" : "regular"} />
-            <span className="text-[10px] leading-none">{tab.label}</span>
+            <span className="font-heading text-[10px] leading-none">
+              {tab.label}
+            </span>
           </button>
         );
       })}

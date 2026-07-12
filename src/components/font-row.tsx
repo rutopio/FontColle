@@ -78,7 +78,7 @@ export function FontRow({
     >
       <div className="flex items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-2">
-          <h3 className="shrink-0 font-medium text-sm">{font.name}</h3>
+          <h3 className="shrink-0">{font.name}</h3>
           {font.designer && (
             <span className="truncate text-muted-foreground text-xs">
               {font.designer}

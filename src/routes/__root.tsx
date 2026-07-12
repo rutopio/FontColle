@@ -11,7 +11,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { FilterProvider } from "@/lib/filter/context";
 import { PreviewProvider } from "@/lib/preview/context";
 import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
-
 import appCss from "../styles.css?url";
 
 // Applies the saved theme before first paint so an SSR'd light shell doesn't
@@ -52,6 +51,24 @@ export const Route = createRootRouteWithContext<{
       { name: "twitter:description", content: SITE_DESCRIPTION },
     ],
     links: [
+      // Preload the UI sans (Albert Sans) so it arrives before first paint and
+      // the font-display: swap is invisible. Self-hosted at a fixed public path.
+      {
+        rel: "preload",
+        href: "/fonts/albert-sans.woff2",
+        as: "font",
+        type: "font/woff2",
+        crossOrigin: "anonymous",
+      },
+      // Preload the heading face (Host Grotesk) too — it's used for the section
+      // titles and headings visible on first paint.
+      {
+        rel: "preload",
+        href: "/fonts/host-grotesk.woff2",
+        as: "font",
+        type: "font/woff2",
+        crossOrigin: "anonymous",
+      },
       { rel: "stylesheet", href: appCss },
       // SVG first for crisp rendering where supported; .ico is the universal
       // fallback (multi-size 16/32/48/64); apple-touch-icon for iOS home screen.
