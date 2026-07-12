@@ -81,7 +81,7 @@ export function LanguageSection({
         <div className="flex flex-col gap-8">
           {groups.map(({ region, items, topNSet }) => (
             <div key={region} className="flex flex-col gap-2">
-              <h3 className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+              <h3 className="font-medium text-muted-foreground text-xs uppercase">
                 {region}
               </h3>
               <Pills

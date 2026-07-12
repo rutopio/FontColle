@@ -17,7 +17,7 @@ export function Panel({
     <section className={cn("rounded-lg border bg-card", className)}>
       <div className="p-4">
         <div className="flex items-baseline justify-between">
-          <h2 className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+          <h2 className="font-medium text-muted-foreground text-xs uppercase">
             {label}
           </h2>
           {count != null && (

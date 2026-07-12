@@ -114,7 +114,7 @@ export function DetailSidebar({
         <div className="flex flex-col gap-8 p-4">
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between gap-2">
-              <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase tracking-wide">
+              <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase">
                 <TextAaIcon className="size-4" />
                 Font Size
               </h2>
@@ -141,7 +141,7 @@ export function DetailSidebar({
           {axes.length > 0 && (
             <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between gap-2">
-                <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase tracking-wide">
+                <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase">
                   <SlidersHorizontalIcon className="size-4" />
                   Variable axes
                 </h2>
@@ -188,7 +188,7 @@ export function DetailSidebar({
           )}
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between gap-2">
-              <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase tracking-wide">
+              <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase">
                 <ToggleRightIcon className="size-4" />
                 OpenType features
               </h2>

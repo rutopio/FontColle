@@ -28,7 +28,7 @@ export function GlyphsSidebar({
     <aside className="flex h-full w-full min-w-0 flex-col text-sidebar-foreground">
       <ScrollArea viewportRef={viewportRef} className="min-h-0 flex-1">
         <div className="flex flex-col gap-4 p-4">
-          <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase tracking-wide">
+          <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase">
             <SquaresFourIcon className="size-4" />
             Unicode blocks
           </h2>
