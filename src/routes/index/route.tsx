@@ -170,6 +170,10 @@ function App() {
   const reset = () => setFilter(emptyFilter);
 
   const activeCount = activeFilterCount(filter);
+  // Reset clears the search query as well as the filters, so the control shows
+  // whenever either is active. One neutral "Reset" label covers all cases (only
+  // filters, only a search, or both) without a misleading "filter" wording.
+  const hasQuery = filter.query.trim().length > 0;
 
   return (
     <FilterLayout
@@ -189,25 +193,26 @@ function App() {
         scrollViewportRef={scrollRef}
         header={
           <>
-            <SearchInput
-              query={filter.query}
-              onQueryChange={(query) => setFilter({ ...filter, query })}
-            />
-
-            <div className="flex items-center gap-3 text-muted-foreground text-sm">
-              <span>{results.length} fonts</span>
-              {activeCount > 0 && (
+            <div className="flex items-center gap-2">
+              <SearchInput
+                query={filter.query}
+                onQueryChange={(query) => setFilter({ ...filter, query })}
+              />
+              {(activeCount > 0 || hasQuery) && (
                 <Button
                   variant="ghost"
                   onClick={reset}
                   className="text-destructive"
                 >
-                  Clear {activeCount} filters
+                  Reset
                 </Button>
               )}
             </div>
 
-            <div className="ml-auto flex items-center gap-2">
+            <div className="ml-auto flex items-center gap-3">
+              <span className="text-muted-foreground text-sm">
+                {results.length} fonts
+              </span>
               <SortControl sort={sort} onChange={setSort} />
 
               <Tabs value={view} onValueChange={(v) => setView(v as ViewMode)}>

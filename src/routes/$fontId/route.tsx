@@ -56,7 +56,10 @@ export const Route = createFileRoute("/$fontId")({
   notFoundComponent: () => (
     <NotFound
       title="Font not found"
-      description="This font family isn't in the catalog. It may have been renamed or removed."
+      description={[
+        "This font family isn't in the catalog.",
+        "It may have been renamed or removed.",
+      ]}
     />
   ),
 });
