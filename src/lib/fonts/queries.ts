@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
   family,
@@ -9,6 +9,7 @@ import {
   familyLanguage,
   familyScript,
 } from "@/lib/db/schema";
+import { slugKey } from "./slug";
 import type { FontRecord } from "./types";
 
 // A family row (from `family`) plus its related rows, grouped by family id.
@@ -136,13 +137,19 @@ async function loadAllFonts(): Promise<FontRecord[]> {
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
-// Load a single published family by its familyDir, querying only that family's
+// Load a single published family by its URL slug, querying only that family's
 // related rows instead of the whole catalog — the detail page needs just one.
-async function loadFontById(id: string): Promise<FontRecord | null> {
+// The slug is the family name (spaces as underscores), matched case-insensitively
+// so /specimen/Inter and /specimen/inter both resolve. Names are unique, so at
+// most one row matches.
+async function loadFontById(slug: string): Promise<FontRecord | null> {
+  const key = slugKey(slug);
   const [f] = await db
     .select()
     .from(family)
-    .where(and(eq(family.familyDir, id), eq(family.isPublished, true)))
+    .where(
+      and(sql`lower(${family.name}) = ${key}`, eq(family.isPublished, true))
+    )
     .limit(1);
   if (!f) return null;
 

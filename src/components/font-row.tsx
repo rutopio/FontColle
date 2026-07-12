@@ -15,6 +15,7 @@ import {
   useFontLoaded,
 } from "@/lib/fonts/loader";
 import { variationSettings } from "@/lib/fonts/preview-style";
+import { fontSlug } from "@/lib/fonts/slug";
 import { specimenFor } from "@/lib/fonts/specimen";
 import type { FontRecord } from "@/lib/fonts/types";
 import { usePreviewCoords } from "@/lib/fonts/use-preview-coords";
@@ -71,8 +72,8 @@ export function FontRow({
 
   return (
     <Link
-      to="/$fontId"
-      params={{ fontId: font.id }}
+      to="/$tab/$fontId"
+      params={{ tab: "specimen", fontId: fontSlug(font.name) }}
       className="flex h-28 flex-col justify-center gap-3 overflow-hidden border-b px-4 transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:outline-none"
     >
       <div className="flex items-center justify-between gap-4">

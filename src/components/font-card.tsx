@@ -15,6 +15,7 @@ import {
   useFontLoaded,
 } from "@/lib/fonts/loader";
 import { variationSettings } from "@/lib/fonts/preview-style";
+import { fontSlug } from "@/lib/fonts/slug";
 import { specimenFor } from "@/lib/fonts/specimen";
 import type { FontRecord } from "@/lib/fonts/types";
 import { usePreviewCoords } from "@/lib/fonts/use-preview-coords";
@@ -80,8 +81,8 @@ export function FontCard({
 
   return (
     <Link
-      to="/$fontId"
-      params={{ fontId: font.id }}
+      to="/$tab/$fontId"
+      params={{ tab: "specimen", fontId: fontSlug(font.name) }}
       className="flex h-72 flex-col gap-4 overflow-hidden rounded-lg border bg-card p-5 transition-colors hover:border-foreground focus-visible:border-foreground focus-visible:outline-none"
     >
       <div className="flex items-start justify-between gap-3">
