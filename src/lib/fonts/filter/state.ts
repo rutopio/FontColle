@@ -128,6 +128,7 @@ export interface FilterSearch {
   // Non-default section modes, comma-joined "key:mode" (e.g. "facets:any").
   mode?: string;
   sort?: string; // sort key, not a filter (view mode lives in localStorage)
+  fav?: string; // "1" = show only hearted fonts; a view mode, not a filter
 }
 
 const splitCsv = (v: string | undefined): string[] =>
@@ -361,5 +362,6 @@ export function parseFilterSearch(raw: Record<string, unknown>): FilterSearch {
     hint: str(raw.hint),
     mode: str(raw.mode),
     sort: str(raw.sort),
+    fav: str(raw.fav),
   };
 }

@@ -15,6 +15,7 @@ export function FilterLayout({
   sidebar,
   children,
   panelOpen = true,
+  favoriteFontId,
 }: {
   rail?: React.ReactNode;
   sidebar: React.ReactNode;
@@ -23,6 +24,9 @@ export function FilterLayout({
   // inset reclaims the panel's width. The detail page closes it on the read-only
   // Detail view, which has no controls to host.
   panelOpen?: boolean;
+  // The detail page passes its font id so the footer Favorite button hearts
+  // this font; the list omits it, keeping the favorites-view toggle.
+  favoriteFontId?: string;
 }) {
   // The sidebar frame (provider, rail container, home/theme) is rendered outside
   // the RouteFade wrappers so it stays put; only the three injected content
@@ -41,7 +45,10 @@ export function FilterLayout({
         } as React.CSSProperties
       }
     >
-      <AppSidebar rail={rail ? <RouteFade>{rail}</RouteFade> : undefined}>
+      <AppSidebar
+        rail={rail ? <RouteFade>{rail}</RouteFade> : undefined}
+        favoriteFontId={favoriteFontId}
+      >
         <RouteFade className="flex size-full flex-col">{sidebar}</RouteFade>
       </AppSidebar>
       {/* min-w-0 lets the inset shrink to the space left by the fixed-width
