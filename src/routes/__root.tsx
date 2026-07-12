@@ -6,6 +6,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import { NotFound } from "@/components/not-found";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { FilterProvider } from "@/lib/filter/context";
 import { PreviewProvider } from "@/lib/preview/context";
@@ -27,7 +28,19 @@ export const Route = createRootRouteWithContext<{
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: SITE_NAME },
       { name: "description", content: SITE_DESCRIPTION },
-      { name: "theme-color", content: "#000000" },
+      // Theme-color per scheme: the app defaults to light (white chrome) and
+      // dark is opt-in, so the browser UI should match rather than always be
+      // black. media picks the right one for the user's system preference.
+      {
+        name: "theme-color",
+        content: "#ffffff",
+        media: "(prefers-color-scheme: light)",
+      },
+      {
+        name: "theme-color",
+        content: "#0a0a0a",
+        media: "(prefers-color-scheme: dark)",
+      },
       // Social cards (relative-URL-safe fields only; canonical/og:url/og:image
       // are omitted until a production domain is set — they need absolute URLs).
       { property: "og:type", content: "website" },
@@ -40,16 +53,15 @@ export const Route = createRootRouteWithContext<{
     ],
     links: [
       { rel: "stylesheet", href: appCss },
+      // SVG first for crisp rendering where supported; .ico is the universal
+      // fallback (multi-size 16/32/48/64); apple-touch-icon for iOS home screen.
+      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
       { rel: "icon", href: "/favicon.ico", sizes: "any" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
       { rel: "manifest", href: "/manifest.json" },
     ],
   }),
-  notFoundComponent: () => (
-    <main className="mx-auto w-full max-w-(--breakpoint-2xl) p-4 pt-16">
-      <h1>404</h1>
-      <p>The requested page could not be found.</p>
-    </main>
-  ),
+  notFoundComponent: () => <NotFound />,
   shellComponent: RootDocument,
 });
 
