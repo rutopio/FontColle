@@ -110,10 +110,15 @@ function DetailPage() {
 
   // Which detail view is active. Driven by the URL slug (the loader has already
   // rejected unknown ones), so the tab is shareable/bookmarkable. Selecting a
-  // tab navigates to its slug rather than holding local state.
+  // tab navigates to its slug rather than holding local state. `replace` so
+  // switching tabs doesn't push history entries — the back arrow should return
+  // to the list, not step through the tabs visited on this font.
   const tab = tabFromSlug(tabSlug) ?? "sample";
   const selectTab = (id: DetailTab) =>
-    navigate({ params: { tab: slugFromTab(id), fontId: fontSlug(font.name) } });
+    navigate({
+      params: { tab: slugFromTab(id), fontId: fontSlug(font.name) },
+      replace: true,
+    });
 
   // Glyphs view: fetch the font's Unicode coverage, and derive the blocks it
   // actually covers. Active block lives here so its sidebar (the block list) and
