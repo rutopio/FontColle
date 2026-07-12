@@ -21,6 +21,14 @@ export function getRouter() {
     scrollRestoration: false,
     defaultPreload: "intent",
     defaultPreloadStaleTime: 0,
+    // Keep loaded route data fresh for 5 min so navigating back to the list
+    // reuses the cached catalog instead of re-running getAllFonts. Without this
+    // (defaultStaleTime defaults to 0) every back-navigation revalidates the
+    // loader, and when the refetched data commits the whole route re-mounts —
+    // which replayed the RouteFade entry ~1.5s after landing on the list (a
+    // stray second flash). The catalog is static within a session, so caching
+    // it is also just correct.
+    defaultStaleTime: 5 * 60_000,
   });
 
   // Dehydrate/hydrate the QueryClient across the SSR boundary and inject the

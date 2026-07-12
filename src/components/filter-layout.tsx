@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import type { Ref } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
+import { RouteFade } from "@/components/route-fade";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
@@ -23,6 +24,11 @@ export function FilterLayout({
   // Detail view, which has no controls to host.
   panelOpen?: boolean;
 }) {
+  // The sidebar frame (provider, rail container, home/theme) is rendered outside
+  // the RouteFade wrappers so it stays put; only the three injected content
+  // blocks — rail buttons, panel, main — fade in when the route changes.
+  // FilterLayout re-mounts on a real route change, so each RouteFade plays its
+  // entry once; see route-fade.tsx for why it must not be keyed on page state.
   return (
     <SidebarProvider
       open={panelOpen}
@@ -35,12 +41,16 @@ export function FilterLayout({
         } as React.CSSProperties
       }
     >
-      <AppSidebar rail={rail}>{sidebar}</AppSidebar>
+      <AppSidebar rail={rail ? <RouteFade>{rail}</RouteFade> : undefined}>
+        <RouteFade className="flex size-full flex-col">{sidebar}</RouteFade>
+      </AppSidebar>
       {/* min-w-0 lets the inset shrink to the space left by the fixed-width
           sidebar instead of forcing 100vw (w-full) and pushing itself past the
           viewport — otherwise wide content (e.g. a heavy display font's
           specimen) makes the whole page overflow horizontally. */}
-      <SidebarInset className="min-w-0">{children}</SidebarInset>
+      <SidebarInset className="min-w-0">
+        <RouteFade className="flex size-full flex-col">{children}</RouteFade>
+      </SidebarInset>
     </SidebarProvider>
   );
 }
