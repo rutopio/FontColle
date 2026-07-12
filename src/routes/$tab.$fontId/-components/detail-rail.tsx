@@ -1,5 +1,6 @@
 import {
   BookOpenIcon,
+  CodeIcon,
   EyeIcon,
   InfoIcon,
   ScrollIcon,
@@ -7,7 +8,13 @@ import {
 } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 
-export type DetailTab = "sample" | "glyphs" | "detail" | "designer" | "license";
+export type DetailTab =
+  | "sample"
+  | "glyphs"
+  | "use"
+  | "detail"
+  | "designer"
+  | "license";
 
 // The icon-rail switcher for the detail page, matching the list's FilterRail:
 // one button per view (the type-tester sample vs. the font's specs vs. the
@@ -38,6 +45,7 @@ const TABS = [
     label: "License",
     icon: ScrollIcon,
   },
+  { id: "use" as const, slug: "use", label: "Use", icon: CodeIcon },
 ];
 
 export type TabSlug = (typeof TABS)[number]["slug"];

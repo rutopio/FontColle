@@ -3,6 +3,7 @@ import {
   MagnifyingGlassIcon,
   RowsIcon,
   SquaresFourIcon,
+  XIcon,
 } from "@phosphor-icons/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -285,6 +286,20 @@ function App() {
                   : "No fonts match your filters and search. Remove a condition below, or broaden them."}
               </EmptyDescription>
             </EmptyHeader>
+            {/* Surface the search text as a removable chip: it lives in the
+                sidebar input, easy to forget as the reason nothing matches. */}
+            {filter.query.trim() && (
+              <button
+                type="button"
+                onClick={() => setFilter({ ...filter, query: "" })}
+                className="flex items-center gap-1.5 rounded-md border border-input px-2.5 py-1 text-muted-foreground text-xs transition-colors hover:border-foreground hover:text-foreground"
+                aria-label={`Remove search: ${filter.query.trim()}`}
+              >
+                <span className="opacity-60">Search</span>
+                <span className="text-foreground">{filter.query.trim()}</span>
+                <XIcon className="size-3 opacity-60" />
+              </button>
+            )}
             <ActiveFilterChips filter={filter} onChange={setFilter} />
             {favOnly ? (
               <Button variant="outline" onClick={discoverFonts}>
