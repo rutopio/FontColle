@@ -15,8 +15,8 @@ export const TAG_MEMBERSHIP_THRESHOLD = 50;
 
 // The classification sections, in display order, each an ordered list of its
 // sub-tag paths. Sub-tag order is by family count descending, from the current
-// dataset. `group` routes the section to a rail panel: "style" (form: Serif /
-// Sans Serif / Script) or "mood" (feel: Expressive / Theme / Seasonal). Both
+// dataset. `group` routes the section to a rail panel: "style" (form: Sans
+// Serif / Serif / Script) or "mood" (feel: Expressive / Theme / Seasonal). Both
 // share the one `classifications` state; group only decides where it renders.
 export const CLASSIFICATION_SECTIONS: {
   title: string;
@@ -24,20 +24,6 @@ export const CLASSIFICATION_SECTIONS: {
   group: "style" | "mood";
   tags: string[];
 }[] = [
-  {
-    title: "Serif",
-    prefix: "/Serif/",
-    group: "style",
-    tags: [
-      "/Serif/Transitional",
-      "/Serif/Old Style Garalde",
-      "/Serif/Modern",
-      "/Serif/Humanist Venetian",
-      "/Serif/Didone",
-      "/Serif/Scotch",
-      "/Serif/Fat Face",
-    ],
-  },
   {
     title: "Sans Serif",
     prefix: "/Sans/",
@@ -50,6 +36,20 @@ export const CLASSIFICATION_SECTIONS: {
       "/Sans/Grotesque",
       "/Sans/Superellipse",
       "/Sans/Glyphic",
+    ],
+  },
+  {
+    title: "Serif",
+    prefix: "/Serif/",
+    group: "style",
+    tags: [
+      "/Serif/Transitional",
+      "/Serif/Old Style Garalde",
+      "/Serif/Modern",
+      "/Serif/Humanist Venetian",
+      "/Serif/Didone",
+      "/Serif/Scotch",
+      "/Serif/Fat Face",
     ],
   },
   {
