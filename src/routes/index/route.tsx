@@ -1,4 +1,5 @@
 import {
+  HeartIcon,
   MagnifyingGlassIcon,
   RowsIcon,
   SquaresFourIcon,
@@ -121,9 +122,20 @@ function App() {
   );
   const view: ViewMode = viewPref === "row" ? "row" : "grid";
   const sort = (search.sort as SortKey) ?? DEFAULT_SORT;
+  // Favorites-only view mode (rail heart toggle, ?fav=1). Narrows the result set
+  // to hearted fonts; independent of the filter pills so it composes with them.
+  const favOnly = search.fav === "1";
 
+  // Favorites only affect the result set in the favorites view. Depend on the
+  // list only then, so hearting a font outside that view doesn't rebuild
+  // `results` (which would re-run the grid's entrance animation — a needless
+  // flash for what is just a heart toggle).
+  const favDep = favOnly ? favorites : null;
   const results = useMemo(() => {
-    const filtered = applyFilters(fonts, debouncedFilter);
+    const matched = applyFilters(fonts, debouncedFilter);
+    const filtered = favDep
+      ? matched.filter((f) => favDep.includes(f.id))
+      : matched;
     const sorted = sortFonts(filtered, sort);
     // With a search query, surface the best textual matches first (ignoring the
     // sort dropdown for ranking), then fall back to the chosen sort as the
@@ -134,7 +146,7 @@ function App() {
         queryRelevance(b, debouncedFilter.query) -
         queryRelevance(a, debouncedFilter.query)
     );
-  }, [fonts, debouncedFilter, sort]);
+  }, [fonts, debouncedFilter, sort, favDep]);
 
   // Write the settled filter to the URL once filtering catches up, so the URL
   // stays shareable without a navigation on every intermediate tap. Guarded so
@@ -145,7 +157,9 @@ function App() {
     const cur = filterToSearch(searchToFilter(search));
     if (JSON.stringify(next) === JSON.stringify(cur)) return;
     navigate({
-      search: { ...next, sort: search.sort },
+      // Preserve the non-filter view modes (sort, favorites) that live in the
+      // URL alongside the filter but aren't part of it.
+      search: { ...next, sort: search.sort, fav: search.fav },
       replace: true,
     });
   }, [debouncedFilter, navigate]);
@@ -174,6 +188,12 @@ function App() {
   const setView = (next: ViewMode) => setViewPref(next);
   // Clear every filter and the search query, keeping only display prefs.
   const reset = () => setFilter(emptyFilter);
+  // Leave the favorites view and clear filters, landing on the full catalog —
+  // the CTA shown when there are no favorites yet.
+  const discoverFonts = () => {
+    setFilter(emptyFilter);
+    navigate({ search: { sort: search.sort }, replace: true });
+  };
 
   const activeCount = activeFilterCount(filter);
   // Reset clears the search query as well as the filters, so the control shows
@@ -223,11 +243,23 @@ function App() {
 
               <Tabs value={view} onValueChange={(v) => setView(v as ViewMode)}>
                 <TabsList className="h-8">
-                  <TabsTrigger value="grid" aria-label="Grid view">
+                  {/* h-full (both breakpoints, to beat the tab's
+                                        own h-9 sm:h-8) so the trigger and its white
+                                        indicator fill the h-8 list instead of
+                                        overflowing it. */}
+                  <TabsTrigger
+                    value="grid"
+                    aria-label="Grid view"
+                    className="h-full sm:h-full"
+                  >
                     Grid
                     <SquaresFourIcon className="size-4" />
                   </TabsTrigger>
-                  <TabsTrigger value="row" aria-label="Row view">
+                  <TabsTrigger
+                    value="row"
+                    aria-label="Row view"
+                    className="h-full sm:h-full"
+                  >
                     Row
                     <RowsIcon className="size-4" />
                   </TabsTrigger>
@@ -242,18 +274,27 @@ function App() {
           <Empty className="py-16">
             <EmptyHeader>
               <EmptyMedia variant="icon">
-                <MagnifyingGlassIcon />
+                {favOnly ? <HeartIcon /> : <MagnifyingGlassIcon />}
               </EmptyMedia>
-              <EmptyTitle>No fonts found</EmptyTitle>
+              <EmptyTitle>
+                {favOnly ? "No favorites yet" : "No fonts found"}
+              </EmptyTitle>
               <EmptyDescription>
-                No fonts match your filters and search. Remove a condition
-                below, or broaden them.
+                {favOnly
+                  ? "Tap the heart on a font to add it here."
+                  : "No fonts match your filters and search. Remove a condition below, or broaden them."}
               </EmptyDescription>
             </EmptyHeader>
             <ActiveFilterChips filter={filter} onChange={setFilter} />
-            <Button variant="outline" onClick={reset}>
-              Reset
-            </Button>
+            {favOnly ? (
+              <Button variant="outline" onClick={discoverFonts}>
+                Discover Font
+              </Button>
+            ) : (
+              <Button variant="outline" onClick={reset}>
+                Reset
+              </Button>
+            )}
           </Empty>
         ) : (
           <>

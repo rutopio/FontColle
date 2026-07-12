@@ -146,6 +146,8 @@ function DetailPage() {
       // just the icon rail; Sample needs the tester controls and Glyphs needs
       // the block list, so both keep the sidebar open.
       panelOpen={tab === "sample" || tab === "glyphs"}
+      // The footer Favorite button hearts this font (vs. the list's fav view).
+      favoriteFontId={font.id}
       rail={<DetailRail active={tab} onSelect={selectTab} />}
       sidebar={
         tab === "glyphs" ? (

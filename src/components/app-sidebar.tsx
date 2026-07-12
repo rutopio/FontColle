@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import type * as React from "react";
+import { FavoriteToggle } from "@/components/favorite-toggle";
 import { LogoIcon } from "@/components/logo-icon";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -12,9 +13,15 @@ import { Sidebar, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
 // own panel (list filters / detail features), passed in as children.
 export function AppSidebar({
   rail,
+  favoriteFontId,
   children,
   ...props
-}: React.ComponentProps<typeof Sidebar> & { rail?: React.ReactNode }) {
+}: React.ComponentProps<typeof Sidebar> & {
+  rail?: React.ReactNode;
+  // When set (the detail page), the footer Favorite button hearts this font
+  // instead of toggling the list's favorites-only view.
+  favoriteFontId?: string;
+}) {
   return (
     <Sidebar
       collapsible="icon"
@@ -48,12 +55,13 @@ export function AppSidebar({
             <div className="pb-2">{rail}</div>
           </ScrollArea>
         )}
-        {/* mt-auto pins the toggle to the rail's bottom whether or not a rail
-            fills the space above it. p-0 lets the toggle's own nav padding
-            match the rail buttons above (px-1.5). */}
+        {/* mt-auto pins the toggles to the rail's bottom whether or not a rail
+            fills the space above it. Same p-2 as the rail's ScrollArea so the
+            Favorite/Theme buttons line up with the rail buttons above. */}
         <Separator className="" />
 
-        <SidebarFooter className="mt-auto p-2">
+        <SidebarFooter className="mt-auto gap-1 p-2">
+          <FavoriteToggle fontId={favoriteFontId} />
           <ThemeToggle />
         </SidebarFooter>
       </Sidebar>
