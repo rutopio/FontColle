@@ -4,7 +4,7 @@ import {
   SquaresFourIcon,
 } from "@phosphor-icons/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ActiveFilterChips } from "@/components/filter/active-filter-chips";
 import { FilterRail } from "@/components/filter/filter-rail";
 import { FilterSidebar } from "@/components/filter/filter-sidebar";
@@ -14,7 +14,6 @@ import {
 } from "@/components/filter/groups";
 import { Column, FilterLayout } from "@/components/filter-layout";
 import { FontGrid, type ViewMode } from "@/components/font-grid";
-import { FontGridSkeleton } from "@/components/font-grid-skeleton";
 import { PreviewBar } from "@/components/preview-dock";
 import { Button } from "@/components/ui/button";
 import {
@@ -44,9 +43,15 @@ import {
 import { getAllFonts } from "@/lib/fonts/queries";
 import { DEFAULT_SORT, type SortKey, sortFonts } from "@/lib/fonts/sort";
 import { usePreview } from "@/lib/preview/context";
+import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { useListScrollRestore } from "@/lib/use-list-scroll-restore";
 import { useLocalStorageState } from "@/lib/use-local-storage-state";
 import { SortControl } from "./-components/sort-control";
+
+// How long the filter must stay unchanged before the catalog is re-filtered.
+// Long enough to coalesce a burst of chip removals (and avoid a skeleton/empty
+// flash between them), short enough to feel immediate on a single change.
+const FILTER_DEBOUNCE_MS = 200;
 
 export const Route = createFileRoute("/")({
   component: App,
@@ -72,16 +77,17 @@ function App() {
   // from the expensive re-filter of the whole catalog:
   //  - `filter` (pending) updates synchronously on every tap, driving the pills,
   //    rail, chips and active count so the UI responds immediately.
-  //  - `deferredFilter` lags behind under useDeferredValue; the heavy
-  //    applyFilters + grid re-render run against it at a lower priority, so a
-  //    burst of taps coalesces and never blocks the click feedback.
+  //  - `debouncedFilter` trails it: the heavy applyFilters + grid re-render run
+  //    only once the input settles, so a burst of changes (e.g. removing several
+  //    chips in a row) coalesces into one recompute. During the settle window
+  //    the previous results stay on screen, so the list never flashes a skeleton
+  //    or a transient "no results" between two chips.
   //  - the URL is only rewritten once filtering settles (see the effect below),
   //    keeping it shareable without paying a navigation on every tap.
   const [filter, setFilter] = useState<FilterState>(() =>
     searchToFilter(search)
   );
-  const deferredFilter = useDeferredValue(filter);
-  const isFiltering = filter !== deferredFilter;
+  const debouncedFilter = useDebouncedValue(filter, FILTER_DEBOUNCE_MS);
 
   // Pull external URL changes (back/forward, a shared link) back into the
   // pending filter. Guarded by a serialized compare so our own URL writes —
@@ -117,32 +123,32 @@ function App() {
   const sort = (search.sort as SortKey) ?? DEFAULT_SORT;
 
   const results = useMemo(() => {
-    const filtered = applyFilters(fonts, deferredFilter);
+    const filtered = applyFilters(fonts, debouncedFilter);
     const sorted = sortFonts(filtered, sort);
     // With a search query, surface the best textual matches first (ignoring the
     // sort dropdown for ranking), then fall back to the chosen sort as the
     // tiebreaker. Stable sort keeps the sorted order within equal-relevance ties.
-    if (!deferredFilter.query.trim()) return sorted;
+    if (!debouncedFilter.query.trim()) return sorted;
     return [...sorted].sort(
       (a, b) =>
-        queryRelevance(b, deferredFilter.query) -
-        queryRelevance(a, deferredFilter.query)
+        queryRelevance(b, debouncedFilter.query) -
+        queryRelevance(a, debouncedFilter.query)
     );
-  }, [fonts, deferredFilter, sort]);
+  }, [fonts, debouncedFilter, sort]);
 
   // Write the settled filter to the URL once filtering catches up, so the URL
   // stays shareable without a navigation on every intermediate tap. Guarded so
   // it only fires when the URL's filter part actually differs.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: `search` is read to compare, not to trigger; the settled `deferredFilter` is the trigger.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `search` is read to compare, not to trigger; the settled `debouncedFilter` is the trigger.
   useEffect(() => {
-    const next = filterToSearch(deferredFilter);
+    const next = filterToSearch(debouncedFilter);
     const cur = filterToSearch(searchToFilter(search));
     if (JSON.stringify(next) === JSON.stringify(cur)) return;
     navigate({
       search: { ...next, sort: search.sort },
       replace: true,
     });
-  }, [deferredFilter, navigate]);
+  }, [debouncedFilter, navigate]);
 
   // Mirror the pending filter into shared context so the detail page's sidebar
   // reflects what's selected on the list without waiting on the deferred pass.
@@ -232,20 +238,7 @@ function App() {
         }
         footer={<PreviewBar />}
       >
-        {isFiltering ? (
-          // Filtering the whole catalog is deferred; show a skeleton for the
-          // brief catch-up window instead of blocking on the old list. The
-          // chips stay live above it so the tap that triggered this still reads
-          // as applied.
-          <>
-            <ActiveFilterChips
-              filter={filter}
-              onChange={setFilter}
-              align="left"
-            />
-            <FontGridSkeleton view={view} />
-          </>
-        ) : results.length === 0 ? (
+        {results.length === 0 ? (
           <Empty className="py-16">
             <EmptyHeader>
               <EmptyMedia variant="icon">
@@ -275,7 +268,7 @@ function App() {
               favorites={favorites}
               onToggleFavorite={toggle}
               view={view}
-              selection={deferredFilter}
+              selection={debouncedFilter}
               axisValues={axisValues}
               scrollRef={scrollRef}
             />
