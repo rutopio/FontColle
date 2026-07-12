@@ -146,7 +146,7 @@ export function SectionHeader({
 }) {
   return (
     <div className="flex items-center justify-between gap-2">
-      <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase tracking-wide">
+      <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase">
         <Icon className="size-4" />
         {title}
         {info ? (
@@ -158,7 +158,7 @@ export function SectionHeader({
             >
               <InfoIcon className="size-3.5" />
             </TooltipTrigger>
-            <TooltipContent className="max-w-xs normal-case tracking-normal">
+            <TooltipContent className="max-w-xs normal-case">
               {info}
             </TooltipContent>
           </Tooltip>

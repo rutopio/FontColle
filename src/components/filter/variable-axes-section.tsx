@@ -148,7 +148,7 @@ export function VariableAxesSection({
             >
               <InfoIcon className="size-3.5" />
             </TooltipTrigger>
-            <TooltipContent className="max-w-xs normal-case tracking-normal">
+            <TooltipContent className="max-w-xs normal-case">
               {info.description}
               {info.fallbacks && info.fallbacks.length > 0 ? (
                 // Named stops on the axis, so the bare slider number reads as a

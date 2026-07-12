@@ -120,7 +120,7 @@ function MetricRangeRow({
     <div className="flex flex-col gap-1.5">
       <div className="flex items-baseline justify-between text-xs">
         <span className="flex items-center gap-1.5">
-          <h3 className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+          <h3 className="font-medium text-muted-foreground text-xs uppercase">
             {spec.label}
           </h3>
           <Tooltip>
@@ -131,7 +131,7 @@ function MetricRangeRow({
             >
               <InfoIcon className="size-3.5" />
             </TooltipTrigger>
-            <TooltipContent className="max-w-xs normal-case tracking-normal">
+            <TooltipContent className="max-w-xs normal-case">
               {spec.hint}
             </TooltipContent>
           </Tooltip>
@@ -202,7 +202,7 @@ function MetricRangeRow({
                   </button>
                 }
               />
-              <TooltipContent className="font-mono normal-case tracking-normal">
+              <TooltipContent className="font-mono normal-case">
                 {formatMetricValue(spec.key, q[0])} –{" "}
                 {formatMetricValue(spec.key, q[1])}
               </TooltipContent>

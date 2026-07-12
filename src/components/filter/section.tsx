@@ -179,9 +179,7 @@ export function Pills({
             </div>
           )}
         />
-        <TooltipContent className="normal-case tracking-normal">
-          {tip}
-        </TooltipContent>
+        <TooltipContent className="normal-case">{tip}</TooltipContent>
       </Tooltip>
     );
   };

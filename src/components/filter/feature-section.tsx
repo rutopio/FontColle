@@ -74,7 +74,7 @@ export function FeatureSection({
         <div className="flex flex-col gap-8">
           {groups.map(({ id, title, items, topNSet }) => (
             <div key={id} className="flex flex-col gap-2">
-              <h3 className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
+              <h3 className="font-medium text-muted-foreground text-xs uppercase">
                 {title}
               </h3>
               <Pills
