@@ -9,13 +9,25 @@ export function FilterRail({
   active,
   filter,
   onSelect,
+  orientation = "vertical",
 }: {
   active: FilterGroupId;
   filter: FilterState;
   onSelect: (id: FilterGroupId) => void;
+  // Vertical is the desktop icon rail; horizontal is the mobile filter drawer's
+  // top strip (a scrollable row of the same group buttons).
+  orientation?: "vertical" | "horizontal";
 }) {
   return (
-    <nav aria-label="Filter groups" className="flex flex-col gap-1">
+    <nav
+      aria-label="Filter groups"
+      className={cn(
+        "flex gap-1",
+        orientation === "horizontal"
+          ? "flex-row overflow-x-auto pb-1"
+          : "flex-col"
+      )}
+    >
       {FILTER_GROUPS.map((group) => {
         const on = group.id === active;
         const count = groupActiveCount(group, filter);
@@ -32,6 +44,7 @@ export function FilterRail({
             }
             className={cn(
               "group/rail-btn relative flex cursor-pointer flex-col items-center gap-1 rounded-md py-2 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-sidebar-ring",
+              orientation === "horizontal" ? "w-16 shrink-0 px-1" : "",
               on
                 ? "bg-black/10 text-sidebar-accent-foreground dark:bg-white/12"
                 : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground"

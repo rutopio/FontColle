@@ -13,8 +13,17 @@ const OFF =
 // The heart, with a hover-swapped duotone twin (Phosphor weight is a prop, not
 // CSS). `active` fills it; the duotone twin shows on hover. `red` tints the
 // filled heart red — used in the detail toggle, where "favorited" is shown by
-// the heart itself (like the card/row), not by a button background.
-function HeartLabel({ active, red }: { active: boolean; red?: boolean }) {
+// the heart itself (like the card/row), not by a button background. `bar` drops
+// the text label for the compact mobile top bar.
+function HeartLabel({
+  active,
+  red,
+  bar,
+}: {
+  active: boolean;
+  red?: boolean;
+  bar?: boolean;
+}) {
   return (
     <>
       <HeartIcon
@@ -31,10 +40,14 @@ function HeartLabel({ active, red }: { active: boolean; red?: boolean }) {
         )}
         weight="duotone"
       />
-      <span className="text-[10px] leading-none">Favorite</span>
+      {!bar && <span className="text-[10px] leading-none">Favorite</span>}
     </>
   );
 }
+
+// Compact icon-button chrome for the mobile top bar (no tile, no label).
+const BAR_BTN =
+  "group/rail-btn flex size-9 cursor-pointer items-center justify-center rounded-md text-muted-foreground outline-none transition-colors hover:bg-sidebar-accent/50 hover:text-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring";
 
 // The rail-footer Favorite control. Its meaning depends on the page:
 //  - List page (no `fontId`): a link that toggles the favorites-only view
@@ -42,17 +55,28 @@ function HeartLabel({ active, red }: { active: boolean; red?: boolean }) {
 //  - Detail page (`fontId` given): a toggle that hearts/un-hearts THIS font,
 //    mirroring the card/row heart, so you can favorite from the detail view.
 // Favorites live in localStorage (device-local); the view flag lives in the URL.
-export function FavoriteToggle({ fontId }: { fontId?: string }) {
-  if (fontId) return <FavoriteMark fontId={fontId} />;
-  return <FavoriteViewLink />;
+export function FavoriteToggle({
+  fontId,
+  variant = "rail",
+}: {
+  fontId?: string;
+  // "rail" is the desktop icon-over-label tile; "bar" is the compact mobile
+  // top-bar icon button.
+  variant?: "rail" | "bar";
+}) {
+  if (fontId) return <FavoriteMark fontId={fontId} bar={variant === "bar"} />;
+  return <FavoriteViewLink bar={variant === "bar"} />;
 }
 
 // Detail-page mode: heart this specific font.
-function FavoriteMark({ fontId }: { fontId: string }) {
+function FavoriteMark({ fontId, bar }: { fontId: string; bar?: boolean }) {
   const { favorites, toggle } = useFavorites();
   const on = favorites.includes(fontId);
   return (
-    <nav aria-label="Favorite" className="flex flex-col gap-1">
+    <nav
+      aria-label="Favorite"
+      className={bar ? undefined : "flex flex-col gap-1"}
+    >
       <button
         type="button"
         onClick={() => toggle(fontId)}
@@ -60,23 +84,26 @@ function FavoriteMark({ fontId }: { fontId: string }) {
         aria-label={on ? "Remove from favorites" : "Add to favorites"}
         // Neutral chrome always (no ON background): this is a toggle, so the
         // favorited state is carried by the red filled heart, not a highlight.
-        className={cn(BTN, OFF)}
+        className={bar ? BAR_BTN : cn(BTN, OFF)}
       >
-        <HeartLabel active={on} red />
+        <HeartLabel active={on} red bar={bar} />
       </button>
     </nav>
   );
 }
 
 // List-page mode: toggle the favorites-only view.
-function FavoriteViewLink() {
+function FavoriteViewLink({ bar }: { bar?: boolean }) {
   // Route-agnostic search read: this sits in the global AppSidebar, shown on
   // both the list and detail routes, so it can't use a strict route hook.
   const fav = useRouterState({
     select: (s) => s.location.search.fav === "1",
   });
   return (
-    <nav aria-label="Favorites" className="flex flex-col gap-1">
+    <nav
+      aria-label="Favorites"
+      className={bar ? undefined : "flex flex-col gap-1"}
+    >
       <Link
         to="/"
         // Toggle: drop the param when leaving favorites, set it when entering.
@@ -84,9 +111,11 @@ function FavoriteViewLink() {
         search={(prev) => ({ ...prev, fav: fav ? undefined : "1" })}
         aria-pressed={fav}
         aria-label={fav ? "Show all fonts" : "Show favorite fonts"}
-        className={cn(BTN, fav ? ON : OFF)}
+        className={
+          bar ? cn(BAR_BTN, fav && "text-red-500") : cn(BTN, fav ? ON : OFF)
+        }
       >
-        <HeartLabel active={fav} />
+        <HeartLabel active={fav} bar={bar} />
       </Link>
     </nav>
   );
