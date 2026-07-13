@@ -298,7 +298,9 @@ export function Detail({
         />
       )}
 
-      {tab === "use" && <UsePanel font={font} />}
+      {tab === "use" && (
+        <UsePanel font={font} axisState={axisState} italic={italic} />
+      )}
 
       {tab === "detail" && (
         <>
