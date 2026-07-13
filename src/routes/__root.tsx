@@ -7,6 +7,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import { MotionConfig } from "motion/react";
 import { NotFound } from "@/components/not-found";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { FilterProvider } from "@/lib/filter/context";
@@ -93,11 +94,16 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <TooltipProvider>
-          <FilterProvider>
-            <PreviewProvider>{children}</PreviewProvider>
-          </FilterProvider>
-        </TooltipProvider>
+        {/* reducedMotion="user" makes every motion/react component honor the
+            system prefers-reduced-motion setting (disabling transform/layout
+            animations), matching the CSS animations already gated in styles.css. */}
+        <MotionConfig reducedMotion="user">
+          <TooltipProvider>
+            <FilterProvider>
+              <PreviewProvider>{children}</PreviewProvider>
+            </FilterProvider>
+          </TooltipProvider>
+        </MotionConfig>
         {import.meta.env.DEV && (
           <TanStackDevtools
             config={{

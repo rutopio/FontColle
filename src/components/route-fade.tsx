@@ -22,6 +22,9 @@ export function RouteFade({
   className?: string;
   children: ReactNode;
 }) {
+  // The entry animation is disabled under prefers-reduced-motion via the
+  // MotionConfig reducedMotion="user" wrapper in __root (it zeroes transform/
+  // opacity transitions app-wide), so no per-component guard is needed here.
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
