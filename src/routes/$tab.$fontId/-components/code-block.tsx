@@ -1,9 +1,10 @@
-import { CheckIcon, CopyIcon } from "@phosphor-icons/react";
+import { CheckIcon, CopyIcon, XIcon } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 // A copyable code snippet for the Use tab. Renders the code monospace with a
-// hovering copy button that flips to a check for ~1.5s after a successful copy.
+// hovering copy button that flips to a check for ~1.5s after a successful copy,
+// or a red X for the same window if the clipboard write fails.
 // `lang` is a faint corner label (e.g. "html", "css", "bash") so the reader can
 // tell what each block is at a glance.
 export function CodeBlock({
@@ -15,22 +16,23 @@ export function CodeBlock({
   lang?: string;
   className?: string;
 }) {
-  const [copied, setCopied] = useState(false);
+  const [status, setStatus] = useState<"idle" | "copied" | "failed">("idle");
 
-  // Reset the copied state so a second copy re-triggers the check flash.
+  // Reset back to idle so a later copy re-triggers the flash.
   useEffect(() => {
-    if (!copied) return;
-    const t = setTimeout(() => setCopied(false), 1500);
+    if (status === "idle") return;
+    const t = setTimeout(() => setStatus("idle"), 1500);
     return () => clearTimeout(t);
-  }, [copied]);
+  }, [status]);
 
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(code);
-      setCopied(true);
+      setStatus("copied");
     } catch {
       // Clipboard may be unavailable (insecure context / denied permission);
-      // leave the button in its idle state rather than lying about success.
+      // flash a red X so the failure is visible rather than a silent no-op.
+      setStatus("failed");
     }
   };
 
@@ -50,11 +52,19 @@ export function CodeBlock({
         <button
           type="button"
           onClick={copy}
-          aria-label={copied ? "Copied" : "Copy code"}
+          aria-label={
+            status === "copied"
+              ? "Copied"
+              : status === "failed"
+                ? "Copy failed"
+                : "Copy code"
+          }
           className="flex size-6 cursor-pointer items-center justify-center rounded text-muted-foreground opacity-0 outline-none transition-opacity hover:bg-black/10 hover:text-foreground focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-sidebar-ring group-hover/code:opacity-100 dark:hover:bg-white/12"
         >
-          {copied ? (
+          {status === "copied" ? (
             <CheckIcon className="size-3.5 text-emerald-500" weight="bold" />
+          ) : status === "failed" ? (
+            <XIcon className="size-3.5 text-red-500" weight="bold" />
           ) : (
             <CopyIcon className="size-3.5" />
           )}
