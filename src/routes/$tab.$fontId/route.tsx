@@ -81,7 +81,7 @@ function DetailPage() {
 
   // Feature/axis state live at the page level so the sidebar controls and the
   // type tester share one source of truth. The W3C default state seeds default-on
-  // features as ON so the UI matches what the browser renders (todo §8b).
+  // features as ON so the UI matches what the browser renders.
   const w3cDefaults = () =>
     Object.fromEntries(font.features.map((tag) => [tag, DEFAULT_ON.has(tag)]));
   const [featureState, setFeatureState] =

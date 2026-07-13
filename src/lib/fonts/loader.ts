@@ -1,5 +1,5 @@
 // Loads a Google Font family stylesheet on demand via the CSS2 API. We only
-// need the font files for preview; downloads redirect to Google (see todo §6).
+// need the font files for preview; downloads redirect to Google Fonts.
 
 import { useEffect, useState } from "react";
 

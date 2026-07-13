@@ -51,7 +51,7 @@ pnpm db:seed:remote                           # load into remote D1
 ```
 
 `langcov.py` derives language/script coverage and region groupings from
-`gflanguages`. See `tasks/todo.md` for the full architecture and rationale.
+`gflanguages`.
 
 ## Project layout
 
