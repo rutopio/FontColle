@@ -133,24 +133,9 @@ export function FontGrid({
     // of skeleton placeholders (not real cards) so the first frame is regular
     // instead of showing half-streamed cards jumping around. The virtualizer
     // takes over with real cards once mounted.
-    const count = view === "row" ? 8 : 9;
-    // Stable keys for the fixed, never-reordered placeholder set.
-    const keys = Array.from({ length: count }, (_, i) => `skeleton-${i}`);
     return (
       <div ref={listRef} className="flex-1">
-        {view === "row" ? (
-          <div className="flex flex-col">
-            {keys.map((k) => (
-              <SkeletonLine key={k} />
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {keys.map((k) => (
-              <SkeletonCard key={k} />
-            ))}
-          </div>
-        )}
+        <SkeletonGrid view={view} />
       </div>
     );
   }
@@ -201,6 +186,28 @@ export function FontGrid({
           );
         })}
       </div>
+    </div>
+  );
+}
+
+// A grid/list of skeleton placeholders, matching the real layout. Shared by the
+// pre-mount frame here and the list route's pendingComponent (shown while the
+// catalog loader runs), so a slow load looks the same as the first paint.
+export function SkeletonGrid({ view }: { view: ViewMode }) {
+  const count = view === "row" ? 8 : 9;
+  // Stable keys for the fixed, never-reordered placeholder set.
+  const keys = Array.from({ length: count }, (_, i) => `skeleton-${i}`);
+  return view === "row" ? (
+    <div className="flex flex-col">
+      {keys.map((k) => (
+        <SkeletonLine key={k} />
+      ))}
+    </div>
+  ) : (
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {keys.map((k) => (
+        <SkeletonCard key={k} />
+      ))}
     </div>
   );
 }
