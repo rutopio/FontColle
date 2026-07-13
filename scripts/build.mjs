@@ -7,6 +7,11 @@
 // TypeSpan's build wrapper — do not revert to plain `vite build`.)
 process.env.NODE_ENV ??= "production";
 
+// Emit public/sitemap.xml (+ robots Sitemap line) before the build so the
+// static file is picked up as an asset. No-op when VITE_SITE_URL is unset.
+const { genSitemap } = await import("./gen-sitemap.mjs");
+await genSitemap();
+
 const { createBuilder } = await import("vite");
 
 const builder = await createBuilder();

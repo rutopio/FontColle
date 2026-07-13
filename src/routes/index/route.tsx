@@ -46,6 +46,7 @@ import {
 import { getAllFonts } from "@/lib/fonts/queries";
 import { DEFAULT_SORT, type SortKey, sortFonts } from "@/lib/fonts/sort";
 import { usePreview } from "@/lib/preview/context";
+import { absoluteUrl } from "@/lib/site";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { useListScrollRestore } from "@/lib/use-list-scroll-restore";
 import { useLocalStorageState } from "@/lib/use-local-storage-state";
@@ -60,6 +61,16 @@ export const Route = createFileRoute("/")({
   component: App,
   validateSearch: (raw): FilterSearch => parseFilterSearch(raw),
   loader: async () => ({ fonts: withFacets(await getAllFonts()) }),
+  head: () => {
+    // Filter/sort params are transient views of the same catalog, not distinct
+    // pages, so the canonical is the bare list. og:url matches.
+    const canonical = absoluteUrl("/");
+    if (!canonical) return {};
+    return {
+      meta: [{ property: "og:url", content: canonical }],
+      links: [{ rel: "canonical", href: canonical }],
+    };
+  },
 });
 
 function App() {
