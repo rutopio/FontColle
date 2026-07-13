@@ -47,6 +47,67 @@ export function queryRelevance(font: FontRecord, rawQuery: string): number {
   return font.designer?.toLowerCase().includes(q) ? 10 : 0;
 }
 
+// Levenshtein edit distance between two short strings, capped implicitly by
+// their lengths. Used only for the "Did you mean" suggestion, so the O(n*m)
+// cost is fine (query and family names are short).
+function editDistance(a: string, b: string): number {
+  if (a === b) return 0;
+  if (!a.length) return b.length;
+  if (!b.length) return a.length;
+  let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+  let curr = new Array<number>(b.length + 1);
+  for (let i = 1; i <= a.length; i++) {
+    curr[0] = i;
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      curr[j] = Math.min(prev[j] + 1, curr[j - 1] + 1, prev[j - 1] + cost);
+    }
+    [prev, curr] = [curr, prev];
+  }
+  return prev[b.length];
+}
+
+// The closest family name to a search query that returned nothing, or null when
+// no name is close enough to be worth suggesting. Powers a "Did you mean …?"
+// hint on the empty state — a typo-tolerant fallback over the pure-substring
+// search. Compares the query against each family/display name and, for
+// multi-word names, their individual words, so "intr" finds "Inter" and
+// "robato" finds "Roboto". A match must be within ~1 edit per 4 query chars.
+export function suggestFamily(
+  rawQuery: string,
+  fonts: FontRecord[]
+): string | null {
+  const q = rawQuery.trim().toLowerCase();
+  // Too short to typo-correct meaningfully (every 3-letter name is ~2 edits away).
+  if (q.length < 3) return null;
+  const maxDist = Math.max(1, Math.floor(q.length / 4));
+
+  let bestName: string | null = null;
+  let bestDist = maxDist + 1;
+  for (const font of fonts) {
+    const names = [font.name, font.displayName].filter((n): n is string => !!n);
+    for (const name of names) {
+      // Compare against the whole name and each of its words, taking the best,
+      // so a query matching one word of a multi-word family still suggests it.
+      const candidates = [
+        name.toLowerCase(),
+        ...name.toLowerCase().split(/\s+/),
+      ];
+      for (const cand of candidates) {
+        // Skip candidates whose length is too far off to ever be within range.
+        if (Math.abs(cand.length - q.length) > bestDist) continue;
+        const d = editDistance(q, cand);
+        if (d < bestDist) {
+          bestDist = d;
+          bestName = name;
+          if (d === 0) return name;
+        }
+      }
+    }
+  }
+  return bestName;
+}
+
 export function applyFilters(
   fonts: FontRecord[],
   f: FilterState
