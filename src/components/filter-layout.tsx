@@ -1,10 +1,37 @@
+import { Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import type { Ref } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
+import { FavoriteToggle } from "@/components/favorite-toggle";
+import { LogoIcon } from "@/components/logo-icon";
 import { RouteFade } from "@/components/route-fade";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "./theme-toggle";
+
+// Mobile-only top strip (<768px). The desktop icon rail — which carries the
+// home link, Favorite and Theme controls — collapses to an unreachable Sheet on
+// mobile (see app-sidebar), so this bar restores those three controls. Hidden on
+// desktop, where the rail provides them.
+function MobileTopBar({ favoriteFontId }: { favoriteFontId?: string }) {
+  return (
+    <div className="flex h-12 shrink-0 items-center justify-between border-border border-b bg-background px-3 md:hidden">
+      <Link
+        to="/"
+        aria-label="All fonts"
+        className="flex items-center gap-1.5 text-primary"
+      >
+        <LogoIcon className="size-6" />
+        <span className="font-mono text-xs">FontColle</span>
+      </Link>
+      <div className="flex items-center gap-1">
+        <FavoriteToggle fontId={favoriteFontId} variant="bar" />
+        <ThemeToggle variant="bar" />
+      </div>
+    </div>
+  );
+}
 
 // sidebar-09 shell for the list and detail pages: a two-level sidebar (icon
 // rail + the page's own panel) on the left, page content in the inset on the
@@ -65,7 +92,12 @@ export function FilterLayout({
           viewport — otherwise wide content (e.g. a heavy display font's
           specimen) makes the whole page overflow horizontally. */}
         <SidebarInset className="min-w-0">
-          <RouteFade className="flex size-full flex-col">{children}</RouteFade>
+          {/* Mobile-only chrome, outside RouteFade so it stays put like the
+              desktop rail (which never fades). Desktop hides it via md:hidden. */}
+          <MobileTopBar favoriteFontId={favoriteFontId} />
+          <RouteFade className="flex min-h-0 flex-1 flex-col">
+            {children}
+          </RouteFade>
         </SidebarInset>
       </SidebarProvider>
     </>
@@ -99,8 +131,15 @@ export function Column({
   scrollViewportRef?: Ref<HTMLDivElement>;
 }) {
   const headerEl = (
-    <header className="flex h-16 shrink-0 items-center gap-2 border-border border-b bg-background px-4">
-      <div className={cn("flex flex-1 items-center gap-3", headerClassName)}>
+    // Fixed 16-height row on desktop; on mobile it may grow to two rows when the
+    // list header's search + meta controls wrap (min-h-16 keeps the floor).
+    <header className="flex min-h-16 shrink-0 items-center gap-2 border-border border-b bg-background px-4 py-2 md:h-16 md:py-0">
+      <div
+        className={cn(
+          "flex flex-1 flex-wrap items-center gap-3 md:flex-nowrap",
+          headerClassName
+        )}
+      >
         {header}
       </div>
     </header>

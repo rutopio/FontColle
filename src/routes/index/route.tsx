@@ -8,6 +8,7 @@ import {
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ActiveFilterChips } from "@/components/filter/active-filter-chips";
+import { FilterDrawer } from "@/components/filter/filter-drawer";
 import { FilterRail } from "@/components/filter/filter-rail";
 import { FilterSidebar } from "@/components/filter/filter-sidebar";
 import {
@@ -249,7 +250,7 @@ function App() {
         scrollViewportRef={scrollRef}
         header={
           <>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 max-md:w-full">
               <SearchInput
                 inputRef={searchRef}
                 query={filter.query}
@@ -266,7 +267,7 @@ function App() {
               )}
             </div>
 
-            <div className="ml-auto flex items-center gap-3">
+            <div className="ml-auto flex items-center gap-3 max-md:ml-0 max-md:w-full max-md:justify-between">
               <span
                 className="text-muted-foreground text-sm"
                 aria-live="polite"
@@ -368,6 +369,17 @@ function App() {
           </>
         )}
       </Column>
+      {/* Mobile-only filter access (FAB + bottom drawer). Same shared filter
+          state as the desktop rail/panel; hidden on desktop. */}
+      <FilterDrawer
+        index={facetIndex}
+        filter={filter}
+        onChange={setFilter}
+        group={group}
+        onGroupChange={setGroup}
+        axisValues={axisValues}
+        onAxisValueChange={setAxisValue}
+      />
     </FilterLayout>
   );
 }
@@ -399,7 +411,7 @@ function SearchInput({
   };
 
   return (
-    <div className="relative w-72">
+    <div className="relative w-72 max-md:w-full max-md:min-w-0 max-md:flex-1">
       <MagnifyingGlassIcon className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
       <Input
         ref={inputRef}
