@@ -10,12 +10,27 @@ import { fallbackFor } from "./shared";
 //   3. Bunny Fonts — a GDPR-friendly, privacy-first Google Fonts drop-in.
 // Every snippet is derived from the family's real weights/variability, so it
 // matches what this specific font actually ships.
-export function UsePanel({ font }: { font: FontRecord }) {
+export function UsePanel({
+  font,
+  axisState,
+  italic,
+}: {
+  font: FontRecord;
+  // Live axis values + italic from the Specimen sidebar, so the Google Fonts
+  // method can offer a "Match current preview" shortcut.
+  axisState: Record<string, number>;
+  italic: boolean;
+}) {
   const cssFamily = `"${font.name}", ${fallbackFor(font.class)}`;
 
   return (
     <div className="grid gap-4 md:grid-cols-3">
-      <GoogleFontsMethod font={font} cssFamily={cssFamily} />
+      <GoogleFontsMethod
+        font={font}
+        cssFamily={cssFamily}
+        previewAxes={axisState}
+        previewItalic={italic}
+      />
       <FontsourceMethod font={font} />
       <BunnyMethod font={font} />
     </div>

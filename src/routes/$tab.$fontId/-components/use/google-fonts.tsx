@@ -1,4 +1,4 @@
-import { GlobeIcon } from "@phosphor-icons/react";
+import { GlobeIcon, SlidersHorizontalIcon } from "@phosphor-icons/react";
 import { useState } from "react";
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 import { EditableValue } from "@/components/ui/editable-value";
@@ -28,9 +28,14 @@ import {
 export function GoogleFontsMethod({
   font,
   cssFamily,
+  previewAxes,
+  previewItalic,
 }: {
   font: FontRecord;
   cssFamily: string;
+  // Current Specimen sidebar axis values + italic, for "Match current preview".
+  previewAxes: Record<string, number>;
+  previewItalic: boolean;
 }) {
   // How this family expresses italic: a real `ital` axis or static italic files
   // (-> `ital@1`), a `slnt` axis (-> pin slnt to its slanted min), or none.
@@ -71,6 +76,24 @@ export function GoogleFontsMethod({
   const setPick = (tag: string, next: Partial<AxisPick>) =>
     setPicks((p) => ({ ...p, [tag]: { ...p[tag], ...next } }));
 
+  // Pin every axis to the value it currently shows in the Specimen preview, so
+  // the generated snippet renders exactly what's on screen. Italic follows too
+  // (skipped for a slnt-driven family, where the preview toggle maps onto slnt).
+  const matchPreview = () => {
+    setPicks((prev) => {
+      const next = { ...prev };
+      for (const axis of font.axes) {
+        const v = previewAxes[axis.tag];
+        if (v == null) continue;
+        next[axis.tag] = { mode: "one", value: Math.round(v) };
+      }
+      return next;
+    });
+    if (italicKind !== "none") setItalic(previewItalic);
+  };
+  // Only offer it when there's something to match: a variable family with axes.
+  const canMatchPreview = font.axes.length > 0;
+
   const href = googleFontsHref(font, picks, italic, italicKind);
   const linkTags = `<link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -87,6 +110,16 @@ export function GoogleFontsMethod({
       />
       <Steps>
         <Step n={1} label="Configure the axes">
+          {canMatchPreview && (
+            <button
+              type="button"
+              onClick={matchPreview}
+              className="mb-3 flex items-center gap-1.5 rounded-md border border-input px-2.5 py-1 text-muted-foreground text-xs transition-colors hover:border-foreground hover:text-foreground"
+            >
+              <SlidersHorizontalIcon className="size-3.5" />
+              Match current preview
+            </button>
+          )}
           <ul className="flex list-disc flex-col gap-3 pl-5 marker:text-muted-foreground">
             {/* Style (Roman/Italic) leads, then the axes in order. Its switch is
                 a Tabs control aligned right, matching each axis's Full/One tab. */}
