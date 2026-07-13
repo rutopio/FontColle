@@ -183,3 +183,26 @@ export const BMP_BLOCKS: readonly UnicodeBlock[] = [
   { name: "Halfwidth and Fullwidth Forms", start: 0xff00, end: 0xffef },
   { name: "Specials", start: 0xfff0, end: 0xffff },
 ];
+
+// The BMP block containing a codepoint, or undefined if it falls outside the
+// listed ranges (or above U+FFFF). Blocks are non-overlapping and codepoint-
+// ordered, so a linear scan is fine for the ~160 entries.
+export function blockOf(cp: number): UnicodeBlock | undefined {
+  return BMP_BLOCKS.find((b) => cp >= b.start && cp <= b.end);
+}
+
+// Parse a glyph-search query to a codepoint. A "U+XXXX" / "0xXXXX" prefix is
+// read as hex; anything else is taken literally as its first code point (so "a"
+// finds U+0061 and "中" finds U+4E2D, without the ambiguity of guessing whether
+// bare "ab" meant the string or the hex value 0x00AB). Returns null when the
+// input is empty or an unparseable hex code.
+export function parseGlyphQuery(input: string): number | null {
+  const q = input.trim();
+  if (!q) return null;
+  const hexMatch = q.match(/^(?:u\+|0x)([0-9a-f]{1,6})$/i);
+  if (hexMatch) {
+    const cp = Number.parseInt(hexMatch[1], 16);
+    return Number.isFinite(cp) && cp <= 0x10ffff ? cp : null;
+  }
+  return q.codePointAt(0) ?? null;
+}

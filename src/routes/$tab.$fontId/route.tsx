@@ -10,6 +10,7 @@ import {
 } from "@/lib/fonts/glyph-coverage";
 import { getFontById, getFontsByDesigners } from "@/lib/fonts/queries";
 import { fontSlug } from "@/lib/fonts/slug";
+import { blockOf, parseGlyphQuery } from "@/lib/fonts/unicode-blocks";
 import { pageTitle } from "@/lib/site";
 import { Detail } from "./-components/detail";
 import {
@@ -127,6 +128,35 @@ function DetailPage() {
   const { ranges, loading: glyphLoading } = useGlyphCoverage(font.id);
   const coveredBlocks = useMemo(() => blocksWithCoverage(ranges), [ranges]);
   const [glyphBlock, setGlyphBlock] = useState("");
+  // A codepoint to scroll to and briefly highlight in the grid, set by the
+  // sidebar's glyph search. Cleared on manual block selection so a later search
+  // for the same block re-triggers the highlight.
+  const [highlightCp, setHighlightCp] = useState<number | null>(null);
+  const [searchMiss, setSearchMiss] = useState(false);
+
+  // Resolve a glyph-search query (a character or "U+XXXX") to a covered block +
+  // codepoint. Miss = not a BMP codepoint, or the font doesn't cover it.
+  const searchGlyph = (query: string) => {
+    const cp = parseGlyphQuery(query);
+    const block = cp == null ? undefined : blockOf(cp);
+    const covered =
+      cp != null &&
+      block &&
+      coveredBlocks.some((c) => c.block.name === block.name);
+    if (!covered || cp == null || !block) {
+      setSearchMiss(true);
+      return;
+    }
+    setSearchMiss(false);
+    setGlyphBlock(block.name);
+    setHighlightCp(cp);
+  };
+
+  const selectGlyphBlock = (name: string) => {
+    setGlyphBlock(name);
+    setHighlightCp(null);
+    setSearchMiss(false);
+  };
 
   // Once coverage loads (or the font changes), pin the active block to the
   // first covered one unless the current selection is still valid — the font
@@ -155,7 +185,9 @@ function DetailPage() {
             blocks={coveredBlocks}
             loading={glyphLoading}
             active={glyphBlock}
-            onSelect={setGlyphBlock}
+            onSelect={selectGlyphBlock}
+            onSearch={searchGlyph}
+            searchMiss={searchMiss}
           />
         ) : (
           <DetailSidebar
@@ -185,6 +217,7 @@ function DetailPage() {
         glyphBlock={glyphBlock}
         glyphRanges={ranges}
         glyphLoading={glyphLoading}
+        glyphHighlightCp={highlightCp}
       />
     </FilterLayout>
   );
