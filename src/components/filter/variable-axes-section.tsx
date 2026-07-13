@@ -56,6 +56,7 @@ export function VariableAxesSection({
   disabled = false,
   mode,
   onToggleMode,
+  flashKey,
 }: {
   icon: Icon;
   items: [string, number][];
@@ -67,6 +68,9 @@ export function VariableAxesSection({
   disabled?: boolean;
   mode?: MatchMode;
   onToggleMode?: () => void;
+  // Bumped when the axis selection was cleared by a Weight/Width pick (see
+  // FilterSidebar), so the header flashes to hint at the swap.
+  flashKey?: number;
 }) {
   const [showMore, setShowMore] = useState(false);
   const hasSelection = items.some(([value]) => selected.includes(value));
@@ -231,6 +235,7 @@ export function VariableAxesSection({
         onToggleSort={() => {}}
         mode={mode}
         onToggleMode={onToggleMode}
+        flashKey={flashKey}
       />
       <div
         className={cn(
