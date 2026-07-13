@@ -34,31 +34,41 @@ export function FilterLayout({
   // FilterLayout re-mounts on a real route change, so each RouteFade plays its
   // entry once; see route-fade.tsx for why it must not be keyed on page state.
   return (
-    <SidebarProvider
-      open={panelOpen}
-      style={
-        {
-          // A wider icon rail: it carries labelled group buttons, not just the
-          // home link. Plus room for the side panel at its original 20rem.
-          "--sidebar-width-icon": "4.5rem",
-          "--sidebar-width": "24.5rem",
-        } as React.CSSProperties
-      }
-    >
-      <AppSidebar
-        rail={rail ? <RouteFade>{rail}</RouteFade> : undefined}
-        favoriteFontId={favoriteFontId}
+    <>
+      {/* Keyboard skip-nav: lets keyboard/screen-reader users jump past the rail
+          and sidebar straight to the page content. Visually hidden until focused. */}
+      <a
+        href="#main"
+        className="sr-only fixed top-2 left-2 z-[100] -translate-y-full rounded-md bg-background px-4 py-2 font-medium text-sm shadow ring-2 ring-sidebar-ring transition-transform focus:not-sr-only focus:translate-y-0"
       >
-        <RouteFade className="flex size-full flex-col">{sidebar}</RouteFade>
-      </AppSidebar>
-      {/* min-w-0 lets the inset shrink to the space left by the fixed-width
+        Skip to content
+      </a>
+      <SidebarProvider
+        open={panelOpen}
+        style={
+          {
+            // A wider icon rail: it carries labelled group buttons, not just the
+            // home link. Plus room for the side panel at its original 20rem.
+            "--sidebar-width-icon": "4.5rem",
+            "--sidebar-width": "24.5rem",
+          } as React.CSSProperties
+        }
+      >
+        <AppSidebar
+          rail={rail ? <RouteFade>{rail}</RouteFade> : undefined}
+          favoriteFontId={favoriteFontId}
+        >
+          <RouteFade className="flex size-full flex-col">{sidebar}</RouteFade>
+        </AppSidebar>
+        {/* min-w-0 lets the inset shrink to the space left by the fixed-width
           sidebar instead of forcing 100vw (w-full) and pushing itself past the
           viewport — otherwise wide content (e.g. a heavy display font's
           specimen) makes the whole page overflow horizontally. */}
-      <SidebarInset className="min-w-0">
-        <RouteFade className="flex size-full flex-col">{children}</RouteFade>
-      </SidebarInset>
-    </SidebarProvider>
+        <SidebarInset className="min-w-0">
+          <RouteFade className="flex size-full flex-col">{children}</RouteFade>
+        </SidebarInset>
+      </SidebarProvider>
+    </>
   );
 }
 
@@ -119,7 +129,10 @@ export function Column({
 
   const body = (
     <div
+      id="main"
+      // Skip-nav target; -scroll-mt keeps it clear of the fixed header on focus.
       className={cn(
+        "scroll-mt-20",
         // min-h-full so a short body (e.g. an Empty state) fills the scroll
         // viewport, letting a flex-1 child center in the remaining space instead
         // of sitting up top. Taller content just grows past it as before.
