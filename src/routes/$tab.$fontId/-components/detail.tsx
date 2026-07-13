@@ -33,6 +33,7 @@ import { GlyphsPanel } from "./glyphs";
 import { InstanceChips } from "./instance-chips";
 import { InstanceRow } from "./instance-row";
 import { LanguageSupport } from "./language-support";
+import { MetricsPanel } from "./metrics-panel";
 import { Panel } from "./panel";
 import { TypeTester } from "./type-tester";
 import { UsePanel } from "./use";
@@ -362,6 +363,10 @@ export function Detail({
               </Panel>
             )}
           </div>
+
+          {/* METRICS — the derived style metrics FontColle filters on, with a
+              baseline/x-height/cap-height diagram. Full width. */}
+          <MetricsPanel font={font} />
 
           {/* LANGUAGES — full width. */}
           {font.languages.length > 0 && <LanguageSupport font={font} />}
