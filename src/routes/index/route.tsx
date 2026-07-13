@@ -74,6 +74,8 @@ function App() {
   // The results list scrolls inside the Column's ScrollArea viewport, not the
   // window. The virtualizer and scroll restore both bind to this element.
   const scrollRef = useRef<HTMLDivElement>(null);
+  // The search field, so the "/" shortcut can focus it.
+  const searchRef = useRef<HTMLInputElement>(null);
 
   // Two-layer filter state so tapping a pill feels instant and stays decoupled
   // from the expensive re-filter of the whole catalog:
@@ -189,6 +191,33 @@ function App() {
   const setView = (next: ViewMode) => setViewPref(next);
   // Clear every filter and the search query, keeping only display prefs.
   const reset = () => setFilter(emptyFilter);
+
+  // Catalog keyboard shortcuts, the usual directory-site set: "/" focuses the
+  // search field, "g"/"r" switch the grid/row view. They're ignored while a text
+  // field is focused (so typing "r" into the search box types an r, and the
+  // field's own Escape/blur still works). Bound to the document since there's no
+  // single focused element to hang them off.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const el = e.target as HTMLElement | null;
+      const typing =
+        el?.tagName === "INPUT" ||
+        el?.tagName === "TEXTAREA" ||
+        el?.isContentEditable;
+      if (typing) return;
+      if (e.key === "/") {
+        e.preventDefault();
+        searchRef.current?.focus();
+      } else if (e.key === "g") {
+        setViewPref("grid");
+      } else if (e.key === "r") {
+        setViewPref("row");
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [setViewPref]);
   // Leave the favorites view and clear filters, landing on the full catalog —
   // the CTA shown when there are no favorites yet.
   const discoverFonts = () => {
@@ -222,6 +251,7 @@ function App() {
           <>
             <div className="flex items-center gap-2">
               <SearchInput
+                inputRef={searchRef}
                 query={filter.query}
                 onQueryChange={(query) => setFilter({ ...filter, query })}
               />
@@ -349,9 +379,11 @@ function App() {
 function SearchInput({
   query,
   onQueryChange,
+  inputRef,
 }: {
   query: string;
   onQueryChange: (query: string) => void;
+  inputRef?: React.Ref<HTMLInputElement>;
 }) {
   const [draft, setDraft] = useState(query);
   const composing = useRef(false);
@@ -370,6 +402,7 @@ function SearchInput({
     <div className="relative w-72">
       <MagnifyingGlassIcon className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
       <Input
+        ref={inputRef}
         type="search"
         value={draft}
         onChange={(e) => commit(e.target.value)}
@@ -379,6 +412,15 @@ function SearchInput({
         onCompositionEnd={(e) => {
           composing.current = false;
           onQueryChange(e.currentTarget.value);
+        }}
+        onKeyDown={(e) => {
+          // Escape clears the search (matching the "/"-to-focus shortcut), then
+          // blurs so a second Escape isn't swallowed.
+          if (e.key === "Escape" && draft) {
+            e.preventDefault();
+            commit("");
+            e.currentTarget.blur();
+          }
         }}
         placeholder="Search family or designer"
         aria-label="Search fonts by family or designer"
