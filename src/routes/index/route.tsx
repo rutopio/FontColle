@@ -42,6 +42,7 @@ import {
   parseFilterSearch,
   queryRelevance,
   searchToFilter,
+  suggestFamily,
 } from "@/lib/fonts/filter";
 import { getAllFonts } from "@/lib/fonts/queries";
 import { DEFAULT_SORT, type SortKey, sortFonts } from "@/lib/fonts/sort";
@@ -243,6 +244,18 @@ function App() {
   // filters, only a search, or both) without a misleading "filter" wording.
   const hasQuery = filter.query.trim().length > 0;
 
+  // Typo-tolerant fallback for the pure-substring search: when a query returns
+  // nothing, suggest the closest family name ("Did you mean Inter?"). Only run
+  // the edit-distance scan on the empty state, and skip it when the suggestion
+  // would just echo the query.
+  const suggestion = useMemo(() => {
+    if (results.length > 0 || !hasQuery) return null;
+    const s = suggestFamily(filter.query, fonts);
+    return s && s.toLowerCase() !== filter.query.trim().toLowerCase()
+      ? s
+      : null;
+  }, [results.length, hasQuery, filter.query, fonts]);
+
   return (
     <FilterLayout
       rail={<FilterRail active={group} filter={filter} onSelect={setGroup} />}
@@ -348,6 +361,20 @@ function App() {
                 <span className="text-foreground">{filter.query.trim()}</span>
                 <XIcon className="size-3 opacity-60" />
               </button>
+            )}
+            {/* Typo-tolerant nudge: swap the query for the closest family name. */}
+            {suggestion && (
+              <p className="text-muted-foreground text-sm">
+                Did you mean{" "}
+                <button
+                  type="button"
+                  onClick={() => setFilter({ ...filter, query: suggestion })}
+                  className="font-medium text-foreground underline decoration-muted-foreground/50 hover:decoration-foreground"
+                >
+                  {suggestion}
+                </button>
+                ?
+              </p>
             )}
             <ActiveFilterChips filter={filter} onChange={setFilter} />
             {favOnly ? (
