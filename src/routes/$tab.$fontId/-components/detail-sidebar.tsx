@@ -14,7 +14,9 @@ import { useScrollReset } from "@/lib/use-scroll-reset";
 // Preset values offered in the click-to-edit dropdown. Starts at the size min
 // (16) — smaller values would be filtered out by EditableValue as out-of-range,
 // so listing them here is dead. Top values are clamped to max (200) at commit.
-const SIZE_PRESETS = [16, 18, 20, 24, 28, 32, 36, 40, 48, 52, 60, 72, 100, 160, 200];
+const SIZE_PRESETS = [
+  16, 18, 20, 24, 28, 32, 36, 40, 48, 52, 60, 72, 100, 160, 200,
+];
 // Per-axis presets; axes without an entry just get free-form entry.
 const AXIS_PRESETS: Record<string, number[]> = {
   wght: [100, 200, 300, 400, 500, 600, 700, 800, 900],
