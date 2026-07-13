@@ -1,9 +1,17 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { CSSProperties, RefObject } from "react";
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { hasCodepoint } from "@/lib/fonts/glyph-coverage";
 import type { FontRecord } from "@/lib/fonts/types";
 import { BMP_BLOCKS, type UnicodeBlock } from "@/lib/fonts/unicode-blocks";
+import { cn } from "@/lib/utils";
 
 // GLYPHS view: one Unicode block at a time, showing only the codepoints the
 // font actually contains (from its cmap; see glyph-coverage.ts). The block list
@@ -50,6 +58,8 @@ function BlockGrid({
   ranges,
   style,
   scrollRef,
+  highlightCp,
+  onCopy,
 }: {
   block: UnicodeBlock;
   ranges: Range[];
@@ -58,6 +68,12 @@ function BlockGrid({
   // its rows inside this same scroller — matching how the list's FontGrid
   // scrolls — instead of nesting its own overflow container.
   scrollRef: RefObject<HTMLDivElement | null>;
+  // A codepoint (within this block) to scroll to and briefly ring, set by the
+  // sidebar glyph search. Null when nothing is targeted.
+  highlightCp: number | null;
+  // Called with a codepoint when a cell is activated (click / Enter / Space) so
+  // the panel can copy the character and flash confirmation.
+  onCopy: (cp: number) => void;
 }) {
   // Pad the leading row so the first codepoint sits under its true hex column.
   // Blocks are 16-aligned in Unicode, so lead is 0, but the guard is cheap.
@@ -151,6 +167,39 @@ function BlockGrid({
     else showAt(cp, e.clientX, e.clientY);
   };
 
+  // Keyboard parity for the hover magnifier: show it centered on the focused
+  // cell so a keyboard user gets the same enlarged preview as a mouse user.
+  const onFocus = (e: React.FocusEvent) => {
+    const el = (e.target as HTMLElement).closest<HTMLElement>("[data-cp]");
+    if (!el) return;
+    const cp = Number(el.dataset.cp);
+    const r = el.getBoundingClientRect();
+    showAt(cp, r.left + r.width / 2, r.bottom);
+  };
+
+  // Activating a present cell (click or Enter/Space) copies its character.
+  const onClick = (e: React.MouseEvent) => {
+    const cp = cpOf(e);
+    if (cp != null) onCopy(cp);
+  };
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    const el = (e.target as HTMLElement).closest<HTMLElement>("[data-cp]");
+    if (!el) return;
+    e.preventDefault();
+    onCopy(Number(el.dataset.cp));
+  };
+
+  // Scroll a searched codepoint's row into view. The virtualizer measures rows
+  // from the block start (+ the leading pad), so the row index is derived the
+  // same way the render loop lays them out.
+  useEffect(() => {
+    if (highlightCp == null) return;
+    if (highlightCp < block.start || highlightCp > block.end) return;
+    const rowIndex = Math.floor((lead + highlightCp - block.start) / COLS);
+    rowVirtualizer.scrollToIndex(rowIndex, { align: "center" });
+  }, [highlightCp, block.start, block.end, lead, rowVirtualizer]);
+
   return (
     <>
       {/* Column header row: the low hex nibble 0..F, kept above the rows. */}
@@ -176,8 +225,8 @@ function BlockGrid({
       {/* Virtualized rows, scrolled by the shared Column viewport. Only visible
           rows are in the DOM. Mouse handlers live here (event delegation), so a
           15k-cell block still has 2 handlers total, not 30k. */}
-      {/* biome-ignore lint/a11y/noStaticElementInteractions: mouse-only
-          magnifier via event delegation; per-cell info is on each title attr. */}
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: delegated
+          handlers; the interactive targets are the focusable per-cell buttons. */}
       <div
         ref={gridRef}
         style={{
@@ -186,6 +235,10 @@ function BlockGrid({
         }}
         onMouseMove={onMove}
         onMouseLeave={hide}
+        onClick={onClick}
+        onKeyDown={onKeyDown}
+        onFocus={onFocus}
+        onBlur={hide}
       >
         {rowVirtualizer.getVirtualItems().map((vrow) => {
           const rowStart = vrow.index * COLS; // grid index of this row's col 0
@@ -217,17 +270,23 @@ function BlockGrid({
                   return <div key={`tail:${idx}`} className="bg-card" />;
                 const present = isRenderable(cp) && hasCodepoint(ranges, cp);
                 return present ? (
-                  <div
+                  <button
+                    type="button"
                     key={cp}
                     data-cp={cp}
-                    title={`U+${hex(cp)}`}
-                    className="flex items-center justify-center border-primary bg-card leading-none hover:border"
+                    title={`U+${hex(cp)} — click to copy`}
+                    aria-label={`U+${hex(cp)} ${String.fromCodePoint(cp)}, copy character`}
+                    className={cn(
+                      "flex items-center justify-center border-primary bg-card leading-none outline-none hover:border focus-visible:border-2 focus-visible:border-primary",
+                      highlightCp === cp &&
+                        "animate-pulse border-2 border-primary"
+                    )}
                     // Glyph fills ~1/2 of the (square) cell, so it scales with
                     // the measured cell size instead of a fixed font-size.
                     style={{ ...style, fontSize: cellSize * 0.4 }}
                   >
                     {String.fromCodePoint(cp)}
-                  </div>
+                  </button>
                 ) : (
                   // Absent (or non-renderable) codepoint: a muted empty slot
                   // keeps the hex columns aligned.
@@ -267,6 +326,7 @@ export function GlyphsPanel({
   ranges,
   loading,
   scrollRef,
+  highlightCp,
 }: {
   font: FontRecord;
   fontLoaded: boolean;
@@ -274,11 +334,30 @@ export function GlyphsPanel({
   ranges: Range[];
   loading: boolean;
   scrollRef: RefObject<HTMLDivElement | null>;
+  highlightCp: number | null;
 }) {
   const active = useMemo(
     () => BMP_BLOCKS.find((b) => b.name === blockName) ?? BMP_BLOCKS[0],
     [blockName]
   );
+
+  // Transient "Copied U+XXXX / Copy failed" confirmation for cell activation.
+  const [copied, setCopied] = useState<
+    { cp: number; ok: boolean } | undefined
+  >();
+  useEffect(() => {
+    if (!copied) return;
+    const t = setTimeout(() => setCopied(undefined), 1500);
+    return () => clearTimeout(t);
+  }, [copied]);
+  const onCopy = useCallback(async (cp: number) => {
+    try {
+      await navigator.clipboard.writeText(String.fromCodePoint(cp));
+      setCopied({ cp, ok: true });
+    } catch {
+      setCopied({ cp, ok: false });
+    }
+  }, []);
 
   // Always fall back to Adobe Blank (empty glyphs), never NotDef, so a stray
   // absent cell stays blank. While the font loads we are already on Blank, the
@@ -292,11 +371,25 @@ export function GlyphsPanel({
 
   return (
     <div className="w-full min-w-0">
-      <div className="mb-4 flex items-baseline justify-between">
+      <div className="mb-4 flex items-baseline justify-between gap-3">
         <h2 className="font-semibold text-2xl">{active.name}</h2>
-        <span className="font-mono text-muted-foreground text-xs">
-          U+{hex(active.start)}–U+{hex(active.end)}
-        </span>
+        <div className="flex items-baseline gap-3">
+          {copied && (
+            <span
+              className={cn(
+                "font-mono text-xs",
+                copied.ok ? "text-emerald-600" : "text-red-500"
+              )}
+              // Announce the copy result to screen readers.
+              role="status"
+            >
+              {copied.ok ? `Copied U+${hex(copied.cp)}` : "Copy failed"}
+            </span>
+          )}
+          <span className="font-mono text-muted-foreground text-xs">
+            U+{hex(active.start)}–U+{hex(active.end)}
+          </span>
+        </div>
       </div>
       {loading ? (
         <p className="py-8 text-center text-muted-foreground text-sm">
@@ -309,6 +402,8 @@ export function GlyphsPanel({
           ranges={ranges}
           style={glyphStyle}
           scrollRef={scrollRef}
+          highlightCp={highlightCp}
+          onCopy={onCopy}
         />
       )}
     </div>

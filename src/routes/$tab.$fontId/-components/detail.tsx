@@ -49,6 +49,7 @@ export function Detail({
   glyphBlock,
   glyphRanges,
   glyphLoading,
+  glyphHighlightCp,
 }: {
   font: FontRecord;
   tab: DetailTab;
@@ -61,6 +62,7 @@ export function Detail({
   glyphBlock: string;
   glyphRanges: [number, number][];
   glyphLoading: boolean;
+  glyphHighlightCp: number | null;
 }) {
   const { text, setText } = usePreview();
   const router = useRouter();
@@ -290,6 +292,7 @@ export function Detail({
           ranges={glyphRanges}
           loading={glyphLoading}
           scrollRef={scrollRef}
+          highlightCp={glyphHighlightCp}
         />
       )}
 

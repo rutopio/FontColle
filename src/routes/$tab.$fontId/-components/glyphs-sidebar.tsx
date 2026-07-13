@@ -1,4 +1,5 @@
-import { SquaresFourIcon } from "@phosphor-icons/react";
+import { MagnifyingGlassIcon, SquaresFourIcon } from "@phosphor-icons/react";
+import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { CoveredBlock } from "@/lib/fonts/glyph-coverage";
 import { useScrollReset } from "@/lib/use-scroll-reset";
@@ -14,15 +15,22 @@ export function GlyphsSidebar({
   loading,
   active,
   onSelect,
+  onSearch,
+  searchMiss,
 }: {
   blocks: CoveredBlock[];
   loading: boolean;
   active: string;
   onSelect: (name: string) => void;
+  // Jump to the block/cell for a character or "U+XXXX" query.
+  onSearch: (query: string) => void;
+  // True when the last search found no covered glyph, so the field can flag it.
+  searchMiss: boolean;
 }) {
   // Always open at the top; don't let router scroll restoration carry the
   // sidebar's position across navigation.
   const viewportRef = useScrollReset<HTMLDivElement>();
+  const [query, setQuery] = useState("");
 
   return (
     <aside className="flex h-full w-full min-w-0 flex-col text-sidebar-foreground">
@@ -32,6 +40,35 @@ export function GlyphsSidebar({
             <SquaresFourIcon className="size-4" />
             Unicode blocks
           </h2>
+          {/* Character search: type a character or a "U+XXXX" code to jump to its
+              block and highlight the cell. */}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              onSearch(query);
+            }}
+          >
+            <div className="relative">
+              <MagnifyingGlassIcon className="pointer-events-none absolute top-1/2 left-2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Character or U+XXXX"
+                aria-label="Search glyphs by character or codepoint"
+                aria-invalid={searchMiss || undefined}
+                className={cn(
+                  "h-8 w-full rounded-md border bg-transparent pr-2 pl-7 text-xs outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
+                  searchMiss && "border-red-500"
+                )}
+              />
+            </div>
+            {searchMiss && (
+              <p className="mt-1 text-[10px] text-red-500">
+                This font doesn't cover that character.
+              </p>
+            )}
+          </form>
           {loading ? (
             <p className="text-muted-foreground text-xs">Loading…</p>
           ) : blocks.length === 0 ? (
