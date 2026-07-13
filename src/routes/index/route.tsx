@@ -240,7 +240,11 @@ function App() {
               <span className="text-muted-foreground text-sm">
                 {results.length} fonts
               </span>
-              <SortControl sort={sort} onChange={setSort} />
+              <SortControl
+                sort={sort}
+                onChange={setSort}
+                relevance={debouncedFilter.query.trim().length > 0}
+              />
 
               <Tabs value={view} onValueChange={(v) => setView(v as ViewMode)}>
                 <TabsList className="h-8">

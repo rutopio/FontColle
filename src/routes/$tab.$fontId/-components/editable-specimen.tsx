@@ -3,7 +3,9 @@ import { type CSSProperties, useState } from "react";
 // A specimen line that doubles as a text field. Idle it's a button showing the
 // current text; clicking swaps in an input/textarea seeded with that text and
 // pushes every keystroke (trimmed) to `onEditText`, so all specimen surfaces
-// update live. Escape (and Enter, for single-line) closes the editor.
+// update live. Escape closes the editor. In the single-line input plain Enter
+// commits; in the multiline textarea Enter keeps inserting newlines, so
+// Cmd/Ctrl+Enter commits instead (blur also exits either way).
 //
 // `multiline` picks a textarea (the type tester, which wraps) over an input
 // (instance rows, one line). `buttonClassName` / `fieldClassName` let each
@@ -50,6 +52,11 @@ export function EditableSpecimen({
         rows={1}
         onKeyDown={(e) => {
           if (e.key === "Escape") setEditing(false);
+          // Enter still inserts a newline; Cmd/Ctrl+Enter commits (exits edit).
+          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+            e.preventDefault();
+            setEditing(false);
+          }
         }}
       />
     ) : (

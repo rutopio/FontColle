@@ -17,14 +17,33 @@ import {
 // the right, joined into one bordered button group. A group maps to an asc key
 // and (usually) a desc key; directionless groups (e.g. Popularity) disable the
 // toggle and expose only their `asc` order.
+//
+// With an active search query the results are ranked by relevance (the dropdown
+// sort only breaks ties), so the control reads "Relevance" and is disabled — the
+// displayed sort then honestly matches the actual order. Clearing the search
+// restores the chosen sort.
 export function SortControl({
   sort,
   onChange,
+  relevance = false,
 }: {
   sort: SortKey;
   onChange: (next: SortKey) => void;
+  relevance?: boolean;
 }) {
   const { group, asc } = sortGroupOf(sort);
+
+  if (relevance) {
+    return (
+      <div
+        className="flex h-8 items-center rounded-lg border border-input px-3 text-muted-foreground text-sm dark:bg-input/30"
+        title="Sorted by search relevance"
+      >
+        Relevance
+      </div>
+    );
+  }
+
   const directionless = isDirectionless(group);
   // Directionless groups only expose `asc`; keep the current direction when both
   // groups support it.
