@@ -28,7 +28,7 @@ import type { FontRecord } from "@/lib/fonts/types";
 import { usePreview } from "@/lib/preview/context";
 import { sanitizeHtml } from "@/lib/sanitize-html";
 import { CopyButton } from "./copy-button";
-import type { DetailTab } from "./detail-rail";
+import { type DetailTab, DetailTabBar } from "./detail-rail";
 import { GlyphsPanel } from "./glyphs";
 import { InstanceChips } from "./instance-chips";
 import { InstanceRow } from "./instance-row";
@@ -138,6 +138,7 @@ export function Detail({
     <Column
       headerClassName="justify-between"
       scrollViewportRef={scrollRef}
+      subheader={<DetailTabBar active={tab} fontId={fontSlug(font.name)} />}
       header={
         <>
           <div className="flex min-w-0 items-center gap-3">

@@ -6,6 +6,7 @@ import {
   ScrollIcon,
   SquaresFourIcon,
 } from "@phosphor-icons/react";
+import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 
 export type DetailTab =
@@ -24,7 +25,7 @@ export type DetailTab =
 // `slug` is the URL segment (/{slug}/{fontId}); it differs from the internal
 // tab id where the user-facing name diverged (specimen/about) from the
 // original code names (sample/designer).
-const TABS = [
+export const TABS = [
   { id: "sample" as const, slug: "specimen", label: "Specimen", icon: EyeIcon },
   {
     id: "glyphs" as const,
@@ -57,6 +58,47 @@ const BY_ID = new Map(TABS.map((t) => [t.id, t.slug]));
 export const tabFromSlug = (slug: string): DetailTab | undefined =>
   BY_SLUG.get(slug);
 export const slugFromTab = (id: DetailTab): TabSlug => BY_ID.get(id) as TabSlug;
+
+// Mobile-only (<768px) horizontal tab strip, pinned under the detail header.
+// Mirrors the desktop DetailRail but scrolls sideways and navigates via Link
+// (replace, matching selectTab) instead of a callback, so it needs no extra
+// wiring from the page. `fontId` is the current URL slug.
+export function DetailTabBar({
+  active,
+  fontId,
+}: {
+  active: DetailTab;
+  fontId: string;
+}) {
+  return (
+    <nav
+      aria-label="Detail views"
+      className="flex gap-1 overflow-x-auto border-border border-b bg-background px-2 py-1.5 md:hidden"
+    >
+      {TABS.map((tab) => {
+        const on = tab.id === active;
+        return (
+          <Link
+            key={tab.id}
+            to="/$tab/$fontId"
+            params={{ tab: tab.slug, fontId }}
+            replace
+            aria-current={on ? "page" : undefined}
+            className={cn(
+              "flex shrink-0 items-center gap-1.5 rounded-md px-3 py-1.5 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-sidebar-ring",
+              on
+                ? "bg-black/10 font-medium text-foreground dark:bg-white/12"
+                : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground"
+            )}
+          >
+            <tab.icon className="size-4" weight={on ? "fill" : "regular"} />
+            <span className="font-heading">{tab.label}</span>
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
 
 export function DetailRail({
   active,

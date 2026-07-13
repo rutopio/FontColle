@@ -113,6 +113,7 @@ export function FilterLayout({
 export function Column({
   header,
   headerClassName,
+  subheader,
   footer,
   footerHidden = false,
   children,
@@ -120,6 +121,9 @@ export function Column({
 }: {
   header: React.ReactNode;
   headerClassName?: string;
+  // A row pinned directly under the header (above the scroll body). The detail
+  // page uses it for the mobile-only tab strip; omitted elsewhere.
+  subheader?: React.ReactNode;
   // Bottom bar, a mirror of the header: same height, flush to the inset edge,
   // border on top instead of bottom. Both pages use it for the preview field.
   footer?: React.ReactNode;
@@ -195,6 +199,7 @@ export function Column({
     <div className="relative min-w-0 flex-1">
       <div className="absolute inset-0 flex flex-col">
         {headerEl}
+        {subheader}
         <ScrollArea viewportRef={scrollViewportRef} className="min-h-0 flex-1">
           {body}
         </ScrollArea>
