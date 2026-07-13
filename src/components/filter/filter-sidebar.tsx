@@ -7,7 +7,7 @@ import {
   TextItalicIcon,
 } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   ACTIVITY_LABELS,
@@ -68,13 +68,39 @@ export function FilterSidebar({
   axisValues,
   onAxisValueChange,
 }: Props) {
+  // A section that just had its selection silently cleared by a mutually-
+  // exclusive pick elsewhere (Weight/Width pill <-> wght/wdth axis). The bumped
+  // key drives a one-shot header flash so the swap isn't invisible.
+  const [flash, setFlash] = useState<{
+    section: "weights" | "widths" | "axes";
+    key: number;
+  } | null>(null);
+  const flashKeyFor = (s: "weights" | "widths" | "axes") =>
+    flash?.section === s ? flash.key : undefined;
+
   // Thin wrappers: every rule lives in filter-actions.ts (pure, testable); the
   // component only feeds the current filter in and pushes the result back out.
   const toggle = (key: Parameters<typeof actions.toggle>[1], value: string) =>
     onChange(actions.toggle(filter, key, value));
-  const toggleAxis = (tag: string) => onChange(actions.toggleAxis(filter, tag));
-  const select = (key: "weights" | "widths", value: string) =>
-    onChange(actions.select(filter, key, value));
+  // Selecting an axis clears the matching Weight/Width pick; flash that section
+  // if it actually held a selection.
+  const toggleAxis = (tag: string) => {
+    const next = actions.toggleAxis(filter, tag);
+    const cleared = (["weights", "widths"] as const).find(
+      (k) => filter[k].length > 0 && next[k].length === 0
+    );
+    if (cleared) setFlash({ section: cleared, key: Date.now() });
+    onChange(next);
+  };
+  // Selecting a Weight/Width pill clears the matching axis; flash Variable axes
+  // if it actually held a selection.
+  const select = (key: "weights" | "widths", value: string) => {
+    const next = actions.select(filter, key, value);
+    if (filter.axes.length > 0 && next.axes.length < filter.axes.length) {
+      setFlash({ section: "axes", key: Date.now() });
+    }
+    onChange(next);
+  };
   const selectColor = (value: string) =>
     onChange(actions.selectColor(filter, value));
   const selectFontType = (value: string) =>
@@ -324,6 +350,7 @@ export function FilterSidebar({
                   onReset={() => onChange({ ...filter, weights: [] })}
                   label={weightLabel}
                   axis="wght"
+                  flashKey={flashKeyFor("weights")}
                 />
                 <CardGrid
                   title="Width"
@@ -334,6 +361,7 @@ export function FilterSidebar({
                   onReset={() => onChange({ ...filter, widths: [] })}
                   label={widthLabel}
                   axis="wdth"
+                  flashKey={flashKeyFor("widths")}
                 />
                 <VariableAxesSection
                   icon={SlidersHorizontalIcon}
@@ -346,6 +374,7 @@ export function FilterSidebar({
                   disabled={filter.facets.includes("static")}
                   mode={modeOf("axes")}
                   onToggleMode={() => toggleMode("axes")}
+                  flashKey={flashKeyFor("axes")}
                 />
               </>
             )}

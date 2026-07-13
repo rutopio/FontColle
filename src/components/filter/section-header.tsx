@@ -126,6 +126,7 @@ export function SectionHeader({
   info,
   mode,
   onToggleMode,
+  flashKey,
 }: {
   title: string;
   icon: Icon;
@@ -143,10 +144,22 @@ export function SectionHeader({
   // toggle sits left of the reset/sort slot and is always visible when passed.
   mode?: MatchMode;
   onToggleMode?: () => void;
+  // Bumps to a new value each time this section's selection was silently cleared
+  // by a mutually-exclusive pick in a sibling section, so the header can flash
+  // once to hint at what changed. 0 = never flashed.
+  flashKey?: number;
 }) {
   return (
     <div className="flex items-center justify-between gap-2">
-      <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase">
+      <motion.h2
+        // Flash the title once when flashKey changes: a quick color pulse hints
+        // that this section's selection was just cleared by a sibling pick.
+        key={flashKey}
+        initial={flashKey ? { color: "var(--color-amber-500)" } : false}
+        animate={{ color: "var(--color-primary)" }}
+        transition={{ duration: 0.9, ease: "easeOut" }}
+        className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase"
+      >
         <Icon className="size-4" />
         {title}
         {info ? (
@@ -163,7 +176,7 @@ export function SectionHeader({
             </TooltipContent>
           </Tooltip>
         ) : null}
-      </h2>
+      </motion.h2>
       <div className="flex shrink-0 items-center gap-0.5">
         {/* OR/AND toggle, left of the reset/sort slot. Only for sections that
             pass a mode, and only once something is selected — combining is

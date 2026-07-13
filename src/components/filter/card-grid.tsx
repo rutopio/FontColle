@@ -17,6 +17,7 @@ export function CardGrid({
   onReset,
   label,
   axis,
+  flashKey,
 }: {
   title: string;
   icon: Icon;
@@ -29,6 +30,9 @@ export function CardGrid({
   label: (value: string) => string;
   // Which axis the card value drives on the "Aa" specimen.
   axis: "wght" | "wdth";
+  // Bumped when this section's pick was cleared by the sibling axis (see
+  // FilterSidebar), so the header flashes to hint at the swap.
+  flashKey?: number;
 }) {
   return (
     <div className="flex flex-col gap-2">
@@ -40,6 +44,7 @@ export function CardGrid({
         canSort={false}
         sort="count"
         onToggleSort={() => {}}
+        flashKey={flashKey}
       />
       {/* At most one value per section (enforced by the handler). */}
       <div className="grid grid-cols-3 gap-3">
