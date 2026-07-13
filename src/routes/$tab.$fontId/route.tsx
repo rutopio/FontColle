@@ -11,7 +11,7 @@ import {
 import { getFontById, getFontsByDesigners } from "@/lib/fonts/queries";
 import { fontSlug } from "@/lib/fonts/slug";
 import { blockOf, parseGlyphQuery } from "@/lib/fonts/unicode-blocks";
-import { pageTitle } from "@/lib/site";
+import { absoluteUrl, pageTitle } from "@/lib/site";
 import { ControlsDrawer } from "./-components/controls-drawer";
 import { Detail } from "./-components/detail";
 import {
@@ -50,18 +50,39 @@ export const Route = createFileRoute("/$tab/$fontId")({
     };
   },
   head: ({ loaderData }) => {
-    const name = loaderData?.font.name;
-    if (!name) return {};
+    const font = loaderData?.font;
+    const name = font?.name;
+    if (!name || !font) return {};
     const description = `Preview ${name}, browse its weights and OpenType features, and open it on Google Fonts.`;
+    // The six tabs render near-identical content on overlapping URLs, so point
+    // every tab's canonical at the specimen tab to consolidate ranking signals.
+    const canonical = absoluteUrl(`/specimen/${fontSlug(name)}`);
+    // Structured data for the family, so search engines can surface designer +
+    // license. Only emitted with an absolute origin (needs a real URL).
+    const jsonLd = canonical
+      ? JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "CreativeWork",
+          name,
+          url: canonical,
+          ...(font.designer ? { creator: font.designer } : {}),
+          ...(font.license ? { license: font.license } : {}),
+        })
+      : undefined;
     return {
       meta: [
         { title: pageTitle(name) },
         { name: "description", content: description },
         { property: "og:title", content: pageTitle(name) },
         { property: "og:description", content: description },
+        ...(canonical ? [{ property: "og:url", content: canonical }] : []),
         { name: "twitter:title", content: pageTitle(name) },
         { name: "twitter:description", content: description },
       ],
+      links: canonical ? [{ rel: "canonical", href: canonical }] : [],
+      scripts: jsonLd
+        ? [{ type: "application/ld+json", children: jsonLd }]
+        : [],
     };
   },
   notFoundComponent: () => (

@@ -24,3 +24,6 @@ scripts/harvester/ttf_cache/
 # shipped data — the built catalog lives in src/data/fonts.json
 scripts/harvester/published.json
 scripts/harvester/stress_output.json
+
+# Generated at build time from the catalog (scripts/gen-sitemap.mjs)
+/public/sitemap.xml
