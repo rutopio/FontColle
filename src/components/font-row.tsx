@@ -4,6 +4,11 @@ import { useEffect } from "react";
 import { FontTraits } from "@/components/font-traits";
 import { HoverBoldIcon } from "@/components/hover-bold-icon";
 import { repoHostIcon } from "@/components/repo-host-icon";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { FilterSelection } from "@/lib/fonts/filter";
 import {
   ensureFontLoaded,
@@ -89,64 +94,75 @@ export function FontRow({
           />
         </div>
         <div className="flex shrink-0 items-center gap-4">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              onToggleFavorite(font.id);
-            }}
-            aria-label={
-              isFavorite ? "Remove from favorites" : "Add to favorites"
-            }
-            className="text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <HoverBoldIcon
-              icon={HeartIcon}
-              weight={isFavorite ? "fill" : "regular"}
-              className={cn("size-5", isFavorite && "text-red-500")}
-            />
-          </button>
+          <Tooltip>
+            <TooltipTrigger
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                onToggleFavorite(font.id);
+              }}
+              aria-label={
+                isFavorite ? "Remove from favorites" : "Add to favorites"
+              }
+              className="text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <HoverBoldIcon
+                icon={HeartIcon}
+                weight={isFavorite ? "fill" : "regular"}
+                className={cn("size-5", isFavorite && "text-red-500")}
+              />
+            </TooltipTrigger>
+            <TooltipContent>
+              {isFavorite ? "Remove from favorites" : "Add to favorites"}
+            </TooltipContent>
+          </Tooltip>
           {/* A button, not an <a>: the whole row is already a <Link> (an
               <a>), and <a> can't nest <a> (hydration error). Open Google Fonts
               in a new tab and stop the click from triggering row navigation. */}
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              window.open(
-                `https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`,
-                "_blank",
-                "noreferrer"
-              );
-            }}
-            aria-label="Download on Google Fonts"
-            className="text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <HoverBoldIcon icon={DownloadSimpleIcon} className="size-5" />
-          </button>
-          {/* Only when the family has a known upstream repo. A button, not an
-              <a>, for the same nested-<a> reason as the download button. */}
-          {font.repositoryUrl && (
-            <button
+          <Tooltip>
+            <TooltipTrigger
               type="button"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 window.open(
-                  font.repositoryUrl as string,
+                  `https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`,
                   "_blank",
                   "noreferrer"
                 );
               }}
-              aria-label="View source repository"
+              aria-label="View on Google Fonts"
               className="text-muted-foreground transition-colors hover:text-foreground"
             >
-              <HoverBoldIcon
-                icon={repoHostIcon(font.repositoryUrl)}
-                className="size-5"
-              />
-            </button>
+              <HoverBoldIcon icon={DownloadSimpleIcon} className="size-5" />
+            </TooltipTrigger>
+            <TooltipContent>View on Google Fonts</TooltipContent>
+          </Tooltip>
+          {/* Only when the family has a known upstream repo. A button, not an
+              <a>, for the same nested-<a> reason as the download button. */}
+          {font.repositoryUrl && (
+            <Tooltip>
+              <TooltipTrigger
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  window.open(
+                    font.repositoryUrl as string,
+                    "_blank",
+                    "noreferrer"
+                  );
+                }}
+                aria-label="View source repository"
+                className="text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <HoverBoldIcon
+                  icon={repoHostIcon(font.repositoryUrl)}
+                  className="size-5"
+                />
+              </TooltipTrigger>
+              <TooltipContent>View source repository</TooltipContent>
+            </Tooltip>
           )}
         </div>
       </div>
