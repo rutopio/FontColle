@@ -14,10 +14,11 @@ import { PreviewProvider } from "@/lib/preview/context";
 import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
 import appCss from "../styles.css?url";
 
-// Applies the saved theme before first paint so an SSR'd light shell doesn't
-// flash before a dark preference hydrates. Default is light: the class is added
-// only when the user explicitly chose dark. Static string, no user input.
-const themeScript = `try{if(localStorage.theme==='dark')document.documentElement.classList.add('dark')}catch(e){}`;
+// Applies the effective theme before first paint so an SSR'd light shell doesn't
+// flash before a dark preference hydrates. An explicit localStorage choice wins;
+// with no saved value we fall back to the system prefers-color-scheme. Static
+// string, no user input.
+const themeScript = `try{var t=localStorage.theme;if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}`;
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;

@@ -237,8 +237,11 @@ function App() {
             </div>
 
             <div className="ml-auto flex items-center gap-3">
-              <span className="text-muted-foreground text-sm">
-                {results.length} fonts
+              <span
+                className="text-muted-foreground text-sm"
+                aria-live="polite"
+              >
+                {results.length} {results.length === 1 ? "font" : "fonts"}
               </span>
               <SortControl
                 sort={sort}
