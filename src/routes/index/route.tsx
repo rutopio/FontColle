@@ -16,7 +16,7 @@ import {
   type FilterGroupId,
 } from "@/components/filter/groups";
 import { Column, FilterLayout } from "@/components/filter-layout";
-import { FontGrid, type ViewMode } from "@/components/font-grid";
+import { FontGrid, SkeletonGrid, type ViewMode } from "@/components/font-grid";
 import { PreviewBar } from "@/components/preview-dock";
 import { Button } from "@/components/ui/button";
 import {
@@ -62,6 +62,7 @@ export const Route = createFileRoute("/")({
   component: App,
   validateSearch: (raw): FilterSearch => parseFilterSearch(raw),
   loader: async () => ({ fonts: withFacets(await getAllFonts()) }),
+  pendingComponent: ListPending,
   head: () => {
     // Filter/sort params are transient views of the same catalog, not distinct
     // pages, so the canonical is the bare list. og:url matches.
@@ -418,6 +419,28 @@ function App() {
         axisValues={axisValues}
         onAxisValueChange={setAxisValue}
       />
+    </FilterLayout>
+  );
+}
+
+// Shown while the catalog loader runs (a slow D1 query). Reuses the app shell —
+// rail + empty sidebar + Column header/footer — with a skeleton grid body, so a
+// slow load reads as the page filling in rather than a blank or spinner. The
+// controls are inert placeholders (no data yet); the real App swaps in on load.
+function ListPending() {
+  return (
+    <FilterLayout sidebar={<div className="size-full" />}>
+      <Column
+        header={
+          <>
+            <div className="h-9 w-72 max-w-full animate-pulse rounded-lg bg-muted" />
+            <div className="ml-auto h-6 w-24 animate-pulse rounded bg-muted" />
+          </>
+        }
+        footer={<PreviewBar />}
+      >
+        <SkeletonGrid view="grid" />
+      </Column>
     </FilterLayout>
   );
 }

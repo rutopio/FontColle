@@ -3,11 +3,14 @@ import type { QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import {
   createRootRouteWithContext,
+  type ErrorComponentProps,
   HeadContent,
   Scripts,
+  useRouter,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { MotionConfig } from "motion/react";
+import { ErrorState } from "@/components/error-state";
 import { NotFound } from "@/components/not-found";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { FilterProvider } from "@/lib/filter/context";
@@ -82,8 +85,24 @@ export const Route = createRootRouteWithContext<{
     ],
   }),
   notFoundComponent: () => <NotFound />,
+  errorComponent: (props) => <RootError {...props} />,
   shellComponent: RootDocument,
 });
+
+// Root error boundary: any loader/render error below the root lands here (e.g.
+// getAllFonts failing or a slow D1 query erroring). Retry re-runs the failed
+// loaders (invalidate) and clears the boundary (reset).
+function RootError({ reset }: ErrorComponentProps) {
+  const router = useRouter();
+  return (
+    <ErrorState
+      onRetry={() => {
+        router.invalidate();
+        reset();
+      }}
+    />
+  );
+}
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
