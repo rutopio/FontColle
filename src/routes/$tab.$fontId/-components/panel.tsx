@@ -5,11 +5,14 @@ import { cn } from "@/lib/utils";
 export function Panel({
   label,
   count,
+  action,
   className,
   children,
 }: {
   label: string;
   count?: number;
+  // Optional control rendered at the right of the header (e.g. a copy button).
+  action?: React.ReactNode;
   className?: string;
   children: React.ReactNode;
 }) {
@@ -20,11 +23,12 @@ export function Panel({
           <h2 className="font-medium text-muted-foreground text-xs uppercase">
             {label}
           </h2>
-          {count != null && (
-            <span className="font-mono text-muted-foreground text-xs">
-              {count}
-            </span>
-          )}
+          {action ??
+            (count != null && (
+              <span className="font-mono text-muted-foreground text-xs">
+                {count}
+              </span>
+            ))}
         </div>
       </div>
       <Separator />

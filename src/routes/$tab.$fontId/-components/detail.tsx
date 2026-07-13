@@ -1,6 +1,7 @@
 import {
   ArrowLeftIcon,
   ArrowUpRightIcon,
+  DownloadSimpleIcon,
   FunnelIcon,
 } from "@phosphor-icons/react";
 import { Link, useCanGoBack, useRouter } from "@tanstack/react-router";
@@ -26,6 +27,7 @@ import { specimenFor } from "@/lib/fonts/specimen";
 import type { FontRecord } from "@/lib/fonts/types";
 import { usePreview } from "@/lib/preview/context";
 import { sanitizeHtml } from "@/lib/sanitize-html";
+import { CopyButton } from "./copy-button";
 import type { DetailTab } from "./detail-rail";
 import { GlyphsPanel } from "./glyphs";
 import { InstanceChips } from "./instance-chips";
@@ -195,6 +197,23 @@ export function Detail({
                 Repo
               </Button>
             )}
+            {font.repositoryUrl && (
+              <Button
+                variant="outline"
+                render={
+                  // biome-ignore lint/a11y/useAnchorContent: Button injects its children into this anchor via the render prop (aria-label also set); the static rule can't see through it.
+                  <a
+                    href={`${font.repositoryUrl.replace(/\/$/, "")}/releases`}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`Download ${font.name} from its repository releases`}
+                  />
+                }
+              >
+                <DownloadSimpleIcon />
+                Download
+              </Button>
+            )}
             <Button
               render={
                 // biome-ignore lint/a11y/useAnchorContent: Button injects its children into this anchor via the render prop (aria-label also set); the static rule can't see through it.
@@ -202,12 +221,12 @@ export function Detail({
                   href={`https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`}
                   target="_blank"
                   rel="noreferrer"
-                  aria-label={`Download ${font.name} on Google Fonts`}
+                  aria-label={`View ${font.name} on Google Fonts`}
                 />
               }
             >
               <ArrowUpRightIcon />
-              Download
+              Google Fonts
             </Button>
           </div>
         </>
@@ -357,18 +376,23 @@ export function Detail({
 
 // The About view: Google Fonts' family description prose. The source is HTML, so
 // we sanitize to a safe tag allowlist before rendering (see sanitize-html.ts).
-// Renders nothing when Google has no description, so it stays out of the way on
-// the Detail view for families without one.
+// Shows an empty-state line when Google has no description, so the two-column
+// Designer view keeps both columns instead of collapsing to one.
 function AboutPanel({ font }: { font: FontRecord }) {
   const html = sanitizeHtml(font.about);
-  if (!html) return null;
   return (
     <Panel label="About">
-      <div
-        className="prose-about text-sm leading-relaxed [&_a:hover]:decoration-foreground [&_a]:underline [&_a]:decoration-muted-foreground/50 [&_p]:my-3 first:[&_p]:mt-0"
-        // biome-ignore lint/security/noDangerouslySetInnerHtml: content is sanitized to an allowlist in sanitizeHtml.
-        dangerouslySetInnerHTML={{ __html: html }}
-      />
+      {html ? (
+        <div
+          className="prose-about text-sm leading-relaxed [&_a:hover]:decoration-foreground [&_a]:underline [&_a]:decoration-muted-foreground/50 [&_p]:my-3 first:[&_p]:mt-0"
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: content is sanitized to an allowlist in sanitizeHtml.
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      ) : (
+        <p className="py-2 text-muted-foreground text-sm">
+          No description available for this family.
+        </p>
+      )}
     </Panel>
   );
 }
@@ -388,7 +412,12 @@ function LicensePanel({ font }: { font: FontRecord }) {
     .trim();
 
   return (
-    <Panel label={font.license ? `License · ${font.license}` : "License"}>
+    <Panel
+      label={font.license ? `License · ${font.license}` : "License"}
+      action={
+        text ? <CopyButton text={text} label="Copy license text" /> : undefined
+      }
+    >
       {text ? (
         <pre className="overflow-auto whitespace-pre-wrap font-mono text-muted-foreground text-xs leading-relaxed">
           {text}

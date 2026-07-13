@@ -123,7 +123,7 @@ export function FontCard({
                 "noreferrer"
               );
             }}
-            aria-label="Download on Google Fonts"
+            aria-label="View on Google Fonts"
             className="text-muted-foreground transition-colors hover:text-foreground"
           >
             <HoverBoldIcon icon={DownloadSimpleIcon} className="size-5" />
