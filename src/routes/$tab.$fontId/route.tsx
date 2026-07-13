@@ -12,6 +12,7 @@ import { getFontById, getFontsByDesigners } from "@/lib/fonts/queries";
 import { fontSlug } from "@/lib/fonts/slug";
 import { blockOf, parseGlyphQuery } from "@/lib/fonts/unicode-blocks";
 import { pageTitle } from "@/lib/site";
+import { ControlsDrawer } from "./-components/controls-drawer";
 import { Detail } from "./-components/detail";
 import {
   DetailRail,
@@ -170,40 +171,46 @@ function DetailPage() {
     );
   }, [coveredBlocks]);
 
+  // The Specimen/Glyphs sidebar panel. Built once and reused by both the desktop
+  // sidebar slot and the mobile ControlsDrawer, so the two stay in sync (state
+  // lives here on the page, above both). Only these two tabs have controls.
+  const hasControls = tab === "sample" || tab === "glyphs";
+  const sidebarPanel = hasControls ? (
+    tab === "glyphs" ? (
+      <GlyphsSidebar
+        blocks={coveredBlocks}
+        loading={glyphLoading}
+        active={glyphBlock}
+        onSelect={selectGlyphBlock}
+        onSearch={searchGlyph}
+        searchMiss={searchMiss}
+      />
+    ) : (
+      <DetailSidebar
+        size={size}
+        onSizeChange={setSize}
+        axes={font.axes}
+        axisState={axisState}
+        onAxisChange={setAxis}
+        onResetAxes={resetAxes}
+        features={font.features}
+        featureState={featureState}
+        onToggleFeature={toggleFeature}
+        onResetFeatures={resetFeatures}
+      />
+    )
+  ) : null;
+
   return (
     <FilterLayout
       // Read-only spec views (Detail/Designer/License) collapse the panel to
       // just the icon rail; Sample needs the tester controls and Glyphs needs
       // the block list, so both keep the sidebar open.
-      panelOpen={tab === "sample" || tab === "glyphs"}
+      panelOpen={hasControls}
       // The footer Favorite button hearts this font (vs. the list's fav view).
       favoriteFontId={font.id}
       rail={<DetailRail active={tab} onSelect={selectTab} />}
-      sidebar={
-        tab === "glyphs" ? (
-          <GlyphsSidebar
-            blocks={coveredBlocks}
-            loading={glyphLoading}
-            active={glyphBlock}
-            onSelect={selectGlyphBlock}
-            onSearch={searchGlyph}
-            searchMiss={searchMiss}
-          />
-        ) : (
-          <DetailSidebar
-            size={size}
-            onSizeChange={setSize}
-            axes={font.axes}
-            axisState={axisState}
-            onAxisChange={setAxis}
-            onResetAxes={resetAxes}
-            features={font.features}
-            featureState={featureState}
-            onToggleFeature={toggleFeature}
-            onResetFeatures={resetFeatures}
-          />
-        )
-      }
+      sidebar={sidebarPanel}
     >
       <Detail
         font={font}
@@ -219,6 +226,14 @@ function DetailPage() {
         glyphLoading={glyphLoading}
         glyphHighlightCp={highlightCp}
       />
+      {/* Mobile-only controls access for the two tabs that have a sidebar. */}
+      {hasControls && (
+        <ControlsDrawer
+          title={tab === "glyphs" ? "Unicode blocks" : "Preview controls"}
+        >
+          {sidebarPanel}
+        </ControlsDrawer>
+      )}
     </FilterLayout>
   );
 }
