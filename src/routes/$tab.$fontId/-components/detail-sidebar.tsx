@@ -60,7 +60,7 @@ function featureToggleClass(on: boolean) {
 
 // Detail-page side panel: the font's variable-axis sliders first (if any), then
 // its OpenType features as toggle pills. Both drive the type tester via shared
-// page state; feature defaults follow the browser/W3C behavior (todo §8b).
+// page state; feature defaults follow the browser/W3C behavior.
 export function DetailSidebar({
   size,
   onSizeChange,

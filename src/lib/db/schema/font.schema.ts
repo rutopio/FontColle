@@ -8,7 +8,7 @@ import {
 
 // One row per published family. Archival metadata is stored as flat columns
 // (no JSON blob — D1/SQLite can't index or scan blobs efficiently). content_hash
-// lets the harvester skip unchanged families on incremental runs (todo §5/§7).
+// lets the harvester skip unchanged families on incremental runs.
 export const family = sqliteTable(
   "family",
   {
@@ -134,7 +134,7 @@ export const family = sqliteTable(
   ]
 );
 
-// Reverse index: feature tag -> family (todo §5). GIN-equivalent for SQLite is a
+// Reverse index: feature tag -> family. GIN-equivalent for SQLite is a
 // plain index on the tag; the intersection query joins per selected tag.
 export const familyFeature = sqliteTable(
   "family_feature",

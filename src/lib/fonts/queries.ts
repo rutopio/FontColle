@@ -110,9 +110,10 @@ function toFontRecord(f: FamilyRow, related: RelatedByFamily): FontRecord {
   };
 }
 
-// Mode A (todo §8): load the full compact catalog once; the frontend filters
-// client-side. We fetch each table in full and stitch the denormalized records
-// in memory — cheaper than N per-family joins for ~1700 families.
+// Load the full compact catalog once; the frontend filters client-side. We
+// fetch each table in full and stitch the denormalized records in memory —
+// cheaper than N per-family joins for ~1700 families. (Lazy per-family loading
+// is a possible future optimization; the whole catalog is small enough today.)
 async function loadAllFonts(): Promise<FontRecord[]> {
   const [families, axes, features, instances, languages, scripts] =
     await Promise.all([
