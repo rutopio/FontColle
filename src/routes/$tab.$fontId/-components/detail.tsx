@@ -100,6 +100,10 @@ export function Detail({
     { label: "Axes", value: String(font.axes.length) },
     { label: "Named instances", value: String(font.instances.length) },
     { label: "OpenType features", value: String(font.features.length) },
+    font.unitsPerEm != null && {
+      label: "Units per em",
+      value: font.unitsPerEm.toLocaleString(),
+    },
     font.glyphCount != null && {
       label: "Glyphs",
       value: font.glyphCount.toLocaleString(),

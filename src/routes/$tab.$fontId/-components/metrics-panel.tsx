@@ -41,71 +41,155 @@ function MetricsDiagram({
 }) {
   const xHeight = derive(font, "xHeight");
   const capHeight = derive(font, "capHeight");
-  // Ascender/descender as fractions of the em, from the hhea trio (the line the
-  // browser lays type on). Positive descender for drawing below the baseline.
+  // Ascender/descender as fractions of the em, for the typographic ascender /
+  // descender lines (the tops of b/d/h and bottoms of g/p/y). Prefer the OS/2
+  // typo* trio: those track the design's ascender, sitting just above cap-height.
+  // hhea* is a line-layout metric that runs much taller (it pads for accents and
+  // CJK), so using it drew the ascender line far above cap-height. Fall back to
+  // hhea* then to cap-height when typo* is absent. Positive descender for drawing
+  // below the baseline.
   const upm = font.unitsPerEm;
-  const asc =
-    upm && font.hheaAscender != null ? font.hheaAscender / upm : capHeight;
-  const desc =
-    upm && font.hheaDescender != null ? -font.hheaDescender / upm : 0.2;
+  const ascRaw = font.typoAscender ?? font.hheaAscender;
+  const descRaw = font.typoDescender ?? font.hheaDescender;
+  const asc = upm && ascRaw != null ? ascRaw / upm : capHeight;
+  const desc = upm && descRaw != null ? -descRaw / upm : 0.2;
 
   // Viewbox: 1 em of ascent + descent, with a little side padding. y grows down,
   // so the baseline sits at y = ascentTop, and a ratio r maps to ascentTop - r.
   const ascTop = asc ?? 1;
   const descBottom = desc ?? 0.2;
-  const H = ascTop + descBottom;
   const yOf = (r: number) => (ascTop - r) * 100;
 
-  const guides: { r: number; label: string }[] = [
-    asc != null ? { r: asc, label: "ascender" } : null,
-    capHeight != null ? { r: capHeight, label: "cap-height" } : null,
-    xHeight != null ? { r: xHeight, label: "x-height" } : null,
-    { r: 0, label: "baseline" },
-    desc != null ? { r: -descBottom, label: "descender" } : null,
-  ].filter((g): g is { r: number; label: string } => g != null);
+  // Raw font-unit value shown after each label (e.g. "ascender 880"), so the
+  // number matches how a font editor reports the metric. Ratios × upm recover
+  // the cap/x-height units; asc/desc keep the head-table value directly.
+  const unitsOf = (r: number): string =>
+    upm ? Math.round(r * upm).toString() : "";
+
+  // Win ascent/descent as em fractions: the font's real ink bounds (yMax/yMin).
+  const winAR = upm && font.winAscent != null ? font.winAscent / upm : null;
+  const winDR = upm && font.winDescent != null ? font.winDescent / upm : null;
+
+  // side "left" labels sit before the specimen, right-aligned (end-anchored);
+  // the rest sit after it, left-aligned. The win bounds go left to set them
+  // apart from the typo/cap/x guides on the right.
+  type Guide = { r: number; label: string; units: string; side?: "left" };
+  const guides: Guide[] = [
+    winAR != null
+      ? {
+          r: winAR,
+          label: "OS/2.usWinAscent",
+          units: String(font.winAscent),
+          side: "left",
+        }
+      : null,
+    asc != null
+      ? {
+          r: asc,
+          // Name the actual source so the number isn't mistaken for the letter
+          // ascender line: it's OS/2.sTypoAscender (falling back to hhea).
+          label:
+            font.typoAscender != null
+              ? "OS/2.sTypoAscender"
+              : font.hheaAscender != null
+                ? "hhea.ascender"
+                : "ascender",
+          units: ascRaw != null ? String(ascRaw) : unitsOf(asc),
+        }
+      : null,
+    capHeight != null
+      ? { r: capHeight, label: "cap-height", units: unitsOf(capHeight) }
+      : null,
+    xHeight != null
+      ? { r: xHeight, label: "x-height", units: unitsOf(xHeight), side: "left" }
+      : null,
+    { r: 0, label: "baseline", units: "0" },
+    desc != null
+      ? {
+          r: -descBottom,
+          label:
+            font.typoDescender != null
+              ? "OS/2.sTypoDescender"
+              : font.hheaDescender != null
+                ? "hhea.descender"
+                : "descender",
+          units: descRaw != null ? String(descRaw) : unitsOf(-descBottom),
+        }
+      : null,
+    winDR != null
+      ? {
+          r: -winDR,
+          label: "OS/2.usWinDescent",
+          units: String(font.winDescent),
+          side: "left",
+        }
+      : null,
+  ].filter((g): g is Guide => g != null);
+
+  // Extra vertical breathing room above ascender / below descender, and a right
+  // gutter wide enough to hold the guide labels clear of the specimen's "g".
+  const padY = 14;
+  // Left gutter holds the end-anchored win labels; the specimen and guide lines
+  // start after it. Right-aligned mono labels start just past the ~340-unit
+  // "HQxibg" specimen. Widen so the longest right label fits its gutter.
+  const padL = 120;
+  const glyphX = padL;
+  const labelX = padL + 398;
+  const W = padL + 520;
+  // The win guides can reach past the ascender/descender lines, so size the
+  // viewbox to whichever extends furthest, then add the vertical padding.
+  const topExtent = Math.max(ascTop, winAR ?? ascTop);
+  const botExtent = Math.max(descBottom, winDR ?? descBottom);
+  const vbY = yOf(topExtent) - padY;
+  const vbH = (topExtent + botExtent) * 100 + padY * 2;
 
   return (
     <svg
-      viewBox={`0 -4 200 ${H * 100 + 8}`}
-      className="h-48 w-full"
+      viewBox={`0 ${vbY} ${W} ${vbH}`}
+      className="h-56 w-full"
       role="img"
-      aria-label="Diagram of the font's baseline, x-height, cap-height, ascender and descender"
+      aria-label="Diagram of the font's win ascent/descent bounds, baseline, x-height, cap-height, ascender and descender"
     >
       <title>Vertical metrics diagram</title>
       {guides.map((g) => {
         const y = yOf(g.r);
+        const left = g.side === "left";
         return (
           <g key={g.label}>
             <line
-              x1={0}
-              x2={200}
+              x1={glyphX}
+              x2={labelX - 8}
               y1={y}
               y2={y}
-              className="stroke-border"
-              strokeWidth={0.5}
+              className="stroke-muted-foreground/70"
+              strokeWidth={1}
               strokeDasharray={g.label === "baseline" ? undefined : "2 2"}
             />
             <text
-              x={198}
-              y={y - 1.5}
-              textAnchor="end"
-              className="fill-muted-foreground"
-              style={{ fontSize: 5 }}
+              x={left ? glyphX - 8 : labelX}
+              y={y}
+              textAnchor={left ? "end" : "start"}
+              dominantBaseline="central"
+              className="fill-muted-foreground font-mono"
+              style={{ fontSize: 8 }}
             >
-              {g.label}
+              {g.units ? `${g.label} ${g.units}` : g.label}
             </text>
           </g>
         );
       })}
       {/* The specimen letters, sized to one em (100 user units) sitting on the
-          baseline, so their real shapes line up with the declared guides. */}
+          baseline, so their real shapes line up with the declared guides. The
+          leading/trailing spaces (xml:space=preserve) give equal breathing room
+          before "H" and after "g". */}
       <text
-        x={8}
+        x={glyphX}
         y={yOf(0)}
+        xmlSpace="preserve"
         style={{ ...style, fontSize: 100 }}
         className="fill-foreground"
       >
-        Hxg
+        {" HQxibg "}
       </text>
     </svg>
   );
