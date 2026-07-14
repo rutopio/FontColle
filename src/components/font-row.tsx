@@ -76,71 +76,53 @@ export function FontRow({
     <Link
       to="/$tab/$fontId"
       params={{ tab: "specimen", fontId: fontSlug(font.name) }}
-      className="flex h-28 flex-col justify-center gap-3 overflow-hidden border-b px-4 transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:outline-none"
+      className="flex h-28 flex-col justify-center gap-3 overflow-hidden border-b transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:outline-none"
     >
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex min-w-0 items-center gap-2">
-          <h3 className="shrink-0">{font.name}</h3>
-          {font.designer && (
-            <span className="truncate text-muted-foreground text-xs">
-              {font.designer}
-            </span>
-          )}
-          {/* Same footer badges as FontCard, kept from wrapping (shrink-0). */}
-          <FontTraits
-            font={font}
-            selection={selection}
-            badgeClassName="shrink-0"
-          />
-        </div>
-        <div className="flex shrink-0 items-center gap-4">
-          <Tooltip>
-            <TooltipTrigger
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                onToggleFavorite(font.id);
-              }}
-              aria-label={
-                isFavorite ? "Remove from favorites" : "Add to favorites"
-              }
-              className="text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <HoverBoldIcon
-                icon={HeartIcon}
-                weight={isFavorite ? "fill" : "regular"}
-                className={cn("size-5", isFavorite && "text-red-500")}
-              />
-            </TooltipTrigger>
-            <TooltipContent>
-              {isFavorite ? "Remove from favorites" : "Add to favorites"}
-            </TooltipContent>
-          </Tooltip>
-          {/* A button, not an <a>: the whole row is already a <Link> (an
+      {/* Narrow (mobile): [name + actions] row over a designer row, stacked.
+          Wide: name, designer and traits all inline, actions on the right. */}
+      <div className="flex flex-col gap-0.5 px-2">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-2">
+            <h3 className="truncate sm:shrink-0">{font.name}</h3>
+            {/* Designer inline next to the name on wide rows only. */}
+            {font.designer && (
+              <span className="hidden truncate text-muted-foreground text-xs sm:inline">
+                {font.designer}
+              </span>
+            )}
+            {/* Footer badges (shrink-0); hidden on narrow rows where there's no room. */}
+            <FontTraits
+              font={font}
+              selection={selection}
+              badgeClassName="hidden shrink-0 sm:inline-flex"
+            />
+          </div>
+          <div className="flex shrink-0 items-center gap-4">
+            <Tooltip>
+              <TooltipTrigger
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  onToggleFavorite(font.id);
+                }}
+                aria-label={
+                  isFavorite ? "Remove from favorites" : "Add to favorites"
+                }
+                className="text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <HoverBoldIcon
+                  icon={HeartIcon}
+                  weight={isFavorite ? "fill" : "regular"}
+                  className={cn("size-5", isFavorite && "text-red-500")}
+                />
+              </TooltipTrigger>
+              <TooltipContent>
+                {isFavorite ? "Remove from favorites" : "Add to favorites"}
+              </TooltipContent>
+            </Tooltip>
+            {/* A button, not an <a>: the whole row is already a <Link> (an
               <a>), and <a> can't nest <a> (hydration error). Open Google Fonts
               in a new tab and stop the click from triggering row navigation. */}
-          <Tooltip>
-            <TooltipTrigger
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                window.open(
-                  `https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`,
-                  "_blank",
-                  "noreferrer"
-                );
-              }}
-              aria-label="View on Google Fonts"
-              className="text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <HoverBoldIcon icon={DownloadSimpleIcon} className="size-5" />
-            </TooltipTrigger>
-            <TooltipContent>View on Google Fonts</TooltipContent>
-          </Tooltip>
-          {/* Only when the family has a known upstream repo. A button, not an
-              <a>, for the same nested-<a> reason as the download button. */}
-          {font.repositoryUrl && (
             <Tooltip>
               <TooltipTrigger
                 type="button"
@@ -148,23 +130,52 @@ export function FontRow({
                   e.preventDefault();
                   e.stopPropagation();
                   window.open(
-                    font.repositoryUrl as string,
+                    `https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`,
                     "_blank",
                     "noreferrer"
                   );
                 }}
-                aria-label="View source repository"
+                aria-label="View on Google Fonts"
                 className="text-muted-foreground transition-colors hover:text-foreground"
               >
-                <HoverBoldIcon
-                  icon={repoHostIcon(font.repositoryUrl)}
-                  className="size-5"
-                />
+                <HoverBoldIcon icon={DownloadSimpleIcon} className="size-5" />
               </TooltipTrigger>
-              <TooltipContent>View source repository</TooltipContent>
+              <TooltipContent>View on Google Fonts</TooltipContent>
             </Tooltip>
-          )}
+            {/* Only when the family has a known upstream repo. A button, not an
+              <a>, for the same nested-<a> reason as the download button. */}
+            {font.repositoryUrl && (
+              <Tooltip>
+                <TooltipTrigger
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    window.open(
+                      font.repositoryUrl as string,
+                      "_blank",
+                      "noreferrer"
+                    );
+                  }}
+                  aria-label="View source repository"
+                  className="text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <HoverBoldIcon
+                    icon={repoHostIcon(font.repositoryUrl)}
+                    className="size-5"
+                  />
+                </TooltipTrigger>
+                <TooltipContent>View source repository</TooltipContent>
+              </Tooltip>
+            )}
+          </div>
         </div>
+        {/* Designer on its own second row on narrow screens only. */}
+        {font.designer && (
+          <span className="truncate text-muted-foreground text-xs sm:hidden">
+            {font.designer}
+          </span>
+        )}
       </div>
 
       {fontLoaded ? (
@@ -178,7 +189,7 @@ export function FontRow({
             transition:
               "font-weight 200ms ease, font-variation-settings 200ms ease",
           }}
-          className="truncate text-3xl leading-tight"
+          className="truncate px-2 text-3xl leading-tight"
         >
           {previewText || specimenFor(font)}
         </p>
