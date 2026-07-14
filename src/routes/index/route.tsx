@@ -292,9 +292,9 @@ function App() {
               )}
             </div>
 
-            <div className="ml-auto flex items-center gap-3 max-md:ml-0 max-md:w-full max-md:justify-between">
+            <div className="ml-auto flex items-center gap-2 max-md:ml-0 max-md:w-full max-md:justify-between md:gap-3">
               <span
-                className="text-muted-foreground text-sm"
+                className="flex-1 text-muted-foreground text-sm"
                 aria-live="polite"
               >
                 {results.length} {results.length === 1 ? "font" : "fonts"}
@@ -332,7 +332,16 @@ function App() {
             </div>
           </>
         }
-        footer={<PreviewBar />}
+        footer={
+          <PreviewBar
+            onScrollTop={() =>
+              scrollRef.current?.scrollTo({
+                top: 0,
+                behavior: "smooth",
+              })
+            }
+          />
+        }
       >
         {results.length === 0 ? (
           <Empty className="py-16">

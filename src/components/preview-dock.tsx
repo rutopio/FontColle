@@ -1,4 +1,4 @@
-import { XIcon } from "@phosphor-icons/react";
+import { ArrowUpIcon, XIcon } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -63,10 +63,32 @@ function PreviewField() {
 // Full-width preview field for a page's bottom bar (Column footer): the whole
 // bar is the input. Both the list and the detail page mount one, so the shared
 // preview text stays reachable while scrolling on either.
-export function PreviewBar() {
+//
+// `onScrollTop`, when supplied (the list page), adds a divider-separated square
+// button on the far right that scrolls the main font list back to the top.
+export function PreviewBar({ onScrollTop }: { onScrollTop?: () => void }) {
   return (
     <div className="flex flex-1 items-center gap-2">
       <PreviewField />
+      {onScrollTop && (
+        <div className="group -mr-4 flex h-16 shrink-0 cursor-pointer items-center justify-center border-border border-l px-3 transition-colors hover:bg-secondary">
+          <button
+            type="button"
+            onClick={onScrollTop}
+            aria-label="Scroll to top"
+            className="flex cursor-pointer flex-col items-center gap-1 rounded-md px-2 py-2 text-muted-foreground outline-none transition-colors focus-visible:ring-2 focus-visible:ring-sidebar-ring group-hover:text-foreground"
+          >
+            {/* Phosphor weight is a prop, not CSS, so hover-swaps the icon:
+                the base icon hides on hover and the bold twin shows. */}
+            <ArrowUpIcon className="size-5 group-hover:hidden" />
+            <ArrowUpIcon
+              className="hidden size-5 group-hover:block"
+              weight="bold"
+            />
+            <span className="text-[10px] leading-none">Top</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
