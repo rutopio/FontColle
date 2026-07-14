@@ -53,6 +53,12 @@ export const CLASSIFICATION_SECTIONS: {
     ],
   },
   {
+    title: "Slab",
+    prefix: "/Slab/",
+    group: "style",
+    tags: ["/Slab/Humanist", "/Slab/Geometric", "/Slab/Clarendon"],
+  },
+  {
     title: "Script",
     prefix: "/Script/",
     group: "style",
@@ -254,7 +260,7 @@ export const FLAG_LABELS: Record<string, string> = {
 // or not. The two partition the whole catalog.
 export const ITALIC_VALUES = ["italic", "upright"];
 export const ITALIC_LABELS: Record<string, string> = {
-  italic: "Italic",
+  italic: "Has Italic",
   upright: "Non-Italic",
 };
 
