@@ -1,5 +1,5 @@
-import { useVirtualizer } from "@tanstack/react-virtual";
-import type { CSSProperties, RefObject } from "react";
+import { useWindowVirtualizer } from "@tanstack/react-virtual";
+import type { CSSProperties } from "react";
 import {
   useCallback,
   useEffect,
@@ -57,17 +57,12 @@ function BlockGrid({
   block,
   ranges,
   style,
-  scrollRef,
   highlightCp,
   onCopy,
 }: {
   block: UnicodeBlock;
   ranges: Range[];
   style: CSSProperties;
-  // The page's shared ScrollArea viewport (from Column). The grid virtualizes
-  // its rows inside this same scroller — matching how the list's FontGrid
-  // scrolls — instead of nesting its own overflow container.
-  scrollRef: RefObject<HTMLDivElement | null>;
   // A codepoint (within this block) to scroll to and briefly ring, set by the
   // sidebar glyph search. Null when nothing is targeted.
   highlightCp: number | null;
@@ -93,7 +88,9 @@ function BlockGrid({
     const el = gridRef.current;
     if (!el) return;
     const measure = () => {
-      if (scrollRef.current) setScrollMargin(el.offsetTop);
+      // Offset from the top of the document (the window is the scroll root), so
+      // virtual row positions map to the right document coordinates.
+      setScrollMargin(el.getBoundingClientRect().top + window.scrollY);
       // The 16 flexible columns share the width left after the label column and
       // all 17 gaps; a cell is that width / 16, and the row is that tall (square).
       const w = el.clientWidth - LABEL_W - (COLS + 1) * GAP;
@@ -103,11 +100,10 @@ function BlockGrid({
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     return () => ro.disconnect();
-  }, [scrollRef]);
+  }, []);
 
-  const rowVirtualizer = useVirtualizer({
+  const rowVirtualizer = useWindowVirtualizer({
     count: rowCount,
-    getScrollElement: () => scrollRef.current,
     estimateSize: () => cellSize,
     overscan: 6,
     scrollMargin,
@@ -325,7 +321,6 @@ export function GlyphsPanel({
   blockName,
   ranges,
   loading,
-  scrollRef,
   highlightCp,
 }: {
   font: FontRecord;
@@ -333,7 +328,6 @@ export function GlyphsPanel({
   blockName: string;
   ranges: Range[];
   loading: boolean;
-  scrollRef: RefObject<HTMLDivElement | null>;
   highlightCp: number | null;
 }) {
   const active = useMemo(
@@ -401,7 +395,6 @@ export function GlyphsPanel({
           block={active}
           ranges={ranges}
           style={glyphStyle}
-          scrollRef={scrollRef}
           highlightCp={highlightCp}
           onCopy={onCopy}
         />

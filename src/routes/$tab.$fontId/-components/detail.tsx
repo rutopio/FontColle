@@ -5,7 +5,7 @@ import {
   FunnelIcon,
 } from "@phosphor-icons/react";
 import { Link, useCanGoBack, useRouter } from "@tanstack/react-router";
-import { Fragment, useEffect, useMemo, useRef } from "react";
+import { Fragment, useEffect, useMemo } from "react";
 import { Column } from "@/components/filter-layout";
 import { FontTraits } from "@/components/font-traits";
 import { PreviewBar } from "@/components/preview-dock";
@@ -69,10 +69,6 @@ export function Detail({
   const router = useRouter();
   const canGoBack = useCanGoBack();
   const specimen = text || specimenFor(font);
-  // The Column's ScrollArea viewport, shared with the Glyphs grid so its
-  // row-virtualizer scrolls in the same container the rest of the page does
-  // (matching how the list's FontGrid scrolls in its Column).
-  const scrollRef = useRef<HTMLDivElement>(null);
   const hasItalic = useMemo(
     () => font.instances.some((i) => i.italic),
     [font.instances]
@@ -137,7 +133,6 @@ export function Detail({
   return (
     <Column
       headerClassName="justify-between"
-      scrollViewportRef={scrollRef}
       subheader={<DetailTabBar active={tab} fontId={fontSlug(font.name)} />}
       header={
         <>
@@ -293,7 +288,6 @@ export function Detail({
           blockName={glyphBlock}
           ranges={glyphRanges}
           loading={glyphLoading}
-          scrollRef={scrollRef}
           highlightCp={glyphHighlightCp}
         />
       )}
