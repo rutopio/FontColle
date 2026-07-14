@@ -316,7 +316,7 @@ function App() {
                     aria-label="Grid view"
                     className="h-full sm:h-full"
                   >
-                    Grid
+                    <span className="hidden sm:inline">Grid</span>
                     <SquaresFourIcon className="size-4" />
                   </TabsTrigger>
                   <TabsTrigger
@@ -324,7 +324,7 @@ function App() {
                     aria-label="Row view"
                     className="h-full sm:h-full"
                   >
-                    Row
+                    <span className="hidden sm:inline">Row</span>
                     <RowsIcon className="size-4" />
                   </TabsTrigger>
                 </TabsList>
