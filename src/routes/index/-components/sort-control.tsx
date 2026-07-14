@@ -59,12 +59,19 @@ export function SortControl({
         }}
       >
         <SelectTrigger
-          className="h-full rounded-r-none border-0 bg-transparent focus-visible:ring-0 dark:bg-transparent dark:hover:bg-transparent"
+          className="h-full rounded-none border-0 bg-transparent shadow-none before:hidden focus-visible:ring-0 dark:bg-transparent dark:hover:bg-transparent"
           aria-label="Sort by"
         >
           <SelectValue>{group.group}</SelectValue>
         </SelectTrigger>
-        <SelectContent>
+        {/* Right-align the popup to the trigger so its right border
+                    lands on the group's divider hairline, not out past the
+                    direction button. */}
+        <SelectContent
+          align="end"
+          alignOffset={-3}
+          alignItemWithTrigger={false}
+        >
           {SORT_GROUPS.map((g) => (
             <SelectItem key={g.group} value={g.group}>
               {g.group}
@@ -72,6 +79,10 @@ export function SortControl({
           ))}
         </SelectContent>
       </Select>
+      {/* Solid 1px divider: a `border-l` renders lighter than the group's outer
+          border (sub-pixel anti-aliasing), so use a real hairline in the same
+          token as the frame. */}
+      <div className="h-full w-px shrink-0 bg-input" />
       <button
         type="button"
         disabled={directionless}
@@ -82,7 +93,7 @@ export function SortControl({
         }}
         aria-label={`Sort direction: ${dirLabel}`}
         title={dirLabel}
-        className="flex h-full items-center border-input border-l px-2.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-40 dark:hover:bg-input/50"
+        className="flex h-full items-center px-2.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-40 dark:hover:bg-input/50"
       >
         {asc ? (
           <SortAscendingIcon className="size-4" />
