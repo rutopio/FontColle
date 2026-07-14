@@ -24,7 +24,7 @@ export function ErrorState({
   description?: string[];
 }) {
   return (
-    <main className="flex min-h-svh w-full flex-col items-center justify-center p-6">
+    <main className="flex min-h-full w-full flex-col items-center justify-center p-6">
       <Empty>
         <EmptyHeader>
           <Link

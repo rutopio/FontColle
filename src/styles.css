@@ -193,15 +193,16 @@
     @apply font-sans tracking-wide;
   }
   /* iOS Chrome computes dvh/svh/lvh as outerHeight (including the collapsed
-     toolbar band), so a shell with min-height:100svh over-extends past the
-     viewport and leaves an empty strip below the content. Safari and desktop
-     compute it correctly, so the bug is iOS-Chrome-only. Percentage heights
-     are immune: html/body at 100% resolve to the real innerHeight in every
-     browser, so the sidebar-wrapper's min-h-full fills exactly one viewport
-     without the toolbar overshoot. */
+     toolbar band) and also inflates a plain height:100% body past the real
+     viewport, leaving an empty strip below the content. Safari and desktop
+     don't, so the bug is iOS-Chrome-only. The app scrolls inside its own
+     ScrollArea (filter-layout uses absolute inset-0), never the body, so we
+     lock html/body to a fixed viewport height and hide their overflow. The
+     sidebar-wrapper then fills it exactly with h-full. */
   html,
   body {
     height: 100%;
+    overflow: hidden;
   }
   h1,
   h2,
