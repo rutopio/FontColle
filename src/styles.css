@@ -192,17 +192,18 @@
   html {
     @apply font-sans tracking-wide;
   }
-  /* iOS Chrome computes dvh/svh/lvh as outerHeight (including the collapsed
-     toolbar band) and also inflates a plain height:100% body past the real
-     viewport, leaving an empty strip below the content. Safari and desktop
-     don't, so the bug is iOS-Chrome-only. The app scrolls inside its own
-     ScrollArea (filter-layout uses absolute inset-0), never the body, so we
-     lock html/body to a fixed viewport height and hide their overflow. The
-     sidebar-wrapper then fills it exactly with h-full. */
-  html,
-  body {
+  /* The whole document scrolls (body is the scroll root) so iOS Chrome's native
+     pull-to-refresh and bottom rubber-band work. The body height follows its
+     real content (the list virtualizes against the window), so iOS Chrome can't
+     inflate an empty height:100% body past the viewport — the source of the
+     old strip below the footer. min-height:100% gives the sidebar-wrapper's
+     min-h-full a viewport-height floor for short pages while letting tall
+     content grow the document naturally. */
+  html {
     height: 100%;
-    overflow: hidden;
+  }
+  body {
+    min-height: 100%;
   }
   h1,
   h2,

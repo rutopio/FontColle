@@ -1,11 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import type { Ref } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { FavoriteToggle } from "@/components/favorite-toggle";
 import { LogoIcon } from "@/components/logo-icon";
 import { RouteFade } from "@/components/route-fade";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./theme-toggle";
@@ -104,12 +102,12 @@ export function FilterLayout({
   );
 }
 
-// Right side of both pages, matching sidebar-09: a fixed header flush to the
-// inset edge, a body that scrolls inside its own ScrollArea, and a fixed footer
-// bar. The header and footer stay put while only the body scrolls, so the
-// scrollbar sits between them rather than running through the chrome. The whole
-// Column owns the viewport height; `scrollViewportRef` exposes the scroll
-// container so a virtualizer (the list) can bind to it.
+// Right side of both pages: a sticky header (+ optional subheader) pinned to
+// the viewport top, the body flowing in the document, and a sticky footer bar
+// pinned to the bottom. The whole document scrolls (body is the scroll root),
+// not an inner container — so iOS Chrome's native pull-to-refresh and bottom
+// rubber-band work and the body is never inflated past the viewport (the old
+// strip-below-the-footer bug). The list virtualizes against the window.
 export function Column({
   header,
   headerClassName,
@@ -117,7 +115,6 @@ export function Column({
   footer,
   footerHidden = false,
   children,
-  scrollViewportRef,
 }: {
   header: React.ReactNode;
   headerClassName?: string;
@@ -132,11 +129,12 @@ export function Column({
   // shared preview field is irrelevant.
   footerHidden?: boolean;
   children: React.ReactNode;
-  scrollViewportRef?: Ref<HTMLDivElement>;
 }) {
   const headerEl = (
     // Fixed 16-height row on desktop; on mobile it may grow to two rows when the
     // list header's search + meta controls wrap (min-h-16 keeps the floor).
+    // The header + subheader are wrapped in a single sticky container (see the
+    // return), so this row itself isn't sticky.
     <header className="flex min-h-16 shrink-0 items-center gap-2 border-border border-b bg-background px-4 py-2 md:h-16 md:py-0">
       <div
         className={cn(
@@ -162,7 +160,9 @@ export function Column({
       }
       transition={{ duration: 0.2, ease: "easeOut" }}
       className={cn(
-        "flex shrink-0 items-center gap-2 overflow-hidden bg-background px-4",
+        // sticky bottom-0 pins the preview dock to the viewport bottom while the
+        // document scrolls behind it.
+        "sticky bottom-0 z-20 flex shrink-0 items-center gap-2 overflow-hidden bg-background px-4",
         footerHidden ? "border-t-0" : "border-border border-t"
       )}
     >
@@ -176,13 +176,13 @@ export function Column({
       // Skip-nav target; -scroll-mt keeps it clear of the fixed header on focus.
       className={cn(
         "scroll-mt-20",
-        // min-h-full so a short body (e.g. an Empty state) fills the scroll
-        // viewport, letting a flex-1 child center in the remaining space instead
-        // of sitting up top. Taller content just grows past it as before.
-        "mx-auto flex min-h-full w-full max-w-(--breakpoint-2xl) flex-col gap-6 p-6",
-        // A solid footer bar sits below the scroll area, so content needs no
-        // extra clearance. Without one, the floating preview dock overlaps the
-        // last rows, so keep the tall bottom padding to clear it.
+        // flex-1 so a short body (e.g. an Empty state) fills the space between
+        // the sticky header and footer, letting a flex child center in the
+        // remainder instead of sitting up top. Taller content grows the document.
+        "mx-auto flex w-full max-w-(--breakpoint-2xl) flex-1 flex-col gap-6 p-6",
+        // A solid footer bar sits below the body, so content needs no extra
+        // clearance. Without one, the floating preview dock overlaps the last
+        // rows, so keep the tall bottom padding to clear it.
         footerEl ? "pb-6" : "pb-24"
       )}
     >
@@ -190,21 +190,24 @@ export function Column({
     </div>
   );
 
-  // The body scrolls inside its own container. The wrapper is positioned
-  // absolutely to fill the inset without contributing to its flex height —
-  // otherwise the (pre-virtualization) list height blows out the shared
-  // `min-h-svh` shell and the container never gets a finite height to cap the
-  // ScrollArea. A relative spacer keeps the inset's own box intact.
+  // The whole document scrolls (body is the scroll root), so iOS Chrome's native
+  // pull-to-refresh and bottom rubber-band work and the body is never inflated
+  // past the viewport. The header and footer are sticky (pinned to the viewport
+  // edges) while the body flows between them. The list virtualizes against the
+  // window (see font-grid / glyphs useWindowVirtualizer), so no inner scroll
+  // container is needed.
   return (
-    <div className="relative min-w-0 flex-1">
-      <div className="absolute inset-0 flex flex-col">
+    <div className="flex min-h-full min-w-0 flex-1 flex-col">
+      {/* Header + subheader pinned together to the viewport top. Wrapping both
+          in one sticky container avoids computing a per-breakpoint top offset
+          for the subheader (the header height varies: one row on desktop, up to
+          two when the mobile controls wrap). */}
+      <div className="sticky top-0 z-20">
         {headerEl}
         {subheader}
-        <ScrollArea viewportRef={scrollViewportRef} className="min-h-0 flex-1">
-          {body}
-        </ScrollArea>
-        {footerEl}
       </div>
+      {body}
+      {footerEl}
     </div>
   );
 }
