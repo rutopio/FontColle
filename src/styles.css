@@ -196,14 +196,13 @@
      toolbar band) and also inflates a plain height:100% body past the real
      viewport, leaving an empty strip below the content. Safari and desktop
      don't, so the bug is iOS-Chrome-only. The app scrolls inside its own
-     ScrollArea (filter-layout uses absolute inset-0), never the body, so the
-     h-full sidebar-wrapper clips the overflow (see sidebar.tsx). We keep the
-     body itself scrollable (no overflow:hidden here) so iOS Chrome's native
-     pull-to-refresh still works — the wrapper's clipping is what stops the
-     body from being inflated past the viewport. */
+     ScrollArea (filter-layout uses absolute inset-0), never the body, so we
+     lock html/body to a fixed viewport height and hide their overflow. The
+     sidebar-wrapper then fills it exactly with h-full. */
   html,
   body {
     height: 100%;
+    overflow: hidden;
   }
   h1,
   h2,
