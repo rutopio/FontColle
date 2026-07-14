@@ -85,6 +85,9 @@ function App() {
   const { setFilter: setSharedFilter, listScrollY } = useFilter();
   const facetIndex = useMemo(() => buildFacetIndex(fonts), [fonts]);
 
+  // The results list scrolls inside the Column's ScrollArea viewport, not the
+  // window. The virtualizer and scroll restore both bind to this element.
+  const scrollRef = useRef<HTMLDivElement>(null);
   // The search field, so the "/" shortcut can focus it.
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -184,7 +187,7 @@ function App() {
     setSharedFilter(filter);
   }, [filter, setSharedFilter]);
 
-  useListScrollRestore(listScrollY);
+  useListScrollRestore(scrollRef, listScrollY);
 
   // Sort writes the URL immediately — it's cheap and doesn't gate on the
   // deferred filter. It carries the current pending filter along so the URL
@@ -269,6 +272,7 @@ function App() {
       }
     >
       <Column
+        scrollViewportRef={scrollRef}
         header={
           <>
             <div className="flex items-center gap-2 max-md:w-full">
@@ -328,11 +332,7 @@ function App() {
             </div>
           </>
         }
-        footer={
-          <PreviewBar
-            onScrollTop={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          />
-        }
+        footer={<PreviewBar />}
       >
         {results.length === 0 ? (
           <Empty className="py-16">
@@ -403,6 +403,7 @@ function App() {
               view={view}
               selection={debouncedFilter}
               axisValues={axisValues}
+              scrollRef={scrollRef}
             />
           </>
         )}
