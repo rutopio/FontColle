@@ -1,5 +1,11 @@
-import { useWindowVirtualizer } from "@tanstack/react-virtual";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import {
+  type RefObject,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { FontCard } from "@/components/font-card";
 import { FontRow } from "@/components/font-row";
 import type { FilterSelection } from "@/lib/fonts/filter";
@@ -18,6 +24,10 @@ interface Props {
   selection: FilterSelection;
   // Session slider positions (0-100%) per selected variable axis.
   axisValues: Record<string, number>;
+  // The scroll container (the Column's ScrollArea viewport) the virtualizer
+  // scrolls within. The list lives inside it, so measurement and scrolling are
+  // element-based, not window-based.
+  scrollRef: RefObject<HTMLDivElement | null>;
 }
 
 // Grid column count matches the CSS breakpoints (md:2, lg:3). Row mode is always
@@ -46,6 +56,7 @@ export function FontGrid({
   view,
   selection,
   axisValues,
+  scrollRef,
 }: Props) {
   const listRef = useRef<HTMLDivElement>(null);
   const [cols, setCols] = useState(view === "row" ? 1 : 3);
@@ -82,23 +93,11 @@ export function FontGrid({
 
   const rowCount = Math.ceil(fonts.length / cols);
 
-  // The document (window) is the scroll root, so the list virtualizes against
-  // it. scrollMargin is the list's offset from the top of the document (the
-  // sticky header + any content above it), so virtual row positions map to the
-  // right document coordinates. It's measured after mount from listRef.
-  const [scrollMargin, setScrollMargin] = useState(0);
-  useLayoutEffect(() => {
-    if (!listRef.current) return;
-    setScrollMargin(
-      listRef.current.getBoundingClientRect().top + window.scrollY
-    );
-  });
-
-  const virtualizer = useWindowVirtualizer({
+  const virtualizer = useVirtualizer({
     count: rowCount,
+    getScrollElement: () => scrollRef.current,
     estimateSize: () => (view === "row" ? LINE_H : CARD_H + GAP),
     overscan: 4,
-    scrollMargin,
   });
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: cols/view are the re-measure triggers, not read in the body — a change to either must re-run measurement.
@@ -166,10 +165,7 @@ export function FontGrid({
                 top: 0,
                 left: 0,
                 width: "100%",
-                // row.start is in document coordinates; subtract scrollMargin to
-                // place it relative to the list container (which starts at
-                // scrollMargin from the document top).
-                transform: `translateY(${row.start - scrollMargin}px)`,
+                transform: `translateY(${row.start}px)`,
               }}
             >
               {view === "row" ? (
