@@ -87,63 +87,35 @@ export function FontCard({
       params={{ tab: "specimen", fontId: fontSlug(font.name) }}
       className="flex h-72 flex-col gap-4 overflow-hidden rounded-lg border bg-card p-5 transition-colors hover:border-foreground focus-visible:border-foreground focus-visible:outline-none"
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 flex-col gap-1">
-          <h3 className="truncate">{font.name}</h3>
-          {font.designer && (
-            <p className="truncate text-muted-foreground text-xs">
-              {font.designer}
-            </p>
-          )}
-        </div>
-        <div className="flex shrink-0 items-center gap-4">
-          <Tooltip>
-            <TooltipTrigger
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                onToggleFavorite(font.id);
-              }}
-              aria-label={
-                isFavorite ? "Remove from favorites" : "Add to favorites"
-              }
-              className="text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <HoverBoldIcon
-                icon={HeartIcon}
-                weight={isFavorite ? "fill" : "regular"}
-                className={cn("size-5", isFavorite && "text-red-500")}
-              />
-            </TooltipTrigger>
-            <TooltipContent>
-              {isFavorite ? "Remove from favorites" : "Add to favorites"}
-            </TooltipContent>
-          </Tooltip>
-          {/* A button, not an <a>: the whole card is already a <Link> (an
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center justify-between gap-3">
+          <h3 className="min-w-0 truncate">{font.name}</h3>
+          <div className="flex shrink-0 items-center gap-4">
+            <Tooltip>
+              <TooltipTrigger
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  onToggleFavorite(font.id);
+                }}
+                aria-label={
+                  isFavorite ? "Remove from favorites" : "Add to favorites"
+                }
+                className="text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <HoverBoldIcon
+                  icon={HeartIcon}
+                  weight={isFavorite ? "fill" : "regular"}
+                  className={cn("size-5", isFavorite && "text-red-500")}
+                />
+              </TooltipTrigger>
+              <TooltipContent>
+                {isFavorite ? "Remove from favorites" : "Add to favorites"}
+              </TooltipContent>
+            </Tooltip>
+            {/* A button, not an <a>: the whole card is already a <Link> (an
               <a>), and <a> can't nest <a> (hydration error). Open Google Fonts
               in a new tab and stop the click from triggering card navigation. */}
-          <Tooltip>
-            <TooltipTrigger
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                window.open(
-                  `https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`,
-                  "_blank",
-                  "noreferrer"
-                );
-              }}
-              aria-label="View on Google Fonts"
-              className="text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <HoverBoldIcon icon={DownloadSimpleIcon} className="size-5" />
-            </TooltipTrigger>
-            <TooltipContent>View on Google Fonts</TooltipContent>
-          </Tooltip>
-          {/* Only when the family has a known upstream repo. A button, not an
-              <a>, for the same nested-<a> reason as the download button. */}
-          {font.repositoryUrl && (
             <Tooltip>
               <TooltipTrigger
                 type="button"
@@ -151,23 +123,51 @@ export function FontCard({
                   e.preventDefault();
                   e.stopPropagation();
                   window.open(
-                    font.repositoryUrl as string,
+                    `https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`,
                     "_blank",
                     "noreferrer"
                   );
                 }}
-                aria-label="View source repository"
+                aria-label="View on Google Fonts"
                 className="text-muted-foreground transition-colors hover:text-foreground"
               >
-                <HoverBoldIcon
-                  icon={repoHostIcon(font.repositoryUrl)}
-                  className="size-5"
-                />
+                <HoverBoldIcon icon={DownloadSimpleIcon} className="size-5" />
               </TooltipTrigger>
-              <TooltipContent>View source repository</TooltipContent>
+              <TooltipContent>View on Google Fonts</TooltipContent>
             </Tooltip>
-          )}
+            {/* Only when the family has a known upstream repo. A button, not an
+              <a>, for the same nested-<a> reason as the download button. */}
+            {font.repositoryUrl && (
+              <Tooltip>
+                <TooltipTrigger
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    window.open(
+                      font.repositoryUrl as string,
+                      "_blank",
+                      "noreferrer"
+                    );
+                  }}
+                  aria-label="View source repository"
+                  className="text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <HoverBoldIcon
+                    icon={repoHostIcon(font.repositoryUrl)}
+                    className="size-5"
+                  />
+                </TooltipTrigger>
+                <TooltipContent>View source repository</TooltipContent>
+              </Tooltip>
+            )}
+          </div>
         </div>
+        {font.designer && (
+          <p className="line-clamp-2 text-muted-foreground text-xs">
+            {font.designer}
+          </p>
+        )}
       </div>
 
       {fontLoaded ? (
