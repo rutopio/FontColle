@@ -1,14 +1,14 @@
-// URL slug for a font family. The detail URL is aligned to the family name
-// (e.g. "Google Sans Code" -> "Google_Sans_Code"), not the repo dir, so it
-// mirrors what Google Fonts shows — but with underscores instead of plus signs.
-// Family names are all [A-Za-z0-9 ], so replacing spaces is the only transform.
-export function fontSlug(name: string): string {
-  return name.replace(/ /g, "_");
+// URL slug for a font family: its `family_dir` (the repo directory name, e.g.
+// "Google Sans Code" -> "googlesanscode"). This is the DB's unique key — it's
+// lowercase with no spaces or underscores, and case-insensitive by nature — so
+// it makes a stable, collision-free URL segment. `font.id` already holds the
+// family_dir, so callers pass that straight in; this helper documents the intent.
+export function fontSlug(id: string): string {
+  return id;
 }
 
-// Normalize a slug for lookup: spaces and underscores are interchangeable and
-// matching is case-insensitive, so /specimen/Inter and /specimen/inter resolve
-// to the same family.
+// Normalize a slug for lookup. family_dir is already lowercase, but lowercasing
+// here keeps /specimen/Inter and /specimen/inter resolving to the same family.
 export function slugKey(slug: string): string {
-  return slug.replace(/_/g, " ").toLowerCase();
+  return slug.toLowerCase();
 }
