@@ -93,7 +93,7 @@ export function highlight(code: string, lang?: string): Token[] {
     for (const [cls, re] of langRules) {
       re.lastIndex = pos;
       const m = re.exec(code);
-      if (m && m[0]) {
+      if (m?.[0]) {
         flush();
         tokens.push({ text: m[0], cls });
         pos += m[0].length;

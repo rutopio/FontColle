@@ -9,49 +9,49 @@ import { SectionHeader } from "./section-header";
 // `classifications` FilterState field. Pills carry the full tag path as value;
 // only the sub-tag name is shown.
 export function ClassificationSection({
-    title,
-    items,
-    selected,
-    onToggle,
-    onReset,
-    mode,
-    onToggleMode,
+  title,
+  items,
+  selected,
+  onToggle,
+  onReset,
+  mode,
+  onToggleMode,
 }: {
-    title: string;
-    // [full tag path, count], in fixed order.
-    items: [string, number][];
-    selected: string[];
-    onToggle: (v: string) => void;
-    onReset: () => void;
-    // OR/AND toggle. All classification sub-sections share one `classifications`
-    // state key, so the sidebar passes these to just one of them.
-    mode?: MatchMode;
-    onToggleMode?: () => void;
+  title: string;
+  // [full tag path, count], in fixed order.
+  items: [string, number][];
+  selected: string[];
+  onToggle: (v: string) => void;
+  onReset: () => void;
+  // OR/AND toggle. All classification sub-sections share one `classifications`
+  // state key, so the sidebar passes these to just one of them.
+  mode?: MatchMode;
+  onToggleMode?: () => void;
 }) {
-    const hasSelection = items.some(([value]) => selected.includes(value));
-    return (
-        <div className="flex flex-col gap-4">
-            <SectionHeader
-                title={title}
-                icon={BookmarkSimpleIcon}
-                hasSelection={hasSelection}
-                onReset={onReset}
-                canSort={false}
-                sort="count"
-                onToggleSort={() => { }}
-                mode={mode}
-                onToggleMode={onToggleMode}
-            />
-            <Pills
-                items={items}
-                selected={selected}
-                onToggle={onToggle}
-                label={subTagLabel}
-                grid
-                columns={2}
-                spread
-                expandAll
-            />
-        </div>
-    );
+  const hasSelection = items.some(([value]) => selected.includes(value));
+  return (
+    <div className="flex flex-col gap-4">
+      <SectionHeader
+        title={title}
+        icon={BookmarkSimpleIcon}
+        hasSelection={hasSelection}
+        onReset={onReset}
+        canSort={false}
+        sort="count"
+        onToggleSort={() => {}}
+        mode={mode}
+        onToggleMode={onToggleMode}
+      />
+      <Pills
+        items={items}
+        selected={selected}
+        onToggle={onToggle}
+        label={subTagLabel}
+        grid
+        columns={2}
+        spread
+        expandAll
+      />
+    </div>
+  );
 }
