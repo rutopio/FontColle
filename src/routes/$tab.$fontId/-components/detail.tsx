@@ -5,7 +5,7 @@ import {
   FunnelIcon,
 } from "@phosphor-icons/react";
 import { Link, useCanGoBack, useRouter } from "@tanstack/react-router";
-import { Fragment, useEffect, useMemo, useRef } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { Column } from "@/components/filter-layout";
 import { FontTraits } from "@/components/font-traits";
 import { PreviewBar } from "@/components/preview-dock";
@@ -67,7 +67,14 @@ export function Detail({
 }) {
   const { text, setText } = usePreview();
   const router = useRouter();
-  const canGoBack = useCanGoBack();
+  // useCanGoBack() reads the browser history, which the server can't see: it's
+  // false on the server (so the back control SSRs as a plain <a> Link) but may
+  // be true right after hydration, and swapping <a> -> <button> mid-hydration
+  // is a mismatch. Gate on a mount flag so the first client render matches the
+  // server (Link), then upgrade to the history-back <button> once mounted.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const canGoBack = useCanGoBack() && mounted;
   const specimen = text || specimenFor(font);
   // The Column's ScrollArea viewport, shared with the Glyphs grid so its
   // row-virtualizer scrolls in the same container the rest of the page does
