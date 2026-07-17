@@ -16,7 +16,7 @@
 // Mirrors scripts/gen-specimen-svgs.mjs (same CSS2 + old-UA + opentype trace)
 // and is intentionally build-time only, never in the app bundle.
 
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Resvg } from "@resvg/resvg-js";
@@ -24,7 +24,10 @@ import opentype from "opentype.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT_DIR = resolve(ROOT, "public/og");
-const FONTS_JSON = resolve(ROOT, "public/fonts.json");
+// The full catalog (harvester output / D1 seed source), not the 59-font
+// public/fonts.json subset. Only published families get a font page, so only
+// those need a card.
+const FONTS_JSON = resolve(ROOT, "src/data/fonts.json");
 
 // Open Graph recommended 1.91:1 canvas.
 const W = 1200;
@@ -82,16 +85,29 @@ async function fontUrl(family, text) {
   return m[1];
 }
 
-async function loadFont(family, text) {
-  const url = await fontUrl(family, text);
-  const buf = Buffer.from(
-    await fetch(url, { headers: { "User-Agent": UA } }).then((r) =>
-      r.arrayBuffer()
-    )
-  );
-  return opentype.parse(
-    buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength)
-  );
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Fetch + parse a family's subset face, retrying on transient network / CSS2
+// rate-limit hiccups (the batch makes ~2k requests). Throws after the last try.
+async function loadFont(family, text, tries = 3) {
+  let last;
+  for (let i = 0; i < tries; i++) {
+    try {
+      const url = await fontUrl(family, text);
+      const buf = Buffer.from(
+        await fetch(url, { headers: { "User-Agent": UA } }).then((r) =>
+          r.arrayBuffer()
+        )
+      );
+      return opentype.parse(
+        buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength)
+      );
+    } catch (err) {
+      last = err;
+      if (i < tries - 1) await sleep(500 * (i + 1));
+    }
+  }
+  throw last;
 }
 
 // Trace `text` in `font`, then place it centered inside the box, scaled to fit
@@ -195,11 +211,24 @@ async function main() {
     console.log("wrote _default.png");
   }
 
-  const fonts = JSON.parse(readFileSync(FONTS_JSON, "utf8"));
+  // Only published families get a font page (see queries.ts getFontById), so
+  // only those need a card. `--force` re-renders all; default skips existing
+  // PNGs so an interrupted run resumes cheaply.
+  const force = process.argv.includes("--force");
+  const fonts = JSON.parse(readFileSync(FONTS_JSON, "utf8")).filter(
+    (f) => f.isPublished && f.name
+  );
   const failed = [];
   let ok = 0;
+  let skipped = 0;
 
-  for (const { id, name } of fonts) {
+  for (let n = 0; n < fonts.length; n++) {
+    const { id, name } = fonts[n];
+    if (!force && existsSync(resolve(OUT_DIR, `${id}.png`))) {
+      skipped++;
+      continue;
+    }
+    if (n % 100 === 0) console.log(`  …${n}/${fonts.length}`);
     try {
       // Subset to the name's own characters; that's all the card renders.
       const font = await loadFont(name, name);
@@ -238,7 +267,10 @@ async function main() {
     }
   }
 
-  console.log(`wrote ${ok} font cards in their own face`);
+  console.log(
+    `wrote ${ok} font cards in their own face` +
+      (skipped ? ` (skipped ${skipped} existing)` : "")
+  );
   if (failed.length) {
     console.log(`\n${failed.length} needed fallback or failed:`);
     for (const f of failed) {
