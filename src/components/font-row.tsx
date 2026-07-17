@@ -111,9 +111,16 @@ export function FontRow({
                 className="text-muted-foreground transition-colors hover:text-foreground"
               >
                 <HoverBoldIcon
+                  // Key on the favorited state so hearting remounts the icon and
+                  // replays the pop; the class only applies when favorited, so
+                  // un-hearting doesn't animate.
+                  key={isFavorite ? "on" : "off"}
                   icon={HeartIcon}
                   weight={isFavorite ? "fill" : "regular"}
-                  className={cn("size-5", isFavorite && "text-red-500")}
+                  className={cn(
+                    "size-5",
+                    isFavorite && "animate-heart-pop text-red-500"
+                  )}
                 />
               </TooltipTrigger>
               <TooltipContent>
