@@ -57,6 +57,9 @@ export const Route = createFileRoute("/$tab/$fontId")({
     // The six tabs render near-identical content on overlapping URLs, so point
     // every tab's canonical at the specimen tab to consolidate ranking signals.
     const canonical = absoluteUrl(`/specimen/${fontSlug(font.id)}`);
+    // Per-font share card: the family name set in its own typeface, pre-rendered
+    // to public/og/<id>.png by `pnpm gen:og`. Needs an absolute URL like og:url.
+    const ogImage = absoluteUrl(`/og/${font.id}.png`);
     // Structured data for the family, so search engines can surface designer +
     // license. Only emitted with an absolute origin (needs a real URL).
     const jsonLd = canonical
@@ -76,6 +79,14 @@ export const Route = createFileRoute("/$tab/$fontId")({
         { property: "og:title", content: pageTitle(name) },
         { property: "og:description", content: description },
         ...(canonical ? [{ property: "og:url", content: canonical }] : []),
+        ...(ogImage
+          ? [
+              { property: "og:image", content: ogImage },
+              { property: "og:image:width", content: "1200" },
+              { property: "og:image:height", content: "630" },
+              { name: "twitter:image", content: ogImage },
+            ]
+          : []),
         { name: "twitter:title", content: pageTitle(name) },
         { name: "twitter:description", content: description },
       ],
