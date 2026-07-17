@@ -54,7 +54,7 @@ function ResetButton({
 // Class list for a feature toggle pill, highlighted when the feature is on.
 function featureToggleClass(on: boolean) {
   return [
-    "flex items-center justify-between gap-2.5 rounded-md border px-2.5 py-2 transition-colors hover:border-foreground",
+    "flex items-center justify-between gap-2.5 rounded-md border px-2.5 py-2 transition-[color,background-color,border-color,transform] hover:border-foreground active:scale-[0.97]",
     on ? "border-foreground bg-muted" : "border-border",
   ].join(" ");
 }
