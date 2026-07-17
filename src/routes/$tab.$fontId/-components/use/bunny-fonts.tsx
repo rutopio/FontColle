@@ -43,7 +43,7 @@ export function BunnyMethod({ font }: { font: FontRecord }) {
 }`;
 
   return (
-    <Panel label="Bunny Fonts">
+    <Panel bodyClassName="max-w-xl">
       <MethodIntro
         icon={ShieldCheckIcon}
         title="Privacy-first CDN"

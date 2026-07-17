@@ -1,5 +1,6 @@
 import { GlobeIcon, SlidersHorizontalIcon } from "@phosphor-icons/react";
 import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 import { EditableValue } from "@/components/ui/editable-value";
 import { Slider } from "@/components/ui/slider";
@@ -102,11 +103,16 @@ export function GoogleFontsMethod({
   const cssRule = googleFontsCss(font, cssFamily, picks, italic, italicKind);
 
   return (
-    <Panel label="Google Fonts API">
+    <Panel bodyClassName="max-w-xl">
       <MethodIntro
         icon={GlobeIcon}
         title="Hosted stylesheet"
-        blurb="No build step. Embed the family and the browser loads the font from Google's CDN."
+        blurb="No build step. Embed the family and the browser loads the font from Google's CDN. This exposes visitors' IPs to Google and may fall foul of GDPR — if privacy matters, use Bunny Fonts instead."
+        badge={
+          <Badge variant="destructive" className="shrink-0">
+            GDPR risk
+          </Badge>
+        }
       />
       <Steps>
         <Step n={1} label="Configure the axes">

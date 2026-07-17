@@ -61,16 +61,29 @@ export function CodeBlock({
           }
           className="flex size-6 cursor-pointer items-center justify-center rounded text-muted-foreground opacity-0 outline-none transition-opacity hover:bg-black/10 hover:text-foreground focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-sidebar-ring group-hover/code:opacity-100 dark:hover:bg-white/12"
         >
+          {/* Keyed on status so the check/x remounts and replays the pop; the
+              idle copy icon stays still so it doesn't pop on reset. */}
           {status === "copied" ? (
-            <CheckIcon className="size-3.5 text-emerald-500" weight="bold" />
+            <CheckIcon
+              key="copied"
+              className="size-3.5 animate-copy-pop text-emerald-500"
+              weight="bold"
+            />
           ) : status === "failed" ? (
-            <XIcon className="size-3.5 text-red-500" weight="bold" />
+            <XIcon
+              key="failed"
+              className="size-3.5 animate-copy-pop text-red-500"
+              weight="bold"
+            />
           ) : (
             <CopyIcon className="size-3.5" />
           )}
         </button>
       </div>
-      <pre className="overflow-x-auto p-3 font-mono text-xs leading-relaxed">
+      {/* Wrap long lines instead of scrolling horizontally: pre-wrap keeps the
+          indentation, break-all lets long unbroken tokens (URLs, @import links)
+          break mid-string so nothing overflows the card. */}
+      <pre className="whitespace-pre-wrap break-all p-3 font-mono text-xs leading-relaxed">
         <code>{code}</code>
       </pre>
     </div>
