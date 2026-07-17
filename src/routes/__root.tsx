@@ -12,6 +12,7 @@ import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { MotionConfig } from "motion/react";
 import { ErrorState } from "@/components/error-state";
 import { NotFound } from "@/components/not-found";
+import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { FilterProvider } from "@/lib/filter/context";
 import { PreviewProvider } from "@/lib/preview/context";
@@ -122,6 +123,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               <PreviewProvider>{children}</PreviewProvider>
             </FilterProvider>
           </TooltipProvider>
+          {/* Global toast host: copy confirmations (e.g. the Glyphs grid) fire
+              toast() from anywhere and render here. */}
+          <Toaster position="top-center" />
         </MotionConfig>
         {import.meta.env.DEV && (
           <TanStackDevtools

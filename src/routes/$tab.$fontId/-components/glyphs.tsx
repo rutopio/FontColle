@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { toast } from "sonner";
 import { hasCodepoint } from "@/lib/fonts/glyph-coverage";
 import type { FontRecord } from "@/lib/fonts/types";
 import { BMP_BLOCKS, type UnicodeBlock } from "@/lib/fonts/unicode-blocks";
@@ -341,21 +342,16 @@ export function GlyphsPanel({
     [blockName]
   );
 
-  // Transient "Copied U+XXXX / Copy failed" confirmation for cell activation.
-  const [copied, setCopied] = useState<
-    { cp: number; ok: boolean } | undefined
-  >();
-  useEffect(() => {
-    if (!copied) return;
-    const t = setTimeout(() => setCopied(undefined), 1500);
-    return () => clearTimeout(t);
-  }, [copied]);
+  // Copy the character to the clipboard and confirm with a toast (or an error
+  // toast if the clipboard write is blocked — insecure context / denied).
   const onCopy = useCallback(async (cp: number) => {
     try {
       await navigator.clipboard.writeText(String.fromCodePoint(cp));
-      setCopied({ cp, ok: true });
+      toast.success(`Copied U+${hex(cp)}`, {
+        description: String.fromCodePoint(cp),
+      });
     } catch {
-      setCopied({ cp, ok: false });
+      toast.error("Copy failed");
     }
   }, []);
 
@@ -373,23 +369,9 @@ export function GlyphsPanel({
     <div className="w-full min-w-0">
       <div className="mb-4 flex items-baseline justify-between gap-3">
         <h2 className="font-semibold text-2xl">{active.name}</h2>
-        <div className="flex items-baseline gap-3">
-          {copied && (
-            <span
-              className={cn(
-                "font-mono text-xs",
-                copied.ok ? "text-emerald-600" : "text-red-500"
-              )}
-              // Announce the copy result to screen readers.
-              role="status"
-            >
-              {copied.ok ? `Copied U+${hex(copied.cp)}` : "Copy failed"}
-            </span>
-          )}
-          <span className="font-mono text-muted-foreground text-xs">
-            U+{hex(active.start)}–U+{hex(active.end)}
-          </span>
-        </div>
+        <span className="font-mono text-muted-foreground text-xs">
+          U+{hex(active.start)}–U+{hex(active.end)}
+        </span>
       </div>
       {loading ? (
         <p className="py-8 text-center text-muted-foreground text-sm">
