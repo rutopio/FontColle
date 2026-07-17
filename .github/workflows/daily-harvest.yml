@@ -1,0 +1,109 @@
+name: Daily incremental harvest
+
+# Detects Google Fonts families that were added / updated / removed since the
+# last run, re-harvests only that subset, refreshes catalog signals for all
+# families, then seeds the changed rows into D1, regenerates their OG cards,
+# commits, and deploys. See tasks/todo.md for the design rationale.
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # daily at 00:00 UTC
+  workflow_dispatch: # allow manual runs
+
+# Prevent overlapping runs (a slow harvest must not race the next day's).
+concurrency:
+  group: daily-harvest
+  cancel-in-progress: false
+
+permissions:
+  contents: write # commit the updated dataset / seed / OG images
+
+jobs:
+  harvest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pnpm install --frozen-lockfile
+          pip install fonttools
+
+      - name: Refresh published signals
+        env:
+          GOOGLE_FONTS_API_KEY: ${{ secrets.GOOGLE_FONTS_API_KEY }}
+        run: python3 scripts/harvester/fetch_published.py
+
+      - name: Incremental catalog update
+        id: update
+        run: |
+          python3 scripts/harvester/daily_update.py | tee update.log
+          # Expose whether anything changed so later steps can skip.
+          if grep -q "^no changes$" update.log; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Seed changed subset into D1
+        if: steps.update.outputs.changed == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          rm -f src/lib/db/seed.*.sql
+          python3 scripts/harvester/to_seed_sql.py \
+            src/data/fonts.json src/lib/db/seed \
+            scripts/harvester/changed_ids.txt
+          # Partial seed is safe: to_seed_sql upserts family + replaces its child
+          # rows, leaving unchanged families untouched.
+          for f in src/lib/db/seed.*.sql; do
+            [ -e "$f" ] || continue
+            pnpm exec wrangler d1 execute font-finder-d1 --remote --file "$f" --yes
+          done
+
+      - name: Regenerate OG cards for newly harvested families
+        if: steps.update.outputs.changed == 'true'
+        run: |
+          # Only newly added/updated families need a fresh card (rank shifts
+          # don't change the image). Skip when none were harvested.
+          if [ -s scripts/harvester/og_ids.txt ]; then
+            node scripts/gen-og-images.mjs --ids=scripts/harvester/og_ids.txt
+          else
+            echo "no families re-harvested; OG cards unchanged"
+          fi
+
+      - name: Commit updated catalog and assets
+        if: steps.update.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/data/fonts.json src/data/scripts.json \
+            src/data/languages.json src/lib/db/seed.*.sql public/og
+          if git diff --cached --quiet; then
+            echo "nothing staged; skipping commit"
+          else
+            git commit -m "chore: daily incremental font catalog update"
+            git push
+          fi
+
+      - name: Deploy
+        if: steps.update.outputs.changed == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          pnpm build
+          pnpm exec wrangler deploy

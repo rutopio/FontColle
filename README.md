@@ -53,6 +53,26 @@ pnpm db:seed:remote                           # load into remote D1
 `langcov.py` derives language/script coverage and region groupings from
 `gflanguages`.
 
+### Daily incremental update (CI)
+
+`.github/workflows/daily-harvest.yml` runs at 00:00 UTC (and on demand). Instead
+of re-harvesting everything, it detects only what changed and updates that
+subset:
+
+```bash
+python3 scripts/harvester/fetch_published.py   # refresh Developer API signals
+python3 scripts/harvester/daily_update.py      # harvest new/updated families,
+                                               # merge, refresh whole-catalog
+                                               # signals -> changed_ids.txt +
+                                               # og_ids.txt
+```
+
+New families come from the google/fonts GitHub tree; updated ones from a newer
+`lastModified`; removed ones are flipped to `isPublished=false`. The workflow
+then seeds only `changed_ids.txt` into D1 (upserts, so partial seeds are safe),
+re-renders OG cards for `og_ids.txt`, commits, and deploys. A no-change day is a
+no-op.
+
 ## Project layout
 
 ```

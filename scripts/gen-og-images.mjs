@@ -213,10 +213,22 @@ async function main() {
 
   // Only published families get a font page (see queries.ts getFontById), so
   // only those need a card. `--force` re-renders all; default skips existing
-  // PNGs so an interrupted run resumes cheaply.
+  // PNGs so an interrupted run resumes cheaply. `--ids=<file>` restricts to the
+  // family ids listed (one per line) — the daily update regenerates only the
+  // changed subset, always with force since those cards must be refreshed.
   const force = process.argv.includes("--force");
+  const idsArg = process.argv.find((a) => a.startsWith("--ids="));
+  const onlyIds = idsArg
+    ? new Set(
+        readFileSync(idsArg.slice("--ids=".length), "utf8")
+          .split("\n")
+          .map((s) => s.trim())
+          .filter(Boolean)
+      )
+    : null;
+  const forceAll = force || onlyIds !== null;
   const fonts = JSON.parse(readFileSync(FONTS_JSON, "utf8")).filter(
-    (f) => f.isPublished && f.name
+    (f) => f.isPublished && f.name && (!onlyIds || onlyIds.has(f.id))
   );
   const failed = [];
   let ok = 0;
@@ -224,7 +236,7 @@ async function main() {
 
   for (let n = 0; n < fonts.length; n++) {
     const { id, name } = fonts[n];
-    if (!force && existsSync(resolve(OUT_DIR, `${id}.png`))) {
+    if (!forceAll && existsSync(resolve(OUT_DIR, `${id}.png`))) {
       skipped++;
       continue;
     }
