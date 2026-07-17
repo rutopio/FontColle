@@ -1,6 +1,6 @@
 import { InfoIcon } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
-import type { CSSProperties } from "react";
+import { type CSSProperties, useLayoutEffect, useRef, useState } from "react";
 import {
   Tooltip,
   TooltipContent,
@@ -39,6 +39,31 @@ function MetricsDiagram({
   font: FontRecord;
   style: CSSProperties;
 }) {
+  // Measured width of the rendered specimen text, in the SVG's user units (the
+  // specimen is drawn at fontSize 100, so getComputedTextLength already returns
+  // diagram units). null until the layout effect runs; drives where the right
+  // labels sit so they never overlap the glyphs regardless of family width.
+  const specimenRef = useRef<SVGTextElement>(null);
+  const [specimenWidth, setSpecimenWidth] = useState<number | null>(null);
+  // Measure after paint, then again once the web font loads (the first measure
+  // may catch the fallback face). Keyed on the family so switching fonts
+  // re-measures. document.fonts.ready resolves once all pending faces settle.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: font.name is the re-measure trigger; the measure closure is stable.
+  useLayoutEffect(() => {
+    const measure = () => {
+      const w = specimenRef.current?.getComputedTextLength();
+      if (w) setSpecimenWidth(w);
+    };
+    measure();
+    let cancelled = false;
+    document.fonts?.ready.then(() => {
+      if (!cancelled) measure();
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [font.name]);
+
   const xHeight = derive(font, "xHeight");
   const capHeight = derive(font, "capHeight");
   // Ascender/descender as fractions of the em, for the typographic ascender /
@@ -130,12 +155,26 @@ function MetricsDiagram({
   // gutter wide enough to hold the guide labels clear of the specimen's "g".
   const padY = 14;
   // Left gutter holds the end-anchored win labels; the specimen and guide lines
-  // start after it. Right-aligned mono labels start just past the ~340-unit
-  // "HQxibg" specimen. Widen so the longest right label fits its gutter.
+  // start after it. Left-aligned mono labels start just past the ~340-unit
+  // "HQxibg" specimen. The right gutter must clear the longest label — the
+  // 18-char "OS/2.sTypoAscender" plus its units, ~110 units wide at 8px mono —
+  // with breathing room, or the text butts against the viewBox edge.
   const padL = 120;
   const glyphX = padL;
-  const labelX = padL + 398;
-  const W = padL + 520;
+  // Horizontal room reserved for the specimen before the right-hand labels
+  // begin. The specimen's real width varies hugely by family — "HQxibg" at a
+  // 100-unit em runs ~420 units in Montserrat but ~900 in a very wide display
+  // face — so a fixed budget either wastes space or lets the specimen lap the
+  // labels (the baseline/cap-height overlap). We measure the rendered specimen
+  // (see the effect below) and place the labels just past it; until that
+  // measurement lands (SSR / first paint) fall back to a budget that clears the
+  // common case.
+  const measuredW = specimenWidth ?? 520;
+  const labelGap = 20;
+  const labelX = glyphX + measuredW + labelGap;
+  // Right gutter: longest label+units (~110) + a comfortable trailing margin.
+  const rightGutter = 180;
+  const W = labelX + rightGutter;
   // The win guides can reach past the ascender/descender lines, so size the
   // viewbox to whichever extends furthest, then add the vertical padding.
   const topExtent = Math.max(ascTop, winAR ?? ascTop);
@@ -183,6 +222,7 @@ function MetricsDiagram({
           leading/trailing spaces (xml:space=preserve) give equal breathing room
           before "H" and after "g". */}
       <text
+        ref={specimenRef}
         x={glyphX}
         y={yOf(0)}
         xmlSpace="preserve"
