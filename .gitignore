@@ -27,3 +27,6 @@ scripts/harvester/stress_output.json
 
 # Generated at build time from the catalog (scripts/gen-sitemap.mjs)
 /public/sitemap.xml
+/.agents
+/.claude
+skills-lock.json
