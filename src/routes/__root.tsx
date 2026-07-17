@@ -16,7 +16,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { FilterProvider } from "@/lib/filter/context";
 import { PreviewProvider } from "@/lib/preview/context";
-import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
+import { absoluteUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
 import appCss from "../styles.css?url";
 
 // Applies the effective theme before first paint so an SSR'd light shell doesn't
@@ -47,12 +47,23 @@ export const Route = createRootRouteWithContext<{
         content: "#0a0a0a",
         media: "(prefers-color-scheme: dark)",
       },
-      // Social cards (relative-URL-safe fields only; canonical/og:url/og:image
-      // are omitted until a production domain is set — they need absolute URLs).
+      // Social cards. Relative-safe fields are always emitted; og:image and
+      // og:url need an absolute origin, so they degrade to nothing when
+      // SITE_URL (VITE_SITE_URL) is unset rather than emit a wrong domain.
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: SITE_NAME },
       { property: "og:title", content: SITE_NAME },
       { property: "og:description", content: SITE_DESCRIPTION },
+      // Default share card (name set in the site's mono face); pages override
+      // og:image with their own. Absolute URL only, so it degrades when unset.
+      ...(absoluteUrl("/og/_default.png")
+        ? [
+            { property: "og:image", content: absoluteUrl("/og/_default.png") },
+            { property: "og:image:width", content: "1200" },
+            { property: "og:image:height", content: "630" },
+            { name: "twitter:image", content: absoluteUrl("/og/_default.png") },
+          ]
+        : []),
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: SITE_NAME },
       { name: "twitter:description", content: SITE_DESCRIPTION },
