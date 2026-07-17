@@ -31,7 +31,7 @@ export function InstanceChips({
             key={`chip:${inst.italic ? "i" : "u"}:${inst.name}`}
             type="button"
             onClick={() => onLoadInstance(inst.coords, inst.italic)}
-            className={`rounded-md border px-3 py-1.5 text-xs transition-colors ${
+            className={`rounded-md border px-3 py-1.5 text-xs transition-[color,background-color,border-color,transform] active:scale-[0.97] ${
               active
                 ? "border-primary bg-muted text-foreground"
                 : "hover:border-foreground"

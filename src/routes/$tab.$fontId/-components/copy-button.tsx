@@ -47,10 +47,20 @@ export function CopyButton({
         className
       )}
     >
+      {/* Keyed on status so the check/x remounts and replays the pop; the idle
+          copy icon stays still (no key/animation) so it doesn't pop on reset. */}
       {status === "copied" ? (
-        <CheckIcon className="size-3.5 text-emerald-500" weight="bold" />
+        <CheckIcon
+          key="copied"
+          className="size-3.5 animate-copy-pop text-emerald-500"
+          weight="bold"
+        />
       ) : status === "failed" ? (
-        <XIcon className="size-3.5 text-red-500" weight="bold" />
+        <XIcon
+          key="failed"
+          className="size-3.5 animate-copy-pop text-red-500"
+          weight="bold"
+        />
       ) : (
         <CopyIcon className="size-3.5" />
       )}

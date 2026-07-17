@@ -281,6 +281,23 @@
   animation: heart-pop 280ms ease-out both;
 }
 
+/* Copy confirmation pop: a quick scale up from small to full, no overshoot —
+   a "confirmed" beat, not the heart's celebratory bounce. Played once when the
+   copy icon swaps to the check/x (keyed on status), so the confirmation reads
+   as a response rather than a hard glyph swap. Disabled under reduced-motion. */
+@keyframes copy-pop {
+  0% {
+    transform: scale(0.6);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@utility animate-copy-pop {
+  animation: copy-pop 150ms ease-out both;
+}
+
 /* Respect reduced-motion globally: near-instant transitions/animations for any
    non-essential motion (card entrance, accordion expand, hover transitions),
    without having to opt each component out. */
