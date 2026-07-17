@@ -20,7 +20,11 @@ Pipeline position (see README + tasks/todo.md):
     gen:og --ids=og_ids.txt           -> OG cards for just those families
 
 Run (from repo root, after fetch_published.py has refreshed published.json):
-    GOOGLE_FONTS_API_KEY=... python3 scripts/harvester/daily_update.py
+    GITHUB_TOKEN=... python3 scripts/harvester/daily_update.py
+
+GITHUB_TOKEN is optional but avoids the low unauthenticated GitHub API rate
+limit when enumerating the google/fonts tree. (fetch_published.py is what needs
+GOOGLE_FONTS_API_KEY.)
 
 Exits 0 with "no changes" when nothing moved (caller can skip commit/deploy).
 """
