@@ -84,7 +84,7 @@ export function FontCard({
   return (
     <Link
       to="/$tab/$fontId"
-      params={{ tab: "specimen", fontId: fontSlug(font.name) }}
+      params={{ tab: "specimen", fontId: fontSlug(font.id) }}
       className="flex h-72 flex-col gap-4 overflow-hidden rounded-lg border bg-card p-5 transition-colors hover:border-foreground focus-visible:border-foreground focus-visible:outline-none"
     >
       <div className="flex flex-col gap-1">

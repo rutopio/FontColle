@@ -56,7 +56,7 @@ export const Route = createFileRoute("/$tab/$fontId")({
     const description = `Preview ${name}, browse its weights and OpenType features, and open it on Google Fonts.`;
     // The six tabs render near-identical content on overlapping URLs, so point
     // every tab's canonical at the specimen tab to consolidate ranking signals.
-    const canonical = absoluteUrl(`/specimen/${fontSlug(name)}`);
+    const canonical = absoluteUrl(`/specimen/${fontSlug(font.id)}`);
     // Structured data for the family, so search engines can surface designer +
     // license. Only emitted with an absolute origin (needs a real URL).
     const jsonLd = canonical
@@ -139,7 +139,7 @@ function DetailPage() {
   const tab = tabFromSlug(tabSlug) ?? "sample";
   const selectTab = (id: DetailTab) =>
     navigate({
-      params: { tab: slugFromTab(id), fontId: fontSlug(font.name) },
+      params: { tab: slugFromTab(id), fontId: fontSlug(font.id) },
       replace: true,
     });
 

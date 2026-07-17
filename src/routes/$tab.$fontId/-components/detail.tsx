@@ -142,7 +142,7 @@ export function Detail({
     <Column
       headerClassName="justify-between"
       scrollViewportRef={scrollRef}
-      subheader={<DetailTabBar active={tab} fontId={fontSlug(font.name)} />}
+      subheader={<DetailTabBar active={tab} fontId={fontSlug(font.id)} />}
       header={
         <>
           <div className="flex min-w-0 items-center gap-3">
@@ -188,23 +188,21 @@ export function Detail({
                 Static, color, feature count), plus the family's license. */}
             <FontTraits font={font} selection={emptyFilter} />
             {font.license && <Badge variant="outline">{font.license}</Badge>}
-            {font.repositoryUrl && (
-              <Button
-                variant="outline"
-                render={
-                  // biome-ignore lint/a11y/useAnchorContent: Button injects its children into this anchor via the render prop (aria-label also set); the static rule can't see through it.
-                  <a
-                    href={font.repositoryUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label={`View ${font.name}'s source repository`}
-                  />
-                }
-              >
-                <RepoIcon />
-                Repo
-              </Button>
-            )}
+            <Button
+              variant="outline"
+              render={
+                // biome-ignore lint/a11y/useAnchorContent: Button injects its children into this anchor via the render prop (aria-label also set); the static rule can't see through it.
+                <a
+                  href={`https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={`View ${font.name} on Google Fonts`}
+                />
+              }
+            >
+              <ArrowUpRightIcon />
+              Google Fonts
+            </Button>
             {font.repositoryUrl && (
               <Button
                 variant="outline"
@@ -222,20 +220,22 @@ export function Detail({
                 Download
               </Button>
             )}
-            <Button
-              render={
-                // biome-ignore lint/a11y/useAnchorContent: Button injects its children into this anchor via the render prop (aria-label also set); the static rule can't see through it.
-                <a
-                  href={`https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label={`View ${font.name} on Google Fonts`}
-                />
-              }
-            >
-              <ArrowUpRightIcon />
-              Google Fonts
-            </Button>
+            {font.repositoryUrl && (
+              <Button
+                render={
+                  // biome-ignore lint/a11y/useAnchorContent: Button injects its children into this anchor via the render prop (aria-label also set); the static rule can't see through it.
+                  <a
+                    href={font.repositoryUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`View ${font.name}'s source repository`}
+                  />
+                }
+              >
+                <RepoIcon />
+                Repo
+              </Button>
+            )}
           </div>
         </>
       }
@@ -564,7 +564,7 @@ function DesignerPanel({
                                 to="/$tab/$fontId"
                                 params={{
                                   tab: "specimen",
-                                  fontId: fontSlug(s.name),
+                                  fontId: fontSlug(s.id),
                                 }}
                                 className="truncate py-0.5 text-sm hover:text-foreground"
                                 style={{

@@ -75,7 +75,7 @@ export function FontRow({
   return (
     <Link
       to="/$tab/$fontId"
-      params={{ tab: "specimen", fontId: fontSlug(font.name) }}
+      params={{ tab: "specimen", fontId: fontSlug(font.id) }}
       className="flex h-28 flex-col justify-center gap-3 overflow-hidden border-b transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:outline-none"
     >
       {/* Narrow (mobile): [name + actions] row over a designer row, stacked.

@@ -140,16 +140,19 @@ async function loadAllFonts(): Promise<FontRecord[]> {
 
 // Load a single published family by its URL slug, querying only that family's
 // related rows instead of the whole catalog — the detail page needs just one.
-// The slug is the family name (spaces as underscores), matched case-insensitively
-// so /specimen/Inter and /specimen/inter both resolve. Names are unique, so at
-// most one row matches.
+// The slug is the family_dir (the repo dir, e.g. "alegreyasans"): unique,
+// lowercase, no spaces/underscores. Matched case-insensitively so /specimen/Inter
+// and /specimen/inter both resolve. family_dir is unique, so at most one matches.
 async function loadFontById(slug: string): Promise<FontRecord | null> {
   const key = slugKey(slug);
   const [f] = await db
     .select()
     .from(family)
     .where(
-      and(sql`lower(${family.name}) = ${key}`, eq(family.isPublished, true))
+      and(
+        sql`lower(${family.familyDir}) = ${key}`,
+        eq(family.isPublished, true)
+      )
     )
     .limit(1);
   if (!f) return null;
