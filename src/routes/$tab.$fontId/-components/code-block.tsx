@@ -1,5 +1,6 @@
 import { CheckIcon, CopyIcon, XIcon } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { highlight } from "@/lib/code/highlight";
 import { cn } from "@/lib/utils";
 
@@ -30,10 +31,13 @@ export function CodeBlock({
     try {
       await navigator.clipboard.writeText(code);
       setStatus("copied");
+      // Toast alongside the icon flip; name the snippet's language when known.
+      toast.success(lang ? `Copied ${lang} snippet` : "Copied to clipboard");
     } catch {
       // Clipboard may be unavailable (insecure context / denied permission);
       // flash a red X so the failure is visible rather than a silent no-op.
       setStatus("failed");
+      toast.error("Copy failed");
     }
   };
 
