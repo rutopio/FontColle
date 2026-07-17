@@ -1,5 +1,6 @@
 import { CheckIcon, CopyIcon, XIcon } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
+import { highlight } from "@/lib/code/highlight";
 import { cn } from "@/lib/utils";
 
 // A copyable code snippet for the Use tab. Renders the code monospace with a
@@ -84,7 +85,21 @@ export function CodeBlock({
           indentation, break-all lets long unbroken tokens (URLs, @import links)
           break mid-string so nothing overflows the card. */}
       <pre className="whitespace-pre-wrap break-all p-3 font-mono text-xs leading-relaxed">
-        <code>{code}</code>
+        <code>
+          {highlight(code, lang).map((tok, i) =>
+            tok.cls ? (
+              // Token order is stable for a given code string, so the index key
+              // is fine here (no reordering, no keyed identity needed).
+              // biome-ignore lint/suspicious/noArrayIndexKey: stable token list
+              <span key={i} className={`tok-${tok.cls}`}>
+                {tok.text}
+              </span>
+            ) : (
+              // biome-ignore lint/suspicious/noArrayIndexKey: stable token list
+              <span key={i}>{tok.text}</span>
+            )
+          )}
+        </code>
       </pre>
     </div>
   );

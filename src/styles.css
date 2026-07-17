@@ -142,6 +142,20 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Syntax highlighting for the Use-tab code snippets (see lib/code/highlight).
+     A muted, low-chroma palette that sits calmly against the neutral UI; the
+     dark variant lifts lightness so the same hues stay legible on the dark
+     card. Comments/punctuation stay grey; strings/keywords/tags carry hue. */
+  --syntax-comment: oklch(0.6 0 0);
+  --syntax-punct: oklch(0.55 0 0);
+  --syntax-tag: oklch(0.5 0.16 25);
+  --syntax-attr: oklch(0.52 0.12 60);
+  --syntax-string: oklch(0.5 0.12 150);
+  --syntax-keyword: oklch(0.5 0.15 290);
+  --syntax-atrule: oklch(0.5 0.15 290);
+  --syntax-property: oklch(0.5 0.13 245);
+  --syntax-number: oklch(0.52 0.12 60);
 }
 
 .dark {
@@ -176,6 +190,17 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  /* Dark-card syntax palette: same hues, lifted lightness for legibility. */
+  --syntax-comment: oklch(0.6 0 0);
+  --syntax-punct: oklch(0.65 0 0);
+  --syntax-tag: oklch(0.72 0.15 25);
+  --syntax-attr: oklch(0.78 0.11 75);
+  --syntax-string: oklch(0.75 0.12 150);
+  --syntax-keyword: oklch(0.75 0.13 290);
+  --syntax-atrule: oklch(0.75 0.13 290);
+  --syntax-property: oklch(0.75 0.12 245);
+  --syntax-number: oklch(0.78 0.11 75);
 }
 
 @layer base {
@@ -296,6 +321,38 @@
 
 @utility animate-copy-pop {
   animation: copy-pop 150ms ease-out both;
+}
+
+/* Syntax token colours for the Use-tab CodeBlock (tokens from
+   lib/code/highlight). Plain text inherits the code block's own colour; only
+   the classed tokens carry hue. */
+.tok-comment {
+  color: var(--syntax-comment);
+  font-style: italic;
+}
+.tok-punct {
+  color: var(--syntax-punct);
+}
+.tok-tag {
+  color: var(--syntax-tag);
+}
+.tok-attr {
+  color: var(--syntax-attr);
+}
+.tok-string {
+  color: var(--syntax-string);
+}
+.tok-keyword {
+  color: var(--syntax-keyword);
+}
+.tok-atrule {
+  color: var(--syntax-atrule);
+}
+.tok-property {
+  color: var(--syntax-property);
+}
+.tok-number {
+  color: var(--syntax-number);
 }
 
 /* Respect reduced-motion globally: near-instant transitions/animations for any
