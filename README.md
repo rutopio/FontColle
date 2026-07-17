@@ -34,6 +34,7 @@ committing. `pnpm build` produces the Workers bundle in `dist/`.
 | `pnpm test` | Vitest |
 | `pnpm db:apply:remote` | Apply Drizzle migrations to the remote D1 |
 | `pnpm db:seed:remote` | Seed the remote D1 from `src/data` |
+| `pnpm gen:og` | Render per-font Open Graph images to `public/og/` |
 
 The app reads fonts from D1 in production. Both dev and deploy use the **remote**
 D1 (`font-finder-d1`); use the `:remote` db scripts.
@@ -73,6 +74,19 @@ then seeds only `changed_ids.txt` into D1 (upserts, so partial seeds are safe),
 re-renders OG cards for `og_ids.txt`, commits, and deploys. A no-change day is a
 no-op.
 
+The workflow needs these repository secrets: `GOOGLE_FONTS_API_KEY`,
+`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
+
+## Open Graph images
+
+Each published family has a share card at `public/og/<id>.png` with the family
+name set **in its own typeface** (traced to a path at build time via the CSS2
+API + opentype.js, rasterized with resvg). `pnpm gen:og` renders them all
+(`--force` re-renders existing; `--ids=<file>` restricts to a subset). The
+per-font route wires `og:image`; the daily workflow re-renders only changed
+families. Absolute URLs need `VITE_SITE_URL` set — otherwise og:image/og:url/
+canonical degrade gracefully.
+
 ## Project layout
 
 ```
@@ -87,5 +101,8 @@ src/
     preview/         shared preview-text context
     db/              Drizzle schema + client
   data/              generated dataset (fonts/languages/scripts JSON)
-scripts/harvester/   Python dataset pipeline
+scripts/harvester/   Python dataset pipeline (+ daily_update.py incremental)
+scripts/gen-og-images.mjs   per-font Open Graph card generator
+public/og/           generated per-font OG images (one PNG per family)
+.github/workflows/   daily-harvest.yml (incremental CI)
 ```
