@@ -144,4 +144,12 @@ def emit(records, out_prefix, chunk_families=250):
 if __name__ == "__main__":
     src = sys.argv[1] if len(sys.argv) > 1 else "../../src/data/fonts.json"
     out_prefix = sys.argv[2] if len(sys.argv) > 2 else "../../src/lib/db/seed"
-    emit(json.load(open(src)), out_prefix)
+    records = json.load(open(src))
+    # Optional 3rd arg: a file of family ids (one per line) to restrict the seed
+    # to — the daily incremental update seeds only the changed/removed subset.
+    # upsert semantics make a partial seed safe (other rows are untouched).
+    if len(sys.argv) > 3 and sys.argv[3]:
+        with open(sys.argv[3]) as fh:
+            keep = {line.strip() for line in fh if line.strip()}
+        records = [r for r in records if r["id"] in keep]
+    emit(records, out_prefix)
