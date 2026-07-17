@@ -59,7 +59,7 @@ export function FontsourceMethod({ font }: { font: FontRecord }) {
   const subsets = font.subsets.filter((s) => s !== "menu");
 
   return (
-    <Panel label="Fontsource (self-host)">
+    <Panel bodyClassName="max-w-xl">
       <MethodIntro
         icon={HardDriveIcon}
         title="Self-hosted package"
