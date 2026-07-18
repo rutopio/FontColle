@@ -16,7 +16,6 @@ tasks/
 # typescript
 *.tsbuildinfo
 scripts/harvester/*.log
-src/lib/db/seed.*.sql
 
 scripts/harvester/__pycache__/
 # dev-only TTF download cache (harvest.py fetch; delete or TTF_CACHE=0 for release runs)
@@ -25,13 +24,15 @@ scripts/harvester/ttf_cache/
 # shipped data — the built catalog lives in src/data/fonts.json
 scripts/harvester/published.json
 scripts/harvester/stress_output.json
-scripts/harvester/changed_ids.txt
 scripts/harvester/og_ids.txt
 
 # Generated at build time from the catalog (scripts/gen-sitemap.mjs)
 /public/sitemap.xml
-# Generated at build time from the catalog (scripts/gen-catalog.mjs)
+# Generated at build time from the catalog (scripts/gen-catalog.mjs): the static
+# data the site serves in place of a database.
 /public/catalog.json
+/public/catalog/
+/public/designer-index.json
 /.agents
 /.claude
 skills-lock.json

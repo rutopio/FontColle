@@ -13,11 +13,12 @@ Popularity/trending/isPublished/specimens are refreshed for the WHOLE catalog
 
 Pipeline position (see README + tasks/todo.md):
     fetch_published.py -> published.json      (fresh signals, done by caller)
-    daily_update.py    -> merges changes into src/data/fonts.json, then writes
-                          changed_ids.txt (rows to re-seed) + og_ids.txt
-                          (families whose OG card must be re-rendered)
-    to_seed_sql.py <changed_ids.txt>  -> seed SQL for just those rows
+    daily_update.py    -> merges changes into src/data/fonts.json, and writes
+                          og_ids.txt (families whose OG card must be re-rendered)
     gen:og --ids=og_ids.txt           -> OG cards for just those families
+    pnpm build (gen-catalog.mjs)      -> the static catalog the site serves
+                                         (catalog.json, catalog/<id>.json,
+                                         designer-index.json)
 
 Run (from repo root, after fetch_published.py has refreshed published.json):
     GITHUB_TOKEN=... python3 scripts/harvester/daily_update.py
@@ -40,7 +41,6 @@ ROOT = os.path.join(HERE, "..", "..")
 DATASET = os.path.join(ROOT, "src", "data", "fonts.json")
 PUBLISHED = os.path.join(HERE, "published.json")
 RAW_OUT = os.path.join(HERE, "stress_output.json")
-CHANGED_OUT = os.path.join(HERE, "changed_ids.txt")  # rows to re-seed into D1
 OG_OUT = os.path.join(HERE, "og_ids.txt")  # families whose OG card must refresh
 
 sys.path.insert(0, HERE)
@@ -144,9 +144,9 @@ def main():
     published = {name.lower(): sig for name, sig in published_raw.items()}
 
     # Snapshot every record before touching anything, so we can diff afterwards
-    # and seed exactly the rows whose DB-visible content actually changed
-    # (re-harvested families + whatever the whole-catalog signal refresh moved:
-    # ranks, isPublished, specimens). This keeps D1 in lockstep with the dataset.
+    # and tell whether any record's content actually changed (re-harvested
+    # families + whatever the whole-catalog signal refresh moved: ranks,
+    # isPublished, specimens) — a no-op run skips the commit and deploy.
     before = {r["id"]: json.dumps(r, sort_keys=True) for r in dataset}
 
     all_families = list_all_families()
@@ -177,14 +177,13 @@ def main():
     write_label_maps(dataset, DATASET)
 
     # changed_ids = any record whose content changed vs the snapshot (new dirs
-    # have no snapshot, so they count as changed too). Drives seed + OG.
+    # have no snapshot, so they count as changed too). Tells the caller whether
+    # anything moved at all, so it can skip the commit/deploy on a no-op run.
     changed_ids = sorted(
         r["id"]
         for r in dataset
         if before.get(r["id"]) != json.dumps(r, sort_keys=True)
     )
-    with open(CHANGED_OUT, "w") as fh:
-        fh.write("\n".join(changed_ids))
 
     # OG cards only depend on the family name in its own face, so only newly
     # harvested families need a (re)rendered card — rank/isPublished shifts don't
@@ -198,7 +197,7 @@ def main():
 
     print(
         f"wrote {len(dataset)} families; {len(harvested_ids)} re-harvested, "
-        f"{len(removed)} unpublished, {len(changed_ids)} rows to re-seed"
+        f"{len(removed)} unpublished, {len(changed_ids)} records changed"
     )
 
 

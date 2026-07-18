@@ -1,1 +1,0 @@
-ALTER TABLE `family` ADD `version_history` text;

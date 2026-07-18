@@ -5,8 +5,9 @@ Reads stress_output.json / harvest_output.json (list of raw records) and emits
 the dataset JSON at the output path given as argv[2] (the pipeline writes
 src/data/fonts.json; see README), plus scripts.json / languages.json label maps
 alongside it. Also derives the §12 facets (variable, has-italic, axis facets,
-feature facets, script coverage). The app reads this dataset via D1, not the
-file directly.
+feature facets, script coverage). At build time gen-catalog.mjs slices this file
+into the static JSON the app actually serves (catalog.json, catalog/<id>.json,
+designer-index.json).
 """
 import json, os, sys
 

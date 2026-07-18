@@ -1,1 +1,0 @@
-ALTER TABLE `family` ADD `first_commit_date` text;

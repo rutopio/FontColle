@@ -1,1 +1,0 @@
-ALTER TABLE `family` ADD `color_tables` text;

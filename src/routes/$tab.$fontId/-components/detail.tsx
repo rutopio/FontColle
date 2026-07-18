@@ -21,7 +21,7 @@ import { scriptLabel } from "@/lib/fonts/labels";
 import { LICENSE_BOILERPLATE } from "@/lib/fonts/license-text";
 import { ensureFontRangeLoaded, useFontLoaded } from "@/lib/fonts/loader";
 import { previewStyle } from "@/lib/fonts/preview-style";
-import type { DesignerSibling } from "@/lib/fonts/queries";
+import type { DesignerSibling } from "@/lib/fonts/detail";
 import { fontSlug } from "@/lib/fonts/slug";
 import { specimenFor } from "@/lib/fonts/specimen";
 import type { FontRecord } from "@/lib/fonts/types";

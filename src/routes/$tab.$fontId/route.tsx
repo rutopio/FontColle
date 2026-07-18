@@ -2,13 +2,12 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { FilterLayout } from "@/components/filter-layout";
 import { NotFound } from "@/components/not-found";
-import { deriveFacets } from "@/lib/fonts/facets";
 import { DEFAULT_ON } from "@/lib/fonts/features";
 import {
   blocksWithCoverage,
   useGlyphCoverage,
 } from "@/lib/fonts/glyph-coverage";
-import { getFontById, getFontsByDesigners } from "@/lib/fonts/queries";
+import { fetchFontById, fetchFontsByDesigners } from "@/lib/fonts/detail";
 import { fontSlug } from "@/lib/fonts/slug";
 import { blockOf, parseGlyphQuery } from "@/lib/fonts/unicode-blocks";
 import { absoluteUrl, pageTitle } from "@/lib/site";
@@ -29,10 +28,9 @@ export const Route = createFileRoute("/$tab/$fontId")({
     // The tab is a URL segment; reject unknown slugs so /foo/roboto 404s
     // instead of silently falling back to a default view.
     if (!tabFromSlug(params.tab)) throw notFound();
-    // The detail page needs only the one font, so query it directly rather
-    // than loading the whole catalog. Derive its facets (the DB stores raw
-    // axes/features, not derived facets) for parity with the list.
-    const font = await getFontById({ data: params.fontId });
+    // The detail page needs only the one font, so fetch its static file rather
+    // than loading the whole catalog (fetchFontById already derives facets).
+    const font = await fetchFontById(params.fontId);
     if (!font) throw notFound();
     // Other families per credited designer, for the Designer tab. Keyed by name
     // so each designer's bio can list their own siblings. Empty when unknown.
@@ -42,12 +40,9 @@ export const Route = createFileRoute("/$tab/$fontId")({
       .filter(Boolean);
     const siblingsByDesigner =
       names.length > 0
-        ? await getFontsByDesigners({ data: { names, excludeId: font.id } })
+        ? await fetchFontsByDesigners(names, font.id)
         : {};
-    return {
-      font: { ...font, facets: deriveFacets(font) },
-      siblingsByDesigner,
-    };
+    return { font, siblingsByDesigner };
   },
   head: ({ loaderData }) => {
     const font = loaderData?.font;

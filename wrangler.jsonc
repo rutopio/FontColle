@@ -4,22 +4,18 @@
   "main": "@tanstack/react-start/server-entry",
   "compatibility_date": "2025-07-01",
   "compatibility_flags": ["nodejs_compat"],
+  // Static assets binding so the detail page's SSR loader can read the prebuilt
+  // per-font JSON via env.ASSETS.fetch() (a Worker fetching its own URL would
+  // recurse instead of hitting assets). directory is the vite build's client
+  // output.
+  "assets": {
+    "directory": "./dist/client",
+    "binding": "ASSETS"
+  },
   "observability": {
     "logs": {
-      "enabled": false,
+      "enabled": true,
       "invocation_logs": true
     }
-  },
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "font-colle-d1",
-      "database_id": "da1e6530-5c29-4868-8f05-e58b79e06d8d",
-      "migrations_dir": "src/lib/db/migrations",
-      // Dev hits the local miniflare D1 (migrated + seeded from src/data via
-      // `pnpm db:apply:local && pnpm db:seed:local`) so queries are on-disk and
-      // fast, instead of round-tripping the remote production D1 on every load.
-      "remote": false
-    }
-  ]
+  }
 }
