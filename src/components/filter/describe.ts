@@ -91,7 +91,7 @@ export function describeActiveFilters(f: FilterState): FilterChip[] {
   for (const v of f.repoHosts)
     push(`repo:${v}`, "Source Repo", REPO_HOST_LABELS[v] ?? v, "repoHosts", v);
   for (const v of f.activity)
-    push(`act:${v}`, "Activity", ACTIVITY_LABELS[v] ?? v, "activity", v);
+    push(`act:${v}`, "Maintenance", ACTIVITY_LABELS[v] ?? v, "activity", v);
   for (const v of f.italic)
     push(
       `ital:${v}`,

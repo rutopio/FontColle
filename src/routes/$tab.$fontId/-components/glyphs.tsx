@@ -9,6 +9,7 @@ import {
   useState,
 } from "react";
 import { toast } from "sonner";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { hasCodepoint } from "@/lib/fonts/glyph-coverage";
 import type { FontRecord } from "@/lib/fonts/types";
 import { BMP_BLOCKS, type UnicodeBlock } from "@/lib/fonts/unicode-blocks";
@@ -30,8 +31,13 @@ import { cn } from "@/lib/utils";
 
 type Range = [number, number];
 
-// Row stride for a code chart: 16 cells, indexed by the low hex nibble.
-const COLS = 16;
+// Row stride for a code chart: 16 cells, indexed by the low hex nibble. On a
+// phone 16 square cells leave each one too small to read, so the row halves to
+// 8 and the hex address column/header are dropped — the grid stops being a
+// canonical code chart there and is simply a glyph browser, with each cell's
+// codepoint still available via its title, aria-label, and the magnifier.
+const COLS_DESKTOP = 16;
+const COLS_MOBILE = 8;
 // Width (px) of the leading row-label column (the U+xxx0 prefix). Fixed so the
 // square cell size can be derived from the container width.
 const LABEL_W = 44;
@@ -76,6 +82,14 @@ function BlockGrid({
   // the panel can copy the character and flash confirmation.
   onCopy: (cp: number) => void;
 }) {
+  const COLS = useIsMobile() ? COLS_MOBILE : COLS_DESKTOP;
+  // The leading address column is desktop-only; on mobile its width goes to the
+  // cells. The track is dropped entirely (not zeroed) to match the label cell
+  // no longer being rendered, so the cells stay aligned with the header.
+  const labelW = COLS === COLS_DESKTOP ? LABEL_W : 0;
+  const gridCols = labelW
+    ? `${labelW}px repeat(${COLS}, minmax(0, 1fr))`
+    : `repeat(${COLS}, minmax(0, 1fr))`;
   // Pad the leading row so the first codepoint sits under its true hex column.
   // Blocks are 16-aligned in Unicode, so lead is 0, but the guard is cheap.
   const lead = block.start % COLS;
@@ -95,16 +109,19 @@ function BlockGrid({
     if (!el) return;
     const measure = () => {
       if (scrollRef.current) setScrollMargin(el.offsetTop);
-      // The 16 flexible columns share the width left after the label column and
-      // all 17 gaps; a cell is that width / 16, and the row is that tall (square).
-      const w = el.clientWidth - LABEL_W - (COLS + 1) * GAP;
+      // The flexible columns share the width left after the label column (0 on
+      // mobile, where it isn't rendered) and the gaps between tracks; a cell is
+      // that width / COLS, and the row is that tall (square). Halving COLS on
+      // mobile and dropping the label column both grow the cell.
+      const gaps = labelW ? COLS + 1 : COLS - 1;
+      const w = el.clientWidth - labelW - gaps * GAP;
       if (w > 0) setCellSize(w / COLS);
     };
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     return () => ro.disconnect();
-  }, [scrollRef]);
+  }, [scrollRef, COLS, labelW]);
 
   const rowVirtualizer = useVirtualizer({
     count: rowCount,
@@ -199,29 +216,34 @@ function BlockGrid({
     if (highlightCp < block.start || highlightCp > block.end) return;
     const rowIndex = Math.floor((lead + highlightCp - block.start) / COLS);
     rowVirtualizer.scrollToIndex(rowIndex, { align: "center" });
-  }, [highlightCp, block.start, block.end, lead, rowVirtualizer]);
+  }, [highlightCp, block.start, block.end, lead, rowVirtualizer, COLS]);
 
   return (
     <>
-      {/* Column header row: the low hex nibble 0..F, kept above the rows. */}
-      <div
-        className="grid gap-px pb-1 text-center"
-        style={{
-          gridTemplateColumns: `${LABEL_W}px repeat(16, minmax(0, 1fr))`,
-        }}
-      >
-        <div />
-        {Array.from({ length: COLS }, (_, c) =>
-          c.toString(16).toUpperCase()
-        ).map((label) => (
-          <div
-            key={`col:${label}`}
-            className="font-mono text-[10px] text-muted-foreground"
-          >
-            {label}
-          </div>
-        ))}
-      </div>
+      {/* Column header row: the low hex nibble 0..F, kept above the rows. Only
+          at 16 wide, where every row spans a full decade so a cell's nibble is
+          its column. Mobile drops the whole address apparatus (this header and
+          the per-row labels) in favour of bigger cells. */}
+      {COLS === COLS_DESKTOP && (
+        <div
+          className="grid gap-px pb-1 text-center"
+          style={{
+            gridTemplateColumns: gridCols,
+          }}
+        >
+          <div />
+          {Array.from({ length: COLS }, (_, c) =>
+            c.toString(16).toUpperCase()
+          ).map((label) => (
+            <div
+              key={`col:${label}`}
+              className="font-mono text-[10px] text-muted-foreground"
+            >
+              {label}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Virtualized rows, scrolled by the shared Column viewport. Only visible
           rows are in the DOM. Mouse handlers live here (event delegation), so a
@@ -253,14 +275,19 @@ function BlockGrid({
                 left: 0,
                 width: "100%",
                 height: cellSize,
-                gridTemplateColumns: `${LABEL_W}px repeat(16, minmax(0, 1fr))`,
+                gridTemplateColumns: gridCols,
                 transform: `translateY(${vrow.start - scrollMargin}px)`,
               }}
             >
-              {/* Row label: the U+xxx0 prefix. */}
-              <div className="flex items-center justify-end pr-2 font-mono text-[10px] text-muted-foreground">
-                {hex(block.start + rowStart - lead).slice(0, 3)}x
-              </div>
+              {/* Row label: the U+xxx0 prefix naming this row's hex decade.
+                  Desktop only — on mobile the address column is dropped so the
+                  8 cells get the full width; a cell's codepoint is still on its
+                  title/aria-label and in the magnifier. */}
+              {COLS === COLS_DESKTOP && (
+                <div className="flex items-center justify-end pr-2 font-mono text-[10px] text-muted-foreground">
+                  {hex(block.start + rowStart - lead).slice(0, 3)}x
+                </div>
+              )}
               {Array.from({ length: COLS }, (_, c) => {
                 const idx = rowStart + c;
                 // Leading pad cells (before the block's first codepoint).

@@ -34,6 +34,7 @@ import { GlyphsPanel } from "./glyphs";
 import { InstanceChips } from "./instance-chips";
 import { InstanceRow } from "./instance-row";
 import { LanguageSupport } from "./language-support";
+import { LinksDrawer } from "./links-drawer";
 import { MetricsPanel } from "./metrics-panel";
 import { Panel } from "./panel";
 import { TypeTester } from "./type-tester";
@@ -153,7 +154,7 @@ export function Detail({
       subheader={<DetailTabBar active={tab} fontId={fontSlug(font.id)} />}
       header={
         <>
-          <div className="flex min-w-0 items-center gap-3">
+          <div className="flex w-full min-w-0 items-center gap-3 md:w-auto">
             {/* Back returns to the list. If we arrived from it, go back in
                 history so its filter URL + scroll position are restored; on a
                 deep/shared link (no history to go back to) fall back to the
@@ -193,29 +194,16 @@ export function Detail({
               )}
             </div>
           </div>
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex w-full flex-wrap items-center gap-2 md:w-auto md:shrink-0 md:flex-nowrap">
             {/* Trait badges, same order as the list card/row (class, Variable/
                 Static, color, feature count), plus the family's license. */}
-            <FontTraits font={font} selection={emptyFilter} />
-            {font.license && <Badge variant="outline">{font.license}</Badge>}
-            <Button
-              variant="outline"
-              nativeButton={false}
-              role="link"
-              render={
-                // biome-ignore lint/a11y/useAnchorContent: Button injects its children into this anchor via the render prop (aria-label also set); the static rule can't see through it.
-                <a
-                  href={`https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label={`View ${font.name} on Google Fonts`}
-                />
-              }
-            >
-              <GoogleLogoIcon />
-              Google Fonts
-            </Button>
-            {font.repositoryUrl && (
+            <div className="flex flex-wrap items-center gap-2 md:flex-nowrap">
+              <FontTraits font={font} selection={emptyFilter} />
+              {font.license && <Badge variant="outline">{font.license}</Badge>}
+            </div>
+            {/* Desktop only: on mobile these three don't fit beside the title,
+                so they're reached through LinksDrawer's FAB instead. */}
+            <div className="hidden items-center gap-2 md:flex">
               <Button
                 variant="outline"
                 nativeButton={false}
@@ -223,35 +211,54 @@ export function Detail({
                 render={
                   // biome-ignore lint/a11y/useAnchorContent: Button injects its children into this anchor via the render prop (aria-label also set); the static rule can't see through it.
                   <a
-                    href={`${font.repositoryUrl.replace(/\/$/, "")}/releases`}
+                    href={`https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`}
                     target="_blank"
                     rel="noreferrer"
-                    aria-label={`Download ${font.name} from its repository releases`}
+                    aria-label={`View ${font.name} on Google Fonts`}
                   />
                 }
               >
-                <DownloadSimpleIcon />
-                Download
+                <GoogleLogoIcon />
+                Google Fonts
               </Button>
-            )}
-            {font.repositoryUrl && (
-              <Button
-                nativeButton={false}
-                role="link"
-                render={
-                  // biome-ignore lint/a11y/useAnchorContent: Button injects its children into this anchor via the render prop (aria-label also set); the static rule can't see through it.
-                  <a
-                    href={font.repositoryUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label={`View ${font.name}'s source repository`}
-                  />
-                }
-              >
-                <RepoIcon />
-                Repo
-              </Button>
-            )}
+              {font.repositoryUrl && (
+                <Button
+                  variant="outline"
+                  nativeButton={false}
+                  role="link"
+                  render={
+                    // biome-ignore lint/a11y/useAnchorContent: Button injects its children into this anchor via the render prop (aria-label also set); the static rule can't see through it.
+                    <a
+                      href={`${font.repositoryUrl.replace(/\/$/, "")}/releases`}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={`Download ${font.name} from its repository releases`}
+                    />
+                  }
+                >
+                  <DownloadSimpleIcon />
+                  Download
+                </Button>
+              )}
+              {font.repositoryUrl && (
+                <Button
+                  nativeButton={false}
+                  role="link"
+                  render={
+                    // biome-ignore lint/a11y/useAnchorContent: Button injects its children into this anchor via the render prop (aria-label also set); the static rule can't see through it.
+                    <a
+                      href={font.repositoryUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={`View ${font.name}'s source repository`}
+                    />
+                  }
+                >
+                  <RepoIcon />
+                  Repo
+                </Button>
+              )}
+            </div>
           </div>
         </>
       }
@@ -401,6 +408,14 @@ export function Detail({
       )}
 
       {tab === "license" && <LicensePanel font={font} />}
+
+      {/* Mobile-only FAB + drawer for the header's outbound links, which are
+          hidden below md. Fixed-position, so it renders as a page overlay
+          regardless of where it sits in the tree. It keeps the lower slot on
+          every tab; ControlsDrawer stacks above it where it renders. The stack
+          drops with the preview dock, which is up on Specimen only (see
+          footerHidden above). */}
+      <LinksDrawer font={font} dockVisible={tab === "sample"} />
     </Column>
   );
 }

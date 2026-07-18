@@ -290,6 +290,8 @@ export function UnitsPerEmSection({
       onReset={onResetUpm}
       topNSet={UPM_DEFAULT}
       numericSort
+      grid
+      spread
     />
   );
 }

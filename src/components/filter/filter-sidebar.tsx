@@ -447,7 +447,7 @@ export function FilterSidebar({
                   onReset={() => onChange({ ...filter, repoHosts: [] })}
                 />
                 <RadioPillSection
-                  title="Activity"
+                  title="Maintenance"
                   icon={ClockCounterClockwiseIcon}
                   items={index.activity}
                   labels={ACTIVITY_LABELS}

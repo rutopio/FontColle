@@ -1,5 +1,6 @@
 import { FunnelIcon } from "@phosphor-icons/react";
 import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import type { FacetIndex } from "@/lib/fonts/filter/facets";
 import type { FilterState } from "@/lib/fonts/filter/state";
@@ -48,12 +49,13 @@ export function FilterDrawer({
       >
         <FunnelIcon className="size-6" weight="fill" />
         {count > 0 && (
-          <span
+          <Badge
             aria-hidden="true"
-            className="absolute -top-1 -right-1 flex min-w-5 items-center justify-center rounded-full bg-foreground px-1 font-mono text-[10px] text-background leading-4"
+            variant="secondary"
+            className="absolute -top-1 -right-1 min-w-5 px-1 font-mono text-[10px] outline-2 outline-primary"
           >
             {count}
-          </span>
+          </Badge>
         )}
       </button>
 
@@ -66,7 +68,7 @@ export function FilterDrawer({
           <FunnelIcon className="size-4 text-primary" weight="fill" />
           <SheetTitle>Filters</SheetTitle>
           {count > 0 && (
-            <span className="font-mono text-muted-foreground text-xs">
+            <span className="text-muted-foreground text-xs">
               {count} active
             </span>
           )}

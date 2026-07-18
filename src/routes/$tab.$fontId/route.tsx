@@ -1,4 +1,6 @@
+import { SlidersHorizontalIcon, SquaresFourIcon } from "@phosphor-icons/react";
 import { createFileRoute, notFound } from "@tanstack/react-router";
+import { AnimatePresence } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import { FilterLayout } from "@/components/filter-layout";
 import { NotFound } from "@/components/not-found";
@@ -133,7 +135,7 @@ function DetailPage() {
   };
 
   // Preview font size lives here too, since its control is in the sidebar.
-  const [size, setSize] = useState(72);
+  const [size, setSize] = useState(48);
 
   // Which detail view is active. Driven by the URL slug (the loader has already
   // rejected unknown ones), so the tab is shareable/bookmarkable. Selecting a
@@ -251,14 +253,23 @@ function DetailPage() {
         glyphLoading={glyphLoading}
         glyphHighlightCp={highlightCp}
       />
-      {/* Mobile-only controls access for the two tabs that have a sidebar. */}
-      {hasControls && (
-        <ControlsDrawer
-          title={tab === "glyphs" ? "Unicode blocks" : "Preview controls"}
-        >
-          {sidebarPanel}
-        </ControlsDrawer>
-      )}
+      {/* Mobile-only controls access for the two tabs that have a sidebar.
+          AnimatePresence keeps the FAB mounted through its exit animation when
+          switching to a tab without controls. No per-tab key: Specimen and
+          Glyphs both keep the FAB, so it stays put and only swaps its icon
+          rather than cross-fading two buttons in the same spot. */}
+      <AnimatePresence initial={false}>
+        {hasControls && (
+          <ControlsDrawer
+            title={tab === "glyphs" ? "Unicode blocks" : "Preview controls"}
+            icon={tab === "glyphs" ? SquaresFourIcon : SlidersHorizontalIcon}
+            // Mirrors Detail's footerHidden: the dock is up on Specimen only.
+            dockVisible={tab === "sample"}
+          >
+            {sidebarPanel}
+          </ControlsDrawer>
+        )}
+      </AnimatePresence>
     </FilterLayout>
   );
 }
