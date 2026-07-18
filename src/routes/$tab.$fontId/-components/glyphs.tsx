@@ -196,17 +196,54 @@ function BlockGrid({
     showAt(cp, r.left + r.width / 2, r.bottom);
   };
 
-  // Activating a present cell (click or Enter/Space) copies its character.
+  // Activating a present cell (click or Enter/Space) copies its character; a
+  // click also re-points the roving cell so a later Tab re-entry lands there.
   const onClick = (e: React.MouseEvent) => {
     const cp = cpOf(e);
-    if (cp != null) onCopy(cp);
+    if (cp != null) {
+      rovingCpRef.current = cp;
+      forceRender((n) => n + 1); // move tabIndex=0 to the clicked cell
+      onCopy(cp);
+    }
   };
+  // Container-level keyboard delegation (one handler for the whole grid, like
+  // the mouse handlers): Enter/Space copy the focused cell; Arrow/Home/End move
+  // the roving cell across the block's present glyphs. preventDefault fires only
+  // on keys we actually handle.
   const onKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key !== "Enter" && e.key !== " ") return;
     const el = (e.target as HTMLElement).closest<HTMLElement>("[data-cp]");
     if (!el) return;
-    e.preventDefault();
-    onCopy(Number(el.dataset.cp));
+    const cp = Number(el.dataset.cp);
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onCopy(cp);
+      return;
+    }
+    let target: number | null = null;
+    switch (e.key) {
+      case "ArrowRight":
+        target = nextPresent(cp, 1, 1);
+        break;
+      case "ArrowLeft":
+        target = nextPresent(cp, -1, 1);
+        break;
+      case "ArrowDown":
+        target = nextPresent(cp, 1, COLS);
+        break;
+      case "ArrowUp":
+        target = nextPresent(cp, -1, COLS);
+        break;
+      case "Home":
+        target = firstPresentCp;
+        break;
+      case "End":
+        target = nextPresent(block.end + 1, -1, 1);
+        break;
+      default:
+        return;
+    }
+    e.preventDefault(); // handled navigation key: stop the scroller stealing it
+    if (target != null) focusCp(target);
   };
 
   // Scroll a searched codepoint's row into view. The virtualizer measures rows
@@ -218,6 +255,106 @@ function BlockGrid({
     const rowIndex = Math.floor((lead + highlightCp - block.start) / COLS);
     rowVirtualizer.scrollToIndex(rowIndex, { align: "center" });
   }, [highlightCp, block.start, block.end, lead, rowVirtualizer, COLS]);
+
+  // --- Roving tabindex (keyboard grid navigation) -------------------------
+  // The grid is a single tab stop: exactly one present cell carries tabIndex=0
+  // (the "roving" cell), every other cell -1, so Tab enters the block once and
+  // the next Tab leaves it. The roving codepoint lives in a REF (read during
+  // render for each cell's tabIndex) so moving it doesn't force per-cell state;
+  // arrow keys re-point it and re-render the container once. Because big blocks
+  // are row-virtualized, the target row may be unmounted: we scrollToIndex it
+  // and stash the codepoint in pendingFocusRef, then focus it once the button
+  // exists (the render after scroll, retried via rAF as rows mount).
+  const rovingCpRef = useRef<number | null>(null);
+  const pendingFocusRef = useRef<number | null>(null);
+  // Bumping this re-renders the container so cells re-read rovingCpRef for their
+  // tabIndex. Not per-cell state — one counter for the whole grid.
+  const [, forceRender] = useState(0);
+
+  // First present, renderable codepoint in the block: the default roving cell.
+  const firstPresentCp = useMemo(() => {
+    for (let cp = block.start; cp <= block.end; cp++) {
+      if (isRenderable(cp) && hasCodepoint(ranges, cp)) return cp;
+    }
+    return null;
+  }, [block.start, block.end, ranges]);
+
+  // The cell that should own tabIndex=0 right now: the roving ref if it still
+  // points at a present cell, else the block's first present cell.
+  const rovingCp =
+    rovingCpRef.current != null &&
+    rovingCpRef.current >= block.start &&
+    rovingCpRef.current <= block.end &&
+    isRenderable(rovingCpRef.current) &&
+    hasCodepoint(ranges, rovingCpRef.current)
+      ? rovingCpRef.current
+      : firstPresentCp;
+
+  const rowOf = useCallback(
+    (cp: number) => Math.floor((lead + cp - block.start) / COLS),
+    [lead, block.start, COLS]
+  );
+  const cellButton = useCallback(
+    (cp: number) =>
+      gridRef.current?.querySelector<HTMLButtonElement>(
+        `button[data-cp="${cp}"]`
+      ) ?? null,
+    []
+  );
+
+  // Move focus to a codepoint, scrolling its row in first if it isn't mounted.
+  const focusCp = useCallback(
+    (cp: number) => {
+      rovingCpRef.current = cp;
+      forceRender((n) => n + 1); // re-render so tabIndex follows the roving cell
+      const btn = cellButton(cp);
+      if (btn) {
+        btn.focus();
+        return;
+      }
+      // Row not mounted: bring it into view and focus once it renders.
+      pendingFocusRef.current = cp;
+      rowVirtualizer.scrollToIndex(rowOf(cp), { align: "center" });
+    },
+    [rowVirtualizer, cellButton, rowOf]
+  );
+
+  // Resolve pending focus once its row has mounted (retry across a few frames
+  // while the virtualizer settles the scroll and renders the row).
+  useEffect(() => {
+    const cp = pendingFocusRef.current;
+    if (cp == null) return;
+    let frame = 0;
+    let tries = 0;
+    const tick = () => {
+      const btn = cellButton(cp);
+      if (btn) {
+        btn.focus();
+        pendingFocusRef.current = null;
+        return;
+      }
+      if (tries++ < 20) frame = requestAnimationFrame(tick);
+    };
+    tick();
+    return () => cancelAnimationFrame(frame);
+  });
+
+  // Next present, renderable codepoint from `cp` in `dir` (+1/-1) direction,
+  // skipping absent/non-renderable slots so focus never lands on an empty cell.
+  const nextPresent = (
+    cp: number,
+    dir: number,
+    step: number
+  ): number | null => {
+    for (
+      let n = cp + dir * step;
+      n >= block.start && n <= block.end;
+      n += dir
+    ) {
+      if (isRenderable(n) && hasCodepoint(ranges, n)) return n;
+    }
+    return null;
+  };
 
   return (
     <>
@@ -249,10 +386,19 @@ function BlockGrid({
       {/* Virtualized rows, scrolled by the shared Column viewport. Only visible
           rows are in the DOM. Mouse handlers live here (event delegation), so a
           15k-cell block still has 2 handlers total, not 30k. */}
-      {/* biome-ignore lint/a11y/noStaticElementInteractions: delegated
-          handlers; the interactive targets are the focusable per-cell buttons. */}
+      {/* role="grid" would require every row to exist in the accessibility
+          tree, but virtualization unmounts off-screen rows — so aria-rowcount
+          on a grid whose rows come and go would be a lie the AT can't verify.
+          Honest choice: a labelled group of roving-tabindex buttons. One tab
+          stop (see rovingCp), arrow keys move focus, the per-cell aria-labels
+          carry each codepoint. */}
+      {/* biome-ignore lint/a11y/useSemanticElements: <fieldset> carries form
+          semantics; this is a focus-managed glyph grid, role="group" is the
+          honest fit. */}
       <div
         ref={gridRef}
+        role="group"
+        aria-label={`${block.name} glyphs — arrow keys to move, Enter to copy`}
         style={{
           height: rowVirtualizer.getTotalSize(),
           position: "relative",
@@ -303,6 +449,10 @@ function BlockGrid({
                     type="button"
                     key={cp}
                     data-cp={cp}
+                    // Roving tabindex: only the active cell is tabbable, so the
+                    // block is a single tab stop. Read from the ref during
+                    // render; focusCp re-renders when the roving cell moves.
+                    tabIndex={cp === rovingCp ? 0 : -1}
                     title={`U+${hex(cp)} — click to copy`}
                     aria-label={`U+${hex(cp)} ${String.fromCodePoint(cp)}, copy character`}
                     className={cn(

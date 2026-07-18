@@ -40,13 +40,13 @@ export const TABS = [
     icon: BookOpenIcon,
   },
   { id: "designer" as const, slug: "about", label: "About", icon: InfoIcon },
+  { id: "use" as const, slug: "use", label: "Use", icon: CodeIcon },
   {
     id: "license" as const,
     slug: "license",
     label: "License",
     icon: ScrollIcon,
   },
-  { id: "use" as const, slug: "use", label: "Use", icon: CodeIcon },
 ];
 
 export type TabSlug = (typeof TABS)[number]["slug"];

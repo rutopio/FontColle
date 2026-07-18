@@ -17,6 +17,7 @@ import {
   type FilterGroupId,
 } from "@/components/filter/groups";
 import { Column, FilterLayout } from "@/components/filter-layout";
+import { FontCard } from "@/components/font-card";
 import { FontGrid, SkeletonGrid, type ViewMode } from "@/components/font-grid";
 import { PreviewBar } from "@/components/preview-dock";
 import { Button } from "@/components/ui/button";
@@ -45,6 +46,7 @@ import {
   searchToFilter,
   suggestFamily,
 } from "@/lib/fonts/filter";
+import { fetchFirstPage } from "@/lib/fonts/first-page";
 import { DEFAULT_SORT, type SortKey, sortFonts } from "@/lib/fonts/sort";
 import type { FontRecord } from "@/lib/fonts/types";
 import { usePreview } from "@/lib/preview/context";
@@ -62,6 +64,12 @@ const FILTER_DEBOUNCE_MS = 200;
 export const Route = createFileRoute("/")({
   component: App,
   validateSearch: (raw): FilterSearch => parseFilterSearch(raw),
+  // Returns ONLY the first-page slice (~24 records, a few tens of KB), never the
+  // full catalog — the Worker must not parse the 14 MB catalog (Error 1102). The
+  // full catalog still loads client-side via catalogQueryOptions. This slice is
+  // what lets a default `/` visit's SSR HTML carry real font cards + /specimen/
+  // links for crawlers and non-JS fetchers (see the first-page render in App).
+  loader: async () => ({ firstPage: await fetchFirstPage() }),
   head: () => {
     // Filter/sort params are transient views of the same catalog, not distinct
     // pages, so the canonical is the bare list. og:url matches.
@@ -94,15 +102,39 @@ export const Route = createFileRoute("/")({
   },
 });
 
+// True when the URL carries no filter, query, sort deviation, or favorites view,
+// i.e. the bare `/` catalog. Only then is it correct to SSR the unfiltered
+// first-page slice: under a filtered/sorted/fav URL that slice wouldn't match
+// what the page should show, so those keep the skeleton-only pending state.
+function isDefaultView(search: FilterSearch): boolean {
+  if (search.sort || search.fav) return false;
+  // activeFilterCount deliberately excludes the text query (see describe.ts /
+  // tasks/todo.md 3.1), so check `q` explicitly or a search URL would SSR the
+  // unfiltered first-page slice.
+  if (search.q) return false;
+  return activeFilterCount(searchToFilter(search)) === 0;
+}
+
 // Fetches the static catalog on the client (see catalogQueryOptions). While it
-// loads we show the same skeleton the route's pendingComponent used to; on
-// success the real Catalog view swaps in. Fetching here instead of in a Worker
-// loader is what keeps the home page under the Worker's per-request limits
-// (Error 1102 — see tasks/todo.md P0).
+// loads we show a skeleton (or, on the default `/` view, the loader's first-page
+// slice as real cards); on success the real Catalog view swaps in. Fetching the
+// full catalog on the client instead of in a Worker loader is what keeps the
+// home page under the Worker's per-request limits (Error 1102 — tasks/todo.md P0).
 function App() {
+  const search = Route.useSearch();
   const { data: fonts, isError } = useQuery(catalogQueryOptions());
   if (isError) throw new Error("Failed to load the font catalog.");
-  if (!fonts) return <ListPending />;
+  // While the full catalog loads: on a default `/` visit render the loader's
+  // first-page slice as real cards (so crawlers/no-JS see ~24 font links), with
+  // skeletons filling the rest. On any filtered/sorted URL keep the plain
+  // skeleton — SSR-ing unfiltered content under a filtered URL would be wrong.
+  // This pending tree is identical server-side and on the first client render
+  // (the loader data is the same, favorites hydrate to [] as today), so the swap
+  // to Catalog on catalog-load matches today's skeleton->content swap with no
+  // hydration mismatch.
+  if (!fonts) {
+    return isDefaultView(search) ? <FirstPagePending /> : <ListPending />;
+  }
   return <Catalog fonts={fonts} />;
 }
 
@@ -483,6 +515,73 @@ function ListPending() {
     </FilterLayout>
   );
 }
+
+// Pending state for the DEFAULT `/` view: renders the loader's first-page slice
+// as real, non-virtualized FontCards (real <Link> /specimen/ anchors), so a
+// crawler or non-JS fetch of `/` sees ~24 actual fonts in the SSR HTML instead
+// of an empty shell. Below the real cards sits a skeleton grid, so the panel
+// reads as "filling in" until the full catalog resolves and Catalog takes over.
+//
+// The wrapper classes mirror the virtualized grid's row container (grid gap-4
+// pb-4, md:2 lg:3 columns) so nothing jumps on the swap. Favorites hydrate to []
+// (useFavorites is SSR-safe), preview text is "" (falls back to each font's
+// specimen), and the selection is the empty filter — the exact props Catalog
+// passes on a default first render, so server and first-client trees agree.
+function FirstPagePending() {
+  const { firstPage } = Route.useLoaderData();
+  const { text: previewText } = usePreview();
+
+  // No loader slice (build without catalog-first.json, or a fetch failure):
+  // fall back to the plain skeleton, unchanged from before this feature.
+  if (firstPage.length === 0) return <ListPending />;
+
+  return (
+    <FilterLayout sidebar={<div className="size-full" />}>
+      <Column
+        header={
+          <>
+            <div className="h-9 w-72 max-w-full animate-pulse rounded-lg bg-muted" />
+            <div className="ml-auto h-6 w-24 animate-pulse rounded bg-muted" />
+          </>
+        }
+        footer={<PreviewBar />}
+      >
+        <div className="flex-1">
+          <div className="grid grid-cols-1 gap-4 pb-4 md:grid-cols-2 lg:grid-cols-3">
+            {firstPage.map((font) => (
+              <FontCard
+                key={font.id}
+                font={font}
+                previewText={previewText}
+                isFavorite={false}
+                onToggleFavorite={NOOP}
+                selection={FIRST_PAGE_SELECTION}
+                axisValues={EMPTY_AXES}
+              />
+            ))}
+          </div>
+          <SkeletonGrid view="grid" />
+        </div>
+      </Column>
+    </FilterLayout>
+  );
+}
+
+// Stable, module-level props for the first-page cards: an empty selection (no
+// active filter), no axis sliders, and a no-op favorite toggle (favorites are
+// still hydrating). Module-level so they're referentially stable and FontCard's
+// memo bails out cleanly.
+const NOOP = () => {};
+const EMPTY_AXES: Record<string, number> = {};
+const FIRST_PAGE_SELECTION = {
+  classes: emptyFilter.classes,
+  facets: emptyFilter.facets,
+  color: emptyFilter.color,
+  axes: emptyFilter.axes,
+  weights: emptyFilter.weights,
+  widths: emptyFilter.widths,
+  italic: emptyFilter.italic,
+};
 
 // Local draft state + IME composition guard so typing 注音/拼音 assembles a
 // character before it reaches the filter. Committing every keystroke to the URL

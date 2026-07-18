@@ -32,6 +32,7 @@ scripts/harvester/og_ids.txt
 # Generated at build time from the catalog (scripts/gen-catalog.mjs): the static
 # data the site serves in place of a database.
 /public/catalog.json
+/public/catalog-first.json
 /public/catalog/
 /public/catalog-v/
 /public/catalog-manifest.json
