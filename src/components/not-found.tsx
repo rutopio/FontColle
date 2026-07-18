@@ -1,6 +1,6 @@
 import { HouseIcon } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
-import { LogoIcon } from "@/components/logo-icon";
+import { BrandMark } from "@/components/brand-mark";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -30,14 +30,7 @@ export function NotFound({
     <main className="flex min-h-full w-full flex-col items-center justify-center p-6">
       <Empty>
         <EmptyHeader>
-          <Link
-            to="/"
-            aria-label="FontColle home"
-            className="mb-8 flex flex-col items-center gap-1.5 text-primary"
-          >
-            <LogoIcon className="size-10" />
-            <span className="font-mono text-sm">FontColle</span>
-          </Link>
+          <BrandMark />
           <EmptyTitle>{title}</EmptyTitle>
           <EmptyDescription>
             {description.map((line) => (
@@ -47,7 +40,7 @@ export function NotFound({
             ))}
           </EmptyDescription>
         </EmptyHeader>
-        <Button render={<Link to="/" />}>
+        <Button nativeButton={false} role="link" render={<Link to="/" />}>
           <HouseIcon />
           Back to all fonts
         </Button>

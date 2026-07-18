@@ -50,7 +50,11 @@ export async function genCatalog() {
   await mkdir(perFontDir, { recursive: true });
   await Promise.all(
     fonts.map((f) =>
-      writeFile(path.join(perFontDir, `${f.id}.json`), JSON.stringify(f), "utf8")
+      writeFile(
+        path.join(perFontDir, `${f.id}.json`),
+        JSON.stringify(f),
+        "utf8"
+      )
     )
   );
   console.log(

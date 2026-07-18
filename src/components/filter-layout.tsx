@@ -22,7 +22,7 @@ function MobileTopBar({ favoriteFontId }: { favoriteFontId?: string }) {
         aria-label="All fonts"
         className="flex items-center gap-1.5 text-primary"
       >
-        <LogoIcon className="size-6" />
+        <LogoIcon className="size-5" />
         <span className="font-mono text-xs">FontColle</span>
       </Link>
       <div className="flex items-center gap-1">

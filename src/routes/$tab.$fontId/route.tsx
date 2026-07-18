@@ -2,12 +2,12 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { FilterLayout } from "@/components/filter-layout";
 import { NotFound } from "@/components/not-found";
+import { fetchFontById, fetchFontsByDesigners } from "@/lib/fonts/detail";
 import { DEFAULT_ON } from "@/lib/fonts/features";
 import {
   blocksWithCoverage,
   useGlyphCoverage,
 } from "@/lib/fonts/glyph-coverage";
-import { fetchFontById, fetchFontsByDesigners } from "@/lib/fonts/detail";
 import { fontSlug } from "@/lib/fonts/slug";
 import { blockOf, parseGlyphQuery } from "@/lib/fonts/unicode-blocks";
 import { absoluteUrl, pageTitle } from "@/lib/site";
@@ -39,9 +39,7 @@ export const Route = createFileRoute("/$tab/$fontId")({
       .map((d) => d.trim())
       .filter(Boolean);
     const siblingsByDesigner =
-      names.length > 0
-        ? await fetchFontsByDesigners(names, font.id)
-        : {};
+      names.length > 0 ? await fetchFontsByDesigners(names, font.id) : {};
     return { font, siblingsByDesigner };
   },
   head: ({ loaderData }) => {

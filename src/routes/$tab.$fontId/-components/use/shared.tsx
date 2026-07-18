@@ -71,6 +71,8 @@ export function ExternalLink({ href, label }: { href: string; label: string }) {
       variant="ghost"
       size="sm"
       className="mt-4 text-muted-foreground"
+      nativeButton={false}
+      role="link"
       render={
         // biome-ignore lint/a11y/useAnchorContent: Button injects children into this anchor via render; aria-label also set.
         <a href={href} target="_blank" rel="noreferrer" aria-label={label} />

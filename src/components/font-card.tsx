@@ -1,4 +1,4 @@
-import { DownloadSimpleIcon, HeartIcon } from "@phosphor-icons/react";
+import { GoogleLogoIcon, HeartIcon } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { FontTraits } from "@/components/font-traits";
@@ -138,7 +138,7 @@ export function FontCard({
                 aria-label="View on Google Fonts"
                 className="text-muted-foreground transition-colors hover:text-foreground"
               >
-                <HoverBoldIcon icon={DownloadSimpleIcon} className="size-5" />
+                <HoverBoldIcon icon={GoogleLogoIcon} className="size-5" />
               </TooltipTrigger>
               <TooltipContent>View on Google Fonts</TooltipContent>
             </Tooltip>

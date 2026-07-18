@@ -1,4 +1,4 @@
-import { DownloadSimpleIcon, HeartIcon } from "@phosphor-icons/react";
+import { GoogleLogoIcon, HeartIcon } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { FontTraits } from "@/components/font-traits";
@@ -145,7 +145,7 @@ export function FontRow({
                 aria-label="View on Google Fonts"
                 className="text-muted-foreground transition-colors hover:text-foreground"
               >
-                <HoverBoldIcon icon={DownloadSimpleIcon} className="size-5" />
+                <HoverBoldIcon icon={GoogleLogoIcon} className="size-5" />
               </TooltipTrigger>
               <TooltipContent>View on Google Fonts</TooltipContent>
             </Tooltip>
@@ -201,7 +201,12 @@ export function FontRow({
           {previewText || specimenFor(font)}
         </p>
       ) : (
-        <div className="h-8 w-2/3 animate-pulse rounded bg-muted" aria-hidden />
+        // Matches the loaded preview's box: mx-2 mirrors its px-2 so the line
+        // doesn't shift horizontally on swap, and h-9 ≈ text-3xl/leading-tight.
+        <div
+          className="mx-2 h-9 w-2/3 animate-pulse rounded bg-muted"
+          aria-hidden
+        />
       )}
     </Link>
   );

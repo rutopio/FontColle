@@ -3,6 +3,7 @@ import {
   ArrowUpRightIcon,
   DownloadSimpleIcon,
   FunnelIcon,
+  GoogleLogoIcon,
 } from "@phosphor-icons/react";
 import { Link, useCanGoBack, useRouter } from "@tanstack/react-router";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
@@ -15,13 +16,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import type { DesignerSibling } from "@/lib/fonts/detail";
 import { buildFeatureSettings } from "@/lib/fonts/features";
 import { emptyFilter, filterToSearch } from "@/lib/fonts/filter/state";
 import { scriptLabel } from "@/lib/fonts/labels";
 import { LICENSE_BOILERPLATE } from "@/lib/fonts/license-text";
 import { ensureFontRangeLoaded, useFontLoaded } from "@/lib/fonts/loader";
 import { previewStyle } from "@/lib/fonts/preview-style";
-import type { DesignerSibling } from "@/lib/fonts/detail";
 import { fontSlug } from "@/lib/fonts/slug";
 import { specimenFor } from "@/lib/fonts/specimen";
 import type { FontRecord } from "@/lib/fonts/types";
@@ -169,6 +170,8 @@ export function Detail({
             ) : (
               <Button
                 render={<Link to="/" />}
+                nativeButton={false}
+                role="link"
                 variant="ghost"
                 size="icon"
                 aria-label="All fonts"
@@ -197,6 +200,8 @@ export function Detail({
             {font.license && <Badge variant="outline">{font.license}</Badge>}
             <Button
               variant="outline"
+              nativeButton={false}
+              role="link"
               render={
                 // biome-ignore lint/a11y/useAnchorContent: Button injects its children into this anchor via the render prop (aria-label also set); the static rule can't see through it.
                 <a
@@ -207,12 +212,14 @@ export function Detail({
                 />
               }
             >
-              <ArrowUpRightIcon />
+              <GoogleLogoIcon />
               Google Fonts
             </Button>
             {font.repositoryUrl && (
               <Button
                 variant="outline"
+                nativeButton={false}
+                role="link"
                 render={
                   // biome-ignore lint/a11y/useAnchorContent: Button injects its children into this anchor via the render prop (aria-label also set); the static rule can't see through it.
                   <a
@@ -229,6 +236,8 @@ export function Detail({
             )}
             {font.repositoryUrl && (
               <Button
+                nativeButton={false}
+                role="link"
                 render={
                   // biome-ignore lint/a11y/useAnchorContent: Button injects its children into this anchor via the render prop (aria-label also set); the static rule can't see through it.
                   <a
@@ -519,6 +528,8 @@ function DesignerPanel({
                           variant="ghost"
                           size="sm"
                           className="text-muted-foreground"
+                          nativeButton={false}
+                          role="link"
                           render={
                             <Link
                               to="/"
@@ -537,6 +548,8 @@ function DesignerPanel({
                           variant="ghost"
                           size="sm"
                           className="text-muted-foreground"
+                          nativeButton={false}
+                          role="link"
                           render={
                             // biome-ignore lint/a11y/useAnchorContent: Button injects its children into this anchor via the render prop (aria-label also set); the static rule can't see through it.
                             <a

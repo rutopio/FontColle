@@ -39,17 +39,22 @@ export function AppSidebar({
             styling. px-1.5 matches the rail nav below so it lines up with and
             spans the same width as the group buttons. aspect-square keeps it a
             square tile. */}
-        <SidebarHeader className=" ">
+        {/* h-16 + border-b mirrors the Column header (filter-layout) exactly:
+            both are 64px tall with the divider drawn *inside* that box, so the
+            rail's line and the header's line land on the same pixel. Using a
+            Separator here instead would sit outside the box and hang 1px low. */}
+        <SidebarHeader className="h-16 justify-center border-border border-b p-2">
           <Link
             to="/"
             aria-label="All fonts"
-            className="group/logo flex aspect-square w-full flex-col items-center justify-center gap-1 rounded-lg text-primary"
+            className="group/logo flex w-full flex-col items-center justify-center gap-1 rounded-lg text-primary"
           >
-            <LogoIcon className="size-8 transition-[stroke-width] group-hover/logo:[stroke-width:2.5]" />
-            <span className="font-mono text-[9px]">FontColle</span>
+            <LogoIcon className="size-7 transition-[stroke-width] group-hover/logo:[stroke-width:2]" />
+            <span className="font-mono text-[9px] transition-all group-hover/logo:font-bold">
+              FontColle
+            </span>
           </Link>
         </SidebarHeader>
-        <Separator className="" />
         {rail && (
           <ScrollArea className="min-h-0 flex-1 p-2">
             <div className="pb-2">{rail}</div>
