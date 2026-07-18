@@ -24,6 +24,10 @@ import { cn } from "@/lib/utils";
 // the font lacks are drawn as muted empty slots, so the hex layout stays aligned
 // while it's still obvious which characters the font covers.
 //
+// Mobile drops that address chart entirely: 5 columns, no hex header or row
+// labels, and only the codepoints the font actually has, since a sparse block
+// on a phone would otherwise be mostly empty slots. See `compact`/`present`.
+//
 // Big blocks (CJK Unified Ideographs is 15k+ cells) are ROW-VIRTUALIZED so only
 // visible rows are in the DOM. The hover magnifier is driven imperatively via
 // event delegation + a ref, moving the cursor writes directly to the popover's
@@ -33,12 +37,12 @@ import { cn } from "@/lib/utils";
 type Range = [number, number];
 
 // Row stride for a code chart: 16 cells, indexed by the low hex nibble. On a
-// phone 16 square cells leave each one too small to read, so the row halves to
-// 8 and the hex address column/header are dropped, the grid stops being a
+// phone 16 square cells leave each one too small to read, so the row drops to
+// 5 and the hex address column/header go away, the grid stops being a
 // canonical code chart there and is simply a glyph browser, with each cell's
 // codepoint still available via its title, aria-label, and the magnifier.
 const COLS_DESKTOP = 16;
-const COLS_MOBILE = 8;
+const COLS_MOBILE = 5;
 // Width (px) of the leading row-label column (the U+xxx0 prefix). Fixed so the
 // square cell size can be derived from the container width.
 const LABEL_W = 44;
@@ -83,18 +87,36 @@ function BlockGrid({
   // the panel can copy the character and flash confirmation.
   onCopy: (cp: number) => void;
 }) {
-  const COLS = useIsMobile() ? COLS_MOBILE : COLS_DESKTOP;
+  const compact = useIsMobile();
+  const COLS = compact ? COLS_MOBILE : COLS_DESKTOP;
   // The leading address column is desktop-only; on mobile its width goes to the
   // cells. The track is dropped entirely (not zeroed) to match the label cell
   // no longer being rendered, so the cells stay aligned with the header.
-  const labelW = COLS === COLS_DESKTOP ? LABEL_W : 0;
+  const labelW = compact ? 0 : LABEL_W;
   const gridCols = labelW
     ? `${labelW}px repeat(${COLS}, minmax(0, 1fr))`
     : `repeat(${COLS}, minmax(0, 1fr))`;
+
+  // Desktop keeps the canonical code chart: every codepoint in the block gets a
+  // cell (absent ones drawn muted) so rows align on the U+xxx0 boundary. Mobile
+  // has already given up the address apparatus, and on a phone a sparse block
+  // is mostly empty slots, so it packs only the present codepoints instead. The
+  // grid is then indexed by position in this list rather than by address, which
+  // is why every layout/navigation derivation below branches on `compact`.
+  const present = useMemo(() => {
+    if (!compact) return null;
+    const cps: number[] = [];
+    for (let cp = block.start; cp <= block.end; cp++) {
+      if (isRenderable(cp) && hasCodepoint(ranges, cp)) cps.push(cp);
+    }
+    return cps;
+  }, [compact, block.start, block.end, ranges]);
+
   // Pad the leading row so the first codepoint sits under its true hex column.
   // Blocks are 16-aligned in Unicode, so lead is 0, but the guard is cheap.
-  const lead = block.start % COLS;
-  const total = lead + (block.end - block.start + 1);
+  // Packed mode has no address to align to, so it never pads.
+  const lead = compact ? 0 : block.start % COLS;
+  const total = present ? present.length : lead + (block.end - block.start + 1);
   const rowCount = Math.ceil(total / COLS);
 
   // The grid sits below the block title within the shared scroller, so the
@@ -246,15 +268,30 @@ function BlockGrid({
     if (target != null) focusCp(target);
   };
 
-  // Scroll a searched codepoint's row into view. The virtualizer measures rows
-  // from the block start (+ the leading pad), so the row index is derived the
-  // same way the render loop lays them out.
+  // Scroll a searched codepoint's row into view, derived the same way the
+  // render loop lays rows out: by position in the present list when packed,
+  // otherwise from the block start (+ the leading pad).
   useEffect(() => {
     if (highlightCp == null) return;
     if (highlightCp < block.start || highlightCp > block.end) return;
-    const rowIndex = Math.floor((lead + highlightCp - block.start) / COLS);
+    let rowIndex: number;
+    if (present) {
+      const i = present.indexOf(highlightCp);
+      if (i < 0) return; // packed grid omits absent codepoints entirely
+      rowIndex = Math.floor(i / COLS);
+    } else {
+      rowIndex = Math.floor((lead + highlightCp - block.start) / COLS);
+    }
     rowVirtualizer.scrollToIndex(rowIndex, { align: "center" });
-  }, [highlightCp, block.start, block.end, lead, rowVirtualizer, COLS]);
+  }, [
+    highlightCp,
+    block.start,
+    block.end,
+    lead,
+    present,
+    rowVirtualizer,
+    COLS,
+  ]);
 
   // --- Roving tabindex (keyboard grid navigation) -------------------------
   // The grid is a single tab stop: exactly one present cell carries tabIndex=0
@@ -290,9 +327,17 @@ function BlockGrid({
       ? rovingCpRef.current
       : firstPresentCp;
 
+  // Which row a codepoint sits in. Packed mode indexes by position in the
+  // present list; the address-aligned chart by the codepoint's own offset.
   const rowOf = useCallback(
-    (cp: number) => Math.floor((lead + cp - block.start) / COLS),
-    [lead, block.start, COLS]
+    (cp: number) => {
+      if (present) {
+        const i = present.indexOf(cp);
+        return i < 0 ? 0 : Math.floor(i / COLS);
+      }
+      return Math.floor((lead + cp - block.start) / COLS);
+    },
+    [present, lead, block.start, COLS]
   );
   const cellButton = useCallback(
     (cp: number) =>
@@ -341,11 +386,19 @@ function BlockGrid({
 
   // Next present, renderable codepoint from `cp` in `dir` (+1/-1) direction,
   // skipping absent/non-renderable slots so focus never lands on an empty cell.
+  // `step` is a distance in grid cells (1 for left/right, COLS for up/down).
+  // Packed mode has no gaps, so a step is just a move of `step` places in the
+  // present list, which keeps up/down landing in the same column.
   const nextPresent = (
     cp: number,
     dir: number,
     step: number
   ): number | null => {
+    if (present) {
+      const i = present.indexOf(cp);
+      if (i < 0) return null;
+      return present[i + dir * step] ?? null;
+    }
     for (
       let n = cp + dir * step;
       n >= block.start && n <= block.end;
@@ -355,6 +408,32 @@ function BlockGrid({
     }
     return null;
   };
+
+  // One present glyph's cell. Shared by both layouts: the packed (mobile) grid
+  // and the address-aligned (desktop) one differ only in which codepoint lands
+  // in which slot, not in how a cell looks or behaves.
+  const glyphCell = (cp: number) => (
+    <button
+      type="button"
+      key={cp}
+      data-cp={cp}
+      // Roving tabindex: only the active cell is tabbable, so the block is a
+      // single tab stop. Read from the ref during render; focusCp re-renders
+      // when the roving cell moves.
+      tabIndex={cp === rovingCp ? 0 : -1}
+      title={`U+${hex(cp)}: click to copy`}
+      aria-label={`U+${hex(cp)} ${String.fromCodePoint(cp)}, copy character`}
+      className={cn(
+        "flex items-center justify-center border-primary bg-card leading-none outline-none hover:border focus-visible:border-2 focus-visible:border-primary",
+        highlightCp === cp && "animate-pulse border-2 border-primary"
+      )}
+      // Glyph fills ~1/2 of the (square) cell, so it scales with the measured
+      // cell size instead of a fixed font-size.
+      style={{ ...style, fontSize: cellSize * 0.4 }}
+    >
+      {String.fromCodePoint(cp)}
+    </button>
+  );
 
   return (
     <>
@@ -437,35 +516,22 @@ function BlockGrid({
               )}
               {Array.from({ length: COLS }, (_, c) => {
                 const idx = rowStart + c;
+                // Packed (mobile): the cell is the idx-th present codepoint,
+                // with a blank only past the end of the last row.
+                if (present) {
+                  const packedCp = present[idx];
+                  if (packedCp === undefined)
+                    return <div key={`tail:${idx}`} className="bg-card" />;
+                  return glyphCell(packedCp);
+                }
                 // Leading pad cells (before the block's first codepoint).
                 if (idx < lead)
                   return <div key={`pad:${idx}`} className="bg-card" />;
                 const cp = block.start + idx - lead;
                 if (cp > block.end)
                   return <div key={`tail:${idx}`} className="bg-card" />;
-                const present = isRenderable(cp) && hasCodepoint(ranges, cp);
-                return present ? (
-                  <button
-                    type="button"
-                    key={cp}
-                    data-cp={cp}
-                    // Roving tabindex: only the active cell is tabbable, so the
-                    // block is a single tab stop. Read from the ref during
-                    // render; focusCp re-renders when the roving cell moves.
-                    tabIndex={cp === rovingCp ? 0 : -1}
-                    title={`U+${hex(cp)}: click to copy`}
-                    aria-label={`U+${hex(cp)} ${String.fromCodePoint(cp)}, copy character`}
-                    className={cn(
-                      "flex items-center justify-center border-primary bg-card leading-none outline-none hover:border focus-visible:border-2 focus-visible:border-primary",
-                      highlightCp === cp &&
-                        "animate-pulse border-2 border-primary"
-                    )}
-                    // Glyph fills ~1/2 of the (square) cell, so it scales with
-                    // the measured cell size instead of a fixed font-size.
-                    style={{ ...style, fontSize: cellSize * 0.4 }}
-                  >
-                    {String.fromCodePoint(cp)}
-                  </button>
+                return isRenderable(cp) && hasCodepoint(ranges, cp) ? (
+                  glyphCell(cp)
                 ) : (
                   // Absent (or non-renderable) codepoint: a muted empty slot
                   // keeps the hex columns aligned.
@@ -544,8 +610,8 @@ export function GlyphsPanel({
   void fontLoaded;
 
   return (
-    <div className="w-full min-w-0">
-      <div className="mb-4 flex items-baseline justify-between gap-3">
+    <div className="w-full min-w-0 pb-48 md:pb-0">
+      <div className="mb-8 flex items-baseline justify-between gap-3">
         <h2 className="font-semibold text-2xl">{active.name}</h2>
         <span className="font-mono text-muted-foreground text-xs">
           U+{hex(active.start)}–U+{hex(active.end)}
