@@ -57,6 +57,17 @@ jobs:
           # scripts/harvester/requirements.txt (CLAUDE.md: pin exact versions).
           pip install -r scripts/harvester/requirements.txt
 
+      - name: Pull data assets from R2
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # daily_update.py diffs the harvest against the PREVIOUS fonts.json,
+          # the shrinkage guard stats it, and the OG publisher uploads deltas
+          # from public/og — none of which live in git anymore. Restore them
+          # from R2 (per the manifest) before harvesting.
+          node scripts/sync-assets.mjs
+
       - name: Refresh published signals
         env:
           GOOGLE_FONTS_API_KEY: ${{ secrets.GOOGLE_FONTS_API_KEY }}
@@ -145,8 +156,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          # Pull fonts.json / glyphs / og from R2 (per the manifest) into place
-          # before building; they no longer live in git.
-          node scripts/sync-assets.mjs
+          # The data assets are already in place: the pre-harvest sync restored
+          # them and the harvest updated them (build.mjs re-syncs if missing).
           pnpm build
           pnpm exec wrangler deploy
