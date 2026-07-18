@@ -16,7 +16,7 @@ import type { MatchMode } from "@/lib/fonts/filter";
 import { cn } from "@/lib/utils";
 
 // Shared fade for header actions that swap in/out (Reset <-> Sort). Fast and
-// subtle — it should read as a soft cross-fade, not a spotlight.
+// subtle, it should read as a soft cross-fade, not a spotlight.
 const FADE = {
   initial: { opacity: 0 },
   animate: { opacity: 1 },
@@ -112,7 +112,7 @@ export function MatchModeToggle({
 // A section header with a title and a right-side action that flips between a
 // Reset button (when values are selected) and a SortToggle (when not). The
 // action slot always renders (invisible when neither applies) so its height
-// is reserved up front — otherwise a Reset button appearing on first
+// is reserved up front, otherwise a Reset button appearing on first
 // selection shifts every section below it down by a row.
 export function SectionHeader({
   title,
@@ -179,7 +179,7 @@ export function SectionHeader({
       </motion.h2>
       <div className="flex shrink-0 items-center gap-0.5">
         {/* OR/AND toggle, left of the reset/sort slot. Only for sections that
-            pass a mode, and only once something is selected — combining is
+            pass a mode, and only once something is selected, combining is
             moot with zero or one pick, so it appears alongside Reset. Fades
             with the same timing as the Reset/Sort slot so the two never look
             like they animate on different clocks. */}

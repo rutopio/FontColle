@@ -7,7 +7,7 @@ import { useEffect } from "react";
 // grows its total height over the first frames (so the target isn't reachable
 // immediately), and it resets scrollTop as it mounts/measures (so a one-shot
 // restore gets clobbered). So we keep re-asserting the target across a short
-// time budget, stopping only once the budget elapses — not the first time it's
+// time budget, stopping only once the budget elapses, not the first time it's
 // reached.
 export function useListScrollRestore(
   scrollRef: React.RefObject<HTMLDivElement | null>,
@@ -33,7 +33,7 @@ export function useListScrollRestore(
     const start = performance.now();
     // Re-assert the target for a fixed budget: the virtualizer resets scrollTop
     // a few times as it mounts and measures, so a "stop once reached" restore
-    // gets clobbered afterward. Hold the target for ~600ms — long enough to
+    // gets clobbered afterward. Hold the target for ~600ms, long enough to
     // outlast those resets, short enough that a user who immediately scrolls
     // elsewhere isn't fought for long.
     const tick = () => {

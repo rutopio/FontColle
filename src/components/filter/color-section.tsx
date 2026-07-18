@@ -9,7 +9,7 @@ import { SectionHeader } from "./section-header";
 const COLOR_LABELS = { monochrome: "Monochrome", color: "Colorful" };
 
 // Color filter: Monochrome vs Colorful (fonts carrying a color table).
-// Radio-style — at most one selected.
+// Radio-style: at most one selected.
 export function ColorSection({
   items,
   selected,
@@ -36,7 +36,7 @@ export function ColorSection({
 }
 
 // Color-table format filter: COLR/CPAL, OpenType-SVG, sbix, CBDT/CBLC, two per
-// row. Multi-select with AND semantics — a font can carry several color tables
+// row. Multi-select with AND semantics: a font can carry several color tables
 // at once, so selecting two formats narrows to the fonts providing both, and
 // the per-format counts overlap (they sum above the colorful total).
 //
@@ -47,7 +47,7 @@ export function ColorSection({
 // `disabled` fades the whole grid: Monochrome means "carries no color table", so
 // a format filter under it could never match anything. Clicking Monochrome also
 // clears the format selection (see FilterSidebar.selectColor). A hand-typed
-// ?color=monochrome&cfmt=COLR can still arrive pre-selected — the empty result
+// ?color=monochrome&cfmt=COLR can still arrive pre-selected, the empty result
 // is then correct, and the header's Reset stays available to escape it.
 export function ColorFormatSection({
   items,

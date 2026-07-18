@@ -4,7 +4,7 @@ import { RadioPillSection } from "./radio-pill-section";
 const TYPE_LABELS = { static: "Static", variable: "Variable" };
 
 // Static vs Variable, radio-style. Stored as the static/variable `facets`
-// values, but this is their only entry point — buildFacetIndex keeps them out
+// values, but this is their only entry point, buildFacetIndex keeps them out
 // of the Properties list. Sits above the variable axes because those only exist
 // for variable fonts, and this says which. Radio rather than multi-select: a
 // font is one or the other, so selecting both (facets are AND-ed) could only

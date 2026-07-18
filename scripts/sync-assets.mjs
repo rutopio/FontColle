@@ -25,7 +25,7 @@ const SCRATCH = path.join(ROOT, ".r2-tmp");
 const manifest = JSON.parse(readFileSync(MANIFEST_PATH, "utf8"));
 mkdirSync(SCRATCH, { recursive: true });
 
-// fonts.json — pull the manifest's current version and verify its hash.
+// fonts.json, pull the manifest's current version and verify its hash.
 r2Get(manifest.fonts.key, FONTS_JSON);
 const got = sha256File(FONTS_JSON);
 if (got !== manifest.fonts.sha256) {
@@ -35,15 +35,17 @@ if (got !== manifest.fonts.sha256) {
 }
 console.log(`[sync] fonts.json <- ${manifest.fonts.key} (verified)`);
 
-// glyphs — extract the seed tarball.
+// glyphs, extract the seed tarball.
 {
   const tar = path.join(SCRATCH, "glyphs.tar.gz");
   r2Get(manifest.glyphs.key, tar);
   extractTar(tar, GLYPHS_DIR);
-  console.log(`[sync] public/glyphs <- ${manifest.glyphs.key} (${manifest.glyphs.count} files)`);
+  console.log(
+    `[sync] public/glyphs <- ${manifest.glyphs.key} (${manifest.glyphs.count} files)`
+  );
 }
 
-// og — extract the base tarball, then layer every per-object delta on top.
+// og: extract the base tarball, then layer every per-object delta on top.
 {
   const tar = path.join(SCRATCH, "og.tar.gz");
   r2Get(manifest.og.base.key, tar);

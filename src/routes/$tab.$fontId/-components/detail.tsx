@@ -266,7 +266,7 @@ export function Detail({
     >
       {tab === "sample" && (
         <>
-          {/* TYPE TESTER — named-instance chips set the preview axes; the
+          {/* TYPE TESTER, named-instance chips set the preview axes; the
               sentence below is the editable specimen. */}
           <Panel label="Type tester">
             {font.instances.length > 0 && (
@@ -286,7 +286,7 @@ export function Detail({
             />
           </Panel>
 
-          {/* NAMED INSTANCES, ROW VIEW — one instance per block: its label on the
+          {/* NAMED INSTANCES, ROW VIEW, one instance per block: its label on the
           first line, an editable preview of it on the second. Editing any row's
           text updates the shared preview, so every row (and the tester) changes. */}
           {font.instances.length > 0 && (
@@ -328,7 +328,7 @@ export function Detail({
 
       {tab === "detail" && (
         <>
-          {/* SPECS + SUBSETS + WRITING SYSTEMS + VERSION HISTORY — one row, each
+          {/* SPECS + SUBSETS + WRITING SYSTEMS + VERSION HISTORY, one row, each
               a quarter-width column. */}
           <div className="grid gap-4 md:grid-cols-4">
             <Panel label="Specs" className="md:col-span-1">
@@ -365,7 +365,7 @@ export function Detail({
               </Panel>
             )}
 
-            {/* VERSION HISTORY — release timeline from google/fonts git history,
+            {/* VERSION HISTORY, release timeline from google/fonts git history,
                 newest first. Hidden entirely when none could be extracted. */}
             {font.versionHistory.length > 0 && (
               <Panel
@@ -391,11 +391,11 @@ export function Detail({
             )}
           </div>
 
-          {/* METRICS — the derived style metrics FontColle filters on, with a
+          {/* METRICS, the derived style metrics FontColle filters on, with a
               baseline/x-height/cap-height diagram. Full width. */}
           <MetricsPanel font={font} />
 
-          {/* LANGUAGES — full width. */}
+          {/* LANGUAGES, full width. */}
           {font.languages.length > 0 && <LanguageSupport font={font} />}
         </>
       )}

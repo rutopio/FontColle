@@ -52,7 +52,7 @@ export function Section({
   // the "more" expander (instead of using RARE_THRESHOLD).
   topNSet?: Set<string> | null;
   // Sort the non-count mode numerically (largest first) instead of by label
-  // text — right for numeric values like units-per-em, where "1000" must rank
+  // text, right for numeric values like units-per-em, where "1000" must rank
   // above "16", not below it.
   numericSort?: boolean;
 }) {
@@ -119,7 +119,7 @@ export function Pills({
   onToggle: (v: string) => void;
   grid?: boolean;
   spread?: boolean;
-  // Render the value in a monospaced face — right for four-letter tags like
+  // Render the value in a monospaced face, right for four-letter tags like
   // "liga", wrong for human labels like "Latin".
   mono?: boolean;
   // Display name for a value; the toggle still passes the raw value.
@@ -185,7 +185,7 @@ export function Pills({
   };
 
   // Grid mode lays pills out N-per-row at equal width; otherwise they wrap.
-  // Both column classes are spelled out — Tailwind can't see interpolated ones.
+  // Both column classes are spelled out, Tailwind can't see interpolated ones.
   const rowClass = grid
     ? columns === 2
       ? "grid grid-cols-2 gap-1.5"

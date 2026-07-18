@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 // A card section on the detail page, optionally titled with a count badge. When
 // no label/count/action is given the header and its divider are dropped, leaving
-// a plain card — used by the Use-tab methods, whose tab label already names them.
+// a plain card, used by the Use-tab methods, whose tab label already names them.
 export function Panel({
   label,
   count,
@@ -17,7 +17,7 @@ export function Panel({
   // Optional control rendered at the right of the header (e.g. a copy button).
   action?: React.ReactNode;
   className?: string;
-  // Extra classes on the body wrapper — e.g. max-w-lg to keep prose-width
+  // Extra classes on the body wrapper, e.g. max-w-lg to keep prose-width
   // content from stretching across a full-width card.
   bodyClassName?: string;
   children: React.ReactNode;

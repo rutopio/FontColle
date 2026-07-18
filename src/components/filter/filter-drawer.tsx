@@ -12,7 +12,7 @@ import type { FilterGroupId } from "./groups";
 // Mobile-only (<768px) filter access. The desktop rail + panel collapse to an
 // unreachable Sheet on mobile (see app-sidebar), so this is the sole way to
 // filter there: a bottom-right FAB opens a bottom drawer holding the same
-// controls — a horizontal FilterRail group switcher over the FilterSidebar. All
+// controls, a horizontal FilterRail group switcher over the FilterSidebar. All
 // filter state is shared (FilterProvider is at the root), so changes reflect
 // live and the drawer needs no Apply button. Hidden on desktop via md:hidden.
 export function FilterDrawer({

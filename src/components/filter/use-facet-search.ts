@@ -19,7 +19,7 @@ export function useSearchSort() {
 
 // Narrow already-grouped pills to a query, matching each value against both its
 // raw form and its label. Empty groups drop out, and every surviving group's
-// topNSet is rebuilt to hold ALL its matches — the invariant that a search hit
+// topNSet is rebuilt to hold ALL its matches, the invariant that a search hit
 // is never left hidden behind a "N more" expander. Shared by the feature and
 // language panels, which differ only in how they group and label.
 export function filterGroupsByQuery<G extends { items: [string, number][] }>(

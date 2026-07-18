@@ -29,10 +29,6 @@ const languages = languagesRaw as Record<string, LanguageMeta>;
 // (scripts/gen-vendors-data.mjs). Keyed by the uppercased 4-char code.
 const vendors = vendorsRaw as Record<string, string>;
 
-// Google Fonts' website shows a curated MAJOR-language subset; population>=5M
-// reproduces it cleanly. The UI defaults to these, with a "show all" expander.
-export const MAJOR_LANG_POPULATION = 5_000_000;
-
 /** "Latn" -> "Latin"; unknown codes pass through unchanged. */
 export function scriptLabel(code: string): string {
   return scripts[code] ?? code;
@@ -134,20 +130,4 @@ for (const meta of Object.values(languages)) {
 
 export function scriptPopulation(code: string): number {
   return SCRIPT_POPULATION[code] ?? 0;
-}
-
-/** Split lang ids into major (>=5M speakers) and the rest, each name-sorted. */
-export function splitLanguages(ids: string[]): {
-  major: string[];
-  minor: string[];
-} {
-  const major: string[] = [];
-  const minor: string[] = [];
-  for (const id of ids) {
-    if (languagePopulation(id) >= MAJOR_LANG_POPULATION) major.push(id);
-    else minor.push(id);
-  }
-  const byName = (a: string, b: string) =>
-    languageLabel(a).localeCompare(languageLabel(b));
-  return { major: major.sort(byName), minor: minor.sort(byName) };
 }

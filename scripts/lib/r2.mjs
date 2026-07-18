@@ -27,7 +27,9 @@ function wrangler(args, { input } = {}) {
     input,
     encoding: input ? undefined : "utf8",
     maxBuffer: 1024 * 1024 * 1024,
-    stdio: input ? ["pipe", "inherit", "inherit"] : ["ignore", "pipe", "inherit"],
+    stdio: input
+      ? ["pipe", "inherit", "inherit"]
+      : ["ignore", "pipe", "inherit"],
   });
   if (res.status !== 0) {
     throw new Error(`wrangler ${args.join(" ")} failed (exit ${res.status})`);
@@ -39,10 +41,9 @@ function wrangler(args, { input } = {}) {
 // files transfer intact.
 export function r2Put(key, filePath) {
   const buf = readFileSync(filePath);
-  wrangler(
-    ["r2", "object", "put", `${BUCKET}/${key}`, "--remote", "--pipe"],
-    { input: buf }
-  );
+  wrangler(["r2", "object", "put", `${BUCKET}/${key}`, "--remote", "--pipe"], {
+    input: buf,
+  });
 }
 
 // Download `key` into `destPath`.

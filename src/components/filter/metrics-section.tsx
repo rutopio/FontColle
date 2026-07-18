@@ -182,7 +182,7 @@ function MetricRangeRow({
               // biome-ignore lint/suspicious/noArrayIndexKey: fixed 4-quartile list
               key={i}
             >
-              {/* The quartile pill is itself the trigger — no nested button —
+              {/* The quartile pill is itself the trigger, no nested button,
                   so base-ui merges its hover/focus onto this <button> while
                   keeping our onClick. */}
               <TooltipTrigger
@@ -249,7 +249,7 @@ export function MetricsSection({
         sort="count"
         onToggleSort={() => {}}
       />
-      {/* Six slider rows — the sub-items inside this one section, so gap-8;
+      {/* Six slider rows, the sub-items inside this one section, so gap-8;
           the Metrics/Units/Hint sections themselves are spaced by the sidebar's
           gap-12, not here. */}
       <div className="flex flex-col gap-8">

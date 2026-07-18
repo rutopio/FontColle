@@ -12,7 +12,7 @@ const OFF =
 
 // The heart, with a hover-swapped duotone twin (Phosphor weight is a prop, not
 // CSS). `active` fills it; the duotone twin shows on hover. `red` tints the
-// filled heart red — used in the detail toggle, where "favorited" is shown by
+// filled heart red, used in the detail toggle, where "favorited" is shown by
 // the heart itself (like the card/row), not by a button background. `bar` drops
 // the text label for the compact mobile top bar.
 function HeartLabel({
@@ -51,7 +51,7 @@ const BAR_BTN =
 
 // The rail-footer Favorite control. Its meaning depends on the page:
 //  - List page (no `fontId`): a link that toggles the favorites-only view
-//    (`?fav=1`) — "show my hearted fonts".
+//    (`?fav=1`), "show my hearted fonts".
 //  - Detail page (`fontId` given): a toggle that hearts/un-hearts THIS font,
 //    mirroring the card/row heart, so you can favorite from the detail view.
 // Favorites live in localStorage (device-local); the view flag lives in the URL.

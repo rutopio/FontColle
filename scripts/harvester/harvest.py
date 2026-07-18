@@ -78,7 +78,7 @@ def parse_metadata_pb(text):
         "primary_script": scalar("primary_script"),  # e.g. "Latn"
         "stroke": scalar("stroke"),              # SERIF / SANS_SERIF stroke class
         "classifications": re.findall(r'classifications:\s*"([^"]+)"', text),
-        # source { repository_url: "..." } — the upstream GitHub repo. None when
+        # source { repository_url: "..." }, the upstream GitHub repo. None when
         # the source block is absent (older fonts, API-supplemented families).
         "repository_url": scalar("repository_url"),
     }
@@ -282,7 +282,7 @@ def parse_ttf(raw_bytes):
     # Color-table presence, in table-directory order. A font may carry several at
     # once (6 GF families ship both COLR and OpenType-SVG so old renderers can
     # fall back), so this is a list, not an enum. lazy=True means `in` only reads
-    # the table directory — no parse cost.
+    # the table directory, no parse cost.
     out["color_tables"] = [t for t in COLOR_TABLES if t in f]
     if os2 and hasattr(os2, "panose"):
         p = os2.panose

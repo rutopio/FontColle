@@ -43,7 +43,7 @@ const SCRIPT_SPECIMEN: Record<string, string> = {
 
 // The sample sentence to preview a font with. Prefer the harvested native-script
 // sample (gflanguages, ~156 scripts). Otherwise fall back by the font's PRIMARY
-// script — not its subset list: Latin faces like Inter/Roboto also cover Greek
+// script, not its subset list: Latin faces like Inter/Roboto also cover Greek
 // or Hebrew, but Google Fonts (and we) specimen them in Latin, so only a font
 // whose primary script is non-Latin gets a non-Latin sample.
 export function specimenFor(font: FontRecord): string {

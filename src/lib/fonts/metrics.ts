@@ -32,7 +32,7 @@ export interface MetricSpec {
   scale: "linear" | "log";
   // p25/p50/p75 of this metric's value over the published catalog (computed
   // 2026-07-11). They split the domain into four quartile pills (Q1…Q4), so
-  // each pill selects a range holding ~1/4 of the fonts — unlike an even split
+  // each pill selects a range holding ~1/4 of the fonts, unlike an even split
   // of the clipped domain, whose edge buckets are near-empty.
   quantiles: [number, number, number];
   // One-sentence explanation of what the ratio measures and what higher/lower
@@ -51,7 +51,7 @@ export const METRIC_SPECS: Record<MetricKey, MetricSpec> = {
     step: 0.01,
     scale: "linear",
     quantiles: [0.464, 0.5, 0.535],
-    hint: "Height of lowercase letters (the 'x') relative to the em. Higher means a taller x-height — the font looks larger and more legible at small sizes; lower reads as more classic or elegant.",
+    hint: "Height of lowercase letters (the 'x') relative to the em. Higher means a taller x-height, the font looks larger and more legible at small sizes; lower reads as more classic or elegant.",
   },
   capHeight: {
     key: "capHeight",
@@ -95,7 +95,7 @@ export const METRIC_SPECS: Record<MetricKey, MetricSpec> = {
     step: 0.05,
     scale: "linear",
     quantiles: [1.21, 1.32, 2.09],
-    hint: "Stroke-weight difference between the thick and thin parts of letters, at the regular weight. Near 1.0 is monolinear (even strokes — most sans and mono); higher means sharper thick/thin contrast, up to Didone display serifs.",
+    hint: "Stroke-weight difference between the thick and thin parts of letters, at the regular weight. Near 1.0 is monolinear (even strokes, most sans and mono); higher means sharper thick/thin contrast, up to Didone display serifs.",
   },
   // 16KB … 64MB, log-scaled. Stored/compared in raw bytes.
   fileSize: {

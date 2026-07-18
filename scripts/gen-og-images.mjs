@@ -24,16 +24,15 @@ import opentype from "opentype.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT_DIR = resolve(ROOT, "public/og");
-// The full catalog (harvester output / D1 seed source), not the 59-font
-// public/fonts.json subset. Only published families get a font page, so only
-// those need a card.
+// The full catalog (harvester output). Only published families get a font page,
+// so only those need a card. Pulled from R2 by sync-assets.mjs when absent.
 const FONTS_JSON = resolve(ROOT, "src/data/fonts.json");
 
 // Open Graph recommended 1.91:1 canvas.
 const W = 1200;
 const H = 630;
 
-// Light canvas, black text — matches the site's default (light) chrome.
+// Light canvas, black text, matches the site's default (light) chrome.
 const BG = "#ffffff";
 const FG = "#0a0a0a";
 
@@ -172,6 +171,38 @@ function wordmark() {
   return icon + word;
 }
 
+// The home page's whole card: logo icon stacked above the "FontColle" wordmark,
+// the pair optically centered on the canvas. Larger than the bottom strip's
+// mark because here it is the subject rather than an attribution.
+function brandLockup() {
+  const iconSize = 200;
+  const iconScale = iconSize / 24; // icon viewBox is 24 units
+  const gap = 48; // vertical gap between icon and word
+  const wordSize = 96;
+
+  // Stack height uses the word's cap height rather than its full em box, so the
+  // optical centre sits where the eye expects it.
+  const wordVisualH = wordSize * 0.72;
+  const stackH = iconSize + gap + wordVisualH;
+  const top = (H - stackH) / 2;
+
+  const iconX = (W - iconSize) / 2;
+  // Stroke scales with the icon, so divide the 1.5 UI stroke back out to keep
+  // the weight matching the sidebar mark instead of ballooning to 12px.
+  const icon =
+    `<g transform="translate(${iconX.toFixed(2)} ${top.toFixed(2)}) scale(${iconScale.toFixed(3)})" ` +
+    `fill="none" stroke="${FG}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">` +
+    ICON_PATHS.map((d) => `<path d="${d}"/>`).join("") +
+    `</g>`;
+
+  const wordCenterY = top + iconSize + gap + wordVisualH / 2;
+  const word =
+    `<text x="${W / 2}" y="${wordCenterY.toFixed(2)}" text-anchor="middle" ` +
+    `dominant-baseline="central" font-family="Paper Mono" font-size="${wordSize}" ` +
+    `fill="${FG}">FontColle</text>`;
+  return icon + word;
+}
+
 function card(inner) {
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">` +
@@ -198,23 +229,13 @@ const nameBox = {
 
 async function main() {
   mkdirSync(OUT_DIR, { recursive: true });
-
-  // Home-page default card: the big name in Paper Mono (via <text>) + wordmark.
-  {
-    const name =
-      `<text x="${W / 2}" y="${NAME_BOX_TOP + NAME_BOX_H / 2}" text-anchor="middle" ` +
-      `dominant-baseline="central" font-family="Paper Mono" font-size="140" fill="${FG}">FontColle</text>`;
-    writeFileSync(
-      resolve(OUT_DIR, "_default.png"),
-      toPng(card(name + wordmark()))
-    );
-    console.log("wrote _default.png");
-  }
+  writeFileSync(resolve(OUT_DIR, "_default.png"), toPng(card(brandLockup())));
+  console.log("wrote _default.png");
 
   // Only published families get a font page (see queries.ts getFontById), so
   // only those need a card. `--force` re-renders all; default skips existing
   // PNGs so an interrupted run resumes cheaply. `--ids=<file>` restricts to the
-  // family ids listed (one per line) — the daily update regenerates only the
+  // family ids listed (one per line), the daily update regenerates only the
   // changed subset, always with force since those cards must be refreshed.
   const force = process.argv.includes("--force");
   const idsArg = process.argv.find((a) => a.startsWith("--ids="));
@@ -287,7 +308,7 @@ async function main() {
     console.log(`\n${failed.length} needed fallback or failed:`);
     for (const f of failed) {
       console.log(
-        `  ${f.fellBack ? "[fallback]" : "[FAILED]  "} ${f.id} — ${f.reason}`
+        `  ${f.fellBack ? "[fallback]" : "[FAILED]  "} ${f.id}: ${f.reason}`
       );
     }
   }

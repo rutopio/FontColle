@@ -6,8 +6,8 @@ import { EditableValue } from "@/components/ui/editable-value";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
 import type { FontRecord } from "@/lib/fonts/types";
-import { CodeBlock } from "../code-block";
-import { Panel } from "../panel";
+import { CodeBlock } from "@/routes/$tab.$fontId/-components/code-block";
+import { Panel } from "@/routes/$tab.$fontId/-components/panel";
 import {
   type AxisPick,
   axisName,
@@ -22,7 +22,7 @@ import {
   weightList,
 } from "./shared";
 
-// METHOD 1 — Google Fonts hosted API. Configure each axis (Full axis vs one
+// METHOD 1, Google Fonts hosted API. Configure each axis (Full axis vs one
 // value), drop the generated <link>/@import, then apply the CSS. The per-axis
 // controls drive both the stylesheet URL and the CSS block, mirroring
 // fonts.google.com's embed panel.
@@ -107,7 +107,7 @@ export function GoogleFontsMethod({
       <MethodIntro
         icon={GlobeIcon}
         title="Hosted stylesheet"
-        blurb="No build step. Embed the family and the browser loads the font from Google's CDN. This exposes visitors' IPs to Google and may fall foul of GDPR — if privacy matters, use Bunny Fonts instead."
+        blurb="No build step. Embed the family and the browser loads the font from Google's CDN. This exposes visitors' IPs to Google and may fall foul of GDPR, if privacy matters, use Bunny Fonts instead."
         badge={
           <Badge variant="destructive" className="shrink-0">
             GDPR risk
@@ -352,7 +352,7 @@ const STOP_AXES = new Set(["wght", "wdth"]);
 
 // Build the Google Fonts CSS2 stylesheet URL from the per-axis selections,
 // mirroring fonts.google.com's embed URL. GF lists the requested axis tags as
-// an alphabetically-sorted tuple (en-US, case-insensitive — so `ital` and the
+// an alphabetically-sorted tuple (en-US, case-insensitive, so `ital` and the
 // lowercase registered axes precede the uppercase custom ones), then their
 // values in the same order: `min..max` for a Full-axis pick, the pinned number
 // for a One-value pick; `ital` -> 1 when italic.

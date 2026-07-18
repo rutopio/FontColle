@@ -11,7 +11,7 @@ export type FacetItem = readonly [string, number, string];
 
 // A facet section small enough to render every value inline: a live search box
 // over the whole list, then pills with the rare ones behind a "N more"
-// expander. No Browse all dialog — that's for the facets with hundreds of
+// expander. No Browse all dialog, that's for the facets with hundreds of
 // values (Language), where an inline list would be unusable.
 //
 // The search matches both the raw value ("Latn") and its label ("Latin"), and
@@ -81,7 +81,7 @@ export function FacetSearchSection({
   );
 
   // Which values render up front. Always ranked by count/population, never by
-  // the active sort — flipping to A–Z reorders pills, it doesn't change which
+  // the active sort, flipping to A–Z reorders pills, it doesn't change which
   // ones hide. While searching, every match shows.
   const topNSet = useMemo(() => {
     if (q) return new Set(matches.map(([value]) => value));

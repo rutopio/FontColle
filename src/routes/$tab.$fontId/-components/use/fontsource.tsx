@@ -2,8 +2,8 @@ import { HardDriveIcon } from "@phosphor-icons/react";
 import { useState } from "react";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
 import type { FontRecord } from "@/lib/fonts/types";
-import { CodeBlock } from "../code-block";
-import { Panel } from "../panel";
+import { CodeBlock } from "@/routes/$tab.$fontId/-components/code-block";
+import { Panel } from "@/routes/$tab.$fontId/-components/panel";
 import {
   ExternalLink,
   fallbackFor,
@@ -32,7 +32,7 @@ const VARIABLE_AXES = ["wght", "opsz", "slnt", "wdth", "GRAD"] as const;
 const DISPLAY_VALUES = ["auto", "swap", "block", "fallback", "optional"];
 const STATIC_FORMATS = ["woff2", "woff"];
 
-// METHOD 2 — Fontsource self-hosting. Install the npm package, then either a
+// METHOD 2, Fontsource self-hosting. Install the npm package, then either a
 // Simple axis/weight import or an Advanced @font-face you assemble from filters.
 // Ships the files with your bundle; no third-party request at runtime.
 //
@@ -102,7 +102,7 @@ export function FontsourceMethod({ font }: { font: FontRecord }) {
               <CodeBlock code={jsdelivrLink(pkg, isVariable)} lang="html" />
               <p className="mt-1.5 text-muted-foreground text-xs">
                 A no-build <code className="font-mono">&lt;link&gt;</code> off
-                jsDelivr — skip steps 2-3 and apply the CSS below.
+                jsDelivr, skip steps 2-3 and apply the CSS below.
               </p>
             </TabsPanel>
           </Tabs>
@@ -164,7 +164,7 @@ function jsdelivrLink(pkg: string, isVariable: boolean): string {
   return `<link href="${href}" rel="stylesheet" />`;
 }
 
-// SIMPLE — one axis import at a time, chosen with toggle buttons, exactly like
+// SIMPLE, one axis import at a time, chosen with toggle buttons, exactly like
 // the buttons on Fontsource's install page. Selecting an axis (wght/opsz/slnt…)
 // swaps which `<axis>.css` is imported; the `ital` toggle appends `-italic` to
 // it (Fontsource ships italic as a suffixed twin of the same axis file). The
@@ -212,7 +212,7 @@ function SimpleVariableImport({
   );
 }
 
-// SIMPLE (static) — weight + italic toggles that swap the single import line.
+// SIMPLE (static), weight + italic toggles that swap the single import line.
 // The default (no toggles) is the package's base import (weight 400); picking a
 // weight imports its `<weight>.css`, and `italic` its `<weight>-italic.css`.
 function SimpleStaticImport({
@@ -259,11 +259,11 @@ function SimpleStaticImport({
   );
 }
 
-// ADVANCED — a @font-face builder, matching Fontsource's Advanced panel. Filter
+// ADVANCED, a @font-face builder, matching Fontsource's Advanced panel. Filter
 // groups (Subsets, Variants/Weights, Display) drive a generated @font-face block
 // you paste into your global CSS; the bundler rewrites the `src` url into an
-// asset. We omit the per-subset `unicode-range` (data we don't carry) — the
-// package's own file supplies it — and note that below the snippet.
+// asset. We omit the per-subset `unicode-range` (data we don't carry), the
+// package's own file supplies it, and note that below the snippet.
 function AdvancedFontFace({
   slug,
   isVariable,
@@ -387,7 +387,7 @@ function AdvancedFontFace({
       <CodeBlock code={css} lang="css" />
       <p className="text-muted-foreground text-xs leading-relaxed">
         Add the package's <code className="font-mono">unicode-range</code> for
-        this subset to complete the rule — see the file on Fontsource.
+        this subset to complete the rule, see the file on Fontsource.
       </p>
     </div>
   );

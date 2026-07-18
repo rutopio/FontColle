@@ -3,7 +3,7 @@ import { LogoIcon } from "@/components/logo-icon";
 
 // The stacked mark + wordmark that heads the standalone screens (NotFound,
 // ErrorState). Those pages render without the sidebar or rail, so this keeps the
-// brand — and a way home — present off the main app. The in-app logos
+// brand, and a way home, present off the main app. The in-app logos
 // (app-sidebar, filter-layout) are deliberately not this component: they sit in
 // chrome at different sizes with their own hover treatment.
 export function BrandMark() {

@@ -1,5 +1,5 @@
 // Weight/width step tables and the per-family coverage sets derived from them.
-import type { FontRecord } from "../types";
+import type { FontRecord } from "@/lib/fonts/types";
 
 // Standard weight steps we expose as pills. Mirrors the harvester's snapping.
 export const WEIGHT_STEPS = [100, 200, 300, 400, 500, 600, 700, 800, 900];

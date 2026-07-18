@@ -280,7 +280,7 @@ def apply_specimens(records):
         )
         # Otherwise, only non-Latin-primary fonts get a native sample. A missing/
         # Latin primary_script means a Latin font (it may still cover Cyrillic/
-        # Greek), which should keep the English default — otherwise a Latin face
+        # Greek), which should keep the English default, otherwise a Latin face
         # that merely includes Armenian would wrongly specimen in Armenian.
         if text is None:
             script = r.get("primaryScript")
@@ -303,7 +303,7 @@ def apply_published_signals(records, published):
             r["isNoto"] = None
             r["isBrandFont"] = None
             r["isOpenSource"] = None
-        print("no published.json found — all families marked as published, no ranks")
+        print("no published.json found, all families marked as published, no ranks")
         return
 
     pub_count = 0

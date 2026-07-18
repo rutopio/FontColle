@@ -5,7 +5,7 @@ import { SmileyIcon } from "@phosphor-icons/react";
 // scripts/gen-specimen-svgs.mjs) into public/specimens/*.svg, so the cards no
 // longer load a webfont to draw their sample.
 
-// The SVGs carry `fill:currentColor`, but that only resolves for inline SVG —
+// The SVGs carry `fill:currentColor`, but that only resolves for inline SVG,
 // an `<img src>` renders in its own context and falls back to black, so dark
 // theme showed black glyphs. Draw the SVG as a CSS mask over a `currentColor`
 // background instead: the shape comes from the SVG, the colour from

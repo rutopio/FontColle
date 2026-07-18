@@ -13,7 +13,7 @@ interface Props {
   previewText: string;
   isFavorite: boolean;
   onToggleFavorite: (id: string) => void;
-  // Active filter slice — drives both the live preview (weight/width/axes) and
+  // Active filter slice, drives both the live preview (weight/width/axes) and
   // which trait badges render highlighted.
   selection: FilterSelection;
   // Session slider positions (0-100%) per selected variable axis. Not part of

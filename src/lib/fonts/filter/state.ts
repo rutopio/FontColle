@@ -1,7 +1,7 @@
 // Filter state shape, its empty value, and the URL <-> state codec. Filters
 // live in the URL so they persist across list <-> detail navigation and the
 // detail sidebar can link back to the list with a filter applied.
-import type { MetricKey, MetricRange } from "../metrics";
+import type { MetricKey, MetricRange } from "@/lib/fonts/metrics";
 import {
   type MatchMode,
   MODE_KEYS,
@@ -140,8 +140,8 @@ const splitCsv = (v: string | undefined): string[] =>
 // "_" instead, which URLSearchParams leaves literal: ?class=Emoji_Script_Slab.
 // Two params keep the comma because their values already contain the alternates:
 // `dsr` (designer names carry "," and ".") and `lang` (ids are "en_Latn", full of
-// "_"). Decode accepts either separator so links shared before this change — and
-// the always-comma dsr/lang — still parse.
+// "_"). Decode accepts either separator so links shared before this change, and
+// the always-comma dsr/lang, still parse.
 const joinUnderscore = (xs: string[]): string => xs.join("_");
 
 const splitUnderscore = (v: string | undefined): string[] => {

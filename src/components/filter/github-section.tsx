@@ -4,7 +4,7 @@ import { PillButton } from "./pill-button";
 import { SectionHeader } from "./section-header";
 
 // Repository-host filter: GitHub / GitLab / SourceHut / None, two per row.
-// Multi-select with OR semantics — a family matches when its repository_url's
+// Multi-select with OR semantics, a family matches when its repository_url's
 // host is one of the selected buckets. Every family maps to exactly one bucket
 // (no repo -> None), so the four pills partition the catalog. Order is fixed
 // (None trails), from the facet index.

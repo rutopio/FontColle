@@ -29,7 +29,7 @@ const names = (fonts: FontRecord[]) => fonts.map((f) => f.name);
 const sortedNames = (fonts: FontRecord[], key: SortKey) =>
   names(sortFonts(fonts, key));
 
-describe("sortFonts — name", () => {
+describe("sortFonts, name", () => {
   const fonts = [
     font({ name: "Charlie" }),
     font({ name: "alpha" }),
@@ -56,7 +56,7 @@ describe("sortFonts — name", () => {
   });
 });
 
-describe("sortFonts — creator (designer)", () => {
+describe("sortFonts, creator (designer)", () => {
   const fonts = [
     font({ name: "X", designer: "Zoe" }),
     font({ name: "Y", designer: "Ann" }),
@@ -72,7 +72,7 @@ describe("sortFonts — creator (designer)", () => {
   });
 });
 
-describe("sortFonts — date added", () => {
+describe("sortFonts, date added", () => {
   const fonts = [
     font({ name: "Old", dateAdded: "2012-01-01" }),
     font({ name: "New", dateAdded: "2024-06-01" }),
@@ -97,7 +97,7 @@ describe("sortFonts — date added", () => {
   });
 });
 
-describe("sortFonts — popularity and trending", () => {
+describe("sortFonts, popularity and trending", () => {
   const fonts = [
     font({ name: "C", popularityRank: 3, trendingRank: 1 }),
     font({ name: "A", popularityRank: 1, trendingRank: 3 }),
@@ -124,7 +124,7 @@ describe("sortFonts — popularity and trending", () => {
   });
 });
 
-describe("sortFonts — glyphs", () => {
+describe("sortFonts, glyphs", () => {
   const fonts = [
     font({ name: "Big", glyphCount: 900 }),
     font({ name: "Small", glyphCount: 100 }),
@@ -149,7 +149,7 @@ describe("sortFonts — glyphs", () => {
   });
 });
 
-describe("sortFonts — axes count", () => {
+describe("sortFonts, axes count", () => {
   const fonts = [
     font({ name: "Three", axes: [axis(), axis(), axis()] }),
     font({ name: "Zero", axes: [] }),

@@ -4,7 +4,7 @@
 // @font-face / declarations), HTML (<link> tags), JS (an `import "..."` line),
 // and Bash (a package-manager install command). A full grammar engine (Shiki,
 // Prism) would be hundreds of KB of TextMate/WASM for what a handful of regexes
-// covers here — so this tokenises with ordered patterns instead. Pure and
+// covers here, so this tokenises with ordered patterns instead. Pure and
 // synchronous, so it runs during SSR with no async load and no hydration flash.
 //
 // Each language is a list of [class, regex] rules tried in order at the current

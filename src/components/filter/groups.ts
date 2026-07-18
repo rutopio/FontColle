@@ -68,8 +68,8 @@ export const FILTER_GROUPS: FilterGroup[] = [
     icon: ShapesIcon,
     keys: ["classes", "classifications"],
   },
-  // Weight/Width and the wght/wdth variable axes are mutually exclusive — one
-  // clears the other — so they have to share a panel. Also owns Font type (the
+  // Weight/Width and the wght/wdth variable axes are mutually exclusive, one
+  // clears the other, so they have to share a panel. Also owns Font type (the
   // static/variable facets) and Italic (the has-italic radio).
   {
     id: "axes",
@@ -117,7 +117,7 @@ export const FILTER_GROUPS: FilterGroup[] = [
   },
 ];
 
-// The rail opens on Style even though it sits third in the rail order — form
+// The rail opens on Style even though it sits third in the rail order, form
 // (Serif / Sans / Script) is the most common entry point into browsing.
 export const DEFAULT_FILTER_GROUP: FilterGroupId = "style";
 
@@ -133,7 +133,7 @@ function countKey(
   // Metric ranges: one count per active slider. Boolean facets: one when on.
   if (key === "metrics") return Object.keys(filter.metrics).length;
   if (key === "hasHinting") return filter.hasHinting !== undefined ? 1 : 0;
-  // Section OR/AND modes are modifiers, not conditions — never counted. (No
+  // Section OR/AND modes are modifiers, not conditions, never counted. (No
   // group lists this key anyway; the guard is here to satisfy the type union.)
   if (key === "matchModes") return 0;
   // Style and Mood share the `classifications` state; each counts only the tags

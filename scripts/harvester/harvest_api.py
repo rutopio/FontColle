@@ -6,7 +6,7 @@ Hand fonts).
 harvest.py can only see what's in the repo, so these never get harvested. Here we
 pull the TTF straight from the API's gstatic URLs and reuse harvest.parse_ttf /
 langcov.coverage to emit the SAME raw-record shape, then merge into
-stress_output.json. Icon families (Material Icons/Symbols) are excluded — they're
+stress_output.json. Icon families (Material Icons/Symbols) are excluded, they're
 not text faces and Google lists them separately.
 
 Requires GOOGLE_FONTS_API_KEY.

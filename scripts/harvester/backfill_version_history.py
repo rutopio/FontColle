@@ -198,7 +198,7 @@ def main():
     print(f"backfilling git history for {len(targets)}/{len(records)} families…",
           file=sys.stderr)
     if not os.environ.get("GITHUB_TOKEN"):
-        print("  WARNING: no GITHUB_TOKEN — 60 req/hr limit, fine for a few only.",
+        print("  WARNING: no GITHUB_TOKEN, 60 req/hr limit, fine for a few only.",
               file=sys.stderr)
 
     def save():

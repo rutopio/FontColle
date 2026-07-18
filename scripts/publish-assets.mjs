@@ -108,7 +108,9 @@ async function daily(ogIdsFile) {
       r2Put(key, file);
       deltas.add(key);
     }
-    console.log(`[publish] uploaded ${deltas.size - (manifest.og.deltas?.length ?? 0)} new OG deltas`);
+    console.log(
+      `[publish] uploaded ${deltas.size - (manifest.og.deltas?.length ?? 0)} new OG deltas`
+    );
   }
 
   const next = {

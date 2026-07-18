@@ -65,7 +65,7 @@ export function useFontLoaded(name: string): boolean {
  *
  * `weights` are the concrete weight values we want to preview (from the
  * family's named instances). We request exactly those so each weight button
- * maps to a real cut — requesting a made-up axis tuple 404s and silently falls
+ * maps to a real cut, requesting a made-up axis tuple 404s and silently falls
  * back to a single default weight, which is why 100–400 looked identical.
  */
 export function ensureFontLoaded(family: string, weights: number[]) {

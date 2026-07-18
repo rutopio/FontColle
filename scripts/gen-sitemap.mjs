@@ -6,7 +6,7 @@
 // canonical tag in the detail route head).
 //
 // Needs an absolute origin. When VITE_SITE_URL is unset we skip generation
-// rather than emit a sitemap full of relative or wrong-domain URLs — the build
+// rather than emit a sitemap full of relative or wrong-domain URLs, the build
 // still succeeds, just without a sitemap until a production domain is set.
 
 import { readFile, writeFile } from "node:fs/promises";
@@ -19,7 +19,7 @@ const ROOT = path.resolve(import.meta.dirname, "..");
 const SITE_NAME = "FontColle";
 const SITE_DESCRIPTION =
   "A Google Fonts alternative that filters by real OpenType features, variable " +
-  "axes, weight, writing systems, and color — preview any weight and save favorites.";
+  "axes, weight, writing systems, and color, preview any weight and save favorites.";
 
 // Mirror src/lib/fonts/slug.ts fontSlug: spaces -> underscores (case kept).
 const fontSlug = (name) => name.replace(/ /g, "_");
@@ -56,7 +56,7 @@ const xmlEscape = (s) =>
 export async function genSitemap() {
   const siteUrl = (process.env.VITE_SITE_URL ?? "").replace(/\/+$/, "");
   if (!siteUrl) {
-    console.log("[sitemap] VITE_SITE_URL unset — skipping sitemap generation.");
+    console.log("[sitemap] VITE_SITE_URL unset, skipping sitemap generation.");
     return;
   }
 

@@ -6,7 +6,7 @@ run and re-harvests ONLY that subset, merging the result back in:
   - new families:     directories present in the google/fonts repo (GitHub
                       trees API) but absent from our dataset;
   - updated families: their Developer API `lastModified` is newer than recorded;
-  - removed families: gone from the repo — no harvest; the signal refresh flips
+  - removed families: gone from the repo, no harvest; the signal refresh flips
                       their isPublished to false.
 Popularity/trending/isPublished/specimens are refreshed for the WHOLE catalog
 (those shift without a re-harvest).
@@ -44,7 +44,7 @@ RAW_OUT = os.path.join(HERE, "stress_output.json")
 OG_OUT = os.path.join(HERE, "og_ids.txt")  # families whose OG card must refresh
 
 sys.path.insert(0, HERE)
-# Reuse the exact transforms the full pipeline uses — merge only adds diffing.
+# Reuse the exact transforms the full pipeline uses, merge only adds diffing.
 from to_dataset import (  # noqa: E402
     apply_published_signals,
     apply_specimens,
@@ -67,7 +67,7 @@ def list_all_families():
     """Enumerate every family directory in google/fonts via the GitHub trees API.
 
     Returns {family_dir: license_dir}. This is the authority on which families
-    exist right now — the static all_families.tsv is a stale snapshot and can't
+    exist right now, the static all_families.tsv is a stale snapshot and can't
     detect newly added fonts. Harvest keys off family_dir (the repo directory),
     not the API display name, which is why we resolve dirs here.
     """
@@ -79,7 +79,7 @@ def list_all_families():
     with urllib.request.urlopen(req, timeout=60) as r:
         tree = json.load(r)
     if tree.get("truncated"):
-        raise SystemExit("google/fonts tree was truncated — cannot enumerate")
+        raise SystemExit("google/fonts tree was truncated, cannot enumerate")
     dirs = {}
     for it in tree.get("tree", []):
         parts = it["path"].split("/")
@@ -93,7 +93,7 @@ def compute_changed(dataset, published, all_families):
 
     A family is changed when its directory is new (not in our dataset) or its
     API lastModified is newer than what we recorded. Removed families (gone from
-    the repo, or unpublished) need no harvest — the whole-catalog signal refresh
+    the repo, or unpublished) need no harvest, the whole-catalog signal refresh
     flips isPublished on its own.
     """
     prev_lm = {r["id"]: r.get("lastModifiedApi") for r in dataset}
@@ -138,7 +138,7 @@ def main():
     dataset = load_json(DATASET)
     if not os.path.exists(PUBLISHED):
         raise SystemExit(
-            "published.json missing — run fetch_published.py first"
+            "published.json missing, run fetch_published.py first"
         )
     published_raw = load_json(PUBLISHED)
     published = {name.lower(): sig for name, sig in published_raw.items()}
@@ -146,7 +146,7 @@ def main():
     # Snapshot every record before touching anything, so we can diff afterwards
     # and tell whether any record's content actually changed (re-harvested
     # families + whatever the whole-catalog signal refresh moved: ranks,
-    # isPublished, specimens) — a no-op run skips the commit and deploy.
+    # isPublished, specimens), a no-op run skips the commit and deploy.
     before = {r["id"]: json.dumps(r, sort_keys=True) for r in dataset}
 
     all_families = list_all_families()
@@ -186,7 +186,7 @@ def main():
     )
 
     # OG cards only depend on the family name in its own face, so only newly
-    # harvested families need a (re)rendered card — rank/isPublished shifts don't
+    # harvested families need a (re)rendered card, rank/isPublished shifts don't
     # change the image. Removed families keep their card (page just 404s).
     with open(OG_OUT, "w") as fh:
         fh.write("\n".join(sorted(harvested_ids)))

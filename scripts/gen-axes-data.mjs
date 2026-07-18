@@ -12,7 +12,7 @@
 //     "Adjust stroke curvature, contrast, and terminals from a sturdy,"
 //     " rational Linear style to a friendly, energetic Casual style."
 // `description` is one or more adjacent quoted string literals that concatenate
-// into a single sentence (textproto's implicit string concatenation) — we join
+// into a single sentence (textproto's implicit string concatenation), we join
 // them in file order.
 //
 // Run: node scripts/gen-axes-data.mjs
@@ -32,7 +32,7 @@ const RAW_BASE =
   "https://raw.githubusercontent.com/googlefonts/axisregistry/main/Lib/axisregistry/data/";
 
 // Unescape a single textproto quoted-string literal's contents (we don't need
-// the full grammar — axis descriptions only use \" and \\).
+// the full grammar, axis descriptions only use \" and \\).
 function unescapeProtoString(s) {
   return s.replace(/\\(.)/g, "$1");
 }
@@ -44,7 +44,7 @@ function parseTextproto(text) {
   const nameMatch = text.match(/^display_name:\s*"((?:\\.|[^"\\])*)"/m);
   if (!tagMatch || !nameMatch) return null;
 
-  // The `description` value is one or more adjacent quoted string literals —
+  // The `description` value is one or more adjacent quoted string literals,
   // either all on the `description:` line, or indented on following lines
   // (textproto's implicit string concatenation either way).
   const descMatch = text.match(

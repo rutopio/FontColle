@@ -3,7 +3,7 @@ import { previewFontFamily } from "./loader";
 
 // previewFontFamily is the pure fallback-chain builder (loader.ts:11-24). The
 // DOM link-injection functions and the useFontLoaded hook are not exercised
-// here — they need the CSS Font Loading API and React, out of scope for a pure
+// here, they need the CSS Font Loading API and React, out of scope for a pure
 // unit test. Only the documented fallback stacks are asserted.
 describe("previewFontFamily", () => {
   it("uses Adobe NotDef when the family has loaded (default)", () => {

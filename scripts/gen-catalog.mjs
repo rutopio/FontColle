@@ -17,13 +17,13 @@
 //                                   SSR HTML of a default `/` visit ships real
 //                                   font cards + /specimen/ links for crawlers,
 //                                   while the full catalog still loads client-side
-//                                   (never in the Worker — Error 1102).
+//                                   (never in the Worker, Error 1102).
 //
 // This replaces D1: the app used to read the catalog from a database that was
 // itself just a copy of fonts.json, and rebuilding the whole catalog in the
 // Worker per request exceeded its limits (Error 1102). The data is read-only,
 // site-wide, and refreshed once a day, so static CDN-cached JSON fits it better
-// than a database — no Worker round-trip, no seeding, no migrations.
+// than a database: no Worker round-trip, no seeding, no migrations.
 //
 // catalog.json is sorted by name to match the old loadAllFonts() ordering so the
 // client renders without re-sorting.
@@ -128,7 +128,7 @@ export async function genCatalog() {
     .slice(0, FIRST_PAGE_SIZE)
     // Drop the per-font `languages` list (the single fattest field, ~9 KB each,
     // ~1/3 of the slice). Nothing in the card render path or facet derivation
-    // reads it — it feeds only the filter sidebar's language section, which the
+    // reads it, it feeds only the filter sidebar's language section, which the
     // first-page pending state renders empty. Blanked (not omitted) so records
     // still satisfy FontRecord. This keeps the loader's payload a few tens of KB,
     // honouring the Error 1102 constraint, while every field the cards touch

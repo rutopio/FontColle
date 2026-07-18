@@ -6,7 +6,7 @@ import { Panel } from "./panel";
 // The License view: the family's full license text, mirroring Google Fonts'
 // /specimen/<Family>/license page. We assemble it from the per-family OFL
 // copyright header (licenseHeader) plus the shared boilerplate for that license
-// (LICENSE_BOILERPLATE) — Apache/UFL have no per-family header. Plain text, so
+// (LICENSE_BOILERPLATE), Apache/UFL have no per-family header. Plain text, so
 // it renders verbatim in a monospace, scrollable block.
 export function LicensePanel({ font }: { font: FontRecord }) {
   const boilerplate = font.license

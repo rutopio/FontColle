@@ -97,7 +97,7 @@ export function LinksDrawer({
 // (bordered, centred, icon over label, same press/focus treatment), but a real
 // <a>: these navigate rather than toggle, so no button element and no
 // aria-pressed. The label is visible text, so it needs no aria-label of its
-// own — the passed one adds the family name for screen readers.
+// own, the passed one adds the family name for screen readers.
 function LinkCard({
   href,
   icon: CardIcon,

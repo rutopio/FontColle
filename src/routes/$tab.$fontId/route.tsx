@@ -55,7 +55,7 @@ function detailDescription(font: FontRecord): string {
   }
   const specs = parts.length ? ` with ${parts.join(" and ")}` : "";
 
-  return `Preview ${lead}${by}${specs}. Test every weight and OpenType feature, then open it on Google Fonts.`;
+  return `Preview ${lead}${by}${specs}. Test every variants and OpenType feature in FontColle.`;
 }
 
 export const Route = createFileRoute("/$tab/$fontId")({
@@ -175,7 +175,7 @@ function DetailPage() {
   // Which detail view is active. Driven by the URL slug (the loader has already
   // rejected unknown ones), so the tab is shareable/bookmarkable. Selecting a
   // tab navigates to its slug rather than holding local state. `replace` so
-  // switching tabs doesn't push history entries — the back arrow should return
+  // switching tabs doesn't push history entries, the back arrow should return
   // to the list, not step through the tabs visited on this font.
   const tab = tabFromSlug(tabSlug) ?? "sample";
   const selectTab = (id: DetailTab) =>
@@ -222,7 +222,7 @@ function DetailPage() {
   };
 
   // Once coverage loads (or the font changes), pin the active block to the
-  // first covered one unless the current selection is still valid — the font
+  // first covered one unless the current selection is still valid, the font
   // may not cover Basic Latin, so there's no fixed default.
   useEffect(() => {
     if (coveredBlocks.length === 0) return;

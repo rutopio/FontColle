@@ -9,7 +9,7 @@ import { filterGroupsByQuery, useSearchSort } from "./use-facet-search";
 
 // OpenType features: 272 distinct tags across the catalog. Rather than one
 // count-sorted wall of pills, group them by what they do (ligatures, numerals,
-// script shaping, …) under a single header. Every tag is rendered — rare ones
+// script shaping, …) under a single header. Every tag is rendered, rare ones
 // collapse behind each sub-list's own "N more" expander, which is what keeps
 // the 81 character variants and the 64 unregistered tags from swamping the
 // panel while still leaving them reachable. The search box matches both the raw

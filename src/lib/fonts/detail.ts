@@ -23,7 +23,7 @@ const assetFetch = createIsomorphicFn()
 
 // The detail page's data, fetched from static CDN assets (built by
 // scripts/gen-catalog.mjs) instead of D1. Each family has its own
-// public/fonts/<id>.json, so the SSR loader fetches just the one it needs and
+// public/catalog/<id>.json, so the SSR loader fetches just the one it needs and
 // never loads the whole catalog (which is what made the home page hit Error
 // 1102). fetch() resolves relative URLs against the request origin on the
 // server too, so this works in the SSR loader and on the client alike.
@@ -65,7 +65,7 @@ export async function fetchFontById(
 }
 
 // For each requested designer name, the other families crediting that name,
-// keyed by name. Fetches the small designer index once and buckets it in JS —
+// keyed by name. Fetches the small designer index once and buckets it in JS,
 // the same shape the old D1-backed getFontsByDesigners returned.
 export async function fetchFontsByDesigners(
   names: string[],

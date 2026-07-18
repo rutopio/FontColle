@@ -34,7 +34,7 @@ export function AppSidebar({
         collapsible="none"
         className="w-[calc(var(--sidebar-width-icon)+1px)]! shrink-0 border-r"
       >
-        {/* The wordmark is a plain link, not a SidebarMenuButton — it is
+        {/* The wordmark is a plain link, not a SidebarMenuButton, it is
             just the home icon and doesn't need the button's icon-collapse
             styling. px-1.5 matches the rail nav below so it lines up with and
             spans the same width as the group buttons. aspect-square keeps it a
@@ -72,7 +72,7 @@ export function AppSidebar({
       </Sidebar>
 
       {/* Second sidebar: the page's own panel, filling the remaining width. The
-          panel provides its own ScrollArea for scrolling — the Sidebar's
+          panel provides its own ScrollArea for scrolling, the Sidebar's
           flex-col h-full gives it a bounded height to scroll within. */}
       <Sidebar
         collapsible="none"

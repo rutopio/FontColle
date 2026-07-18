@@ -10,8 +10,8 @@ import {
 } from "@/components/ui/empty";
 
 // The site-wide Not Found screen, shown for unmatched routes and for a missing
-// font on the detail route. Deliberately standalone — no filter sidebar or rail,
-// like the detail License view — so it centers a single Empty state with a way
+// font on the detail route. Deliberately standalone, no filter sidebar or rail,
+// like the detail License view, so it centers a single Empty state with a way
 // back home. The FontColle mark + wordmark stand in for the generic empty icon,
 // keeping the brand present off the main app.
 export function NotFound({

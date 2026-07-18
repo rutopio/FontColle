@@ -2,7 +2,7 @@
 // range, in codepoint order. Source: Unicode Blocks.txt, restricted to
 // U+0000..U+FFFF. The Glyphs view lists only the blocks a font actually covers
 // (from its cmap; see glyph-coverage.ts) and, within a block, renders one cell
-// per codepoint — present ones showing the glyph, gaps left blank.
+// per codepoint, present ones showing the glyph, gaps left blank.
 export interface UnicodeBlock {
   name: string;
   start: number;

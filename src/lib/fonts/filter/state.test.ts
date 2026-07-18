@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { MetricKey } from "../metrics";
+import type { MetricKey } from "@/lib/fonts/metrics";
 import type { ModeKey } from "./match-mode";
 import {
   emptyFilter,
@@ -13,7 +13,7 @@ import {
 // round-trip test exercises the whole codec, not just the common ones. Values
 // are chosen to be underscore-free where the encoder joins with "_" (class,
 // facet, feature, axis, weight, width, script, color, cfmt, vnd, lic, repo,
-// act, flag, ital, upm) — an underscore inside a value would be indistinguish-
+// act, flag, ital, upm), an underscore inside a value would be indistinguish-
 // able from the separator on decode, which is a real (accepted) limitation of
 // the scheme, not something these fields ever hold in practice.
 const fullFilter: FilterState = {
@@ -29,12 +29,12 @@ const fullFilter: FilterState = {
   color: ["color"],
   colorFormats: ["COLR", "SVG"],
   classifications: ["/Serif/Didone", "/Sans/Humanist"],
-  // FINDING (real bug, documented — see "designer values ..." test below):
+  // FINDING (real bug, documented, see "designer values ..." test below):
   // designer tokens must NOT themselves contain a comma, because filterToSearch
   // comma-joins them and searchToFilter comma-splits them. A single stored
   // token like "Veronika Burian, José Scaglione" would round-trip lossily into
   // two tokens. In practice designers is populated from designerTokens(), which
-  // already splits on "," so each element is comma-free — the round-trip holds
+  // already splits on "," so each element is comma-free, the round-trip holds
   // for real data. Fixtures here use comma-free tokens to match that invariant.
   designers: ["Veronika Burian", "Steve Matteson"],
   vendors: ["GOOG", "ADBE"],
@@ -217,7 +217,7 @@ describe("searchToFilter reverse-direction edge cases", () => {
 
   // FINDING (documented, not a change): mode:pairs whose key is valid but whose
   // value equals the section default are dropped on decode, so a hand-typed
-  // ?mode=facets:all yields an empty matchModes — which then re-encodes to no
+  // ?mode=facets:all yields an empty matchModes, which then re-encodes to no
   // mode param. This is intentional (defaults stay implicit) but means the raw
   // search string is NOT byte-preserved for redundant modes.
   it("drops a redundant (default-valued) mode pair on decode", () => {

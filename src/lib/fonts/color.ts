@@ -6,7 +6,7 @@ import type { FontRecord } from "./types";
 //
 // Google Fonts currently publishes only COLR/CPAL and OpenType-SVG faces (and
 // six families carry both, for renderers that lack COLR support). sbix and
-// CBDT/CBLC therefore show a count of 0 — they're kept as real, selectable
+// CBDT/CBLC therefore show a count of 0, they're kept as real, selectable
 // filters so a font in either format surfaces the moment Google ships one.
 export const COLOR_FORMATS = [
   { id: "COLR", label: "COLR/CPAL" },
@@ -35,8 +35,3 @@ export function isColorFont(font: FontRecord): boolean {
  * The color formats a font provides. A font can carry several at once, so this
  * returns every match, not a single "primary" format.
  */
-export function colorFormatsOf(font: FontRecord): ColorFormatId[] {
-  return COLOR_FORMATS.filter((f) => font.colorTables.includes(f.id)).map(
-    (f) => f.id
-  );
-}

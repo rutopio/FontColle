@@ -156,15 +156,15 @@ function MetricsDiagram({
   const padY = 14;
   // Left gutter holds the end-anchored win labels; the specimen and guide lines
   // start after it. Left-aligned mono labels start just past the ~340-unit
-  // "HQxibg" specimen. The right gutter must clear the longest label — the
-  // 18-char "OS/2.sTypoAscender" plus its units, ~110 units wide at 8px mono —
+  // "HQxibg" specimen. The right gutter must clear the longest label, the
+  // 18-char "OS/2.sTypoAscender" plus its units, ~110 units wide at 8px mono,
   // with breathing room, or the text butts against the viewBox edge.
   const padL = 120;
   const glyphX = padL;
   // Horizontal room reserved for the specimen before the right-hand labels
-  // begin. The specimen's real width varies hugely by family — "HQxibg" at a
+  // begin. The specimen's real width varies hugely by family, "HQxibg" at a
   // 100-unit em runs ~420 units in Montserrat but ~900 in a very wide display
-  // face — so a fixed budget either wastes space or lets the specimen lap the
+  // face, so a fixed budget either wastes space or lets the specimen lap the
   // labels (the baseline/cap-height overlap). We measure the rendered specimen
   // (see the effect below) and place the labels just past it; until that
   // measurement lands (SSR / first paint) fall back to a budget that clears the

@@ -1,7 +1,11 @@
 // Filtering and search relevance: turn a FilterState into the matching subset.
-import { isColorFont } from "../color";
-import { METRIC_SPECS, type MetricKey, matchesRange } from "../metrics";
-import type { FontRecord } from "../types";
+import { isColorFont } from "@/lib/fonts/color";
+import {
+  METRIC_SPECS,
+  type MetricKey,
+  matchesRange,
+} from "@/lib/fonts/metrics";
+import type { FontRecord } from "@/lib/fonts/types";
 import {
   designerTokens,
   foldVendor,
@@ -69,7 +73,7 @@ function editDistance(a: string, b: string): number {
 
 // The closest family name to a search query that returned nothing, or null when
 // no name is close enough to be worth suggesting. Powers a "Did you mean …?"
-// hint on the empty state — a typo-tolerant fallback over the pure-substring
+// hint on the empty state, a typo-tolerant fallback over the pure-substring
 // search. Compares the query against each family/display name and, for
 // multi-word names, their individual words, so "intr" finds "Inter" and
 // "robato" finds "Roboto". A match must be within ~1 edit per 4 query chars.

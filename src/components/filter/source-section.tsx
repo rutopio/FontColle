@@ -3,7 +3,7 @@ import { FLAG_LABELS } from "@/lib/fonts/filter";
 import { PillButton } from "./pill-button";
 import { SectionHeader } from "./section-header";
 
-// Source filter: Noto / Others, two per row. Radio-style — at most one, and
+// Source filter: Noto / Others, two per row. Radio-style, at most one, and
 // they partition the catalog (every published family is Noto or not). Selecting
 // one clears the other; re-clicking the active one clears it.
 export function SourceSection({

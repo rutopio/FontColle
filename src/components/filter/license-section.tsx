@@ -4,7 +4,7 @@ import { PillButton } from "./pill-button";
 import { SectionHeader } from "./section-header";
 
 // License filter: OFL / Apache 2.0 / UFL, two per row. Multi-select with OR
-// semantics — a family's single license matches when it's one of the selected
+// semantics, a family's single license matches when it's one of the selected
 // ids. Families with a null license carry no pill and never match.
 export function LicenseSection({
   items,

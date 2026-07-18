@@ -16,7 +16,7 @@ export type FeatureGroupId =
 
 // `topN` caps how many pills a group shows up front, by font count; the rest
 // collapse behind its "N more" expander (a selected pill always shows). Omit it
-// to render the whole group — right for the small, wholly useful ones.
+// to render the whole group, right for the small, wholly useful ones.
 export const FEATURE_GROUPS: {
   id: FeatureGroupId;
   title: string;
@@ -37,7 +37,7 @@ export const FEATURE_GROUPS: {
 // Explicit tag -> group. ss##/cv## are matched by pattern instead (there are
 // 20 and 81 of them in the catalog). Anything unlisted falls to "other", which
 // is where the unregistered tags live (zz01–zz52, APLF, a broken 3-letter
-// "lig", …) — 64 of the catalog's 272 tags, so the bucket cannot be dropped.
+// "lig", …), 64 of the catalog's 272 tags, so the bucket cannot be dropped.
 const FEATURE_GROUP_OF: Record<string, FeatureGroupId> = {
   // Ligatures
   liga: "ligatures",
@@ -178,7 +178,7 @@ export interface FeatureGroup {
  * Bucket [tag, count] pairs into the display groups, preserving the incoming
  * order within each. Empty groups are dropped.
  *
- * `topNSet` is always computed from font count, never from `features`' order —
+ * `topNSet` is always computed from font count, never from `features`' order,
  * flipping the panel to A–Z must reorder the pills, not change which ones the
  * group hides. A group with no `topN` gets a set of all its tags, so Pills
  * shows them all rather than falling back to its own rarity threshold.

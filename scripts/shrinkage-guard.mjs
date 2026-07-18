@@ -2,7 +2,7 @@
 // fetch failure looks like a mass "removal"). fonts.json no longer lives in git,
 // so we can't diff against HEAD; instead we compare the NEW local fonts.json
 // against the byte count recorded in the CURRENT manifest (which still points at
-// the previous version — this runs BEFORE publish-assets rewrites it).
+// the previous version, this runs BEFORE publish-assets rewrites it).
 //
 //   node scripts/shrinkage-guard.mjs [--fonts=<path>] [--manifest=<path>]
 //

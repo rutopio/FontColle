@@ -8,13 +8,13 @@ contains to public/glyphs/<id>.json, run-length encoded as ranges:
     {"ranges": [[65, 90], [97, 122], ...]}
 
 The frontend maps these ranges onto Unicode blocks (unicode-blocks.ts) to build
-the block list and the per-block grid — so a Latin font lists only Latin blocks
+the block list and the per-block grid, so a Latin font lists only Latin blocks
 and a CJK font lists CJK Unified Ideographs with its tens of thousands of cps.
 
 Ranges (not a flat list) keep Noto CJK files small: contiguous runs collapse to
 one [start, end] pair.
 
-Independent backfill — a full reharvest would drop these files, per the
+Independent backfill, a full reharvest would drop these files, per the
 reharvest-drops-backfills rule; re-run this after any reharvest.
 
 Usage:

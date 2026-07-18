@@ -6,8 +6,8 @@ import { FAB_MOTION, FAB_SHIFT, fabBottom, fabLift } from "./fab-motion";
 
 // Mobile-only (<768px) access to the detail sidebar controls. The desktop
 // two-level sidebar collapses to an unreachable Sheet on mobile (see
-// app-sidebar), so on the Specimen/Glyphs tabs — the only ones with sidebar
-// controls (size/axes/features, Unicode blocks) — this floating button opens a
+// app-sidebar), so on the Specimen/Glyphs tabs, the only ones with sidebar
+// controls (size/axes/features, Unicode blocks), this floating button opens a
 // bottom drawer holding the very same panel. Hidden on desktop and on tabs with
 // no controls; the page decides when to render it (inside an AnimatePresence,
 // so the FAB can animate out when the tab changes).

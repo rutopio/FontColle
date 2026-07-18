@@ -76,14 +76,14 @@ export function VariableAxesSection({
   const hasSelection = items.some(([value]) => selected.includes(value));
 
   // Grouping is by count only, never by selection, so selecting an axis in the
-  // expanded tail never reorders the list — the pill plays its shrink animation
+  // expanded tail never reorders the list, the pill plays its shrink animation
   // in place. The top N always show; the rest live behind the expander.
   const common = useMemo(() => items.slice(0, TOP_N), [items]);
   const rare = useMemo(() => items.slice(TOP_N), [items]);
 
   // When collapsed, a selected axis from the tail would otherwise vanish. Pin
   // those below the top rows (not inside the collapsing region) so the choice
-  // stays visible. Empty while expanded — the tail already shows them in place.
+  // stays visible. Empty while expanded, the tail already shows them in place.
   const pinned = useMemo(
     () => (showMore ? [] : rare.filter(([tag]) => selected.includes(tag))),
     [rare, selected, showMore]

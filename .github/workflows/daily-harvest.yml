@@ -33,7 +33,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           # fonts.json left git, so the daily commit is now just the tiny
-          # data-manifest.json diff — a shallow clone is enough. The commit step
+          # data-manifest.json diff, a shallow clone is enough. The commit step
           # unshallows on demand before rebasing if a manual push landed mid-run.
           fetch-depth: 1
 
@@ -64,7 +64,7 @@ jobs:
         run: |
           # daily_update.py diffs the harvest against the PREVIOUS fonts.json,
           # the shrinkage guard stats it, and the OG publisher uploads deltas
-          # from public/og — none of which live in git anymore. Restore them
+          # from public/og, none of which live in git anymore. Restore them
           # from R2 (per the manifest) before harvesting.
           node scripts/sync-assets.mjs
 
@@ -95,7 +95,7 @@ jobs:
           # upstream fetch failed, not a real removal. Fail before publishing so
           # a corrupt dataset never deploys. fonts.json no longer lives in git,
           # so the guard compares the new local fonts.json against the byte count
-          # recorded in the CURRENT manifest (still the previous version — this
+          # recorded in the CURRENT manifest (still the previous version, this
           # runs BEFORE the Publish step rewrites it).
           node scripts/shrinkage-guard.mjs
 
@@ -130,7 +130,7 @@ jobs:
           # fonts.json and public/og now live in R2; git versions only the tiny
           # data-manifest.json (which R2 versions the site ships) plus the small
           # scripts.json / languages.json. The static catalog the site serves is a
-          # build artifact — the Deploy step's `pnpm build` regenerates it.
+          # build artifact, the Deploy step's `pnpm build` regenerates it.
           git add src/data/data-manifest.json src/data/scripts.json \
             src/data/languages.json
           if git diff --cached --quiet; then

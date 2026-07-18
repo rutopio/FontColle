@@ -5,7 +5,7 @@ import { FacetSearchSection } from "./facet-search-section";
 
 // Browse by who made the font. Two searchable facet lists: Designer (real
 // names, 700+ of them) and Vendor (folded OS/2 achVendID). Both use the shared
-// FacetSearchSection — a live search over the whole list with the top values up
+// FacetSearchSection, a live search over the whole list with the top values up
 // front and the tail behind a "N more" expander.
 //
 // Designer labels are the value itself. Vendor labels are the foundry name from

@@ -1,7 +1,7 @@
 // Enter/exit motion shared by the detail page's floating action buttons, so a
 // FAB that appears or disappears on a tab change scales from its own centre
 // instead of popping. Scale + opacity only (both compositor properties), and
-// `active:scale-95` is dropped from those buttons since motion owns transform —
+// `active:scale-95` is dropped from those buttons since motion owns transform,
 // the press feedback rides on whileTap instead.
 //
 // MotionConfig reducedMotion="user" (see __root) already neutralises the

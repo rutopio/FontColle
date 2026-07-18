@@ -1,8 +1,8 @@
 // Build the set of selectable filter values with family counts, from the full
-// dataset — the data behind every sidebar section's pills.
-import { COLOR_FORMATS, isColorFont } from "../color";
-import { catalogUpmCounts } from "../metrics";
-import type { FontRecord } from "../types";
+// dataset, the data behind every sidebar section's pills.
+import { COLOR_FORMATS, isColorFont } from "@/lib/fonts/color";
+import { catalogUpmCounts } from "@/lib/fonts/metrics";
+import type { FontRecord } from "@/lib/fonts/types";
 import { FONT_TYPE_FACETS } from "./state";
 import { familyWeightSet, familyWidthSet } from "./weights";
 
@@ -71,7 +71,7 @@ export const CLASSIFICATION_SECTIONS: {
   },
   {
     // Google Fonts' subjective "expressive" trait ratings (mood/personality),
-    // ordered by how many families carry each. Not a taxonomy — a family scores
+    // ordered by how many families carry each. Not a taxonomy, a family scores
     // several, so these OR within like every other classification section.
     title: "Expressive",
     prefix: "/Expressive/",
@@ -169,7 +169,7 @@ export const REPO_HOST_LABELS: Record<string, string> = {
 // Maintenance-activity buckets, by how long ago the family last shipped an
 // update. The four values partition the catalog, so they render as radio-style
 // pills. (Every published family has a known date, so there's no "unknown"
-// bucket — it was always empty.)
+// bucket, it was always empty.)
 export const ACTIVITY_VALUES = ["latest", "active", "recent", "dormant"];
 export const ACTIVITY_LABELS: Record<string, string> = {
   latest: "Latest (≤6m)",
@@ -249,7 +249,7 @@ export const FACET_LABELS: Record<string, string> = {
 // published family is either Noto (Google's global writing-system project) or
 // Others, so these two cover the whole set. (isBrandFont/isOpenSource carry no
 // filter: Brand is ~all Noto, and OpenSource is true for every published
-// family — neither distinguishes anything.)
+// family, neither distinguishes anything.)
 export const FLAG_VALUES = ["noto", "others"];
 export const FLAG_LABELS: Record<string, string> = {
   noto: "Noto",
@@ -264,7 +264,7 @@ export const ITALIC_LABELS: Record<string, string> = {
   upright: "Non-Italic",
 };
 
-// Vendor ids that mean "unknown", not a foundry — dropped from the Vendor
+// Vendor ids that mean "unknown", not a foundry, dropped from the Vendor
 // facet so they don't masquerade as a real source.
 const UNKNOWN_VENDORS = new Set(["NONE", "UKWN", "----", ""]);
 
@@ -358,7 +358,7 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     // Every facet, INCLUDING static/variable: the Tag panel shows them as plain
     // multi-select pills (Font type is still a radio in the Axes panel, backed
     // by the same `facets` state). Static + Variable are mutually exclusive, so
-    // selecting both AND-filters to nothing — accepted, the user's call.
+    // selecting both AND-filters to nothing, accepted, the user's call.
     facets: sorted(facets),
     features: sorted(features),
     axes: sorted(axes),
@@ -372,13 +372,13 @@ export function buildFacetIndex(fonts: FontRecord[]) {
       ["monochrome", color.get("monochrome") ?? 0],
       ["color", color.get("color") ?? 0],
     ] as [string, number][],
-    // Static/Variable in fixed order — the sole entry point for this filter.
+    // Static/Variable in fixed order, the sole entry point for this filter.
     // Same underlying `facets` values, so applyFilters needs no special case.
     fontTypes: FONT_TYPE_FACETS.map(
       (v) => [v, facets.get(v) ?? 0] as [string, number]
     ),
     // Every format, in COLOR_FORMATS order, including the ones no published
-    // font uses — they stay selectable rather than vanishing at count 0.
+    // font uses, they stay selectable rather than vanishing at count 0.
     colorFormats: COLOR_FORMATS.map(
       (f) => [f.id, colorFormats.get(f.id) ?? 0] as [string, number]
     ),

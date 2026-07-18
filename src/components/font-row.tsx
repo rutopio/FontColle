@@ -13,7 +13,7 @@ interface Props {
   previewText: string;
   isFavorite: boolean;
   onToggleFavorite: (id: string) => void;
-  // Active filter slice, so footer badges highlight when they match — mirrors
+  // Active filter slice, so footer badges highlight when they match, mirrors
   // FontCard.
   selection: FilterSelection;
   // Session slider positions (0-100%) per selected variable axis, same as

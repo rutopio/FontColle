@@ -5,7 +5,7 @@
 // The inner default export is `{ fetch }` (see
 // @tanstack/react-start/dist/default-entry/esm/server.js). We delegate every
 // arg to it and, for text/html responses, add the security headers. Cache-
-// Control rules are intentionally NOT set here — those belong to static assets.
+// Control rules are intentionally NOT set here, those belong to static assets.
 import serverEntry from "@tanstack/react-start/server-entry";
 
 // Mirror the CSP / security headers from public/_headers. Kept as a single map

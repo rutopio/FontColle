@@ -5,7 +5,7 @@ import {
   SECTION_DEFAULT_MODE,
 } from "./filter";
 
-// The FilterState fields that hold a plain string[] — the ones toggle/
+// The FilterState fields that hold a plain string[], i.e. the ones toggle/
 // clearSection operate on. Excludes `metrics` (object) and the boolean facets.
 type ArrayKey =
   | "classes"
@@ -90,7 +90,7 @@ export function select(
 
 // Picking a color format already implies Colorful (only a font with a color
 // table can carry one), so Colorful shows selected without duplicating it into
-// filter.color — applyFilters would just narrow the same way twice.
+// filter.color, applyFilters would just narrow the same way twice.
 /** The color values to show as selected, folding in the format-implied Colorful. */
 export function colorSelection(filter: FilterState): string[] {
   return filter.colorFormats.length > 0 ? ["color"] : filter.color;
@@ -114,7 +114,7 @@ export function selectColor(filter: FilterState, value: string): FilterState {
   };
 }
 
-// Static/Variable live in `facets`, which is AND-ed — selecting both would
+// Static/Variable live in `facets`, which is AND-ed, selecting both would
 // always return nothing. They behave radio-style, leaving the other facets
 // (ligatures, fractions, …) untouched.
 function withoutFontType(filter: FilterState): string[] {

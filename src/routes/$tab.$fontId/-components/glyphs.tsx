@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 //
 // Big blocks (CJK Unified Ideographs is 15k+ cells) are ROW-VIRTUALIZED so only
 // visible rows are in the DOM. The hover magnifier is driven imperatively via
-// event delegation + a ref — moving the cursor writes directly to the popover's
+// event delegation + a ref, moving the cursor writes directly to the popover's
 // style/text without a React state update, so the grid never re-renders while
 // you hover.
 
@@ -34,7 +34,7 @@ type Range = [number, number];
 
 // Row stride for a code chart: 16 cells, indexed by the low hex nibble. On a
 // phone 16 square cells leave each one too small to read, so the row halves to
-// 8 and the hex address column/header are dropped — the grid stops being a
+// 8 and the hex address column/header are dropped, the grid stops being a
 // canonical code chart there and is simply a glyph browser, with each cell's
 // codepoint still available via its title, aria-label, and the magnifier.
 const COLS_DESKTOP = 16;
@@ -52,7 +52,7 @@ function hex(cp: number): string {
 }
 
 // Codepoints that have no visible glyph of their own (controls, separators, and
-// the surrogate range) — never rendered as a character even if present in cmap.
+// the surrogate range), never rendered as a character even if present in cmap.
 function isRenderable(cp: number): boolean {
   // C0/C1 controls and DEL.
   if (cp < 0x20 || (cp >= 0x7f && cp <= 0x9f)) return false;
@@ -73,8 +73,8 @@ function BlockGrid({
   ranges: Range[];
   style: CSSProperties;
   // The page's shared ScrollArea viewport (from Column). The grid virtualizes
-  // its rows inside this same scroller — matching how the list's FontGrid
-  // scrolls — instead of nesting its own overflow container.
+  // its rows inside this same scroller, matching how the list's FontGrid
+  // scrolls, instead of nesting its own overflow container.
   scrollRef: RefObject<HTMLDivElement | null>;
   // A codepoint (within this block) to scroll to and briefly ring, set by the
   // sidebar glyph search. Null when nothing is targeted.
@@ -132,7 +132,7 @@ function BlockGrid({
     scrollMargin,
   });
   // Re-measure the virtualizer when the square cell size changes.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: cellSize is the trigger, not read in the body — a size change must re-run measurement.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: cellSize is the trigger, not read in the body, a size change must re-run measurement.
   useLayoutEffect(() => {
     rowVirtualizer.measure();
   }, [cellSize, rowVirtualizer]);
@@ -268,7 +268,7 @@ function BlockGrid({
   const rovingCpRef = useRef<number | null>(null);
   const pendingFocusRef = useRef<number | null>(null);
   // Bumping this re-renders the container so cells re-read rovingCpRef for their
-  // tabIndex. Not per-cell state — one counter for the whole grid.
+  // tabIndex. Not per-cell state, one counter for the whole grid.
   const [, forceRender] = useState(0);
 
   // First present, renderable codepoint in the block: the default roving cell.
@@ -387,7 +387,7 @@ function BlockGrid({
           rows are in the DOM. Mouse handlers live here (event delegation), so a
           15k-cell block still has 2 handlers total, not 30k. */}
       {/* role="grid" would require every row to exist in the accessibility
-          tree, but virtualization unmounts off-screen rows — so aria-rowcount
+          tree, but virtualization unmounts off-screen rows, so aria-rowcount
           on a grid whose rows come and go would be a lie the AT can't verify.
           Honest choice: a labelled group of roving-tabindex buttons. One tab
           stop (see rovingCp), arrow keys move focus, the per-cell aria-labels
@@ -398,7 +398,7 @@ function BlockGrid({
       <div
         ref={gridRef}
         role="group"
-        aria-label={`${block.name} glyphs — arrow keys to move, Enter to copy`}
+        aria-label={`${block.name} glyphs, arrow keys to move, Enter to copy`}
         style={{
           height: rowVirtualizer.getTotalSize(),
           position: "relative",
@@ -427,7 +427,7 @@ function BlockGrid({
               }}
             >
               {/* Row label: the U+xxx0 prefix naming this row's hex decade.
-                  Desktop only — on mobile the address column is dropped so the
+                  Desktop only, on mobile the address column is dropped so the
                   8 cells get the full width; a cell's codepoint is still on its
                   title/aria-label and in the magnifier. */}
               {COLS === COLS_DESKTOP && (
@@ -453,7 +453,7 @@ function BlockGrid({
                     // block is a single tab stop. Read from the ref during
                     // render; focusCp re-renders when the roving cell moves.
                     tabIndex={cp === rovingCp ? 0 : -1}
-                    title={`U+${hex(cp)} — click to copy`}
+                    title={`U+${hex(cp)}: click to copy`}
                     aria-label={`U+${hex(cp)} ${String.fromCodePoint(cp)}, copy character`}
                     className={cn(
                       "flex items-center justify-center border-primary bg-card leading-none outline-none hover:border focus-visible:border-2 focus-visible:border-primary",
@@ -521,7 +521,7 @@ export function GlyphsPanel({
   );
 
   // Copy the character to the clipboard and confirm with a toast (or an error
-  // toast if the clipboard write is blocked — insecure context / denied).
+  // toast if the clipboard write is blocked, insecure context / denied).
   const onCopy = useCallback(async (cp: number) => {
     try {
       await navigator.clipboard.writeText(String.fromCodePoint(cp));
@@ -582,7 +582,7 @@ function GlyphGridSkeleton() {
 
   return (
     <div role="status" aria-busy="true" aria-label="Loading glyphs">
-      {/* Header row of column labels, desktop only — matches BlockGrid. */}
+      {/* Header row of column labels, desktop only, matches BlockGrid. */}
       {COLS === COLS_DESKTOP && (
         <div
           className="grid gap-px pb-1"

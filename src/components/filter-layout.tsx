@@ -10,8 +10,8 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./theme-toggle";
 
-// Mobile-only top strip (<768px). The desktop icon rail — which carries the
-// home link, Favorite and Theme controls — collapses to an unreachable Sheet on
+// Mobile-only top strip (<768px). The desktop icon rail, which carries the
+// home link, Favorite and Theme controls, collapses to an unreachable Sheet on
 // mobile (see app-sidebar), so this bar restores those three controls. Hidden on
 // desktop, where the rail provides them.
 function MobileTopBar({ favoriteFontId }: { favoriteFontId?: string }) {
@@ -57,7 +57,7 @@ export function FilterLayout({
 }) {
   // The sidebar frame (provider, rail container, home/theme) is rendered outside
   // the RouteFade wrappers so it stays put; only the three injected content
-  // blocks — rail buttons, panel, main — fade in when the route changes.
+  // blocks, rail buttons, panel, main, fade in when the route changes.
   // FilterLayout re-mounts on a real route change, so each RouteFade plays its
   // entry once; see route-fade.tsx for why it must not be keyed on page state.
   return (
@@ -89,7 +89,7 @@ export function FilterLayout({
         </AppSidebar>
         {/* min-w-0 lets the inset shrink to the space left by the fixed-width
           sidebar instead of forcing 100vw (w-full) and pushing itself past the
-          viewport — otherwise wide content (e.g. a heavy display font's
+          viewport, otherwise wide content (e.g. a heavy display font's
           specimen) makes the whole page overflow horizontally. */}
         <SidebarInset className="min-w-0">
           {/* Mobile-only chrome, outside RouteFade so it stays put like the
@@ -128,7 +128,7 @@ export function Column({
   // border on top instead of bottom. Both pages use it for the preview field.
   footer?: React.ReactNode;
   // When true, the footer slides down out of view and gives its height back to
-  // the scroll body — used on the detail page's non-Sample views, where the
+  // the scroll body, used on the detail page's non-Sample views, where the
   // shared preview field is irrelevant.
   footerHidden?: boolean;
   children: React.ReactNode;
@@ -191,7 +191,7 @@ export function Column({
   );
 
   // The body scrolls inside its own container. The wrapper is positioned
-  // absolutely to fill the inset without contributing to its flex height —
+  // absolutely to fill the inset without contributing to its flex height,
   // otherwise the (pre-virtualization) list height blows out the shared
   // `min-h-svh` shell and the container never gets a finite height to cap the
   // ScrollArea. A relative spacer keeps the inset's own box intact.

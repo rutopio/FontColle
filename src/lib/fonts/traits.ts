@@ -9,8 +9,8 @@ export interface Trait {
   active: boolean;
 }
 
-/** The trait badges for a font — category, variable/static, color, and feature
- *  count — flagging which ones the current filter selection matches. */
+/** The trait badges for a font, category, variable/static, color, and feature
+ *  count, flagging which ones the current filter selection matches. */
 export function fontTraits(
   font: FontRecord,
   selection: FilterSelection

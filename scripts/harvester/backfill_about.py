@@ -13,7 +13,7 @@ The response is JSON guarded by an XSSI prefix `)]}'` on the first line. We take
   - designers[].{name,bio,imageUrl} -> designerProfiles (JSON array)
 
 Independent backfill: a full reharvest drops these two fields (they're not in the
-repo/TTF), so re-run this after any reharvest. Idempotent — only rewrites the two
+repo/TTF), so re-run this after any reharvest. Idempotent, only rewrites the two
 fields, safe to resume.
 
 Usage:

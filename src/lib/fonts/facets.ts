@@ -1,8 +1,8 @@
 import type { FontRecord } from "./types";
 
 // Derive the §12 facets from a record's axes/features/subsets. Mirrors the
-// harvester's Python logic so records loaded from D1 (which stores raw axes /
-// features, not derived facets) get the same facet tags as the static dataset.
+// harvester's Python logic so records carrying only raw axes / features (not
+// derived facets) get the same facet tags as the static dataset.
 
 const FEATURE_FACETS: Record<string, string> = {
   smcp: "small-caps",
@@ -85,7 +85,7 @@ export function deriveFacets(font: FontRecord): string[] {
   return [...facets].sort();
 }
 
-/** Fill in facets for records that don't already have them (e.g. from D1). */
+/** Fill in facets for records that don't already have them. */
 export function withFacets(fonts: FontRecord[]): FontRecord[] {
   return fonts.map((f) =>
     f.facets.length ? f : { ...f, facets: deriveFacets(f) }

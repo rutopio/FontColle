@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { MOTION_S } from "@/lib/motion";
 
 // Fades one route-specific content block IN when the route changes, leaving the
-// surrounding frame untouched. Used three times inside FilterLayout — around the
+// surrounding frame untouched. Used three times inside FilterLayout, around the
 // rail buttons, the sidebar panel, and the main area.
 //
 // FilterLayout re-mounts on a real route change (list <-> detail), so this
@@ -12,7 +12,7 @@ import { MOTION_S } from "@/lib/motion";
 // times while loading (deferred filter, glyph coverage, effects), and a keyed
 // element would re-mount and replay the fade on every one of those, reading as
 // repeated flashes. Un-keyed, those re-renders reconcile the same element and
-// never re-trigger the entry — only the route change (which re-mounts the whole
+// never re-trigger the entry, only the route change (which re-mounts the whole
 // layout) does. `initial` opacity 0 means the new content never shows for a
 // frame before fading, so there's no blink. The one-time fade on first load /
 // hydration reads as a normal entrance.

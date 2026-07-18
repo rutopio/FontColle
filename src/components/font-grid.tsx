@@ -75,7 +75,7 @@ export function FontGrid({
   // `fonts` changes and apply the animation class only during it.
   const [animating, setAnimating] = useState(false);
   const firstRun = useRef(true);
-  // biome-ignore lint/correctness/useExhaustiveDependencies: `fonts` is the trigger, not read in the body — the effect fires on result-set change to open the entrance-animation window.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `fonts` is the trigger, not read in the body, the effect fires on result-set change to open the entrance-animation window.
   useEffect(() => {
     if (firstRun.current) {
       firstRun.current = false;
@@ -106,7 +106,7 @@ export function FontGrid({
     overscan: 4,
   });
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: cols/view are the re-measure triggers, not read in the body — a change to either must re-run measurement.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: cols/view are the re-measure triggers, not read in the body, a change to either must re-run measurement.
   useEffect(() => {
     virtualizer.measure();
   }, [cols, view, virtualizer]);

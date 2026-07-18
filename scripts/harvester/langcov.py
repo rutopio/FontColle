@@ -4,7 +4,7 @@
 HYBRID model (locked in tasks/todo.md):
 - Alphabetic scripts (Latn/Cyrl/Grek/Arab/Hebr/Thai/Deva/…): a language is
   "supported" iff |cmap ∩ exemplar.base| / |exemplar.base| >= ALPHA_THRESHOLD
-  (0.98, tolerating one rare char — e.g. German missing only ẞ).
+  (0.98, tolerating one rare char, e.g. German missing only ẞ).
 - CJK (Hant/Hans/Jpan/Kore): 100% is the wrong bar. Support is driven by the
   METADATA `subsets` tags (what the GF website uses); we ALSO compute the
   exemplar coverage ratio as a numeric field for progressive display.
@@ -77,7 +77,7 @@ def language_region(lang):
     """Continent for a gflanguages language.
 
     gflanguages' `region` is an alphabetical list of every country where the
-    language is spoken, with no indication of which one is primary — picking
+    language is spoken, with no indication of which one is primary, picking
     its first entry put English in Oceania (AS, American Samoa) and Japanese in
     the Americas (BR). Ranking that list by country population is no better:
     India outweighs the US for English, Brazil outweighs Japan for Japanese.

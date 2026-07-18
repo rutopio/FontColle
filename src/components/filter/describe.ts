@@ -121,7 +121,7 @@ export function describeActiveFilters(f: FilterState): FilterChip[] {
 }
 
 // Which combine word joins a section's values in its chip. Only the toggleable
-// sections vary — they read their live OR/AND mode; every other multi-value
+// sections vary, they read their live OR/AND mode; every other multi-value
 // section combines with OR in applyFilters, so it reads "or". (Metric ranges,
 // the one AND section, each have a distinct label and never share a chip, so no
 // AND joiner is ever rendered.)

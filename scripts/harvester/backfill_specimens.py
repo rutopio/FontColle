@@ -4,7 +4,7 @@
 Matches how Google Fonts previews a family: by its primary script, using the
 gflanguages `styles` sample (the UDHR preamble line Google shows). CJK is keyed
 off the font's chinese-* / japanese / korean subset instead of raw script, since
-Hant is ambiguous (Traditional Chinese vs Cantonese vs Wu) — HK -> Cantonese,
+Hant is ambiguous (Traditional Chinese vs Cantonese vs Wu), HK -> Cantonese,
 TC -> zh_Hant, SC -> zh_Hans. Latin-primary fonts get null (English default).
 
 Mirrors to_dataset.apply_specimens so the shipped dataset can be fixed without a

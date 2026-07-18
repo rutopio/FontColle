@@ -2,8 +2,8 @@ import { previewStyle } from "@/lib/fonts/preview-style";
 import type { FontInstance } from "@/lib/fonts/types";
 
 // Named-instance chips above the type tester. Clicking one loads its axes into
-// the preview. A chip is active while the preview still matches it — same
-// italic state and every axis it sets unchanged — so nudging any of those axes
+// the preview. A chip is active while the preview still matches it, same
+// italic state and every axis it sets unchanged, so nudging any of those axes
 // deselects it on its own.
 export function InstanceChips({
   instances,

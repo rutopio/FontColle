@@ -3,8 +3,8 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
 import type { FontRecord } from "@/lib/fonts/types";
-import { CodeBlock } from "../code-block";
-import { Panel } from "../panel";
+import { CodeBlock } from "@/routes/$tab.$fontId/-components/code-block";
+import { Panel } from "@/routes/$tab.$fontId/-components/panel";
 import {
   ExternalLink,
   fallbackFor,
@@ -17,10 +17,10 @@ import {
   weightList,
 } from "./shared";
 
-// METHOD 3 — Bunny Fonts: a privacy-first, GDPR-compliant drop-in for the Google
+// METHOD 3, Bunny Fonts: a privacy-first, GDPR-compliant drop-in for the Google
 // Fonts API. It serves the same open-source families from its own CDN without
 // logging IPs or setting cookies. Bunny ships static weights only (no variable
-// fonts), with its own `css?family=<slug>:<weights>` grammar — italic weights
+// fonts), with its own `css?family=<slug>:<weights>` grammar, italic weights
 // carry an `i` suffix. So this panel is a weight + style picker driving the URL.
 export function BunnyMethod({ font }: { font: FontRecord }) {
   const slug = fontsourceSlug(font.name);
@@ -56,9 +56,9 @@ export function BunnyMethod({ font }: { font: FontRecord }) {
       />
       {font.isVariable && (
         // Bunny serves static instances only, so a variable family's axes aren't
-        // available here — say so rather than silently offering just weights.
+        // available here, say so rather than silently offering just weights.
         <p className="mb-3 rounded-md bg-muted/50 px-2.5 py-1.5 text-muted-foreground text-xs">
-          Bunny serves static weights only — this variable family's axes aren't
+          Bunny serves static weights only, this variable family's axes aren't
           available here. Use the Google Fonts method above for the full axes.
         </p>
       )}

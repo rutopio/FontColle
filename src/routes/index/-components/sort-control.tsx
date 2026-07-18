@@ -19,7 +19,7 @@ import {
 // toggle and expose only their `asc` order.
 //
 // With an active search query the results are ranked by relevance (the dropdown
-// sort only breaks ties), so the control reads "Relevance" and is disabled — the
+// sort only breaks ties), so the control reads "Relevance" and is disabled, the
 // displayed sort then honestly matches the actual order. Clearing the search
 // restores the chosen sort.
 export function SortControl({

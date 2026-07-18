@@ -4,16 +4,21 @@
 // but never exits: the @cloudflare/vite-plugin spins up a miniflare preview
 // server whose bindings can leave the event loop alive after the build resolves.
 // All artifacts are written by then, so we force a clean exit. (Same reason as
-// TypeSpan's build wrapper — do not revert to plain `vite build`.)
+// TypeSpan's build wrapper, do not revert to plain `vite build`.)
 process.env.NODE_ENV ??= "production";
 
 // The data assets (src/data/fonts.json, public/glyphs, public/og) live in R2,
-// not git (see src/data/data-manifest.json). A build from a fresh clone —
-// notably Cloudflare Workers Builds, which clones the repo on every push —
+// not git (see src/data/data-manifest.json). A build from a fresh clone,
+// notably Cloudflare Workers Builds, which clones the repo on every push,
 // must pull them first. Local trees that already have the files skip this;
 // `pnpm pull:data` refreshes explicitly.
 import { existsSync } from "node:fs";
-const assetPaths = ["../src/data/fonts.json", "../public/glyphs", "../public/og"];
+
+const assetPaths = [
+  "../src/data/fonts.json",
+  "../public/glyphs",
+  "../public/og",
+];
 if (assetPaths.some((p) => !existsSync(new URL(p, import.meta.url)))) {
   await import("./sync-assets.mjs");
 }

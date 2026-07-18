@@ -62,12 +62,6 @@ export const SORT_OPTIONS: { group: string; items: [SortKey, string][] }[] = [
   },
 ];
 
-export const SORT_LABELS: Record<SortKey, string> = Object.fromEntries(
-  SORT_OPTIONS.flatMap((g) =>
-    g.items.map(([key, label]) => [key, `${g.group}: ${label}`])
-  )
-) as Record<SortKey, string>;
-
 // The sort control is split into a group picker (left) and a direction toggle
 // (right). Each group maps its two directions to a concrete SortKey. `asc` is
 // the "SortAscending" direction (A→Z, oldest, fewest); `desc` its reverse.

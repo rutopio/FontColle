@@ -65,7 +65,7 @@ export const Route = createFileRoute("/")({
   component: App,
   validateSearch: (raw): FilterSearch => parseFilterSearch(raw),
   // Returns ONLY the first-page slice (~24 records, a few tens of KB), never the
-  // full catalog — the Worker must not parse the 14 MB catalog (Error 1102). The
+  // full catalog, the Worker must not parse the 14 MB catalog (Error 1102). The
   // full catalog still loads client-side via catalogQueryOptions. This slice is
   // what lets a default `/` visit's SSR HTML carry real font cards + /specimen/
   // links for crawlers and non-JS fetchers (see the first-page render in App).
@@ -119,7 +119,7 @@ function isDefaultView(search: FilterSearch): boolean {
 // loads we show a skeleton (or, on the default `/` view, the loader's first-page
 // slice as real cards); on success the real Catalog view swaps in. Fetching the
 // full catalog on the client instead of in a Worker loader is what keeps the
-// home page under the Worker's per-request limits (Error 1102 — tasks/todo.md P0).
+// home page under the Worker's per-request limits (Error 1102, tasks/todo.md P0).
 function App() {
   const search = Route.useSearch();
   const { data: fonts, isError } = useQuery(catalogQueryOptions());
@@ -127,7 +127,7 @@ function App() {
   // While the full catalog loads: on a default `/` visit render the loader's
   // first-page slice as real cards (so crawlers/no-JS see ~24 font links), with
   // skeletons filling the rest. On any filtered/sorted URL keep the plain
-  // skeleton — SSR-ing unfiltered content under a filtered URL would be wrong.
+  // skeleton, SSR-ing unfiltered content under a filtered URL would be wrong.
   // This pending tree is identical server-side and on the first client render
   // (the loader data is the same, favorites hydrate to [] as today), so the swap
   // to Catalog on catalog-load matches today's skeleton->content swap with no
@@ -170,8 +170,8 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
   const debouncedFilter = useDebouncedValue(filter, FILTER_DEBOUNCE_MS);
 
   // Pull external URL changes (back/forward, a shared link) back into the
-  // pending filter. Guarded by a serialized compare so our own URL writes —
-  // which make `search` match `filter` — don't loop back in.
+  // pending filter. Guarded by a serialized compare so our own URL writes,
+  // which make `search` match `filter`, don't loop back in.
   // biome-ignore lint/correctness/useExhaustiveDependencies: compare against the live `filter` without making it a trigger; only `search` should drive this.
   useEffect(() => {
     const fromUrl = searchToFilter(search);
@@ -194,7 +194,7 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
   const [group, setGroup] = useState<FilterGroupId>(DEFAULT_FILTER_GROUP);
   // View mode is a personal-device preference, kept in localStorage rather than
   // the URL so a shared link never forces the recipient into your grid/row
-  // choice. Sort stays in the URL — it can carry result meaning worth sharing.
+  // choice. Sort stays in the URL, it can carry result meaning worth sharing.
   const [viewPref, setViewPref] = useLocalStorageState(
     "font-colle.view",
     "grid"
@@ -207,7 +207,7 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
 
   // Favorites only affect the result set in the favorites view. Depend on the
   // list only then, so hearting a font outside that view doesn't rebuild
-  // `results` (which would re-run the grid's entrance animation — a needless
+  // `results` (which would re-run the grid's entrance animation, a needless
   // flash for what is just a heart toggle).
   const favDep = favOnly ? favorites : null;
   const results = useMemo(() => {
@@ -251,7 +251,7 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
 
   useListScrollRestore(scrollRef, listScrollY);
 
-  // Sort writes the URL immediately — it's cheap and doesn't gate on the
+  // Sort writes the URL immediately, it's cheap and doesn't gate on the
   // deferred filter. It carries the current pending filter along so the URL
   // keeps a consistent shape.
   const setSort = (next: SortKey) => {
@@ -294,7 +294,7 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [setViewPref]);
-  // Leave the favorites view and clear filters, landing on the full catalog —
+  // Leave the favorites view and clear filters, landing on the full catalog,
   // the CTA shown when there are no favorites yet.
   const discoverFonts = () => {
     setFilter(emptyFilter);
@@ -494,8 +494,8 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
   );
 }
 
-// Shown while the catalog loader runs (a slow D1 query). Reuses the app shell —
-// rail + empty sidebar + Column header/footer — with a skeleton grid body, so a
+// Shown while the catalog loader runs (a slow catalog.json fetch). Reuses the app shell,
+// rail + empty sidebar + Column header/footer, with a skeleton grid body, so a
 // slow load reads as the page filling in rather than a blank or spinner. The
 // controls are inert placeholders (no data yet); the real App swaps in on load.
 function ListPending() {
@@ -525,7 +525,7 @@ function ListPending() {
 // The wrapper classes mirror the virtualized grid's row container (grid gap-4
 // pb-4, md:2 lg:3 columns) so nothing jumps on the swap. Favorites hydrate to []
 // (useFavorites is SSR-safe), preview text is "" (falls back to each font's
-// specimen), and the selection is the empty filter — the exact props Catalog
+// specimen), and the selection is the empty filter, the exact props Catalog
 // passes on a default first render, so server and first-client trees agree.
 function FirstPagePending() {
   const { firstPage } = Route.useLoaderData();

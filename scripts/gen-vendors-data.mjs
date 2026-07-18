@@ -2,7 +2,7 @@
 // and their foundry names from Microsoft's typography registry, so the Vendor
 // facet can show "ParaType" instead of the bare 4-char code "PYRS".
 //
-// Source: https://learn.microsoft.com/en-us/typography/vendors/ — one big HTML
+// Source: https://learn.microsoft.com/en-us/typography/vendors/, one big HTML
 // table of `<tr><td>ID</td><td>Foundry Name</td></tr>` rows, names often an
 // anchor `<a href=…>Name</a>`. ~1760 entries; ~80% of our catalog's families
 // carry a code that appears here.
@@ -26,7 +26,7 @@ const PAGE_URL = "https://learn.microsoft.com/en-us/typography/vendors/";
 
 // Codes absent from the MS registry but common in the Google Fonts catalog
 // (Google-internal tags, tool artifacts, or foundries that never registered).
-// Hand-maintained; keep it short — only worth an entry if several families use
+// Hand-maintained; keep it short, only worth an entry if several families use
 // the code. Names verified from each foundry's own site / the font's METADATA.
 const OVERRIDES = {
   AOEF: "Astigmatic One Eye",
@@ -52,7 +52,7 @@ function stripHtml(s) {
 }
 
 // Light cleanup: collapse whitespace, drop a trailing "(ABBR)" that only
-// repeats an abbreviation, and trim common company suffixes. Conservative —
+// repeats an abbreviation, and trim common company suffixes. Conservative,
 // we'd rather keep a slightly long name than mangle one.
 function cleanName(name) {
   let n = name.replace(/\s+/g, " ").trim();

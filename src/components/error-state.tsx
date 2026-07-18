@@ -10,8 +10,8 @@ import {
 } from "@/components/ui/empty";
 
 // The site-wide error screen, shown when a route loader throws (e.g. the static
-// catalog fails to load). Mirrors NotFound's standalone centered Empty layout —
-// same BrandMark, no sidebar/rail — but leads with a Retry button (re-runs the
+// catalog fails to load). Mirrors NotFound's standalone centered Empty layout,
+// same BrandMark and no sidebar/rail, but leads with a Retry button (re-runs the
 // failed loader) alongside the way home.
 export function ErrorState({
   onRetry,

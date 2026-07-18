@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """One-shot backfill of `repository_url` onto stress_output.json.
 
-METADATA.pb carries `source { repository_url: "..." }` — the upstream GitHub
-repo — which the harvester didn't previously capture. This fetches ONLY the
+METADATA.pb carries `source { repository_url: "..." }`, the upstream GitHub
+repo, which the harvester didn't previously capture. This fetches ONLY the
 METADATA.pb per family (no TTF re-download) and sets r["repository_url"] on the
 matching record in place. A full reharvest via harvest.py would produce the same
 field but re-downloads every TTF, so this lightweight backfill is preferred.
@@ -28,7 +28,7 @@ RAW = "https://raw.githubusercontent.com/google/fonts/main"
 
 def fetch_repo_url(license_dir, family_dir):
     """repository_url from a family's METADATA.pb, or None (missing block or
-    fetch error — treat both as "no repo known")."""
+    fetch error, treat both as "no repo known")."""
     url = f"{RAW}/{license_dir}/{urllib.parse.quote(family_dir)}/METADATA.pb"
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "font-harvester/1.0"})

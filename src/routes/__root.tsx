@@ -17,7 +17,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { FilterProvider } from "@/lib/filter/context";
 import { PreviewProvider } from "@/lib/preview/context";
 import { absoluteUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
-import appCss from "../styles.css?url";
+import appCss from "@/styles.css?url";
 
 // Applies the effective theme before first paint so an SSR'd light shell doesn't
 // flash before a dark preference hydrates. An explicit localStorage choice wins;
@@ -61,7 +61,7 @@ export const Route = createRootRouteWithContext<{
             { property: "og:image", content: absoluteUrl("/og/_default.png") },
             {
               property: "og:image:alt",
-              content: `${SITE_NAME} — ${SITE_DESCRIPTION}`,
+              content: `${SITE_NAME}: ${SITE_DESCRIPTION}`,
             },
             { property: "og:image:width", content: "1200" },
             { property: "og:image:height", content: "630" },
@@ -82,7 +82,7 @@ export const Route = createRootRouteWithContext<{
         type: "font/woff2",
         crossOrigin: "anonymous",
       },
-      // Preload the heading face (Host Grotesk) too — it's used for the section
+      // Preload the heading face (Host Grotesk) too, it's used for the section
       // titles and headings visible on first paint.
       {
         rel: "preload",
@@ -106,7 +106,7 @@ export const Route = createRootRouteWithContext<{
 });
 
 // Root error boundary: any loader/render error below the root lands here (e.g.
-// getAllFonts failing or a slow D1 query erroring). Retry re-runs the failed
+// a catalog fetch failing or an asset request erroring). Retry re-runs the failed
 // loaders (invalidate) and clears the boundary (reset).
 function RootError({ reset }: ErrorComponentProps) {
   const router = useRouter();

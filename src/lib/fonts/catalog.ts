@@ -10,11 +10,11 @@ import type { FontRecord } from "./types";
 // client moves that work off the Worker and lets the CDN cache it.
 //
 // The catalog only changes when the daily harvest CI redeploys, so it's
-// effectively immutable for a session — cache it forever client-side.
+// effectively immutable for a session, cache it forever client-side.
 //
 // Cache-busting (see scripts/gen-catalog.mjs + public/_headers): a tiny
 // manifest (short TTL) points at a content-hashed catalog file (year-long
-// immutable). We fetch the manifest first, then the hashed file — a redeploy
+// immutable). We fetch the manifest first, then the hashed file, a redeploy
 // with new data changes the hash and busts the CDN cache. Any manifest failure
 // falls back to the plain /catalog.json, which is always written too.
 async function resolveCatalogUrl(signal?: AbortSignal): Promise<string> {

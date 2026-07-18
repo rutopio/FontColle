@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { FontRecord } from "../types";
+import type { FontRecord } from "@/lib/fonts/types";
 import { applyFilters, queryRelevance, suggestFamily } from "./apply";
 import { emptyFilter, type FilterState } from "./state";
 
@@ -79,7 +79,7 @@ const filter = (over: Partial<FilterState>): FilterState => ({
 // Names of the records that survived a filter, for concise assertions.
 const names = (fonts: FontRecord[]) => fonts.map((f) => f.name);
 
-describe("applyFilters — text query", () => {
+describe("applyFilters, text query", () => {
   const fonts = [
     font({ name: "Inter" }),
     font({ name: "Roboto", designer: "Christian Robertson" }),
@@ -99,7 +99,7 @@ describe("applyFilters — text query", () => {
   });
 });
 
-describe("applyFilters — class", () => {
+describe("applyFilters, class", () => {
   const fonts = [
     font({ name: "S", class: "Sans" }),
     font({ name: "R", class: "Serif" }),
@@ -111,7 +111,7 @@ describe("applyFilters — class", () => {
   });
 });
 
-describe("applyFilters — facets (AND default, OR toggle)", () => {
+describe("applyFilters, facets (AND default, OR toggle)", () => {
   const both = font({ name: "Both", facets: ["ligatures", "small-caps"] });
   const one = font({ name: "One", facets: ["ligatures"] });
   const fonts = [both, one];
@@ -134,7 +134,7 @@ describe("applyFilters — facets (AND default, OR toggle)", () => {
   });
 });
 
-describe("applyFilters — features (AND default)", () => {
+describe("applyFilters, features (AND default)", () => {
   const fonts = [
     font({ name: "A", features: ["kern", "liga"] }),
     font({ name: "B", features: ["kern"] }),
@@ -146,7 +146,7 @@ describe("applyFilters — features (AND default)", () => {
   });
 });
 
-describe("applyFilters — variable axes", () => {
+describe("applyFilters, variable axes", () => {
   const axis = (tag: string) => ({
     tag,
     name: null,
@@ -170,7 +170,7 @@ describe("applyFilters — variable axes", () => {
   });
 });
 
-describe("applyFilters — weight and width ranges", () => {
+describe("applyFilters, weight and width ranges", () => {
   const wght = { tag: "wdth", name: null, min: 75, default: 100, max: 125 };
   const fonts = [
     font({ name: "Reg", weights: [400], widthClass: 5 }),
@@ -190,7 +190,7 @@ describe("applyFilters — weight and width ranges", () => {
   });
 });
 
-describe("applyFilters — writing systems and languages", () => {
+describe("applyFilters, writing systems and languages", () => {
   const fonts = [
     font({
       name: "Multi",
@@ -219,7 +219,7 @@ describe("applyFilters — writing systems and languages", () => {
   });
 });
 
-describe("applyFilters — color and color formats", () => {
+describe("applyFilters, color and color formats", () => {
   const colr = font({ name: "COLR", colorTables: ["COLR", "CPAL"] });
   const svg = font({ name: "SVG", colorTables: ["SVG"] });
   const dual = font({ name: "Dual", colorTables: ["COLR", "SVG"] });
@@ -248,7 +248,7 @@ describe("applyFilters — color and color formats", () => {
   });
 });
 
-describe("applyFilters — classifications (OR default, threshold 50)", () => {
+describe("applyFilters, classifications (OR default, threshold 50)", () => {
   const fonts = [
     font({ name: "Didone", tags: { "/Serif/Didone": 80 } }),
     font({ name: "Weak", tags: { "/Serif/Didone": 40 } }), // below threshold
@@ -268,7 +268,7 @@ describe("applyFilters — classifications (OR default, threshold 50)", () => {
   });
 });
 
-describe("applyFilters — designers, vendors, license, repo, upm", () => {
+describe("applyFilters, designers, vendors, license, repo, upm", () => {
   const fonts = [
     font({
       name: "A",
@@ -317,7 +317,7 @@ describe("applyFilters — designers, vendors, license, repo, upm", () => {
   });
 });
 
-describe("applyFilters — noto flag, italic, hinting, monospace-metric", () => {
+describe("applyFilters, noto flag, italic, hinting, monospace-metric", () => {
   const fonts = [
     font({
       name: "Noto",
@@ -353,7 +353,7 @@ describe("applyFilters — noto flag, italic, hinting, monospace-metric", () => 
   });
 });
 
-describe("applyFilters — metric ranges", () => {
+describe("applyFilters, metric ranges", () => {
   const fonts = [
     // xHeight ratio 0.52 (520/1000)
     font({ name: "Tall", xHeight: 520, unitsPerEm: 1000 }),
