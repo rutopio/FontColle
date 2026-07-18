@@ -1,7 +1,9 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "fontcolle",
-  "main": "@tanstack/react-start/server-entry",
+  // Thin wrapper over @tanstack/react-start/server-entry that adds security
+  // headers to SSR HTML responses (static assets get them via public/_headers).
+  "main": "src/server-entry.ts",
   "compatibility_date": "2025-07-01",
   "compatibility_flags": ["nodejs_compat"],
   // Static assets binding so the detail page's SSR loader can read the prebuilt

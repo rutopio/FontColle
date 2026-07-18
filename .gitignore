@@ -28,6 +28,7 @@ scripts/harvester/og_ids.txt
 
 # Generated at build time from the catalog (scripts/gen-sitemap.mjs)
 /public/sitemap.xml
+/public/llms.txt
 # Generated at build time from the catalog (scripts/gen-catalog.mjs): the static
 # data the site serves in place of a database.
 /public/catalog.json

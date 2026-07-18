@@ -59,6 +59,10 @@ export const Route = createRootRouteWithContext<{
       ...(absoluteUrl("/og/_default.png")
         ? [
             { property: "og:image", content: absoluteUrl("/og/_default.png") },
+            {
+              property: "og:image:alt",
+              content: `${SITE_NAME} — ${SITE_DESCRIPTION}`,
+            },
             { property: "og:image:width", content: "1200" },
             { property: "og:image:height", content: "630" },
             { name: "twitter:image", content: absoluteUrl("/og/_default.png") },

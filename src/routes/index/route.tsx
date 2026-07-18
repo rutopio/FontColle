@@ -48,7 +48,7 @@ import {
 import { DEFAULT_SORT, type SortKey, sortFonts } from "@/lib/fonts/sort";
 import type { FontRecord } from "@/lib/fonts/types";
 import { usePreview } from "@/lib/preview/context";
-import { absoluteUrl } from "@/lib/site";
+import { absoluteUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { useListScrollRestore } from "@/lib/use-list-scroll-restore";
 import { useLocalStorageState } from "@/lib/use-local-storage-state";
@@ -67,9 +67,29 @@ export const Route = createFileRoute("/")({
     // pages, so the canonical is the bare list. og:url matches.
     const canonical = absoluteUrl("/");
     if (!canonical) return {};
+    // WebSite structured data with a SearchAction, so engines can offer a
+    // sitelinks search box straight into the catalog. The query template uses
+    // the real text-search param `q` (see filterToSearch in filter/state.ts).
+    // Emitted only with an absolute origin, like the canonical tag above.
+    const jsonLd = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: SITE_NAME,
+      description: SITE_DESCRIPTION,
+      url: canonical,
+      potentialAction: {
+        "@type": "SearchAction",
+        target: {
+          "@type": "EntryPoint",
+          urlTemplate: `${absoluteUrl("/?q=")}{search_term_string}`,
+        },
+        "query-input": "required name=search_term_string",
+      },
+    });
     return {
       meta: [{ property: "og:url", content: canonical }],
       links: [{ rel: "canonical", href: canonical }],
+      scripts: [{ type: "application/ld+json", children: jsonLd }],
     };
   },
 });

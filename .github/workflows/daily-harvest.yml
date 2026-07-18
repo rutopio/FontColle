@@ -22,6 +22,7 @@ permissions:
 jobs:
   harvest:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
         with:
@@ -45,13 +46,9 @@ jobs:
         run: |
           pnpm install --frozen-lockfile
           # daily_update -> to_dataset.apply_specimens -> langcov needs the full
-          # Google Fonts language stack, not just fonttools. Pinned to the set
-          # verified locally (CLAUDE.md: pin exact versions).
-          pip install \
-            fonttools==4.60.1 \
-            gftools==0.9.996 \
-            gflanguages==0.7.7 \
-            langcodes==3.5.1
+          # Google Fonts language stack, not just fonttools. Pins live in
+          # scripts/harvester/requirements.txt (CLAUDE.md: pin exact versions).
+          pip install -r scripts/harvester/requirements.txt
 
       - name: Refresh published signals
         env:
@@ -71,6 +68,25 @@ jobs:
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
             echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Guard against catalog shrinkage
+        if: steps.update.outputs.changed == 'true'
+        run: |
+          # A harvest that loses 20%+ of the dataset almost certainly means an
+          # upstream fetch failed, not a real removal. Fail before committing so
+          # a corrupt dataset never deploys. Only runs when fonts.json changed.
+          if git diff --quiet HEAD -- src/data/fonts.json; then
+            echo "src/data/fonts.json unchanged; skipping shrinkage guard"
+            exit 0
+          fi
+          old=$(git show HEAD:src/data/fonts.json | wc -c)
+          new=$(wc -c < src/data/fonts.json)
+          echo "fonts.json bytes: HEAD=$old new=$new"
+          # Fail if new < 80% of old (integer math: new*100 < old*80).
+          if [ "$((new * 100))" -lt "$((old * 80))" ]; then
+            echo "::error::fonts.json shrank more than 20% ($old -> $new bytes); aborting"
+            exit 1
           fi
 
       - name: Regenerate OG cards for newly harvested families

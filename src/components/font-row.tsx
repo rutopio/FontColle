@@ -108,7 +108,7 @@ export function FontRow({
                 aria-label={
                   isFavorite ? "Remove from favorites" : "Add to favorites"
                 }
-                className="text-muted-foreground transition-colors hover:text-foreground"
+                className="-m-2 p-2 text-muted-foreground transition-colors hover:text-foreground"
               >
                 <HoverBoldIcon
                   // Key on the favorited state so hearting remounts the icon and
@@ -143,7 +143,7 @@ export function FontRow({
                   );
                 }}
                 aria-label="View on Google Fonts"
-                className="text-muted-foreground transition-colors hover:text-foreground"
+                className="-m-2 p-2 text-muted-foreground transition-colors hover:text-foreground"
               >
                 <HoverBoldIcon icon={GoogleLogoIcon} className="size-5" />
               </TooltipTrigger>
@@ -165,7 +165,7 @@ export function FontRow({
                     );
                   }}
                   aria-label="View source repository"
-                  className="text-muted-foreground transition-colors hover:text-foreground"
+                  className="-m-2 p-2 text-muted-foreground transition-colors hover:text-foreground"
                 >
                   <HoverBoldIcon
                     icon={repoHostIcon(font.repositoryUrl)}

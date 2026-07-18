@@ -1,0 +1,34 @@
+# Cloudflare Workers Assets headers. Applies to static asset responses only
+# (SSR HTML documents rendered by the Worker get the same security headers via
+# src/server-entry.ts). See tasks/todo.md / the audit for rationale.
+#
+# CSP note: script-src keeps 'unsafe-inline' because TanStack Start injects
+# dynamic inline hydration scripts and there is no nonce infrastructure yet.
+# External origins are each backed by real usage in src/:
+#   style-src fonts.googleapis.com  -> Google Fonts CSS2 <link> (src/lib/fonts/loader.ts)
+#   font-src  fonts.gstatic.com     -> font files the CSS2 stylesheet references
+#   img-src   lh3.googleusercontent.com -> designer avatars (detail.tsx AvatarImage)
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://lh3.googleusercontent.com; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'
+
+# Catalog data is overwritten in place on each deploy (no cache-busting yet), so
+# keep TTLs short rather than immutable/year-long.
+/catalog.json
+  Cache-Control: public, max-age=3600
+
+/catalog/*
+  Cache-Control: public, max-age=3600
+
+/og/*
+  Cache-Control: public, max-age=86400
+
+/glyphs/*
+  Cache-Control: public, max-age=86400
+
+/specimens/*
+  Cache-Control: public, max-age=86400

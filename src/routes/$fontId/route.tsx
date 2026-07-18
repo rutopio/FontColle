@@ -9,6 +9,11 @@ export const Route = createFileRoute("/$fontId")({
       to: "/$tab/$fontId",
       params: { tab: "specimen", fontId: params.fontId },
       replace: true,
+      // Permanent move: the bare /$fontId path is retired in favour of the
+      // tabbed URL, so tell crawlers to transfer ranking and stop re-crawling
+      // the old path. 301 (not the default 307) is correct for a permanent URL
+      // change. `statusCode` is the current option; `code` is deprecated.
+      statusCode: 301,
     });
   },
 });

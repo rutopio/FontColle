@@ -11,6 +11,7 @@ import {
   useGlyphCoverage,
 } from "@/lib/fonts/glyph-coverage";
 import { fontSlug } from "@/lib/fonts/slug";
+import type { FontRecord } from "@/lib/fonts/types";
 import { blockOf, parseGlyphQuery } from "@/lib/fonts/unicode-blocks";
 import { absoluteUrl, pageTitle } from "@/lib/site";
 import { ControlsDrawer } from "./-components/controls-drawer";
@@ -23,6 +24,39 @@ import {
 } from "./-components/detail-rail";
 import { DetailSidebar } from "./-components/detail-sidebar";
 import { GlyphsSidebar } from "./-components/glyphs-sidebar";
+
+// Build a per-font meta description from real catalog fields, so each of the
+// ~2000 detail pages gets a distinct summary rather than one shared template.
+// Every clause is optional and only appended when its field is present, so a
+// sparse record still reads naturally. Kept under ~160 chars for typical fonts.
+function detailDescription(font: FontRecord): string {
+  const name = font.name;
+  // Classification noun. `class` is the clean human label ("Sans", "Serif",
+  // "Mono", "Script"…); `category` is the raw GF enum ("SANS_SERIF"), so it's
+  // only a fallback, lowercased/despaced to read as prose. "a"/"an" per vowel.
+  const rawKind =
+    font.class?.trim() || font.category?.replace(/_/g, " ").toLowerCase() || "";
+  const kind = rawKind.toLowerCase();
+  const article = /^[aeiou]/.test(kind) ? "an" : "a";
+  const lead = kind ? `${name}, ${article} ${kind} font` : name;
+
+  const by = font.designer?.trim() ? ` by ${font.designer.trim()}` : "";
+
+  const parts: string[] = [];
+  const axisCount = font.isVariable ? font.axes.length : 0;
+  if (axisCount > 0) {
+    parts.push(`${axisCount} variable ${axisCount === 1 ? "axis" : "axes"}`);
+  }
+  const featureCount = font.features.length;
+  if (featureCount > 0) {
+    parts.push(
+      `${featureCount} OpenType ${featureCount === 1 ? "feature" : "features"}`
+    );
+  }
+  const specs = parts.length ? ` with ${parts.join(" and ")}` : "";
+
+  return `Preview ${lead}${by}${specs}. Test every weight and OpenType feature, then open it on Google Fonts.`;
+}
 
 export const Route = createFileRoute("/$tab/$fontId")({
   component: DetailPage,
@@ -48,7 +82,7 @@ export const Route = createFileRoute("/$tab/$fontId")({
     const font = loaderData?.font;
     const name = font?.name;
     if (!name || !font) return {};
-    const description = `Preview ${name}, browse its weights and OpenType features, and open it on Google Fonts.`;
+    const description = detailDescription(font);
     // The six tabs render near-identical content on overlapping URLs, so point
     // every tab's canonical at the specimen tab to consolidate ranking signals.
     const canonical = absoluteUrl(`/specimen/${fontSlug(font.id)}`);
@@ -77,6 +111,7 @@ export const Route = createFileRoute("/$tab/$fontId")({
         ...(ogImage
           ? [
               { property: "og:image", content: ogImage },
+              { property: "og:image:alt", content: `${name} font specimen` },
               { property: "og:image:width", content: "1200" },
               { property: "og:image:height", content: "630" },
               { name: "twitter:image", content: ogImage },
