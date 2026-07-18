@@ -4,6 +4,7 @@ import {
   ToggleRightIcon,
   XIcon,
 } from "@phosphor-icons/react";
+import type { CSSProperties } from "react";
 import { useMemo } from "react";
 import { EditableValue } from "@/components/ui/editable-value";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -52,21 +53,44 @@ function ResetButton({
 }
 
 // Native range input styled to match the shared shadcn Slider primitive
-// (@/components/ui/slider): a muted 1.5px track with a bordered foreground thumb.
+// (@/components/ui/slider) at its "sm" size: a muted 1.5px track with a bordered
+// foreground thumb, 12px like the sidebar's other sliders (filter axes, metric
+// ranges), which a 16px thumb would out-weigh in this narrow column.
 // We keep the native <input type="range"> here rather than the primitive because
 // that primitive hides its Thumb, and these sliders need a per-thumb aria-label
 // (preserved below) plus aria-valuetext with units, which the wrapper's props
 // (spread onto Root, not the Thumb) can't carry.
 const RANGE_SLIDER_CLASS = [
-  "h-1.5 w-full cursor-pointer appearance-none rounded-full bg-muted outline-none",
+  // my-2 reproduces the spacing the primitive gets from its Control's py-2
+  // (that padding is what separates the metric sliders from their labels).
+  // A margin, not padding: the input's background paints over its padding box,
+  // so py-2 would just render a taller track instead of adding space around it.
+  // No bg-* here: the track's background is the fill gradient set inline per
+  // value (see rangeFillStyle), which a utility class would override.
+  "my-2 h-1.5 w-full cursor-pointer appearance-none rounded-full outline-none",
   // WebKit thumb
-  "[&::-webkit-slider-thumb]:size-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-foreground [&::-webkit-slider-thumb]:bg-background [&::-webkit-slider-thumb]:shadow-sm",
+  "[&::-webkit-slider-thumb]:size-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-foreground [&::-webkit-slider-thumb]:bg-background [&::-webkit-slider-thumb]:shadow-sm",
   // Firefox thumb
-  "[&::-moz-range-thumb]:size-4 [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border [&::-moz-range-thumb]:border-foreground [&::-moz-range-thumb]:bg-background [&::-moz-range-thumb]:shadow-sm",
+  "[&::-moz-range-thumb]:size-3 [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border [&::-moz-range-thumb]:border-foreground [&::-moz-range-thumb]:bg-background [&::-moz-range-thumb]:shadow-sm",
   // Focus ring, matching the primitive's focus-visible treatment
   "focus-visible:[&::-webkit-slider-thumb]:ring-[3px] focus-visible:[&::-webkit-slider-thumb]:ring-ring/50",
   "focus-visible:[&::-moz-range-thumb]:ring-[3px] focus-visible:[&::-moz-range-thumb]:ring-ring/50",
 ].join(" ");
+
+// The filled portion left of the thumb, standing in for the primitive's
+// Indicator element (a native range input has no equivalent pseudo-element that
+// both engines style, so paint it as a hard-stop gradient on the track itself).
+function rangeFillStyle(
+  value: number,
+  min: number,
+  max: number
+): CSSProperties {
+  const pct = max > min ? ((value - min) / (max - min)) * 100 : 0;
+  const clamped = Math.min(100, Math.max(0, pct));
+  return {
+    background: `linear-gradient(to right, var(--color-foreground) ${clamped}%, var(--color-muted) ${clamped}%)`,
+  };
+}
 
 // Class list for a feature toggle pill, highlighted when the feature is on.
 function featureToggleClass(on: boolean) {
@@ -130,7 +154,8 @@ export function DetailSidebar({
     <aside className="flex h-full w-full min-w-0 flex-col text-sidebar-foreground">
       <ScrollArea viewportRef={viewportRef} className="min-h-0 flex-1">
         <div className="flex flex-col gap-8 p-4">
-          <div className="flex flex-col gap-4">
+          {/* gap-1.5 + the slider's my-2, matching the metric range sliders. */}
+          <div className="flex flex-col gap-1.5">
             <div className="flex items-center justify-between gap-2">
               <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase">
                 <TextAaIcon className="size-4" />
@@ -155,6 +180,7 @@ export function DetailSidebar({
               aria-label="Preview font size"
               aria-valuetext={`${size} px`}
               className={RANGE_SLIDER_CLASS}
+              style={rangeFillStyle(size, 16, 200)}
             />
           </div>
           {axes.length > 0 && (
@@ -172,7 +198,7 @@ export function DetailSidebar({
               </div>
               <div className="flex flex-col gap-3">
                 {axes.map((a) => (
-                  <div key={a.tag} className="flex flex-col gap-1">
+                  <div key={a.tag} className="flex flex-col gap-1.5">
                     <div className="flex items-baseline justify-between gap-2">
                       <span className="text-sm">
                         {a.name ?? a.tag}
@@ -203,6 +229,11 @@ export function DetailSidebar({
                         axisState[a.tag]
                       )}`}
                       className={RANGE_SLIDER_CLASS}
+                      style={rangeFillStyle(
+                        axisState[a.tag],
+                        a.min ?? 0,
+                        a.max ?? 100
+                      )}
                     />
                   </div>
                 ))}
