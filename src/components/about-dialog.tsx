@@ -1,4 +1,4 @@
-import { GithubLogoIcon } from "@phosphor-icons/react";
+import { CloverIcon, GithubLogoIcon } from "@phosphor-icons/react";
 import { LogoIcon } from "@/components/logo-icon";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +21,7 @@ import { SITE_NAME } from "@/lib/site";
 
 const REPO_URL = "https://github.com/rutopio/FontColle";
 const AUTHOR_URL = "https://chingru.com";
+const SPONSOR_URL = "https://buymeacoffee.com/chingru";
 
 const TAGLINE =
   "FontColle is an enhanced Google Fonts collection that filters by what type actually does: OpenType features, variable axes, weight and width steps, writing systems, and color vs. monochrome.";
@@ -81,24 +82,46 @@ function AboutBody({
         </p>
       </div>
 
-      <Button
-        nativeButton={false}
-        role="link"
-        variant="outline"
-        className="w-full"
-        render={
-          // biome-ignore lint/a11y/useAnchorContent: Button injects its children into this anchor via the render prop (aria-label also set); the static rule can't see through it.
-          <a
-            href={REPO_URL}
-            target="_blank"
-            rel="noreferrer"
-            aria-label={`View ${SITE_NAME} on GitHub`}
-          />
-        }
-      >
-        <GithubLogoIcon />
-        View on GitHub
-      </Button>
+      {/* Two equal columns. The repo sits on the right and keeps the solid
+          variant as the primary destination; supporting is the optional one, so
+          they differ by variant rather than by size. */}
+      <div className="grid grid-cols-2 gap-2">
+        <Button
+          nativeButton={false}
+          role="link"
+          variant="outline"
+          className="w-full"
+          render={
+            // biome-ignore lint/a11y/useAnchorContent: Button injects its children into this anchor via the render prop (aria-label also set); the static rule can't see through it.
+            <a
+              href={SPONSOR_URL}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={`Support ${SITE_NAME} on Buy Me a Coffee`}
+            />
+          }
+        >
+          <CloverIcon />
+          Support
+        </Button>
+        <Button
+          nativeButton={false}
+          role="link"
+          className="w-full"
+          render={
+            // biome-ignore lint/a11y/useAnchorContent: Button injects its children into this anchor via the render prop (aria-label also set); the static rule can't see through it.
+            <a
+              href={REPO_URL}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={`View ${SITE_NAME} on GitHub`}
+            />
+          }
+        >
+          <GithubLogoIcon />
+          GitHub
+        </Button>
+      </div>
     </>
   );
 }

@@ -7,33 +7,13 @@ import { cn } from "@/lib/utils";
 // or pin it to a single value ("one"). Shared by the Google Fonts axis controls.
 export type AxisPick = { mode: "full" | "one"; value: number };
 
-// A short heading above each method's steps: an icon, a one-line title (with an
-// optional badge, e.g. "GDPR-friendly"), and a sentence on the trade-off.
-export function MethodIntro({
-  icon: Icon,
-  title,
-  blurb,
-  badge,
-}: {
-  icon: React.ComponentType<{ className?: string; weight?: "duotone" }>;
-  title: string;
-  blurb: string;
-  badge?: React.ReactNode;
-}) {
+// A sentence on the method's trade-off, above its steps. The method's name lives
+// in the Panel header, so this is just the blurb.
+export function MethodIntro({ blurb }: { blurb: string }) {
   return (
-    <div className="mb-4 flex gap-3">
-      <Icon
-        className="mt-0.5 size-5 shrink-0 text-muted-foreground"
-        weight="duotone"
-      />
-      <div className="flex flex-col gap-0.5">
-        <div className="flex items-center gap-2">
-          <p className="font-medium text-sm">{title}</p>
-          {badge}
-        </div>
-        <p className="text-muted-foreground text-xs leading-relaxed">{blurb}</p>
-      </div>
-    </div>
+    <p className="mb-4 text-muted-foreground text-xs leading-relaxed">
+      {blurb}
+    </p>
   );
 }
 

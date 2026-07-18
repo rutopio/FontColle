@@ -1,6 +1,4 @@
-import { ShieldCheckIcon } from "@phosphor-icons/react";
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
 import type { FontRecord } from "@/lib/fonts/types";
 import { CodeBlock } from "@/routes/$tab.$fontId/-components/code-block";
@@ -43,17 +41,8 @@ export function BunnyMethod({ font }: { font: FontRecord }) {
 }`;
 
   return (
-    <Panel bodyClassName="max-w-2xl">
-      <MethodIntro
-        icon={ShieldCheckIcon}
-        title="Privacy-first CDN"
-        blurb="A drop-in for the Google Fonts API that serves the same families without logging IPs or setting cookies."
-        badge={
-          <Badge variant="secondary" className="shrink-0">
-            GDPR-friendly
-          </Badge>
-        }
-      />
+    <Panel label="Privacy-first & GDPR-friendly CDN" bodyClassName="max-w-2xl">
+      <MethodIntro blurb="A drop-in for the Google Fonts API that serves the same families without logging IPs or setting cookies." />
       {font.isVariable && (
         // Bunny serves static instances only, so a variable family's axes aren't
         // available here, say so rather than silently offering just weights.

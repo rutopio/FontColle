@@ -1,4 +1,3 @@
-import { HardDriveIcon } from "@phosphor-icons/react";
 import { useState } from "react";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
 import type { FontRecord } from "@/lib/fonts/types";
@@ -59,12 +58,8 @@ export function FontsourceMethod({ font }: { font: FontRecord }) {
   const subsets = font.subsets.filter((s) => s !== "menu");
 
   return (
-    <Panel bodyClassName="max-w-2xl">
-      <MethodIntro
-        icon={HardDriveIcon}
-        title="Self-hosted package"
-        blurb="Install once and bundle the files with your app. No runtime request to a third party."
-      />
+    <Panel label="Self-hosted package" bodyClassName="max-w-2xl">
+      <MethodIntro blurb="Install once and bundle the files with your app. No runtime request to a third party." />
       {/* Variable families offer both a variable and a static package; let the
           reader switch which one the snippets below target. */}
       {font.isVariable && (
