@@ -14,15 +14,19 @@ const OFF =
 // CSS). `active` fills it; the duotone twin shows on hover. `red` tints the
 // filled heart red, used in the detail toggle, where "favorited" is shown by
 // the heart itself (like the card/row), not by a button background. `bar` drops
-// the text label for the compact mobile top bar.
+// the text label for the compact mobile top bar. `label` is the caption: the
+// list page says "Favorite" (enter the favorites view), the detail page says
+// "Add" (heart this font).
 function HeartLabel({
   active,
   red,
   bar,
+  label,
 }: {
   active: boolean;
   red?: boolean;
   bar?: boolean;
+  label: string;
 }) {
   return (
     <>
@@ -40,7 +44,7 @@ function HeartLabel({
         )}
         weight="duotone"
       />
-      {!bar && <span className="text-[10px] leading-none">Favorite</span>}
+      {!bar && <span className="text-[10px] leading-none">{label}</span>}
     </>
   );
 }
@@ -86,7 +90,7 @@ function FavoriteMark({ fontId, bar }: { fontId: string; bar?: boolean }) {
         // favorited state is carried by the red filled heart, not a highlight.
         className={bar ? BAR_BTN : cn(BTN, OFF)}
       >
-        <HeartLabel active={on} red bar={bar} />
+        <HeartLabel active={on} bar={bar} label="Add" red />
       </button>
     </nav>
   );
@@ -115,7 +119,7 @@ function FavoriteViewLink({ bar }: { bar?: boolean }) {
           bar ? cn(BAR_BTN, fav && "text-red-500") : cn(BTN, fav ? ON : OFF)
         }
       >
-        <HeartLabel active={fav} bar={bar} />
+        <HeartLabel active={fav} bar={bar} label="Favorite" />
       </Link>
     </nav>
   );
