@@ -1,7 +1,7 @@
 import { CubeIcon } from "@phosphor-icons/react";
 import { RadioPillSection } from "./radio-pill-section";
 
-const TYPE_LABELS = { static: "Static", variable: "Variable" };
+const TYPE_LABELS = { static: "Static Only", variable: "Variable" };
 
 // Static vs Variable, radio-style. Stored as the static/variable `facets`
 // values, but this is their only entry point, buildFacetIndex keeps them out
@@ -23,7 +23,7 @@ export function FontTypeSection({
 }) {
   return (
     <RadioPillSection
-      title="Font type"
+      title="Variable Support"
       icon={CubeIcon}
       items={items}
       labels={TYPE_LABELS}

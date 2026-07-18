@@ -610,7 +610,7 @@ function SearchInput({
   };
 
   return (
-    <div className="relative w-96 max-md:w-full max-md:min-w-0 max-md:flex-1">
+    <div className="relative w-72 max-md:w-full max-md:min-w-0 max-md:flex-1 xl:w-96">
       <MagnifyingGlassIcon className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
       <Input
         ref={inputRef}
