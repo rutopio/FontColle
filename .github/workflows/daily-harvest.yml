@@ -23,6 +23,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history so the commit step can rebase onto master if a manual
+          # push landed mid-run (fetch-depth 1 can't rebase).
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -39,7 +43,14 @@ jobs:
       - name: Install dependencies
         run: |
           pnpm install --frozen-lockfile
-          pip install fonttools
+          # daily_update -> to_dataset.apply_specimens -> langcov needs the full
+          # Google Fonts language stack, not just fonttools. Pinned to the set
+          # verified locally (CLAUDE.md: pin exact versions).
+          pip install \
+            fonttools==4.60.1 \
+            gftools==0.9.996 \
+            gflanguages==0.7.7 \
+            langcodes==3.5.1
 
       - name: Refresh published signals
         env:
@@ -48,6 +59,10 @@ jobs:
 
       - name: Incremental catalog update
         id: update
+        env:
+          # Authenticated GitHub API: enumerating the google/fonts tree
+          # unauthenticated hits the 60 req/hr limit and SystemExits.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           python3 scripts/harvester/daily_update.py | tee update.log
           # Expose whether anything changed so later steps can skip.
@@ -96,7 +111,15 @@ jobs:
             echo "nothing staged; skipping commit"
           else
             git commit -m "chore: daily incremental font catalog update"
-            git push
+            # A manual push to master during the run makes fetch-depth-1's push
+            # non-fast-forward. Rebase onto the latest master and retry a few times.
+            for attempt in 1 2 3; do
+              if git push; then
+                break
+              fi
+              echo "push rejected (attempt $attempt); rebasing onto origin/master"
+              git pull --rebase origin master
+            done
           fi
 
       - name: Deploy
