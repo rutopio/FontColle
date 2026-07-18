@@ -1,8 +1,6 @@
 import {
   ArrowLeftIcon,
-  ArrowUpRightIcon,
   DownloadSimpleIcon,
-  FunnelIcon,
   GoogleLogoIcon,
 } from "@phosphor-icons/react";
 import { Link, useCanGoBack, useRouter } from "@tanstack/react-router";
@@ -11,32 +9,31 @@ import { Column } from "@/components/filter-layout";
 import { FontTraits } from "@/components/font-traits";
 import { PreviewBar } from "@/components/preview-dock";
 import { repoHostIcon } from "@/components/repo-host-icon";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import type { DesignerSibling } from "@/lib/fonts/detail";
 import { buildFeatureSettings } from "@/lib/fonts/features";
-import { emptyFilter, filterToSearch } from "@/lib/fonts/filter/state";
+import { emptyFilter } from "@/lib/fonts/filter/state";
 import { scriptLabel } from "@/lib/fonts/labels";
-import { LICENSE_BOILERPLATE } from "@/lib/fonts/license-text";
 import { ensureFontRangeLoaded, useFontLoaded } from "@/lib/fonts/loader";
 import { previewStyle } from "@/lib/fonts/preview-style";
 import { fontSlug } from "@/lib/fonts/slug";
 import { specimenFor } from "@/lib/fonts/specimen";
 import type { FontRecord } from "@/lib/fonts/types";
 import { usePreview } from "@/lib/preview/context";
-import { sanitizeHtml } from "@/lib/sanitize-html";
-import { CopyButton } from "./copy-button";
+import { DesignerPanel } from "./designer-panel";
 import { type DetailTab, DetailTabBar } from "./detail-rail";
 import { GlyphsPanel } from "./glyphs";
 import { InstanceChips } from "./instance-chips";
 import { InstanceRow } from "./instance-row";
 import { LanguageSupport } from "./language-support";
+import { LicensePanel } from "./license-panel";
 import { LinksDrawer } from "./links-drawer";
 import { MetricsPanel } from "./metrics-panel";
 import { Panel } from "./panel";
+import { type SpecRow, SpecTable } from "./spec-table";
 import { TypeTester } from "./type-tester";
 import { UsePanel } from "./use";
 
@@ -420,247 +417,6 @@ export function Detail({
   );
 }
 
-// The About view: Google Fonts' family description prose. The source is HTML, so
-// we sanitize to a safe tag allowlist before rendering (see sanitize-html.ts).
-// Shows an empty-state line when Google has no description, so the two-column
-// Designer view keeps both columns instead of collapsing to one.
-function AboutPanel({ font }: { font: FontRecord }) {
-  const html = sanitizeHtml(font.about);
-  return (
-    <Panel label="About">
-      {html ? (
-        <div
-          className="prose-about text-sm leading-relaxed [&_a:hover]:decoration-foreground [&_a]:underline [&_a]:decoration-muted-foreground/50 [&_p]:my-3 first:[&_p]:mt-0"
-          // biome-ignore lint/security/noDangerouslySetInnerHtml: content is sanitized to an allowlist in sanitizeHtml.
-          dangerouslySetInnerHTML={{ __html: html }}
-        />
-      ) : (
-        <p className="py-2 text-muted-foreground text-sm">
-          No description available for this family.
-        </p>
-      )}
-    </Panel>
-  );
-}
-
-// The License view: the family's full license text, mirroring Google Fonts'
-// /specimen/<Family>/license page. We assemble it from the per-family OFL
-// copyright header (licenseHeader) plus the shared boilerplate for that license
-// (LICENSE_BOILERPLATE) — Apache/UFL have no per-family header. Plain text, so
-// it renders verbatim in a monospace, scrollable block.
-function LicensePanel({ font }: { font: FontRecord }) {
-  const boilerplate = font.license
-    ? LICENSE_BOILERPLATE[font.license]
-    : undefined;
-  const text = [font.licenseHeader, boilerplate]
-    .filter(Boolean)
-    .join("\n\n")
-    .trim();
-
-  return (
-    <Panel
-      label={font.license ? `License · ${font.license}` : "License"}
-      action={
-        text ? <CopyButton text={text} label="Copy license text" /> : undefined
-      }
-    >
-      {text ? (
-        <pre className="overflow-auto whitespace-pre-wrap font-mono text-muted-foreground text-xs leading-relaxed">
-          {text}
-        </pre>
-      ) : (
-        <p className="py-2 text-muted-foreground text-sm">
-          No license text available for this family.
-        </p>
-      )}
-    </Panel>
-  );
-}
-
-// The Designer view: who made the family, each designer's Google Fonts bio and
-// avatar when available, a link out to their page, and the other families they
-// authored in the catalog.
-function DesignerPanel({
-  font,
-  siblingsByDesigner,
-}: {
-  font: FontRecord;
-  siblingsByDesigner: Record<string, DesignerSibling[]>;
-}) {
-  // The DB stores designers as one string; Google Fonts credits several as a
-  // comma-separated list. Split so each gets their own credit + profile link.
-  const designers = (font.designer ?? "")
-    .split(",")
-    .map((d) => d.trim())
-    .filter(Boolean);
-
-  // Bios/avatars come keyed by designer name from the metadata endpoint; match
-  // by trimmed name so each credit can show its profile.
-  const profileByName = new Map(
-    font.designerProfiles
-      .filter((p) => p.name)
-      .map((p) => [p.name?.trim() ?? "", p])
-  );
-
-  return (
-    <div className="grid gap-4 md:grid-cols-2">
-      {/* LEFT — the family "about" prose. */}
-      <AboutPanel font={font} />
-
-      {/* RIGHT — one block per credited designer: bio + their other families. */}
-      <Panel
-        label={designers.length > 1 ? "Designers" : "Designer"}
-        count={designers.length || undefined}
-      >
-        {designers.length > 0 ? (
-          <div className="flex flex-col gap-4">
-            {designers.map((name, index) => {
-              const profile = profileByName.get(name);
-              const bio = sanitizeHtml(profile?.bio);
-              const siblings = siblingsByDesigner[name] ?? [];
-              return (
-                <Fragment key={name}>
-                  <div className="flex flex-col gap-2">
-                    <div className="flex items-center justify-between gap-2 text-sm">
-                      <div className="flex items-center gap-2.5">
-                        <Avatar>
-                          {profile?.imageUrl && (
-                            <AvatarImage
-                              src={profile.imageUrl}
-                              alt=""
-                              loading="lazy"
-                            />
-                          )}
-                          <AvatarFallback>{initials(name)}</AvatarFallback>
-                        </Avatar>
-                        <span>{name}</span>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-1">
-                        {/* Filter the list to just this
-                                                    designer: reset every filter,
-                                                    then select their capsule. */}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-muted-foreground"
-                          nativeButton={false}
-                          role="link"
-                          render={
-                            <Link
-                              to="/"
-                              search={filterToSearch({
-                                ...emptyFilter,
-                                designers: [name],
-                              })}
-                              aria-label={`Show ${name}'s fonts in the list`}
-                            />
-                          }
-                        >
-                          <FunnelIcon />
-                          Filter
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-muted-foreground"
-                          nativeButton={false}
-                          role="link"
-                          render={
-                            // biome-ignore lint/a11y/useAnchorContent: Button injects its children into this anchor via the render prop (aria-label also set); the static rule can't see through it.
-                            <a
-                              href={`https://fonts.google.com/?query=${encodeURIComponent(name)}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              aria-label={`${name} on Google Fonts`}
-                            />
-                          }
-                        >
-                          <ArrowUpRightIcon />
-                          Google Fonts
-                        </Button>
-                      </div>
-                    </div>
-                    {bio && (
-                      <div
-                        className="text-primary text-sm leading-relaxed [&_a]:underline"
-                        // biome-ignore lint/security/noDangerouslySetInnerHtml: content is sanitized to an allowlist in sanitizeHtml.
-                        dangerouslySetInnerHTML={{ __html: bio }}
-                      />
-                    )}
-                    {siblings.length > 0 && (
-                      <div className="mt-8">
-                        <p className="mb-1 text-muted-foreground text-xs">
-                          More by {name} ({siblings.length})
-                        </p>
-                        <ul className="flex list-disc flex-col gap-1 pl-5 marker:text-muted-foreground">
-                          {siblings.map((s) => (
-                            <li key={s.id}>
-                              <Link
-                                to="/$tab/$fontId"
-                                params={{
-                                  tab: "specimen",
-                                  fontId: fontSlug(s.id),
-                                }}
-                                className="truncate py-0.5 text-sm hover:text-foreground"
-                                style={{
-                                  fontFamily: `"${s.name}", sans-serif`,
-                                }}
-                              >
-                                {s.name}
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                  {index < designers.length - 1 && <Separator />}
-                </Fragment>
-              );
-            })}
-          </div>
-        ) : (
-          <p className="py-2 text-muted-foreground text-sm">
-            No designer credited.
-          </p>
-        )}
-      </Panel>
-    </div>
-  );
-}
-
-interface SpecRow {
-  label: string;
-  value: string;
-  badge?: string; // version tag, rendered as "v{badge}"
-}
-
-// The Specs list as a shadcn table: label left, value (with an optional version
-// badge) right-aligned. Borderless rows keep the compact spec look.
-function SpecTable({ rows }: { rows: SpecRow[] }) {
-  return (
-    <Table>
-      <TableBody>
-        {rows.map((row) => (
-          <TableRow key={row.label}>
-            <TableCell className="px-0 py-1.5 text-sm">{row.label}</TableCell>
-            <TableCell className="px-0 py-1.5 text-right">
-              <span className="flex items-center justify-end gap-2">
-                {row.badge && (
-                  <Badge variant="secondary" className="font-mono">
-                    v{row.badge}
-                  </Badge>
-                )}
-                <span className="font-mono text-sm">{row.value}</span>
-              </span>
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  );
-}
-
 // en-US short date, e.g. "Apr 9, 2025". UTC pins the day so a "yyyy-MM-dd"
 // string isn't shifted back by the local zone.
 const DATE_FMT = new Intl.DateTimeFormat("en-US", {
@@ -675,16 +431,6 @@ const DATE_FMT = new Intl.DateTimeFormat("en-US", {
 function formatDate(iso: string): string {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso;
   return DATE_FMT.format(new Date(`${iso}T00:00:00Z`));
-}
-
-// Up to two initials from a designer name, for the avatar fallback when there's
-// no profile image. Uses the first and last words so "Erik Spiekermann" -> "ES".
-function initials(name: string): string {
-  const words = name.split(/\s+/).filter(Boolean);
-  if (words.length === 0) return "";
-  const first = words[0][0];
-  const last = words.length > 1 ? words[words.length - 1][0] : "";
-  return (first + last).toUpperCase();
 }
 
 // The version shipped on (or most recently before) a given "yyyy-MM-dd" date,

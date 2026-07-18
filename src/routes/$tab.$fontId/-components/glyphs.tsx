@@ -9,6 +9,7 @@ import {
   useState,
 } from "react";
 import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { hasCodepoint } from "@/lib/fonts/glyph-coverage";
 import type { FontRecord } from "@/lib/fonts/types";
@@ -401,9 +402,7 @@ export function GlyphsPanel({
         </span>
       </div>
       {loading ? (
-        <p className="py-8 text-center text-muted-foreground text-sm">
-          Loading glyphs…
-        </p>
+        <GlyphGridSkeleton />
       ) : (
         <BlockGrid
           key={active.name}
@@ -415,6 +414,57 @@ export function GlyphsPanel({
           onCopy={onCopy}
         />
       )}
+    </div>
+  );
+}
+
+// Loading placeholder for the glyph chart: the same column count and square
+// cells as BlockGrid (leading address column + header on desktop), so the real
+// grid swaps in without a layout shift. role=status + aria-busy announce the
+// pending state; the individual cells are decorative.
+function GlyphGridSkeleton() {
+  const COLS = useIsMobile() ? COLS_MOBILE : COLS_DESKTOP;
+  const labelW = COLS === COLS_DESKTOP ? LABEL_W : 0;
+  const gridCols = labelW
+    ? `${labelW}px repeat(${COLS}, minmax(0, 1fr))`
+    : `repeat(${COLS}, minmax(0, 1fr))`;
+  const ROWS = 8;
+
+  return (
+    <div role="status" aria-busy="true" aria-label="Loading glyphs">
+      {/* Header row of column labels, desktop only — matches BlockGrid. */}
+      {COLS === COLS_DESKTOP && (
+        <div
+          className="grid gap-px pb-1"
+          style={{ gridTemplateColumns: gridCols }}
+        >
+          <div />
+          {Array.from({ length: COLS }, (_, c) => (
+            <Skeleton
+              // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length static placeholder grid, no reordering.
+              key={`skeleton-col:${c}`}
+              className="mx-auto h-2.5 w-2.5 rounded-sm"
+            />
+          ))}
+        </div>
+      )}
+      {Array.from({ length: ROWS }, (_, r) => (
+        <div
+          // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length static placeholder grid, no reordering.
+          key={`skeleton-row:${r}`}
+          className="grid gap-px"
+          style={{ gridTemplateColumns: gridCols }}
+        >
+          {labelW ? <div /> : null}
+          {Array.from({ length: COLS }, (_, c) => (
+            <Skeleton
+              // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length static placeholder grid, no reordering.
+              key={`skeleton-cell:${r}:${c}`}
+              className="aspect-square rounded-sm"
+            />
+          ))}
+        </div>
+      ))}
     </div>
   );
 }

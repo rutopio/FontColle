@@ -51,6 +51,23 @@ function ResetButton({
   );
 }
 
+// Native range input styled to match the shared shadcn Slider primitive
+// (@/components/ui/slider): a muted 1.5px track with a bordered foreground thumb.
+// We keep the native <input type="range"> here rather than the primitive because
+// that primitive hides its Thumb, and these sliders need a per-thumb aria-label
+// (preserved below) plus aria-valuetext with units, which the wrapper's props
+// (spread onto Root, not the Thumb) can't carry.
+const RANGE_SLIDER_CLASS = [
+  "h-1.5 w-full cursor-pointer appearance-none rounded-full bg-muted outline-none",
+  // WebKit thumb
+  "[&::-webkit-slider-thumb]:size-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-foreground [&::-webkit-slider-thumb]:bg-background [&::-webkit-slider-thumb]:shadow-sm",
+  // Firefox thumb
+  "[&::-moz-range-thumb]:size-4 [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border [&::-moz-range-thumb]:border-foreground [&::-moz-range-thumb]:bg-background [&::-moz-range-thumb]:shadow-sm",
+  // Focus ring, matching the primitive's focus-visible treatment
+  "focus-visible:[&::-webkit-slider-thumb]:ring-[3px] focus-visible:[&::-webkit-slider-thumb]:ring-ring/50",
+  "focus-visible:[&::-moz-range-thumb]:ring-[3px] focus-visible:[&::-moz-range-thumb]:ring-ring/50",
+].join(" ");
+
 // Class list for a feature toggle pill, highlighted when the feature is on.
 function featureToggleClass(on: boolean) {
   return [
@@ -136,7 +153,8 @@ export function DetailSidebar({
               value={size}
               onChange={(e) => onSizeChange(Number(e.target.value))}
               aria-label="Preview font size"
-              className="w-full accent-foreground"
+              aria-valuetext={`${size} px`}
+              className={RANGE_SLIDER_CLASS}
             />
           </div>
           {axes.length > 0 && (
@@ -180,7 +198,11 @@ export function DetailSidebar({
                       onChange={(e) =>
                         onAxisChange(a.tag, Number(e.target.value))
                       }
-                      className="w-full accent-foreground"
+                      aria-label={`${a.name ?? a.tag} axis`}
+                      aria-valuetext={`${a.name ?? a.tag} ${Math.round(
+                        axisState[a.tag]
+                      )}`}
+                      className={RANGE_SLIDER_CLASS}
                     />
                   </div>
                 ))}

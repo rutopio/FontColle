@@ -3,6 +3,7 @@ import {
   type RefObject,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -59,6 +60,11 @@ export function FontGrid({
   scrollRef,
 }: Props) {
   const listRef = useRef<HTMLDivElement>(null);
+  // Derive a Set from the favorites array once per change, so each cell reads a
+  // stable `isFavorite` primitive (favSet.has) instead of every cell scanning
+  // the array with `.includes()`. Toggling one favorite then only flips that
+  // cell's boolean prop; the memoized twins bail out on the rest.
+  const favSet = useMemo(() => new Set(favorites), [favorites]);
   const [cols, setCols] = useState(view === "row" ? 1 : 3);
   // SSR renders a fixed first batch so crawlers/no-JS see content; after mount
   // the element virtualizer takes over.
@@ -111,7 +117,7 @@ export function FontGrid({
         key={font.id}
         font={font}
         previewText={previewText}
-        isFavorite={favorites.includes(font.id)}
+        isFavorite={favSet.has(font.id)}
         onToggleFavorite={onToggleFavorite}
         selection={selection}
         axisValues={axisValues}
@@ -121,7 +127,7 @@ export function FontGrid({
         key={font.id}
         font={font}
         previewText={previewText}
-        isFavorite={favorites.includes(font.id)}
+        isFavorite={favSet.has(font.id)}
         onToggleFavorite={onToggleFavorite}
         selection={selection}
         axisValues={axisValues}

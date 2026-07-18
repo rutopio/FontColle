@@ -189,7 +189,9 @@ const METRIC_PARAM: Record<MetricKey, MetricParam> = {
 const parseRange = (v: string | undefined): MetricRange | undefined => {
   if (!v) return undefined;
   const [lo, hi] = v.split("-");
-  const n = (s: string | undefined) => (s != null ? Number(s) : Number.NaN);
+  // Number("") is 0, so an empty part (truncated range like "0.4-") must be
+  // rejected explicitly rather than silently decoding to 0.
+  const n = (s: string | undefined) => (s ? Number(s) : Number.NaN);
   const l = n(lo);
   const h = n(hi);
   return Number.isFinite(l) && Number.isFinite(h) ? [l, h] : undefined;

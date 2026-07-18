@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import type { ReactNode } from "react";
+import { MOTION_S } from "@/lib/motion";
 
 // Fades one route-specific content block IN when the route changes, leaving the
 // surrounding frame untouched. Used three times inside FilterLayout — around the
@@ -29,7 +30,7 @@ export function RouteFade({
     <motion.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.24, ease: "easeOut" }}
+      transition={{ duration: MOTION_S.slow, ease: "easeOut" }}
       className={className}
     >
       {children}

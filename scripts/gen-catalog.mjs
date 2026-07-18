@@ -21,6 +21,7 @@
 // catalog.json is sorted by name to match the old loadAllFonts() ordering so the
 // client renders without re-sorting.
 
+import { createHash } from "node:crypto";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
@@ -37,10 +38,31 @@ export async function genCatalog() {
 
   // Minified (no whitespace) to keep the transfer small; the browser parses it.
   const catalog = JSON.stringify(fonts);
+  // Plain path stays for backward-compat + fallback (see catalog.ts).
   await writeFile(path.join(ROOT, "public/catalog.json"), catalog, "utf8");
   console.log(
     `[catalog] wrote ${fonts.length} published families to public/catalog.json (${(catalog.length / 1024 / 1024).toFixed(1)} MB)`
   );
+
+  // Cache-busting: also write the catalog to a content-hashed, immutable path
+  // and point a tiny manifest at it. The client fetches the manifest (short
+  // TTL) then the hashed file (year-long immutable in public/_headers), so a
+  // redeploy that changes the data ships a new hash and busts the CDN cache
+  // without waiting out a TTL. The hash is a short sha256 of the JSON bytes, so
+  // identical content re-emits the same filename (idempotent rebuilds).
+  const hash = createHash("sha256").update(catalog).digest("hex").slice(0, 16);
+  const hashedRel = `/catalog-v/${hash}.json`;
+  const hashedDir = path.join(ROOT, "public/catalog-v");
+  // Rebuild from scratch so stale hashed files from previous builds are dropped.
+  await rm(hashedDir, { recursive: true, force: true });
+  await mkdir(hashedDir, { recursive: true });
+  await writeFile(path.join(ROOT, `public${hashedRel}`), catalog, "utf8");
+  await writeFile(
+    path.join(ROOT, "public/catalog-manifest.json"),
+    JSON.stringify({ path: hashedRel }),
+    "utf8"
+  );
+  console.log(`[catalog] wrote hashed catalog + manifest -> ${hashedRel}`);
 
   // Per-font files for the detail page. Rebuild this dir from scratch so
   // families that became unpublished don't leave a stale file behind. It holds

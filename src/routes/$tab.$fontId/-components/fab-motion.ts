@@ -6,12 +6,14 @@
 //
 // MotionConfig reducedMotion="user" (see __root) already neutralises the
 // transform for users who ask for less motion; the fade still runs.
+import { MOTION_S } from "@/lib/motion";
+
 export const FAB_MOTION = {
   initial: { opacity: 0, scale: 0.6 },
   animate: { opacity: 1, scale: 1 },
   exit: { opacity: 0, scale: 0.6 },
   whileTap: { scale: 0.95 },
-  transition: { duration: 0.18, ease: "easeOut" },
+  transition: { duration: MOTION_S.base, ease: "easeOut" },
 } as const;
 
 // Resting bottom offset for a FAB in its stack slot (0 = lowest), measured with
@@ -35,4 +37,4 @@ export function fabLift(dockVisible: boolean) {
   return { y: dockVisible ? `-${DOCK}rem` : "0rem" };
 }
 
-export const FAB_SHIFT = { duration: 0.2, ease: "easeOut" } as const;
+export const FAB_SHIFT = { duration: MOTION_S.base, ease: "easeOut" } as const;

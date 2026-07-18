@@ -133,7 +133,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             system prefers-reduced-motion setting (disabling transform/layout
             animations), matching the CSS animations already gated in styles.css. */}
         <MotionConfig reducedMotion="user">
-          <TooltipProvider delay={500}>
+          <TooltipProvider delay={300}>
             <FilterProvider>
               <PreviewProvider>{children}</PreviewProvider>
             </FilterProvider>

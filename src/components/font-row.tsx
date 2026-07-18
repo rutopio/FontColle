@@ -1,27 +1,12 @@
-import { GoogleLogoIcon, HeartIcon } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { memo } from "react";
+import { FontActions } from "@/components/font-actions";
 import { FontTraits } from "@/components/font-traits";
-import { HoverBoldIcon } from "@/components/hover-bold-icon";
-import { repoHostIcon } from "@/components/repo-host-icon";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import type { FilterSelection } from "@/lib/fonts/filter";
-import {
-  ensureFontLoaded,
-  ensureFontRangeLoaded,
-  previewFontFamily,
-  useFontLoaded,
-} from "@/lib/fonts/loader";
-import { variationSettings } from "@/lib/fonts/preview-style";
 import { fontSlug } from "@/lib/fonts/slug";
 import { specimenFor } from "@/lib/fonts/specimen";
 import type { FontRecord } from "@/lib/fonts/types";
-import { usePreviewCoords } from "@/lib/fonts/use-preview-coords";
-import { cn } from "@/lib/utils";
+import { useFontFacePreview } from "@/lib/fonts/use-font-face-preview";
 
 interface Props {
   font: FontRecord;
@@ -38,7 +23,11 @@ interface Props {
 
 // Row layout (Google Fonts style): one family per full-width row. Family name +
 // meta on the left, a large single-line preview on the right.
-export function FontRow({
+//
+// memo: like FontCard, rows mount by the hundreds in the virtualized grid.
+// Toggling one favorite changes only that row's `isFavorite`; the rest keep
+// referentially stable props, so memo bails them out.
+export const FontRow = memo(function FontRow({
   font,
   previewText,
   isFavorite,
@@ -47,30 +36,13 @@ export function FontRow({
   axisValues,
 }: Props) {
   // Same weight/width/axis derivation as FontCard, so the row previews the
-  // sidebar's picks identically.
-  const {
-    weight: activeWeight,
-    variationCoords,
-    italic: previewItalic,
-  } = usePreviewCoords(font, selection, axisValues);
-
-  // Variable fonts: load the full axis range once so any picked weight/width
-  // renders from one variable file. Static fonts: request the selected weight
-  // cut so the preview doesn't stay on an old one for lack of that file.
-  useEffect(() => {
-    if (font.isVariable) {
-      ensureFontRangeLoaded(
-        font.name,
-        font.axes,
-        font.facets.includes("has-italic")
-      );
-    } else {
-      ensureFontLoaded(font.name, [activeWeight]);
-    }
-  }, [font.name, font.isVariable, font.axes, font.facets, activeWeight]);
-
-  const fontLoaded = useFontLoaded(font.name);
-  const settings = variationSettings(variationCoords);
+  // sidebar's picks identically; the font-loading effect and preview style are
+  // shared with FontCard.
+  const { fontLoaded, previewStyle } = useFontFacePreview(
+    font,
+    selection,
+    axisValues
+  );
 
   return (
     <Link
@@ -97,85 +69,11 @@ export function FontRow({
               badgeClassName="hidden shrink-0 sm:inline-flex"
             />
           </div>
-          <div className="flex shrink-0 items-center gap-4">
-            <Tooltip>
-              <TooltipTrigger
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  onToggleFavorite(font.id);
-                }}
-                aria-label={
-                  isFavorite ? "Remove from favorites" : "Add to favorites"
-                }
-                className="-m-2 p-2 text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <HoverBoldIcon
-                  // Key on the favorited state so hearting remounts the icon and
-                  // replays the pop; the class only applies when favorited, so
-                  // un-hearting doesn't animate.
-                  key={isFavorite ? "on" : "off"}
-                  icon={HeartIcon}
-                  weight={isFavorite ? "fill" : "regular"}
-                  className={cn(
-                    "size-5",
-                    isFavorite && "animate-heart-pop text-red-500"
-                  )}
-                />
-              </TooltipTrigger>
-              <TooltipContent>
-                {isFavorite ? "Remove from favorites" : "Add to favorites"}
-              </TooltipContent>
-            </Tooltip>
-            {/* A button, not an <a>: the whole row is already a <Link> (an
-              <a>), and <a> can't nest <a> (hydration error). Open Google Fonts
-              in a new tab and stop the click from triggering row navigation. */}
-            <Tooltip>
-              <TooltipTrigger
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  window.open(
-                    `https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`,
-                    "_blank",
-                    "noreferrer"
-                  );
-                }}
-                aria-label="View on Google Fonts"
-                className="-m-2 p-2 text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <HoverBoldIcon icon={GoogleLogoIcon} className="size-5" />
-              </TooltipTrigger>
-              <TooltipContent>View on Google Fonts</TooltipContent>
-            </Tooltip>
-            {/* Only when the family has a known upstream repo. A button, not an
-              <a>, for the same nested-<a> reason as the download button. */}
-            {font.repositoryUrl && (
-              <Tooltip>
-                <TooltipTrigger
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    window.open(
-                      font.repositoryUrl as string,
-                      "_blank",
-                      "noreferrer"
-                    );
-                  }}
-                  aria-label="View source repository"
-                  className="-m-2 p-2 text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  <HoverBoldIcon
-                    icon={repoHostIcon(font.repositoryUrl)}
-                    className="size-5"
-                  />
-                </TooltipTrigger>
-                <TooltipContent>View source repository</TooltipContent>
-              </Tooltip>
-            )}
-          </div>
+          <FontActions
+            font={font}
+            isFavorite={isFavorite}
+            onToggleFavorite={onToggleFavorite}
+          />
         </div>
         {/* Designer on its own second row on narrow screens only. */}
         {font.designer && (
@@ -188,14 +86,7 @@ export function FontRow({
       {fontLoaded ? (
         <p
           dir="auto"
-          style={{
-            fontFamily: previewFontFamily(font.name, fontLoaded),
-            fontWeight: activeWeight,
-            fontStyle: previewItalic ? "italic" : undefined,
-            fontVariationSettings: settings || undefined,
-            transition:
-              "font-weight 200ms ease, font-variation-settings 200ms ease",
-          }}
+          style={previewStyle}
           className="truncate px-2 text-3xl leading-tight"
         >
           {previewText || specimenFor(font)}
@@ -210,4 +101,4 @@ export function FontRow({
       )}
     </Link>
   );
-}
+});

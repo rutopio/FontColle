@@ -1,27 +1,12 @@
-import { GoogleLogoIcon, HeartIcon } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { memo } from "react";
+import { FontActions } from "@/components/font-actions";
 import { FontTraits } from "@/components/font-traits";
-import { HoverBoldIcon } from "@/components/hover-bold-icon";
-import { repoHostIcon } from "@/components/repo-host-icon";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import type { FilterSelection } from "@/lib/fonts/filter";
-import {
-  ensureFontLoaded,
-  ensureFontRangeLoaded,
-  previewFontFamily,
-  useFontLoaded,
-} from "@/lib/fonts/loader";
-import { variationSettings } from "@/lib/fonts/preview-style";
 import { fontSlug } from "@/lib/fonts/slug";
 import { specimenFor } from "@/lib/fonts/specimen";
 import type { FontRecord } from "@/lib/fonts/types";
-import { usePreviewCoords } from "@/lib/fonts/use-preview-coords";
-import { cn } from "@/lib/utils";
+import { useFontFacePreview } from "@/lib/fonts/use-font-face-preview";
 
 interface Props {
   font: FontRecord;
@@ -36,7 +21,11 @@ interface Props {
   axisValues: Record<string, number>;
 }
 
-export function FontCard({
+// memo: cards mount by the hundreds in the virtualized grid. Toggling one
+// favorite changes only that card's `isFavorite`; the rest keep referentially
+// stable props (see index/route: `toggle` is useCallback-stable, `selection`/
+// `axisValues`/`previewText` are unchanged), so memo bails them out.
+export const FontCard = memo(function FontCard({
   font,
   previewText,
   isFavorite,
@@ -45,41 +34,12 @@ export function FontCard({
   axisValues,
 }: Props) {
   // Weight/width/axis picks from the sidebar drive the live preview; the
-  // derivation is shared with FontRow via usePreviewCoords.
-  const {
-    weight: activeWeight,
-    variationCoords,
-    italic: previewItalic,
-  } = usePreviewCoords(font, selection, axisValues);
-
-  // Variable fonts: load the full axis range once so any weight/width the user
-  // picks renders from a single variable file. Static fonts: request the actual
-  // selected weight cut (appended on each switch) so it doesn't stay on an old
-  // one for lack of that file.
-  useEffect(() => {
-    if (font.isVariable) {
-      ensureFontRangeLoaded(
-        font.name,
-        font.axes,
-        font.facets.includes("has-italic")
-      );
-    } else {
-      ensureFontLoaded(font.name, [activeWeight]);
-    }
-  }, [font.name, font.isVariable, font.axes, font.facets, activeWeight]);
-
-  const fontLoaded = useFontLoaded(font.name);
-  const settings = variationSettings(variationCoords);
-  const previewStyle: React.CSSProperties = {
-    fontFamily: previewFontFamily(font.name, fontLoaded),
-    // activeWeight already folds in the wght slider; set font-weight directly
-    // (not via a coords map) so the browser can smooth/synthesize it.
-    fontWeight: activeWeight,
-    fontStyle: previewItalic ? "italic" : undefined,
-    fontVariationSettings: settings || undefined,
-    // Smooth the weight/axis change instead of a hard jump.
-    transition: "font-weight 200ms ease, font-variation-settings 200ms ease",
-  };
+  // font-loading effect and preview style are shared with FontRow.
+  const { fontLoaded, previewStyle } = useFontFacePreview(
+    font,
+    selection,
+    axisValues
+  );
 
   return (
     <Link
@@ -90,85 +50,11 @@ export function FontCard({
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between gap-3">
           <h3 className="min-w-0 truncate">{font.name}</h3>
-          <div className="flex shrink-0 items-center gap-4">
-            <Tooltip>
-              <TooltipTrigger
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  onToggleFavorite(font.id);
-                }}
-                aria-label={
-                  isFavorite ? "Remove from favorites" : "Add to favorites"
-                }
-                className="-m-2 p-2 text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <HoverBoldIcon
-                  // Key on the favorited state so hearting remounts the icon and
-                  // replays the pop; the class only applies when favorited, so
-                  // un-hearting doesn't animate.
-                  key={isFavorite ? "on" : "off"}
-                  icon={HeartIcon}
-                  weight={isFavorite ? "fill" : "regular"}
-                  className={cn(
-                    "size-5",
-                    isFavorite && "animate-heart-pop text-red-500"
-                  )}
-                />
-              </TooltipTrigger>
-              <TooltipContent>
-                {isFavorite ? "Remove from favorites" : "Add to favorites"}
-              </TooltipContent>
-            </Tooltip>
-            {/* A button, not an <a>: the whole card is already a <Link> (an
-              <a>), and <a> can't nest <a> (hydration error). Open Google Fonts
-              in a new tab and stop the click from triggering card navigation. */}
-            <Tooltip>
-              <TooltipTrigger
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  window.open(
-                    `https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`,
-                    "_blank",
-                    "noreferrer"
-                  );
-                }}
-                aria-label="View on Google Fonts"
-                className="-m-2 p-2 text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <HoverBoldIcon icon={GoogleLogoIcon} className="size-5" />
-              </TooltipTrigger>
-              <TooltipContent>View on Google Fonts</TooltipContent>
-            </Tooltip>
-            {/* Only when the family has a known upstream repo. A button, not an
-              <a>, for the same nested-<a> reason as the download button. */}
-            {font.repositoryUrl && (
-              <Tooltip>
-                <TooltipTrigger
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    window.open(
-                      font.repositoryUrl as string,
-                      "_blank",
-                      "noreferrer"
-                    );
-                  }}
-                  aria-label="View source repository"
-                  className="-m-2 p-2 text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  <HoverBoldIcon
-                    icon={repoHostIcon(font.repositoryUrl)}
-                    className="size-5"
-                  />
-                </TooltipTrigger>
-                <TooltipContent>View source repository</TooltipContent>
-              </Tooltip>
-            )}
-          </div>
+          <FontActions
+            font={font}
+            isFavorite={isFavorite}
+            onToggleFavorite={onToggleFavorite}
+          />
         </div>
         {font.designer && (
           <p className="line-clamp-2 text-muted-foreground text-xs">
@@ -202,4 +88,4 @@ export function FontCard({
       </div>
     </Link>
   );
-}
+});

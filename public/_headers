@@ -16,8 +16,17 @@
   Permissions-Policy: camera=(), microphone=(), geolocation=()
   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://lh3.googleusercontent.com; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'
 
-# Catalog data is overwritten in place on each deploy (no cache-busting yet), so
-# keep TTLs short rather than immutable/year-long.
+# Content-hashed catalog files never change under a given name, so cache them
+# immutably for a year. The manifest points at the current hash and gets a short
+# TTL so a redeploy is picked up quickly (see scripts/gen-catalog.mjs).
+/catalog-v/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/catalog-manifest.json
+  Cache-Control: public, max-age=300
+
+# Plain /catalog.json (fallback) and per-font files are overwritten in place on
+# each deploy, so keep their TTLs short rather than immutable/year-long.
 /catalog.json
   Cache-Control: public, max-age=3600
 

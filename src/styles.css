@@ -134,6 +134,14 @@
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
   --radius: 0.625rem;
+
+  /* Motion duration scale: three steps, mirrored in src/lib/motion.ts. fast =
+     confirmations/hover, base = entrances and most transitions, slow = the
+     larger, expressive beats. Keep in sync with the TS constants. */
+  --motion-fast: 150ms;
+  --motion-base: 200ms;
+  --motion-slow: 280ms;
+
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -280,7 +288,7 @@
 }
 
 @utility animate-card-in {
-  animation: fade-in-up 220ms ease-out both;
+  animation: fade-in-up var(--motion-base) ease-out both;
 }
 
 /* Favorite heart pop: a quick scale up with a slight overshoot, then settle
@@ -303,7 +311,7 @@
 }
 
 @utility animate-heart-pop {
-  animation: heart-pop 280ms ease-out both;
+  animation: heart-pop var(--motion-slow) ease-out both;
 }
 
 /* Copy confirmation pop: a quick scale up from small to full, no overshoot —
@@ -320,7 +328,7 @@
 }
 
 @utility animate-copy-pop {
-  animation: copy-pop 150ms ease-out both;
+  animation: copy-pop var(--motion-fast) ease-out both;
 }
 
 /* Syntax token colours for the Use-tab CodeBlock (tokens from
