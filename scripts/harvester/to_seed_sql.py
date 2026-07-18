@@ -8,7 +8,7 @@ Run:   python3 to_seed_sql.py ../../src/data/fonts.json ../../src/lib/db/seed
        # optional 3rd arg: a file of family ids (one per line) to restrict the
        # seed to — the daily incremental update seeds only the changed subset.
 Apply: for f in src/lib/db/seed.*.sql; do \
-         wrangler d1 execute font-finder-d1 --remote --file "$f"; done
+         wrangler d1 execute font-colle-d1 --remote --file "$f"; done
 """
 import json, sys, time
 

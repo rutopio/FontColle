@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 // v1 favorites live in localStorage, shaped for a possible one-time upload+merge
 // in a future account-synced v2. Keep the shape flat and stable: an array of
 // family ids.
-const KEY = "font-finder.favorites.v1";
+const KEY = "font-colle.favorites.v1";
 
 interface FavStore {
   favorites: string[];

@@ -15,6 +15,6 @@ fi
 
 for f in "${chunks[@]}"; do
   echo "==> seeding $f ($TARGET)"
-  wrangler d1 execute font-finder-d1 "$TARGET" --file "$f"
+  wrangler d1 execute font-colle-d1 "$TARGET" --file "$f"
 done
 echo "done: ${#chunks[@]} chunks applied to $TARGET"

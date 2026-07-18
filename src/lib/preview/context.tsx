@@ -13,7 +13,7 @@ const PreviewContext = createContext<PreviewState | null>(null);
 // localStorage so a phrase the user typed sticks across reloads; it's a
 // personal-device preference, not part of a shareable URL.
 export function PreviewProvider({ children }: { children: ReactNode }) {
-  const [text, setText] = useLocalStorageState("font-finder.preview-text", "");
+  const [text, setText] = useLocalStorageState("font-colle.preview-text", "");
   // setText is a stable useCallback from useLocalStorageState, so listing it
   // keeps the exhaustive-deps rule happy without extra recomputes.
   const value = useMemo(() => ({ text, setText }), [text, setText]);

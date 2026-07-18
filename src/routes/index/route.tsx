@@ -134,7 +134,7 @@ function App() {
     // the URL so a shared link never forces the recipient into your grid/row
     // choice. Sort stays in the URL — it can carry result meaning worth sharing.
     const [viewPref, setViewPref] = useLocalStorageState(
-        "font-finder.view",
+        "font-colle.view",
         "grid"
     );
     const view: ViewMode = viewPref === "row" ? "row" : "grid";

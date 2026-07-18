@@ -37,7 +37,7 @@ committing. `pnpm build` produces the Workers bundle in `dist/`.
 | `pnpm gen:og` | Render per-font Open Graph images to `public/og/` |
 
 The app reads fonts from D1 in production. Both dev and deploy use the **remote**
-D1 (`font-finder-d1`); use the `:remote` db scripts.
+D1 (`font-colle-d1`); use the `:remote` db scripts.
 
 ## Data pipeline
 
