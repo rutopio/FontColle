@@ -1,10 +1,10 @@
 {
   "version": 1,
   "fonts": {
-    "key": "fonts/1.json",
-    "seq": 1,
-    "sha256": "9e4a1e558097837ce0de4e5eb0920a6bf6e521523209626428249837dc30b3c6",
-    "bytes": 20994700
+    "key": "fonts/2.json",
+    "seq": 2,
+    "sha256": "21ae03ffe3805fdc982c9e3d370a3d35251fe92ba06591f6359da0b96411e5d9",
+    "bytes": 20994444
   },
   "glyphs": {
     "key": "glyphs/glyphs.tar.gz",
