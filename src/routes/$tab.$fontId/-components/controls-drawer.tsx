@@ -26,7 +26,11 @@ export function ControlsDrawer({
   icon: Icon;
   // Drops the FAB with the rest of the stack when the preview dock slides away.
   dockVisible: boolean;
-  children: React.ReactNode;
+  // A render prop so the panel can dismiss the drawer once a choice is made
+  // (picking a Unicode block is a one-shot action, unlike the Specimen sliders
+  // you keep adjusting). The same panel renders in the desktop sidebar, where
+  // there is nothing to close, so the callback is supplied only here.
+  children: (close: () => void) => React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -53,7 +57,7 @@ export function ControlsDrawer({
           <FabIcon className="size-4 text-primary" weight="fill" />
           <SheetTitle>{title}</SheetTitle>
         </div>
-        <div className="min-h-0 flex-1">{children}</div>
+        <div className="min-h-0 flex-1">{children(() => setOpen(false))}</div>
       </SheetContent>
     </Sheet>
   );

@@ -199,7 +199,9 @@ function DetailPage() {
 
   // Resolve a glyph-search query (a character or "U+XXXX") to a covered block +
   // codepoint. Miss = not a BMP codepoint, or the font doesn't cover it.
-  const searchGlyph = (query: string) => {
+  // Returns whether it landed, so the mobile drawer closes only on a hit and a
+  // miss stays open to show the field's error.
+  const searchGlyph = (query: string): boolean => {
     const cp = parseGlyphQuery(query);
     const block = cp == null ? undefined : blockOf(cp);
     const covered =
@@ -208,11 +210,12 @@ function DetailPage() {
       coveredBlocks.some((c) => c.block.name === block.name);
     if (!covered || cp == null || !block) {
       setSearchMiss(true);
-      return;
+      return false;
     }
     setSearchMiss(false);
     setGlyphBlock(block.name);
     setHighlightCp(cp);
+    return true;
   };
 
   const selectGlyphBlock = (name: string) => {
@@ -233,11 +236,12 @@ function DetailPage() {
     );
   }, [coveredBlocks]);
 
-  // The Specimen/Glyphs sidebar panel. Built once and reused by both the desktop
-  // sidebar slot and the mobile ControlsDrawer, so the two stay in sync (state
-  // lives here on the page, above both). Only these two tabs have controls.
+  // The Specimen/Glyphs sidebar panel, reused by both the desktop sidebar slot
+  // and the mobile ControlsDrawer, so the two stay in sync (state lives here on
+  // the page, above both). Only these two tabs have controls. `onDismiss` is
+  // passed only by the drawer, which is the only host that can be closed.
   const hasControls = tab === "sample" || tab === "glyphs";
-  const sidebarPanel = hasControls ? (
+  const renderSidebarPanel = (onDismiss?: () => void) =>
     tab === "glyphs" ? (
       <GlyphsSidebar
         blocks={coveredBlocks}
@@ -246,6 +250,7 @@ function DetailPage() {
         onSelect={selectGlyphBlock}
         onSearch={searchGlyph}
         searchMiss={searchMiss}
+        onDismiss={onDismiss}
       />
     ) : (
       <DetailSidebar
@@ -260,8 +265,8 @@ function DetailPage() {
         onToggleFeature={toggleFeature}
         onResetFeatures={resetFeatures}
       />
-    )
-  ) : null;
+    );
+  const sidebarPanel = hasControls ? renderSidebarPanel() : null;
 
   return (
     <FilterLayout
@@ -301,7 +306,7 @@ function DetailPage() {
             // Mirrors Detail's footerHidden: the dock is up on Specimen only.
             dockVisible={tab === "sample"}
           >
-            {sidebarPanel}
+            {(close) => renderSidebarPanel(close)}
           </ControlsDrawer>
         )}
       </AnimatePresence>
