@@ -199,11 +199,12 @@ export function VariableAxesSection({
           )}
         >
           <Slider
+            size="sm"
             value={pct}
             onValueChange={(v) => onSliderChange(tag, v as number)}
             min={0}
             max={100}
-            className="[&_[data-slot=slider-control]]:py-0 [&_[data-slot=slider-thumb]]:size-3"
+            className="[&_[data-slot=slider-control]]:py-0"
           />
           {/* Fixed-width, right-aligned so the slider track doesn't shift
                     as the % readout changes digit count (5% -> 100%). */}
