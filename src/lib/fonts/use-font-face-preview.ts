@@ -53,6 +53,10 @@ export function useFontFacePreview(
     fontWeight: activeWeight,
     fontStyle: previewItalic ? "italic" : undefined,
     fontVariationSettings: settings || undefined,
+    // Opt out of the app's <html> tracking: non-zero letter-spacing suppresses
+    // ligatures, and a preview must show the font as it is. See previewStyle
+    // in ./preview-style for the full reasoning.
+    letterSpacing: "normal",
     // Smooth the weight/axis change instead of a hard jump.
     transition: `font-weight ${MOTION.base}ms ease, font-variation-settings ${MOTION.base}ms ease`,
   };

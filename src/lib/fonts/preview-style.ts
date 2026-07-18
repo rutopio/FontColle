@@ -12,7 +12,12 @@ export function variationSettings(coords: Record<string, number>): string {
 /** Shared preview styling for a family rendered at a set of axis coords. Drives
  *  the list cards, the detail tester, instance chips, and instance rows from one
  *  place. `wght` maps to `font-weight` (so browsers can synthesize/smooth it)
- *  and the rest go to `font-variation-settings`. */
+ *  and the rest go to `font-variation-settings`.
+ *
+ *  letterSpacing is reset to `normal` because the app tracks its UI wide on
+ *  <html>, and any non-zero letter-spacing suppresses ligatures (spacing is
+ *  inserted between the character units a ligature would otherwise join). A
+ *  preview has to show the font as it really is, so it opts out. */
 export function previewStyle({
   name,
   loaded,
@@ -30,5 +35,6 @@ export function previewStyle({
     fontWeight: coords.wght ? Math.round(coords.wght) : undefined,
     fontStyle: italic ? "italic" : undefined,
     fontVariationSettings: settings || undefined,
+    letterSpacing: "normal",
   };
 }

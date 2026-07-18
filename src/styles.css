@@ -222,6 +222,16 @@
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
+  /* The UI is set slightly wide. This must not reach the font previews: any
+     non-zero letter-spacing suppresses ligature substitution (the spacing is
+     inserted between the very character units a ligature would join), so an
+     inherited value made previews render "fi"/"ffi" as separate glyphs and
+     misrepresent the font. The previews reset it to `normal` themselves, in
+     the two shared style helpers every preview surface goes through:
+     lib/fonts/preview-style and lib/fonts/use-font-face-preview. Scoping the
+     tracking to .font-sans/.font-mono instead was tried and rejected: UI text
+     inherits the family rather than carrying the class, so two thirds of it
+     silently lost its tracking. */
   html {
     @apply font-sans tracking-wide;
   }
