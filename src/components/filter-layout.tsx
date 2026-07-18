@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import type { Ref } from "react";
+import { AboutLink } from "@/components/about-link";
 import { AppSidebar } from "@/components/app-sidebar";
 import { FavoriteToggle } from "@/components/favorite-toggle";
 import { LogoIcon } from "@/components/logo-icon";
@@ -11,8 +12,8 @@ import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./theme-toggle";
 
 // Mobile-only top strip (<768px). The desktop icon rail, which carries the
-// home link, Favorite and Theme controls, collapses to an unreachable Sheet on
-// mobile (see app-sidebar), so this bar restores those three controls. Hidden on
+// home link, Favorite, Theme and About controls, collapses to an unreachable
+// Sheet on mobile (see app-sidebar), so this bar restores them. Hidden on
 // desktop, where the rail provides them.
 function MobileTopBar({ favoriteFontId }: { favoriteFontId?: string }) {
   return (
@@ -28,6 +29,7 @@ function MobileTopBar({ favoriteFontId }: { favoriteFontId?: string }) {
       <div className="flex items-center gap-1">
         <FavoriteToggle fontId={favoriteFontId} variant="bar" />
         <ThemeToggle variant="bar" />
+        <AboutLink variant="bar" />
       </div>
     </div>
   );

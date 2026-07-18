@@ -1,10 +1,10 @@
 import {
   BookOpenIcon,
   CodeIcon,
-  EyeIcon,
-  InfoIcon,
+  EyesIcon,
   ScrollIcon,
   SquaresFourIcon,
+  UserIcon,
 } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
@@ -23,10 +23,15 @@ export type DetailTab =
 // FilterRail set.
 //
 // `slug` is the URL segment (/{slug}/{fontId}); it differs from the internal
-// tab id where the user-facing name diverged (specimen/about) from the
-// original code names (sample/designer).
+// tab id where the user-facing name diverged (specimen) from the original code
+// name (sample).
 export const TABS = [
-  { id: "sample" as const, slug: "specimen", label: "Specimen", icon: EyeIcon },
+  {
+    id: "sample" as const,
+    slug: "specimen",
+    label: "Specimen",
+    icon: EyesIcon,
+  },
   {
     id: "glyphs" as const,
     slug: "glyphs",
@@ -39,7 +44,12 @@ export const TABS = [
     label: "Detail",
     icon: BookOpenIcon,
   },
-  { id: "designer" as const, slug: "about", label: "About", icon: InfoIcon },
+  {
+    id: "designer" as const,
+    slug: "designer",
+    label: "Designer",
+    icon: UserIcon,
+  },
   { id: "use" as const, slug: "use", label: "Use", icon: CodeIcon },
   {
     id: "license" as const,

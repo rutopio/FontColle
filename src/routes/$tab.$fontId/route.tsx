@@ -1,5 +1,5 @@
 import { SlidersHorizontalIcon, SquaresFourIcon } from "@phosphor-icons/react";
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
 import { AnimatePresence } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import { FilterLayout } from "@/components/filter-layout";
@@ -60,6 +60,19 @@ function detailDescription(font: FontRecord): string {
 
 export const Route = createFileRoute("/$tab/$fontId")({
   component: DetailPage,
+  beforeLoad: ({ params }) => {
+    // The Designer tab used to live at /about/{fontId}, before the tab was
+    // renamed to match what it shows. Retired links move to /designer/{fontId}
+    // permanently (301) rather than 404 on the unknown-slug check below.
+    if (params.tab === "about") {
+      throw redirect({
+        to: "/$tab/$fontId",
+        params: { tab: "designer", fontId: params.fontId },
+        replace: true,
+        statusCode: 301,
+      });
+    }
+  },
   loader: async ({ params }) => {
     // The tab is a URL segment; reject unknown slugs so /foo/roboto 404s
     // instead of silently falling back to a default view.

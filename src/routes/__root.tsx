@@ -10,10 +10,12 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { MotionConfig } from "motion/react";
+import { AboutDialog } from "@/components/about-dialog";
 import { ErrorState } from "@/components/error-state";
 import { NotFound } from "@/components/not-found";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AboutProvider } from "@/lib/about/context";
 import { FilterProvider } from "@/lib/filter/context";
 import { PreviewProvider } from "@/lib/preview/context";
 import { absoluteUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
@@ -135,7 +137,14 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <MotionConfig reducedMotion="user">
           <TooltipProvider delay={300}>
             <FilterProvider>
-              <PreviewProvider>{children}</PreviewProvider>
+              <PreviewProvider>
+                <AboutProvider>
+                  {children}
+                  {/* Mounted here so it overlays whichever page is underneath,
+                      leaving that page's icon rail exactly as it was. */}
+                  <AboutDialog />
+                </AboutProvider>
+              </PreviewProvider>
             </FilterProvider>
           </TooltipProvider>
           {/* Global toast host: copy confirmations (e.g. the Glyphs grid) fire

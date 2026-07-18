@@ -18,8 +18,8 @@ const ROOT = path.resolve(import.meta.dirname, "..");
 // can't be imported from a plain node script). llms.txt reuses the same summary.
 const SITE_NAME = "FontColle";
 const SITE_DESCRIPTION =
-  "A Google Fonts alternative that filters by real OpenType features, variable " +
-  "axes, weight, writing systems, and color, preview any weight and save favorites.";
+  "An enhanced Google Fonts collection that filters by real OpenType features, " +
+  "variable axes, weight, writing systems, and color, and saves your favorites.";
 
 // Mirror src/lib/fonts/slug.ts fontSlug: spaces -> underscores (case kept).
 const fontSlug = (name) => name.replace(/ /g, "_");

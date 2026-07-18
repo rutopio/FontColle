@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import type * as React from "react";
+import { AboutLink } from "@/components/about-link";
 import { FavoriteToggle } from "@/components/favorite-toggle";
 import { LogoIcon } from "@/components/logo-icon";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -68,6 +69,7 @@ export function AppSidebar({
         <SidebarFooter className="mt-auto gap-1 p-2">
           <FavoriteToggle fontId={favoriteFontId} />
           <ThemeToggle />
+          <AboutLink />
         </SidebarFooter>
       </Sidebar>
 
