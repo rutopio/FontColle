@@ -30,6 +30,8 @@ scripts/harvester/og_ids.txt
 
 # Generated at build time from the catalog (scripts/gen-sitemap.mjs)
 /public/sitemap.xml
+# Generated at build time from the catalog (scripts/gen-catalog.mjs)
+/public/catalog.json
 /.agents
 /.claude
 skills-lock.json

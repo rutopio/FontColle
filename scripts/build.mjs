@@ -12,6 +12,12 @@ process.env.NODE_ENV ??= "production";
 const { genSitemap } = await import("./gen-sitemap.mjs");
 await genSitemap();
 
+// Emit public/catalog.json (published families) before the build so the client
+// can fetch the catalog as a static CDN asset instead of the Worker rebuilding
+// it from D1 on every request (Error 1102). See gen-catalog.mjs.
+const { genCatalog } = await import("./gen-catalog.mjs");
+await genCatalog();
+
 const { createBuilder } = await import("vite");
 
 const builder = await createBuilder();

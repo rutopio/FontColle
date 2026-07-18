@@ -110,33 +110,10 @@ function toFontRecord(f: FamilyRow, related: RelatedByFamily): FontRecord {
   };
 }
 
-// Load the full compact catalog once; the frontend filters client-side. We
-// fetch each table in full and stitch the denormalized records in memory —
-// cheaper than N per-family joins for ~1700 families. (Lazy per-family loading
-// is a possible future optimization; the whole catalog is small enough today.)
-async function loadAllFonts(): Promise<FontRecord[]> {
-  const [families, axes, features, instances, languages, scripts] =
-    await Promise.all([
-      db.select().from(family).where(eq(family.isPublished, true)),
-      db.select().from(familyAxis),
-      db.select().from(familyFeature),
-      db.select().from(familyInstance),
-      db.select().from(familyLanguage),
-      db.select().from(familyScript),
-    ]);
-
-  const related: RelatedByFamily = {
-    axesByFamily: groupBy(axes, (a) => a.familyId),
-    featsByFamily: groupBy(features, (f) => f.familyId),
-    instByFamily: groupBy(instances, (i) => i.familyId),
-    langsByFamily: groupBy(languages, (l) => l.familyId),
-    scriptsByFamily: groupBy(scripts, (s) => s.familyId),
-  };
-
-  return families
-    .map((f) => toFontRecord(f, related))
-    .sort((a, b) => a.name.localeCompare(b.name));
-}
+// The full catalog is no longer loaded here: the home page fetches a prebuilt
+// static JSON (public/catalog.json) on the client instead of the Worker
+// rebuilding it from D1 per request, which exceeded the Worker's limits
+// (Error 1102). See src/lib/fonts/catalog.ts and scripts/gen-catalog.mjs.
 
 // Load a single published family by its URL slug, querying only that family's
 // related rows instead of the whole catalog — the detail page needs just one.
@@ -173,10 +150,6 @@ async function loadFontById(slug: string): Promise<FontRecord | null> {
     scriptsByFamily: groupBy(scripts, (s) => s.familyId),
   });
 }
-
-export const getAllFonts = createServerFn({ method: "GET" }).handler(
-  (): Promise<FontRecord[]> => loadAllFonts()
-);
 
 export const getFontById = createServerFn({ method: "GET" })
   .validator((id: string) => id)
