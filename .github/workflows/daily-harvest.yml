@@ -16,6 +16,12 @@ concurrency:
   group: daily-harvest
   cancel-in-progress: false
 
+# PREREQUISITE: the CLOUDFLARE_API_TOKEN secret must have R2 read+write on the
+# ChingRu account before this version of the workflow can run. fonts.json / og /
+# glyphs now live in the fontcolle-assets R2 bucket (git holds only
+# src/data/data-manifest.json). The Publish and Deploy steps call
+# `wrangler r2 object put/get`; without R2 permission they fail.
+
 permissions:
   contents: write # commit the updated dataset / seed / OG images
 
@@ -26,9 +32,10 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          # Full history so the commit step can rebase onto master if a manual
-          # push landed mid-run (fetch-depth 1 can't rebase).
-          fetch-depth: 0
+          # fonts.json left git, so the daily commit is now just the tiny
+          # data-manifest.json diff — a shallow clone is enough. The commit step
+          # unshallows on demand before rebasing if a manual push landed mid-run.
+          fetch-depth: 1
 
       - uses: actions/setup-node@v6
         with:
@@ -74,20 +81,12 @@ jobs:
         if: steps.update.outputs.changed == 'true'
         run: |
           # A harvest that loses 20%+ of the dataset almost certainly means an
-          # upstream fetch failed, not a real removal. Fail before committing so
-          # a corrupt dataset never deploys. Only runs when fonts.json changed.
-          if git diff --quiet HEAD -- src/data/fonts.json; then
-            echo "src/data/fonts.json unchanged; skipping shrinkage guard"
-            exit 0
-          fi
-          old=$(git show HEAD:src/data/fonts.json | wc -c)
-          new=$(wc -c < src/data/fonts.json)
-          echo "fonts.json bytes: HEAD=$old new=$new"
-          # Fail if new < 80% of old (integer math: new*100 < old*80).
-          if [ "$((new * 100))" -lt "$((old * 80))" ]; then
-            echo "::error::fonts.json shrank more than 20% ($old -> $new bytes); aborting"
-            exit 1
-          fi
+          # upstream fetch failed, not a real removal. Fail before publishing so
+          # a corrupt dataset never deploys. fonts.json no longer lives in git,
+          # so the guard compares the new local fonts.json against the byte count
+          # recorded in the CURRENT manifest (still the previous version — this
+          # runs BEFORE the Publish step rewrites it).
+          node scripts/shrinkage-guard.mjs
 
       - name: Regenerate OG cards for newly harvested families
         if: steps.update.outputs.changed == 'true'
@@ -100,27 +99,42 @@ jobs:
             echo "no families re-harvested; OG cards unchanged"
           fi
 
-      - name: Commit updated catalog and assets
+      - name: Publish assets to R2
+        if: steps.update.outputs.changed == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # Upload the new fonts.json as the next fonts/<seq>.json version and the
+          # changed OG cards as per-object deltas, prune old fonts versions, and
+          # rewrite src/data/data-manifest.json to point at the new version. This
+          # runs AFTER the shrinkage guard (which read the old manifest baseline).
+          node scripts/publish-assets.mjs --daily --og-ids=scripts/harvester/og_ids.txt
+
+      - name: Commit updated manifest
         if: steps.update.outputs.changed == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          # Only the source dataset + OG cards are versioned. The static catalog
-          # the site serves (catalog.json, public/fonts/*, designer-index.json)
-          # is a build artifact — the Deploy step's `pnpm build` regenerates it.
-          git add src/data/fonts.json src/data/scripts.json \
-            src/data/languages.json public/og
+          # fonts.json and public/og now live in R2; git versions only the tiny
+          # data-manifest.json (which R2 versions the site ships) plus the small
+          # scripts.json / languages.json. The static catalog the site serves is a
+          # build artifact — the Deploy step's `pnpm build` regenerates it.
+          git add src/data/data-manifest.json src/data/scripts.json \
+            src/data/languages.json
           if git diff --cached --quiet; then
             echo "nothing staged; skipping commit"
           else
             git commit -m "chore: daily incremental font catalog update"
-            # A manual push to master during the run makes fetch-depth-1's push
-            # non-fast-forward. Rebase onto the latest master and retry a few times.
+            # A manual push to master during the run makes the shallow push
+            # non-fast-forward. Unshallow (fetch-depth 1 has no history to rebase
+            # onto), then rebase onto the latest master and retry a few times.
             for attempt in 1 2 3; do
               if git push; then
                 break
               fi
-              echo "push rejected (attempt $attempt); rebasing onto origin/master"
+              echo "push rejected (attempt $attempt); unshallowing + rebasing onto origin/master"
+              git fetch --unshallow origin || git fetch origin
               git pull --rebase origin master
             done
           fi
@@ -131,5 +145,8 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
+          # Pull fonts.json / glyphs / og from R2 (per the manifest) into place
+          # before building; they no longer live in git.
+          node scripts/sync-assets.mjs
           pnpm build
           pnpm exec wrangler deploy

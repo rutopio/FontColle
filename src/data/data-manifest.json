@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "fonts": {
+    "key": "fonts/1.json",
+    "seq": 1,
+    "sha256": "9e4a1e558097837ce0de4e5eb0920a6bf6e521523209626428249837dc30b3c6",
+    "bytes": 20994700
+  },
+  "glyphs": {
+    "key": "glyphs/glyphs.tar.gz",
+    "sha256": "5733425ae1a4072156ed1d756bb525d7156fbf42157154db54e3c8e250015ef1",
+    "count": 2020
+  },
+  "og": {
+    "base": {
+      "key": "og/og.tar.gz",
+      "sha256": "aa8646586784aead52ed9a2c1415be97ab3e5a919d3b756a759f91aa171ae18c",
+      "count": 1935
+    },
+    "deltas": []
+  }
+}
