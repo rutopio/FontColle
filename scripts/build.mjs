@@ -7,6 +7,17 @@
 // TypeSpan's build wrapper — do not revert to plain `vite build`.)
 process.env.NODE_ENV ??= "production";
 
+// The data assets (src/data/fonts.json, public/glyphs, public/og) live in R2,
+// not git (see src/data/data-manifest.json). A build from a fresh clone —
+// notably Cloudflare Workers Builds, which clones the repo on every push —
+// must pull them first. Local trees that already have the files skip this;
+// `pnpm pull:data` refreshes explicitly.
+import { existsSync } from "node:fs";
+const assetPaths = ["../src/data/fonts.json", "../public/glyphs", "../public/og"];
+if (assetPaths.some((p) => !existsSync(new URL(p, import.meta.url)))) {
+  await import("./sync-assets.mjs");
+}
+
 // Emit public/sitemap.xml (+ robots Sitemap line) before the build so the
 // static file is picked up as an asset. No-op when VITE_SITE_URL is unset.
 const { genSitemap } = await import("./gen-sitemap.mjs");
