@@ -301,6 +301,26 @@
   animation: fade-in-up var(--motion-base) ease-out both;
 }
 
+/* Grid/row switch for the SSR'd pending list. The real list reads the
+   preference from localStorage, which the server can't see, so the pending
+   markup renders both layouts and these hide the one that doesn't match
+   data-view (stamped on <html> by viewScript in __root before first paint).
+   That way a row-mode visitor never sees grid cards flip to rows when the
+   catalog resolves. Once the real list mounts it renders only its own layout,
+   so these stop applying to anything. */
+@utility pending-grid-only {
+  :root[data-view="row"] & {
+    display: none;
+  }
+}
+
+@utility pending-row-only {
+  display: none;
+  :root[data-view="row"] & {
+    display: block;
+  }
+}
+
 /* Favorite heart pop: a quick scale up with a slight overshoot, then settle
    back. Played once when a font is hearted (keyed on the favorited state so
    React remounts the icon to retrigger it), so the "added" reads as a beat,

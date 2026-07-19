@@ -26,6 +26,7 @@ import {
 import { Column, FilterLayout } from "@/components/filter-layout";
 import { FontCard } from "@/components/font-card";
 import { FontGrid, SkeletonGrid, type ViewMode } from "@/components/font-grid";
+import { FontRow } from "@/components/font-row";
 import { PreviewBar } from "@/components/preview-dock";
 import { Button } from "@/components/ui/button";
 import {
@@ -527,6 +528,17 @@ function ListPending() {
 function FirstPagePending() {
   const { firstPage } = Route.useLoaderData();
   const { text: previewText } = usePreview();
+  // Column count must match FontGrid exactly or the layout reflows the moment
+  // Catalog takes over. FontGrid measures its CONTAINER (columnsFor), not the
+  // viewport, because the filter panel narrows the list well below the viewport
+  // breakpoint — at 1440px the list is ~1000px and wants 2 columns, at 1920px
+  // it is ~1480px and wants 3.
+  //
+  // Hence container queries rather than JS: measuring in an effect leaves the
+  // first paint showing a guessed count, and any hardcoded guess is wrong at
+  // some width (2 reflowed to 3 at 1920px, 3 reflowed to 2 at 1440px). CSS
+  // resolves against the real container on the first paint, with no window
+  // where the two grids disagree. The breakpoints mirror columnsFor's.
 
   // No loader slice (build without catalog-first.json, or a fetch failure):
   // fall back to the plain skeleton, unchanged from before this feature.
@@ -543,8 +555,11 @@ function FirstPagePending() {
         }
         footer={<PreviewBar />}
       >
-        <div className="flex-1">
-          <div className="grid grid-cols-1 gap-4 pb-4 md:grid-cols-2 lg:grid-cols-3">
+        {/* Both layouts are rendered; CSS shows the one matching data-view, so
+            the SSR'd list already matches the visitor's saved preference. See
+            pending-grid-only / pending-row-only in styles.css. */}
+        <div className="pending-grid-only @container flex-1">
+          <div className="grid @min-[1024px]:grid-cols-3 @min-[768px]:grid-cols-2 grid-cols-1 gap-4 pb-4">
             {firstPage.map((font) => (
               <FontCard
                 key={font.id}
@@ -558,6 +573,20 @@ function FirstPagePending() {
             ))}
           </div>
           <SkeletonGrid view="grid" />
+        </div>
+        <div className="pending-row-only flex-1">
+          {firstPage.map((font) => (
+            <FontRow
+              key={font.id}
+              font={font}
+              previewText={previewText}
+              isFavorite={false}
+              onToggleFavorite={NOOP}
+              selection={FIRST_PAGE_SELECTION}
+              axisValues={EMPTY_AXES}
+            />
+          ))}
+          <SkeletonGrid view="row" />
         </div>
       </Column>
     </FilterLayout>

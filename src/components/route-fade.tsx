@@ -1,21 +1,34 @@
+import { useRouterState } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 import { MOTION_S } from "@/lib/motion";
 
 // Fades one route-specific content block IN when the route changes, leaving the
 // surrounding frame untouched. Used three times inside FilterLayout, around the
 // rail buttons, the sidebar panel, and the main area.
 //
-// FilterLayout re-mounts on a real route change (list <-> detail), so this
-// motion element mounts fresh and plays initial -> animate ONCE. Crucially it is
-// NOT keyed on anything that changes within a page: both pages re-render many
-// times while loading (deferred filter, glyph coverage, effects), and a keyed
-// element would re-mount and replay the fade on every one of those, reading as
-// repeated flashes. Un-keyed, those re-renders reconcile the same element and
-// never re-trigger the entry, only the route change (which re-mounts the whole
-// layout) does. `initial` opacity 0 means the new content never shows for a
-// frame before fading, so there's no blink. The one-time fade on first load /
-// hydration reads as a normal entrance.
+// The entry is driven by the PATHNAME, not by mounting, because mounting is not
+// a reliable signal for "the route changed":
+//
+//   * Mounting fires too often. The list swaps FirstPagePending -> Catalog when
+//     the client-side catalog resolves, and those are different component types,
+//     so React unmounts one subtree and mounts the other — FilterLayout and
+//     every RouteFade inside it included. Keyed on mount, the whole page faded
+//     out and back in mid-load, on top of the content swap. That double blink
+//     was the bug this keying fixes.
+//   * Mounting also fires on the very first paint, where an entry animation is
+//     actively harmful: Motion writes `initial` into the markup it renders, so
+//     the SSR HTML shipped with `opacity:0` on all three blocks and the page
+//     stayed blank until the JS bundle downloaded, hydrated and ran the fade.
+//
+// Keying on the pathname handles both. The module-level `lastPath` survives the
+// unmount/remount above, so a remount at the same URL renders with the content
+// already visible (`initial={false}`), while a genuine navigation sees a new
+// pathname and plays the fade once. It starts undefined, so the first render of
+// the session — server or client — also skips the animation and paints
+// immediately.
+let lastPath: string | undefined;
+
 export function RouteFade({
   className,
   children,
@@ -26,9 +39,19 @@ export function RouteFade({
   // The entry animation is disabled under prefers-reduced-motion via the
   // MotionConfig reducedMotion="user" wrapper in __root (it zeroes transform/
   // opacity transitions app-wide), so no per-component guard is needed here.
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  // Compared during render but committed in an effect: all three RouteFades in
+  // a layout render before any effect runs, so each one sees the same previous
+  // path and they agree on whether to fade. Committing during render would let
+  // whichever rendered first flip the flag and leave the other two static.
+  const changed = lastPath !== undefined && lastPath !== pathname;
+  useEffect(() => {
+    lastPath = pathname;
+  }, [pathname]);
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 6 }}
+      initial={changed ? { opacity: 0, y: 6 } : false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: MOTION_S.slow, ease: "easeOut" }}
       className={className}

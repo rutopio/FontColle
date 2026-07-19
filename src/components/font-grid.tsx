@@ -74,13 +74,20 @@ export function FontGrid({
   // (filter/search), not on every scroll-mount. We open a short window when
   // `fonts` changes and apply the animation class only during it.
   const [animating, setAnimating] = useState(false);
-  const firstRun = useRef(true);
+  // Timestamp of the first render, not a boolean. A single `firstRun` flag is
+  // not enough: the list feeds FontGrid from a useDeferredValue copy of the
+  // filter, so the initial load delivers `fonts` twice in quick succession (the
+  // urgent pass, then the deferred one). The second pass is a new array
+  // identity, the effect read it as a filter change, and every visible card
+  // played the entrance animation ~1.7s into the load — the whole grid
+  // flashing once the catalog resolved. Changes within this settle window are
+  // the initial fill; a real filter/search change always lands later, on user
+  // input.
+  const mountedAt = useRef(0);
+  if (mountedAt.current === 0) mountedAt.current = Date.now();
   // biome-ignore lint/correctness/useExhaustiveDependencies: `fonts` is the trigger, not read in the body, the effect fires on result-set change to open the entrance-animation window.
   useEffect(() => {
-    if (firstRun.current) {
-      firstRun.current = false;
-      return;
-    }
+    if (Date.now() - mountedAt.current < 500) return;
     setAnimating(true);
     const t = setTimeout(() => setAnimating(false), 260);
     return () => clearTimeout(t);

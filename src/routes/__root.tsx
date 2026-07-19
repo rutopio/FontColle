@@ -27,6 +27,15 @@ import appCss from "@/styles.css?url";
 // string, no user input.
 const themeScript = `try{var t=localStorage.theme;if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}`;
 
+// Same idea for the list's grid/row preference. The pending list is rendered
+// server-side, where localStorage is unreachable, so a row-mode visitor used to
+// get the grid layout (288px cards) and watch it swap to rows (112px) once the
+// catalog resolved and the real list read the preference. Stamping the value on
+// <html> before first paint lets CSS pick the right layout immediately; the
+// pending markup renders both variants and shows one, so no measurement or
+// hydration pass is involved. Mirrors the localStorage key in index/route.tsx.
+const viewScript = `try{var v=localStorage['font-colle.view'];document.documentElement.dataset.view=v==='row'?'row':'grid'}catch(e){document.documentElement.dataset.view='grid'}`;
+
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;
 }>()({
@@ -128,6 +137,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <head>
         {/* biome-ignore lint/security/noDangerouslySetInnerHtml: static themeScript, no user input; must run blocking in <head> pre-hydration. */}
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: static viewScript, no user input; must run blocking in <head> pre-hydration. */}
+        <script dangerouslySetInnerHTML={{ __html: viewScript }} />
         <HeadContent />
       </head>
       <body>
