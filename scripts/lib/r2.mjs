@@ -2,8 +2,8 @@
 // (data-manifest.json + fontcolle-assets bucket). No new npm deps: shells out to
 // the existing wrangler and uses node built-ins only.
 //
-// All commands need CLOUDFLARE_ACCOUNT_ID set to the ChingRu account that owns
-// the bucket, and --remote so they hit R2 rather than local miniflare storage.
+// All commands need CLOUDFLARE_ACCOUNT_ID set to the account that owns the
+// bucket, and --remote so they hit R2 rather than local miniflare storage.
 
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -14,11 +14,17 @@ export const ROOT = path.resolve(import.meta.dirname, "..", "..");
 export const BUCKET = "fontcolle-assets";
 export const MANIFEST_PATH = path.join(ROOT, "src/data/data-manifest.json");
 
-// wrangler resolves the account from CLOUDFLARE_ACCOUNT_ID; the dispatcher
-// verified the bucket lives on the ChingRu account below. An explicit env var
-// on the command keeps CI and local behaviour identical.
-const ACCOUNT_ID =
-  process.env.CLOUDFLARE_ACCOUNT_ID || "REDACTED_CLOUDFLARE_ACCOUNT_ID";
+// wrangler resolves the account from CLOUDFLARE_ACCOUNT_ID. Required, with no
+// fallback: an account id identifies a specific Cloudflare tenant, so baking
+// one in would both leak it and silently point a fork's uploads at someone
+// else's account. Failing loudly here beats a confusing wrangler auth error.
+const ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID;
+if (!ACCOUNT_ID) {
+  throw new Error(
+    "CLOUDFLARE_ACCOUNT_ID is not set. It must name the account that owns the " +
+      `${BUCKET} R2 bucket. Set it in .env (see .env.example) or in the environment.`
+  );
+}
 
 function wrangler(args, { input } = {}) {
   const res = spawnSync("npx", ["wrangler", ...args], {

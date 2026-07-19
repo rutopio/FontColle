@@ -2,7 +2,9 @@
 
 # FontColle
 
-![](/public/og/_default.png)
+▌　[https://fontcolle.com](https://fontcolle.com)　▐
+
+![](/cover.png)
 
 FontColle is an enhanced Google **Font**s **Colle**ction that filters OpenType features, variable-font axes, weight/width steps, writing systems, languages, and color vs. monochrome. Preview any weight or named instance live, edit the specimen text inline, and save favorites.
 
