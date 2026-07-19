@@ -21,9 +21,9 @@ const AXES: Record<
   {
     name: string;
     description: string;
-    // Named stops on the axis (e.g. CTRS: Reversed −100 / None 0 / High 100),
-    // from axisregistry. Empty for axes with no named fallbacks.
-    fallbacks?: { name: string; value: number }[];
+    // axes.json also carries `fallbacks` (the axis's named stops). Not declared
+    // here because this panel only shows the description; the detail page's Use
+    // tab still reads them (see routes/$tab.$fontId/-components/use/shared).
   }
 > = axesData;
 
@@ -154,20 +154,14 @@ export function VariableAxesSection({
             >
               <InfoIcon className="size-3.5" />
             </TooltipTrigger>
+            {/* Description only. The axis's named stops (wght's Thin 100 …
+                Black 900 and friends) used to be listed underneath, but on the
+                common axes that runs to nine entries and buries the sentence
+                that actually explains what the axis does. The slider reads as a
+                relative percent anyway, so the exact named values weren't
+                helping it. */}
             <TooltipContent className="max-w-xs normal-case">
               {info.description}
-              {info.fallbacks && info.fallbacks.length > 0 ? (
-                // Named stops on the axis, so the bare slider number reads as a
-                // labeled position (e.g. Reversed −100 · None 0 · High 100).
-                <span className="mt-1.5 block font-mono text-[11px] text-muted-foreground">
-                  {info.fallbacks.map((fb, i) => (
-                    <span key={fb.name}>
-                      {i > 0 ? " · " : ""}
-                      {fb.name} {fb.value}
-                    </span>
-                  ))}
-                </span>
-              ) : null}
             </TooltipContent>
           </Tooltip>
         ) : null}
