@@ -1,9 +1,9 @@
 {
   "version": 1,
   "fonts": {
-    "key": "fonts/2.json",
-    "seq": 2,
-    "sha256": "21ae03ffe3805fdc982c9e3d370a3d35251fe92ba06591f6359da0b96411e5d9",
+    "key": "fonts/3.json",
+    "seq": 3,
+    "sha256": "8c055379bf0f295f53f8abd0da80d228bf14415fed047f2b502cba67106b52ff",
     "bytes": 20994444
   },
   "glyphs": {
