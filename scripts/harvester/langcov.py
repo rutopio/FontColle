@@ -62,6 +62,11 @@ def _scripts():
     return gflanguages.LoadScripts()
 
 
+# Continent order the frontend renders in; mirrors LANGUAGE_REGIONS in
+# src/lib/fonts/labels.ts. "Other" (no mapped country) trails at the end.
+REGION_ORDER = ["Africa", "Americas", "Asia", "Europe", "Oceania", "Other"]
+
+
 @lru_cache(maxsize=1)
 def _country_region_group():
     """CLDR country code -> continent group (Africa/Americas/Asia/Europe/
@@ -73,34 +78,37 @@ def _country_region_group():
     return out
 
 
-def language_region(lang):
-    """Continent for a gflanguages language.
+def language_regions(lang):
+    """Every continent a gflanguages language is spoken on.
 
-    gflanguages' `region` is an alphabetical list of every country where the
-    language is spoken, with no indication of which one is primary, picking
-    its first entry put English in Oceania (AS, American Samoa) and Japanese in
-    the Americas (BR). Ranking that list by country population is no better:
-    India outweighs the US for English, Brazil outweighs Japan for Japanese.
+    gflanguages' `region` lists all countries where the language is spoken, so
+    mapping that list through region_group gives real multi-continent reach:
+    English -> Africa, Americas, Asia, Europe, Oceania. This is the same data
+    Google Fonts expands, which is why its specimen shows English under both
+    Americas and Europe.
 
-    So ask CLDR instead. Its likelySubtags maximizes a bare language code to
-    its primary territory (en -> en_Latn_US, ja -> ja_Jpan_JP, pt -> pt_Latn_BR),
-    which is exactly the "where is this language chiefly spoken" answer we want.
-    Fall back to the old first-country scan when CLDR has no opinion.
+    We used to collapse this to one continent via CLDR likelySubtags (en ->
+    en_Latn_US -> Americas). That answered "if we must pick one, which?" but
+    nothing required picking one, and it silently dropped four fifths of
+    English's footprint. Languages with no mapped country fall back to CLDR's
+    primary territory, then to "Other".
+
+    Returns continents in LANGUAGE_REGIONS order so the frontend can render
+    them without re-sorting.
     """
     groups = _country_region_group()
-    try:
-        territory = langcodes.Language.get(lang.language).maximize().territory
-    except Exception:
-        territory = None
-    if territory:
-        g = groups.get(territory)
+    found = {groups[c] for c in lang.region if c in groups}
+    if not found:
+        try:
+            territory = langcodes.Language.get(lang.language).maximize().territory
+        except Exception:
+            territory = None
+        g = groups.get(territory) if territory else None
         if g:
-            return g
-    for c in lang.region:
-        g = groups.get(c)
-        if g:
-            return g
-    return "Other"
+            found = {g}
+    if not found:
+        return ["Other"]
+    return [r for r in REGION_ORDER if r in found]
 
 
 @lru_cache(maxsize=1)
@@ -123,14 +131,18 @@ def script_name(code):
 
 
 def language_label_map():
-    """lang_id -> {name, script, population, region} for the frontend."""
+    """lang_id -> {name, script, population, regions} for the frontend.
+
+    `regions` is every continent the language is spoken on, so a language can
+    appear under several headings, matching Google Fonts.
+    """
     out = {}
     for lid, lang in _languages().items():
         out[lid] = {
             "name": lang.name,
             "script": lang.script,
             "population": lang.population or 0,
-            "region": language_region(lang),
+            "regions": language_regions(lang),
         }
     return out
 

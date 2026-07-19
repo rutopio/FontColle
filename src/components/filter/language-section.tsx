@@ -14,7 +14,8 @@ const TOP_N_PER_REGION = 10;
 // detail page's language accordion uses) rather than listed as one wall. Each
 // region shows its 10 most-spoken languages up front; the rest, 438 of them in
 // Africa alone, collapse behind that region's own expander, and the search box
-// reaches every one.
+// reaches every one. Grouping is many-to-many, so a language spoken on several
+// continents appears under each of them.
 export function LanguageSection({
   languages,
   selectedLanguages,
@@ -61,7 +62,7 @@ export function LanguageSection({
         canSort={languages.length > 1}
         sort={sort}
         onToggleSort={toggleSort}
-        info="Grouped by continent using each language's primary region in CLDR, matching Google Fonts. A language appears under one continent only, so widely spoken ones can land somewhere unexpected, English sits under Americas because its main territory is the US. Use search to find any language directly."
+        info="Grouped by continent, from the countries each language is spoken in. Widely spoken languages appear under every continent that applies, so English shows up under all five and the region counts add up to more than the total. Use search to find any language directly."
         mode={mode}
         onToggleMode={onToggleMode}
       />

@@ -9,7 +9,10 @@ import { Panel } from "./panel";
 
 // Read-only language support: languages grouped by continent into accordions
 // (Africa/Americas/Asia/Europe/Oceania), matching how the Google Fonts
-// specimen lists them. Writing systems live in the specs row on the detail tab.
+// specimen lists them. A language spoken on several continents is listed under
+// each, so the per-region counts sum to more than the panel's total; the panel
+// header keeps showing the true number of distinct languages.
+// Writing systems live in the specs row on the detail tab.
 export function LanguageSupport({ font }: { font: FontRecord }) {
   const regions = useMemo(
     () => groupLanguagesByRegion(font.languages),

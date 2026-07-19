@@ -9,7 +9,8 @@ export interface LanguageMeta {
   name: string;
   script: string;
   population: number;
-  region: string;
+  /** Every continent the language is spoken on, in LANGUAGE_REGIONS order. */
+  regions: string[];
 }
 
 // Continent buckets in the order Google Fonts lists them; "Other" (languages
@@ -49,23 +50,31 @@ export function languagePopulation(id: string): number {
   return languages[id]?.population ?? 0;
 }
 
-export function languageRegion(id: string): string {
-  return languages[id]?.region ?? "Other";
+/** Every continent a language is spoken on. Widely spoken languages return
+ *  several, so English lands under Africa, Americas, Asia, Europe and Oceania
+ *  just as it does on Google Fonts. */
+export function languageRegions(id: string): string[] {
+  const r = languages[id]?.regions;
+  return r && r.length > 0 ? r : ["Other"];
 }
 
-/** Bucket items by the continent of their language id, preserving input order
+/** Bucket items by the continents of their language id, preserving input order
  *  within each region and returning regions in LANGUAGE_REGIONS order. Empty
- *  regions are dropped. The shared core behind the two public groupers below. */
+ *  regions are dropped. The shared core behind the two public groupers below.
+ *
+ *  Membership is many-to-many: an item spoken on several continents is listed
+ *  under each, so the region counts deliberately sum to more than items.length. */
 function bucketByRegion<T>(
   items: T[],
   idOf: (item: T) => string
 ): { region: string; items: T[] }[] {
   const byRegion = new Map<string, T[]>();
   for (const item of items) {
-    const r = languageRegion(idOf(item));
-    const bucket = byRegion.get(r);
-    if (bucket) bucket.push(item);
-    else byRegion.set(r, [item]);
+    for (const r of languageRegions(idOf(item))) {
+      const bucket = byRegion.get(r);
+      if (bucket) bucket.push(item);
+      else byRegion.set(r, [item]);
+    }
   }
   return LANGUAGE_REGIONS.filter((r) => byRegion.has(r)).map((region) => ({
     region,
