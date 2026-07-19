@@ -21,7 +21,7 @@
       "!worker-configuration.d.ts",
       "!src/components/ui",
       "!src/styles.css",
-      "!src/data/fonts.json",
+      "!src/data",
       "!scripts/harvester/stress_output.json"
     ]
   },
