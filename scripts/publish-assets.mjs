@@ -7,13 +7,14 @@
 //     from scratch. Run once during migration.
 //
 //   node scripts/publish-assets.mjs --daily [--og-ids=<file>]
-//     Daily CI run after a harvest: uploads the new fonts.json as the next
-//     fonts/<seq>.json version, puts each changed OG png as a per-object delta,
-//     prunes old fonts versions (keeps KEEP_FONTS_VERSIONS), and rewrites the
-//     manifest. glyphs are untouched (the daily harvest never changes them).
+//     Daily CI run after a harvest: uploads the new fonts.json as
+//     fonts/<YYYYMMDD>.json, puts each changed OG png as a per-object delta, and
+//     rewrites the manifest. glyphs are untouched (the daily harvest never
+//     changes them). Old fonts versions are NOT pruned here: an R2 lifecycle
+//     rule on the fonts/ prefix expires them (see FONTS_RETENTION_DAYS below).
 //
 // Asset layout in the bucket:
-//   fonts/<seq>.json          versioned fonts.json (seq increments daily)
+//   fonts/<YYYYMMDD>.json     dated fonts.json snapshot (one per changed day)
 //   glyphs/glyphs.tar.gz      seed tarball of every public/glyphs/*.json
 //   og/og.tar.gz              seed tarball of the OG base set
 //   og/<id>.png               daily deltas layered over the base tarball
@@ -23,14 +24,20 @@
 
 import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { BUCKET, MANIFEST_PATH, ROOT, r2Put, sha256File } from "./lib/r2.mjs";
+import { MANIFEST_PATH, ROOT, r2Put, sha256File } from "./lib/r2.mjs";
 import { makeTar } from "./lib/tar.mjs";
 
 // R2 free tier is 10 GB and each fonts.json is ~21 MB, so unbounded daily
-// versions would fill it in ~1.3 years. 30 versions ≈ 630 MB keeps a month of
-// rollback headroom while staying comfortably free. Older versions are deleted
-// after each daily publish.
-const KEEP_FONTS_VERSIONS = 30;
+// versions would fill it in ~1.3 years. A lifecycle rule on the fonts/ prefix
+// expires objects after 30 days (≈630 MB), keeping a month of rollback headroom
+// while staying comfortably free. Apply it with:
+//
+//   npx wrangler r2 bucket lifecycle add fontcolle-assets \
+//     expire-fonts-versions fonts/ --expire-days 30
+//
+// Retention is enforced by R2, not by this script: dated keys are sparse (no
+// snapshot on days the catalog did not change), so nothing here can enumerate
+// what to delete without listing the bucket.
 
 const FONTS_JSON = path.join(ROOT, "src/data/fonts.json");
 const GLYPHS_DIR = path.join(ROOT, "public/glyphs");
@@ -47,12 +54,18 @@ function writeManifest(m) {
   console.log(`[publish] wrote manifest ${MANIFEST_PATH}`);
 }
 
-function putFontsVersion(seq) {
-  const key = `fonts/${seq}.json`;
+// UTC keeps the key aligned with the workflow's 00:00 UTC schedule, so a run
+// never straddles a local-timezone date boundary.
+function today() {
+  return new Date().toISOString().slice(0, 10).replace(/-/g, "");
+}
+
+function putFontsVersion(date) {
+  const key = `fonts/${date}.json`;
   r2Put(key, FONTS_JSON);
   const entry = {
     key,
-    seq,
+    date,
     sha256: sha256File(FONTS_JSON),
     bytes: statSync(FONTS_JSON).size,
   };
@@ -70,7 +83,7 @@ function putSeedTarball(dir, key) {
 }
 
 async function seed() {
-  const fonts = putFontsVersion(1);
+  const fonts = putFontsVersion(today());
   const glyphs = putSeedTarball(GLYPHS_DIR, "glyphs/glyphs.tar.gz");
   const ogBase = putSeedTarball(OG_DIR, "og/og.tar.gz");
   writeManifest({
@@ -92,9 +105,9 @@ async function daily(ogIdsFile) {
   const manifest = readManifest();
   if (!manifest) throw new Error("no manifest; run --seed first");
 
-  // Next fonts version.
-  const seq = manifest.fonts.seq + 1;
-  const fonts = putFontsVersion(seq);
+  // Today's snapshot. A same-day rerun (workflow_dispatch) overwrites it, which
+  // is intended: the newest harvest for a given day is the one worth keeping.
+  const fonts = putFontsVersion(today());
 
   // OG deltas: only the changed families (og_ids.txt). Each becomes a per-object
   // put layered over the base tarball. Accumulate into the manifest's delta set
@@ -119,25 +132,6 @@ async function daily(ogIdsFile) {
     og: { ...manifest.og, deltas: [...deltas].sort() },
   };
   writeManifest(next);
-
-  // Prune old fonts versions beyond the retention window. Deletes are best
-  // effort: a failed delete only wastes storage, it never corrupts the manifest.
-  const oldest = seq - KEEP_FONTS_VERSIONS;
-  for (let s = oldest; s >= 1; s--) {
-    const key = `fonts/${s}.json`;
-    try {
-      const { spawnSync } = await import("node:child_process");
-      const res = spawnSync(
-        "npx",
-        ["wrangler", "r2", "object", "delete", `${BUCKET}/${key}`, "--remote"],
-        { cwd: ROOT, env: process.env, stdio: "ignore" }
-      );
-      if (res.status === 0) console.log(`[publish] pruned ${key}`);
-      else break; // once a version is gone, older ones already are too
-    } catch {
-      break;
-    }
-  }
 }
 
 const args = process.argv.slice(2);

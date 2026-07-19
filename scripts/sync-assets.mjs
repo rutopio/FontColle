@@ -1,7 +1,8 @@
 // Pulls the data assets that live in R2 (per src/data/data-manifest.json) back
 // into place so a build or local dev has them:
 //
-//   src/data/fonts.json   <- fonts/<seq>.json (the manifest's current version)
+//   src/data/fonts.json   <- fonts/<YYYYMMDD>.json (the snapshot the manifest
+//                            points at)
 //   public/glyphs/*.json  <- glyphs/glyphs.tar.gz (extracted)
 //   public/og/*.png       <- og/og.tar.gz (extracted) + og/<id>.png deltas
 //

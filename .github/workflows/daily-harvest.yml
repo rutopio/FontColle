@@ -116,10 +116,11 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          # Upload the new fonts.json as the next fonts/<seq>.json version and the
-          # changed OG cards as per-object deltas, prune old fonts versions, and
-          # rewrite src/data/data-manifest.json to point at the new version. This
-          # runs AFTER the shrinkage guard (which read the old manifest baseline).
+          # Upload the new fonts.json as fonts/<YYYYMMDD>.json and the changed OG
+          # cards as per-object deltas, then rewrite src/data/data-manifest.json
+          # to point at the new snapshot. Old versions are expired by an R2
+          # lifecycle rule on the fonts/ prefix, not by this step. This runs
+          # AFTER the shrinkage guard (which read the old manifest baseline).
           node scripts/publish-assets.mjs --daily --og-ids=scripts/harvester/og_ids.txt
 
       - name: Commit updated manifest
