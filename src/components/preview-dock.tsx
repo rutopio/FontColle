@@ -43,6 +43,11 @@ function PreviewField() {
   return (
     <>
       <Input
+        // The cards and rows preview this text with dir="auto", so the field
+        // feeding them has to derive direction the same way: typing Arabic or
+        // Hebrew here should read right-to-left as you type, not sit LTR while
+        // every preview below flips.
+        dir="auto"
         value={draft}
         onChange={(e) => commit(e.target.value)}
         placeholder="Type to preview across all fonts…"

@@ -386,7 +386,12 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
                 className="flex-1 text-muted-foreground text-sm"
                 aria-live="polite"
               >
-                {results.length} {results.length === 1 ? "font" : "fonts"}
+                {/* Mono on the number only: it changes on every filter tick,
+                    and tabular digits keep the label beside it from shifting.
+                    The word stays proportional so the line still reads as
+                    prose. */}
+                <span className="font-mono tabular-nums">{results.length}</span>{" "}
+                {results.length === 1 ? "font" : "fonts"}
               </span>
               <SortControl
                 sort={sort}

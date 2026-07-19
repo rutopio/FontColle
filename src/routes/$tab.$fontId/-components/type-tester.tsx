@@ -20,7 +20,7 @@ export function TypeTester({
       ariaLabel="preview text"
       multiline
       buttonClassName="w-full cursor-text break-words text-start leading-tight"
-      fieldClassName="field-sizing-content w-full resize-none break-words bg-transparent leading-tight outline-none"
+      fieldClassName="field-sizing-content w-full resize-none break-words bg-transparent text-start leading-tight outline-none"
     />
   );
 }
