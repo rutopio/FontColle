@@ -1,6 +1,6 @@
 import { CaretDownIcon } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from "motion/react";
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useId, useMemo, useState } from "react";
 import { Separator } from "@/components/ui/separator";
 import { groupLanguagesByRegion, languageLabel } from "@/lib/fonts/labels";
 import type { FontRecord } from "@/lib/fonts/types";
@@ -40,6 +40,8 @@ function RegionAccordion({
   defaultOpen: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
+  // Names the collapsed region so aria-expanded has something to point at.
+  const panelId = useId();
 
   return (
     <div>
@@ -47,9 +49,11 @@ function RegionAccordion({
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
+        aria-controls={panelId}
         className="flex w-full items-center gap-2 py-2.5 text-left text-sm"
       >
         <CaretDownIcon
+          aria-hidden="true"
           className={cn("size-3.5 transition-transform", !open && "-rotate-90")}
         />
         <span className="font-medium">{region}</span>
@@ -58,26 +62,30 @@ function RegionAccordion({
         </span>
       </button>
       {/* Motion collapses the region open/closed by animating height auto <-> 0;
-          overflow-hidden clips the content while it slides. */}
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-            className="overflow-hidden"
-          >
-            <div className="grid grid-cols-4 gap-x-3 gap-y-1 pb-3 text-sm">
-              {ids.map((id) => (
-                <span key={id} className="truncate text-muted-foreground">
-                  {languageLabel(id)}
-                </span>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          overflow-hidden clips the content while it slides. The id sits on this
+          always-mounted wrapper rather than the motion child, so the button's
+          aria-controls still resolves while the region is collapsed. */}
+      <div id={panelId}>
+        <AnimatePresence initial={false}>
+          {open && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="overflow-hidden"
+            >
+              <div className="grid grid-cols-4 gap-x-3 gap-y-1 pb-3 text-sm">
+                {ids.map((id) => (
+                  <span key={id} className="truncate text-muted-foreground">
+                    {languageLabel(id)}
+                  </span>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }

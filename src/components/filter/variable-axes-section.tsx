@@ -1,6 +1,6 @@
 import { CaretDownIcon, type Icon, InfoIcon } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from "motion/react";
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { EditableValue } from "@/components/ui/editable-value";
 import { Slider } from "@/components/ui/slider";
 import {
@@ -73,6 +73,8 @@ export function VariableAxesSection({
   flashKey?: number;
 }) {
   const [showMore, setShowMore] = useState(false);
+  // Names the collapsed tail row so the toggle's aria-expanded has a target.
+  const tailId = useId();
   const hasSelection = items.some(([value]) => selected.includes(value));
 
   // Grouping is by count only, never by selection, so selecting an axis in the
@@ -248,32 +250,39 @@ export function VariableAxesSection({
         {rare.length > 0 && (
           <>
             {/* Motion collapses the rare tail by animating height auto <-> 0;
-                overflow-hidden clips it while closed. */}
-            <AnimatePresence initial={false}>
-              {showMore && (
-                <motion.div
-                  key="tail"
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.2, ease: "easeOut" }}
-                  className="overflow-hidden"
-                >
-                  <div className="flex flex-col gap-1.5">
-                    {rare.map(renderRow)}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                overflow-hidden clips it while closed. The id sits on this
+                always-mounted wrapper rather than the motion child, so the
+                toggle's aria-controls resolves while the tail is collapsed. */}
+            <div id={tailId}>
+              <AnimatePresence initial={false}>
+                {showMore && (
+                  <motion.div
+                    key="tail"
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                    className="overflow-hidden"
+                  >
+                    <div className="flex flex-col gap-1.5">
+                      {rare.map(renderRow)}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
             {/* Selected tail axes, kept visible below the top rows while the
                 tail is collapsed. */}
             {pinned.map(renderRow)}
             <button
               type="button"
               onClick={() => setShowMore((v) => !v)}
+              aria-expanded={showMore}
+              aria-controls={tailId}
               className="flex w-fit items-center gap-1 text-muted-foreground text-xs hover:text-foreground"
             >
               <CaretDownIcon
+                aria-hidden="true"
                 className={cn(
                   "size-3 transition-transform",
                   showMore && "rotate-180"

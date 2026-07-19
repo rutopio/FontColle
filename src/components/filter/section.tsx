@@ -1,6 +1,6 @@
 import { CaretDownIcon, type Icon } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from "motion/react";
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useId, useMemo, useState } from "react";
 import {
   Tooltip,
   TooltipContent,
@@ -136,6 +136,8 @@ export function Pills({
   expandAll?: boolean;
 }) {
   const [showRare, setShowRare] = useState(false);
+  // Names the collapsed rare row so the toggle's aria-expanded has a target.
+  const rareId = useId();
 
   const isRare = ([value, count]: [string, number]) => {
     if (expandAll) return false;
@@ -198,27 +200,34 @@ export function Pills({
       {rare.length > 0 && (
         <>
           {/* Motion collapses the rare row by animating height auto <-> 0;
-              overflow-hidden clips the content while it slides. */}
-          <AnimatePresence initial={false}>
-            {showRare && (
-              <motion.div
-                key="rare"
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-                className="overflow-hidden"
-              >
-                <div className={rowClass}>{rare.map(renderPill)}</div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+              overflow-hidden clips the content while it slides. The id sits on
+              this always-mounted wrapper rather than the motion child, so the
+              toggle's aria-controls resolves while the row is collapsed. */}
+          <div id={rareId}>
+            <AnimatePresence initial={false}>
+              {showRare && (
+                <motion.div
+                  key="rare"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  className="overflow-hidden"
+                >
+                  <div className={rowClass}>{rare.map(renderPill)}</div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
           <button
             type="button"
             onClick={() => setShowRare((v) => !v)}
+            aria-expanded={showRare}
+            aria-controls={rareId}
             className="flex w-fit items-center gap-1 text-muted-foreground text-xs hover:text-foreground"
           >
             <CaretDownIcon
+              aria-hidden="true"
               className={cn(
                 "size-3 transition-transform",
                 showRare && "rotate-180"
