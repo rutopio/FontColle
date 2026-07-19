@@ -82,7 +82,7 @@ export function ActiveFilterChips({
               .map((v) => v.value)
               .join(` ${group.joiner} `)}`}
           >
-            <span className="opacity-60">{group.section}</span>
+            <span className="opacity-60">{group.section} | </span>
             {/* Values joined by the section's combine word; the joiner is muted
                 like the section label and flips with the OR/AND toggle. */}
             {group.values.map((v, i) => (
