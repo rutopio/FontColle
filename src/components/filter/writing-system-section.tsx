@@ -38,6 +38,11 @@ export function WritingSystemSection({
 
   return (
     <FacetSearchSection
+      // Not "Script": the Category cards already use that word for the Google
+      // Fonts /Script/ class (handwriting-style faces), and that string is a
+      // stored filter value, not just a label. Two different "Script" filters in
+      // one panel would be worse than a longer title, which the header now
+      // truncates rather than wrapping.
       title="Writing system"
       icon={GlobeIcon}
       items={items}

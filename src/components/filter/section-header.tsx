@@ -158,16 +158,21 @@ export function SectionHeader({
         initial={flashKey ? { color: "var(--color-amber-500)" } : false}
         animate={{ color: "var(--color-primary)" }}
         transition={{ duration: 0.9, ease: "easeOut" }}
-        className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase"
+        // min-w-0 + truncate: the action slot on the right is shrink-0, and
+        // once a section has a selection it carries both the Any/All toggle and
+        // Reset. Without this the title is the only flexible item and wraps to a
+        // second line, growing the header's height the moment you pick a value.
+        // Shrinking the title instead keeps every section header one row tall.
+        className="flex min-w-0 items-center gap-1.5 font-medium text-primary text-sm uppercase"
       >
-        <Icon className="size-4" />
-        {title}
+        <Icon className="size-4 shrink-0" />
+        <span className="truncate">{title}</span>
         {info ? (
           <Tooltip>
             <TooltipTrigger
               type="button"
               aria-label={`About ${title}`}
-              className="text-muted-foreground transition-colors hover:text-foreground"
+              className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
             >
               <InfoIcon className="size-3.5" />
             </TooltipTrigger>
