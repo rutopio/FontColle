@@ -1,18 +1,20 @@
-import { GoogleLogoIcon } from "@phosphor-icons/react";
-import { FLAG_LABELS } from "@/lib/fonts/filter";
+import { DresserIcon } from "@phosphor-icons/react";
+import { REPO_HOST_LABELS } from "@/lib/fonts/filter";
 import { PillButton } from "./pill-button";
 import { SectionHeader } from "./section-header";
 
-// Source filter: Noto / Others, two per row. Radio-style, at most one, and
-// they partition the catalog (every published family is Noto or not). Selecting
-// one clears the other; re-clicking the active one clears it.
-export function SourceSection({
+// Repository-host filter: GitHub / GitLab / SourceHut / None, two per row.
+// Multi-select with OR semantics, a family matches when its repository_url's
+// host is one of the selected buckets. Every family maps to exactly one bucket
+// (no repo -> None), so the four pills partition the catalog. Order is fixed
+// (None trails), from the facet index.
+export function RepositorySection({
   items,
   selected,
   onToggle,
   onReset,
 }: {
-  // [flagId, count], e.g. ["noto", 200]. Fixed order.
+  // [hostId, count], e.g. ["github", 1993]. Fixed order.
   items: [string, number][];
   selected: string[];
   onToggle: (v: string) => void;
@@ -21,8 +23,8 @@ export function SourceSection({
   return (
     <div className="flex flex-col gap-2">
       <SectionHeader
-        title="Noto Family"
-        icon={GoogleLogoIcon}
+        title="Repository"
+        icon={DresserIcon}
         hasSelection={selected.length > 0}
         onReset={onReset}
         canSort={false}
@@ -35,7 +37,7 @@ export function SourceSection({
             key={value}
             value={value}
             count={count}
-            label={FLAG_LABELS[value] ?? value}
+            label={REPO_HOST_LABELS[value] ?? value}
             selected={selected.includes(value)}
             onToggle={onToggle}
             className="min-w-0"

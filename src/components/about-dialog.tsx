@@ -40,7 +40,7 @@ function AboutHeading({
     // against the mark, as it does there.
     <div className="flex flex-wrap items-center justify-center gap-2 text-primary">
       <LogoIcon className="size-8" />
-      <Title className="translate-y-1 font-mono text-xl tracking-tight">
+      <Title className="translate-y-0.5 font-mono text-xl tracking-tight">
         {SITE_NAME}
       </Title>
     </div>

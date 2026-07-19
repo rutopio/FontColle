@@ -29,7 +29,6 @@ import { facetLabel, weightLabel, widthLabel } from "./constants";
 import { DesignerSection } from "./designer-section";
 import { FeatureSection } from "./feature-section";
 import { FontTypeSection } from "./font-type-section";
-import { GithubSection } from "./github-section";
 import type { FilterGroupId } from "./groups";
 import { LanguageSection } from "./language-section";
 import { LicenseSection } from "./license-section";
@@ -38,9 +37,10 @@ import {
   MetricsSection,
   UnitsPerEmSection,
 } from "./metrics-section";
+import { NotoSection } from "./noto-section";
 import { RadioPillSection } from "./radio-pill-section";
+import { RepositorySection } from "./repository-section";
 import { Section } from "./section";
-import { SourceSection } from "./source-section";
 import { VariableAxesSection } from "./variable-axes-section";
 import { WritingSystemSection } from "./writing-system-section";
 
@@ -407,7 +407,7 @@ export function FilterSidebar({
             )}
             {group === "designer" && (
               <>
-                <SourceSection
+                <NotoSection
                   items={index.flags}
                   selected={filter.flags}
                   onToggle={(v) => onChange(actions.selectFlag(filter, v))}
@@ -436,7 +436,7 @@ export function FilterSidebar({
                   onToggle={(v) => toggle("license", v)}
                   onReset={() => onChange({ ...filter, license: [] })}
                 />
-                <GithubSection
+                <RepositorySection
                   items={index.repoHosts}
                   selected={filter.repoHosts}
                   onToggle={(v) => toggle("repoHosts", v)}
