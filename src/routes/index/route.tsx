@@ -148,7 +148,7 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
   const { text: previewText } = usePreview();
   const { favorites, toggle } = useFavorites();
 
-  const { listScrollY } = useFilter();
+  const { listScrollY, lastGroup } = useFilter();
   const facetIndex = useMemo(() => buildFacetIndex(fonts), [fonts]);
 
   // The results list scrolls inside the Column's ScrollArea viewport, not the
@@ -174,11 +174,17 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
   // Commit a filter change to the URL. Preserves the non-filter view modes
   // (sort, favorites) that live in the URL alongside the filter but aren't part
   // of it. replace: true so intermediate taps don't stack history entries.
-  const commitFilter = (next: FilterState) =>
+  const commitFilter = (next: FilterState) => {
+    // Drop the slider position of any axis this change deselects, so a Reset
+    // (or a single-pill clear, or the Static font-type wipe) sends the slider
+    // back to its 50% default instead of resurrecting the old position the
+    // next time that axis is picked.
+    pruneAxisValues(next.axes);
     navigate({
       search: { ...filterToSearch(next), sort: search.sort, fav: search.fav },
       replace: true,
     });
+  };
 
   // Relative position (0-100%) per selected variable-axis tag, from the
   // sidebar sliders. Session-only UI state, not URL-synced: there's no
@@ -187,8 +193,31 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
   const [axisValues, setAxisValues] = useState<Record<string, number>>({});
   const setAxisValue = (tag: string, pct: number) =>
     setAxisValues((s) => ({ ...s, [tag]: pct }));
-  // Which filter group the sidebar panel shows. Session-only UI state.
-  const [group, setGroup] = useState<FilterGroupId>(DEFAULT_FILTER_GROUP);
+  // Keep only the tags still selected. Returns the same object when nothing was
+  // dropped, so an unrelated filter change doesn't re-render the preview grid.
+  const pruneAxisValues = (nextAxes: string[]) =>
+    setAxisValues((s) => {
+      const keep = new Set(nextAxes);
+      const stale = Object.keys(s).filter((tag) => !keep.has(tag));
+      if (stale.length === 0) return s;
+      const out = { ...s };
+      for (const tag of stale) delete out[tag];
+      return out;
+    });
+  // Which filter group the sidebar panel shows. Session-only UI state, seeded
+  // from the context ref so returning from a font's detail page reopens the
+  // panel you left (the route unmounts on that trip, so plain useState would
+  // reset to Style every time). Position within the panel isn't restored.
+  const [group, setGroupState] = useState<FilterGroupId>(
+    () => lastGroup.current ?? DEFAULT_FILTER_GROUP
+  );
+  const setGroup = useCallback(
+    (next: FilterGroupId) => {
+      lastGroup.current = next;
+      setGroupState(next);
+    },
+    [lastGroup]
+  );
   // View mode is a personal-device preference, kept in localStorage rather than
   // the URL so a shared link never forces the recipient into your grid/row
   // choice. Sort stays in the URL, it can carry result meaning worth sharing.
