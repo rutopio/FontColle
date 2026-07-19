@@ -1,16 +1,6 @@
-import {
-  createContext,
-  type ReactNode,
-  useContext,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { emptyFilter, type FilterState } from "@/lib/fonts/filter";
+import { createContext, type ReactNode, useContext, useRef } from "react";
 
 interface FilterContextValue {
-  filter: FilterState;
-  setFilter: (next: FilterState) => void;
   // Last known list scroll position. A ref (not state) because it's read/written
   // imperatively around navigation and must never trigger a re-render. Restoring
   // it manually is more reliable than router scrollRestoration for the window
@@ -20,16 +10,17 @@ interface FilterContextValue {
 
 const FilterContext = createContext<FilterContextValue | null>(null);
 
-// Shares the active filter across the app, mirroring PreviewProvider. The list
-// page keeps this in sync with its URL (the source of truth for sharable
-// links); the detail page reads it so its sidebar reflects what's selected,
-// even though the detail URL carries no filter params.
+// Carries the list's scroll position across list <-> detail navigation (the
+// detail URL has no filter params, so the list restores its own state on
+// return). The ref-in-context never changes identity, so the provider never
+// re-renders consumers.
 export function FilterProvider({ children }: { children: ReactNode }) {
-  const [filter, setFilter] = useState<FilterState>(emptyFilter);
   const listScrollY = useRef(0);
-  const value = useMemo(() => ({ filter, setFilter, listScrollY }), [filter]);
+  const value = useRef<FilterContextValue>({ listScrollY });
   return (
-    <FilterContext.Provider value={value}>{children}</FilterContext.Provider>
+    <FilterContext.Provider value={value.current}>
+      {children}
+    </FilterContext.Provider>
   );
 }
 

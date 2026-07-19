@@ -146,7 +146,7 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
   const { text: previewText } = usePreview();
   const { favorites, toggle } = useFavorites();
 
-  const { setFilter: setSharedFilter, listScrollY } = useFilter();
+  const { listScrollY } = useFilter();
   const facetIndex = useMemo(() => buildFacetIndex(fonts), [fonts]);
 
   // The results list scrolls inside the Column's ScrollArea viewport, not the
@@ -244,12 +244,6 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
       replace: true,
     });
   }, [debouncedFilter, navigate]);
-
-  // Mirror the pending filter into shared context so the detail page's sidebar
-  // reflects what's selected on the list without waiting on the deferred pass.
-  useEffect(() => {
-    setSharedFilter(filter);
-  }, [filter, setSharedFilter]);
 
   useListScrollRestore(scrollRef, listScrollY);
 

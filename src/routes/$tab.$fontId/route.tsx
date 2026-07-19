@@ -270,17 +270,15 @@ function DetailPage() {
     setSearchMiss(false);
   };
 
-  // Once coverage loads (or the font changes), pin the active block to the
-  // first covered one unless the current selection is still valid, the font
-  // may not cover Basic Latin, so there's no fixed default.
-  useEffect(() => {
-    if (coveredBlocks.length === 0) return;
-    setGlyphBlock((prev) =>
-      coveredBlocks.some((c) => c.block.name === prev)
-        ? prev
-        : coveredBlocks[0].block.name
-    );
-  }, [coveredBlocks]);
+  // Active block, derived: the user's pick while the font covers it, else the
+  // first covered one (the font may not cover Basic Latin, so there's no fixed
+  // default). Derived rather than effect-corrected so coverage loading or a
+  // font change never renders a stale selection.
+  const activeGlyphBlock = coveredBlocks.some(
+    (c) => c.block.name === glyphBlock
+  )
+    ? glyphBlock
+    : (coveredBlocks[0]?.block.name ?? "");
 
   // The Specimen/Glyphs sidebar panel, reused by both the desktop sidebar slot
   // and the mobile ControlsDrawer, so the two stay in sync (state lives here on
@@ -292,7 +290,7 @@ function DetailPage() {
       <GlyphsSidebar
         blocks={coveredBlocks}
         loading={glyphLoading}
-        active={glyphBlock}
+        active={activeGlyphBlock}
         onSelect={selectGlyphBlock}
         onSearch={searchGlyph}
         searchMiss={searchMiss}
@@ -334,7 +332,7 @@ function DetailPage() {
         italic={italic}
         onLoadInstance={loadInstance}
         featureState={featureState}
-        glyphBlock={glyphBlock}
+        glyphBlock={activeGlyphBlock}
         glyphRanges={ranges}
         glyphLoading={glyphLoading}
         glyphHighlightCp={highlightCp}
