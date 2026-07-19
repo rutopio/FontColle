@@ -226,13 +226,14 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
   useListScrollRestore(scrollRef, listScrollY);
 
   // Sort writes the URL immediately, it's cheap and doesn't gate on the
-  // deferred filter. It carries the current filter along so the URL keeps a
-  // consistent shape.
+  // deferred filter. It carries the current filter and the favorites view
+  // along so the URL keeps a consistent shape.
   const setSort = (next: SortKey) => {
     navigate({
       search: {
         ...filterToSearch(filter),
         sort: next === DEFAULT_SORT ? undefined : next,
+        fav: search.fav,
       },
       replace: true,
     });
