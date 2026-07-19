@@ -90,6 +90,12 @@ jobs:
 
       - name: Guard against catalog shrinkage
         if: steps.update.outputs.changed == 'true'
+        env:
+          # The guard imports scripts/lib/r2.mjs (for the manifest helpers),
+          # which requires an account id at module load even when it makes no
+          # remote call. Every step that touches r2.mjs needs these.
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           # A harvest that loses 20%+ of the dataset almost certainly means an
           # upstream fetch failed, not a real removal. Fail before publishing so
