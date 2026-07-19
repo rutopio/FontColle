@@ -28,16 +28,29 @@ export function Panel({
       {hasHeader && (
         <>
           <div className="p-4">
-            <div className="flex items-baseline justify-between">
+            <div
+              className={cn(
+                "flex justify-between",
+                // A count sits on the label's baseline; an action is an icon
+                // button, which reads right only when centered on the label.
+                action ? "items-center" : "items-baseline"
+              )}
+            >
               <h2 className="font-medium text-muted-foreground text-xs uppercase">
                 {label}
               </h2>
-              {action ??
-                (count != null && (
+              {/* An action is usually a size-6 button, taller than the xs label
+                  beside it. Collapse the overflow so a panel with an action is
+                  the same height as one with a count or nothing at all. */}
+              {action ? (
+                <div className="-my-1 flex items-center">{action}</div>
+              ) : (
+                count != null && (
                   <span className="font-mono text-muted-foreground text-xs">
                     {count}
                   </span>
-                ))}
+                )
+              )}
             </div>
           </div>
           <Separator />
