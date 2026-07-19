@@ -109,7 +109,9 @@ export function VariableAxesSection({
           animate={{ flexBasis: on ? "33.333333%" : "100%" }}
           transition={{ duration: 0.2, ease: "easeOut" }}
           className={cn(
-            "flex min-w-0 flex-1 items-center justify-between gap-1 rounded-md border px-2.5 py-1 text-xs transition-[border-color,background-color] duration-200 ease-out",
+            // Height matches PillButton: taller tap target on mobile, compact
+            // on desktop.
+            "flex min-h-9 min-w-0 flex-1 items-center justify-between gap-1 rounded-md border px-2.5 py-2 text-xs transition-[border-color,background-color] duration-200 ease-out md:min-h-0 md:py-1",
             disabled && "cursor-not-allowed",
             on ? "border-primary bg-muted" : "border-input",
             !disabled && !on && "hover:border-foreground/40"
