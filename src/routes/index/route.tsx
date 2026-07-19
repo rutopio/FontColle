@@ -7,7 +7,14 @@ import {
 } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { ActiveFilterChips } from "@/components/filter/active-filter-chips";
 import { FilterDrawer } from "@/components/filter/filter-drawer";
 import { FilterRail } from "@/components/filter/filter-rail";
@@ -52,16 +59,10 @@ import { DEFAULT_SORT, type SortKey, sortFonts } from "@/lib/fonts/sort";
 import type { FontRecord } from "@/lib/fonts/types";
 import { usePreview } from "@/lib/preview/context";
 import { absoluteUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
-import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { useListScrollRestore } from "@/lib/use-list-scroll-restore";
 import { useLocalStorageState } from "@/lib/use-local-storage-state";
 import { cn } from "@/lib/utils";
 import { SortControl } from "./-components/sort-control";
-
-// How long the filter must stay unchanged before the catalog is re-filtered.
-// Long enough to coalesce a burst of chip removals (and avoid a skeleton/empty
-// flash between them), short enough to feel immediate on a single change.
-const FILTER_DEBOUNCE_MS = 200;
 
 export const Route = createFileRoute("/")({
   component: App,
@@ -155,35 +156,28 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
   // The search field, so the "/" shortcut can focus it.
   const searchRef = useRef<HTMLInputElement>(null);
 
-  // Two-layer filter state so tapping a pill feels instant and stays decoupled
-  // from the expensive re-filter of the whole catalog:
-  //  - `filter` (pending) updates synchronously on every tap, driving the pills,
-  //    rail, chips and active count so the UI responds immediately.
-  //  - `debouncedFilter` trails it: the heavy applyFilters + grid re-render run
-  //    only once the input settles, so a burst of changes (e.g. removing several
-  //    chips in a row) coalesces into one recompute. During the settle window
-  //    the previous results stay on screen, so the list never flashes a skeleton
-  //    or a transient "no results" between two chips.
-  //  - the URL is only rewritten once filtering settles (see the effect below),
-  //    keeping it shareable without paying a navigation on every tap.
-  const [filter, setFilter] = useState<FilterState>(() =>
-    searchToFilter(search)
-  );
-  const debouncedFilter = useDebouncedValue(filter, FILTER_DEBOUNCE_MS);
+  // The URL search params are the single source of truth for the filter. Every
+  // interaction commits straight to the URL via commitFilter (a replace: true
+  // navigation, cheap because the loader has no loaderDeps and doesn't re-run),
+  // so back/forward and shared links Just Work with no state<->URL sync loop.
+  //  - `filter` is derived from `search`, so it reflects the live URL and drives
+  //    everything that must respond instantly: pills, rail, chips, active count,
+  //    the search input and the sort write.
+  //  - `deferredFilter` trails it (useDeferredValue): the heavy applyFilters +
+  //    grid re-render run against this deferred copy, so React keeps the previous
+  //    results on screen while a burst of changes settles. The list never
+  //    flashes a skeleton or a transient "no results" between two chips.
+  const filter = useMemo(() => searchToFilter(search), [search]);
+  const deferredFilter = useDeferredValue(filter);
 
-  // Pull external URL changes (back/forward, a shared link) back into the
-  // pending filter. Guarded by a serialized compare so our own URL writes,
-  // which make `search` match `filter`, don't loop back in.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: compare against the live `filter` without making it a trigger; only `search` should drive this.
-  useEffect(() => {
-    const fromUrl = searchToFilter(search);
-    if (
-      JSON.stringify(filterToSearch(fromUrl)) !==
-      JSON.stringify(filterToSearch(filter))
-    ) {
-      setFilter(fromUrl);
-    }
-  }, [search]);
+  // Commit a filter change to the URL. Preserves the non-filter view modes
+  // (sort, favorites) that live in the URL alongside the filter but aren't part
+  // of it. replace: true so intermediate taps don't stack history entries.
+  const commitFilter = (next: FilterState) =>
+    navigate({
+      search: { ...filterToSearch(next), sort: search.sort, fav: search.fav },
+      replace: true,
+    });
 
   // Relative position (0-100%) per selected variable-axis tag, from the
   // sidebar sliders. Session-only UI state, not URL-synced: there's no
@@ -213,7 +207,7 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
   // flash for what is just a heart toggle).
   const favDep = favOnly ? favorites : null;
   const results = useMemo(() => {
-    const matched = applyFilters(fonts, debouncedFilter);
+    const matched = applyFilters(fonts, deferredFilter);
     const filtered = favDep
       ? matched.filter((f) => favDep.includes(f.id))
       : matched;
@@ -221,35 +215,19 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
     // With a search query, surface the best textual matches first (ignoring the
     // sort dropdown for ranking), then fall back to the chosen sort as the
     // tiebreaker. Stable sort keeps the sorted order within equal-relevance ties.
-    if (!debouncedFilter.query.trim()) return sorted;
+    if (!deferredFilter.query.trim()) return sorted;
     return [...sorted].sort(
       (a, b) =>
-        queryRelevance(b, debouncedFilter.query) -
-        queryRelevance(a, debouncedFilter.query)
+        queryRelevance(b, deferredFilter.query) -
+        queryRelevance(a, deferredFilter.query)
     );
-  }, [fonts, debouncedFilter, sort, favDep]);
-
-  // Write the settled filter to the URL once filtering catches up, so the URL
-  // stays shareable without a navigation on every intermediate tap. Guarded so
-  // it only fires when the URL's filter part actually differs.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: `search` is read to compare, not to trigger; the settled `debouncedFilter` is the trigger.
-  useEffect(() => {
-    const next = filterToSearch(debouncedFilter);
-    const cur = filterToSearch(searchToFilter(search));
-    if (JSON.stringify(next) === JSON.stringify(cur)) return;
-    navigate({
-      // Preserve the non-filter view modes (sort, favorites) that live in the
-      // URL alongside the filter but aren't part of it.
-      search: { ...next, sort: search.sort, fav: search.fav },
-      replace: true,
-    });
-  }, [debouncedFilter, navigate]);
+  }, [fonts, deferredFilter, sort, favDep]);
 
   useListScrollRestore(scrollRef, listScrollY);
 
   // Sort writes the URL immediately, it's cheap and doesn't gate on the
-  // deferred filter. It carries the current pending filter along so the URL
-  // keeps a consistent shape.
+  // deferred filter. It carries the current filter along so the URL keeps a
+  // consistent shape.
   const setSort = (next: SortKey) => {
     navigate({
       search: {
@@ -261,8 +239,16 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
   };
 
   const setView = (next: ViewMode) => setViewPref(next);
-  // Clear every filter and the search query, keeping only display prefs.
-  const reset = useCallback(() => setFilter(emptyFilter), []);
+  // Clear every filter and the search query, keeping only display prefs. Writes
+  // the emptied filter straight to the URL, carrying sort/fav along.
+  const reset = useCallback(
+    () =>
+      navigate({
+        search: { sort: search.sort, fav: search.fav },
+        replace: true,
+      }),
+    [navigate, search.sort, search.fav]
+  );
 
   // Toggle the favorites-only view, matching the rail's heart link: drop the
   // param when leaving, set it when entering, keeping the rest of the search.
@@ -307,7 +293,6 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
   // Leave the favorites view and clear filters, landing on the full catalog,
   // the CTA shown when there are no favorites yet.
   const discoverFonts = () => {
-    setFilter(emptyFilter);
     navigate({ search: { sort: search.sort }, replace: true });
   };
 
@@ -336,7 +321,7 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
         <FilterSidebar
           index={facetIndex}
           filter={filter}
-          onChange={setFilter}
+          onChange={commitFilter}
           group={group}
           axisValues={axisValues}
           onAxisValueChange={setAxisValue}
@@ -351,7 +336,7 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
               <SearchInput
                 inputRef={searchRef}
                 query={filter.query}
-                onQueryChange={(query) => setFilter({ ...filter, query })}
+                onQueryChange={(query) => commitFilter({ ...filter, query })}
               />
               {(activeCount > 0 || hasQuery) && (
                 <Button
@@ -375,7 +360,7 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
               <SortControl
                 sort={sort}
                 onChange={setSort}
-                relevance={debouncedFilter.query.trim().length > 0}
+                relevance={filter.query.trim().length > 0}
               />
 
               <Tabs value={view} onValueChange={(v) => setView(v as ViewMode)}>
@@ -436,7 +421,7 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
             {filter.query.trim() && (
               <button
                 type="button"
-                onClick={() => setFilter({ ...filter, query: "" })}
+                onClick={() => commitFilter({ ...filter, query: "" })}
                 className="flex items-center gap-1.5 rounded-md border border-input px-2.5 py-1 text-muted-foreground text-xs transition-colors hover:border-foreground hover:text-foreground"
                 aria-label={`Remove search: ${filter.query.trim()}`}
               >
@@ -451,7 +436,7 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
                 Did you mean{" "}
                 <button
                   type="button"
-                  onClick={() => setFilter({ ...filter, query: suggestion })}
+                  onClick={() => commitFilter({ ...filter, query: suggestion })}
                   className="font-medium text-foreground underline decoration-muted-foreground/50 hover:decoration-foreground"
                 >
                   {suggestion}
@@ -459,7 +444,7 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
                 ?
               </p>
             )}
-            <ActiveFilterChips filter={filter} onChange={setFilter} />
+            <ActiveFilterChips filter={filter} onChange={commitFilter} />
             {favOnly ? (
               <Button variant="outline" onClick={discoverFonts}>
                 Discover Font
@@ -474,7 +459,7 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
           <>
             <ActiveFilterChips
               filter={filter}
-              onChange={setFilter}
+              onChange={commitFilter}
               align="left"
             />
             <FontGrid
@@ -483,7 +468,7 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
               favorites={favorites}
               onToggleFavorite={toggle}
               view={view}
-              selection={debouncedFilter}
+              selection={deferredFilter}
               axisValues={axisValues}
               scrollRef={scrollRef}
             />
@@ -495,7 +480,7 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
       <FilterDrawer
         index={facetIndex}
         filter={filter}
-        onChange={setFilter}
+        onChange={commitFilter}
         group={group}
         onGroupChange={setGroup}
         axisValues={axisValues}
