@@ -521,6 +521,30 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
   );
 }
 
+// Placeholder for the list header while the catalog loads. The wrapper classes
+// mirror Catalog's real header exactly (search row, then the count/sort/view
+// row), because the Column header is flex-wrap: on mobile the real header wraps
+// to two rows, so a one-row skeleton would let the header grow the moment the
+// catalog resolved and push the whole list down. Each block stands in for the
+// control at that position, at its real height (h-9 search, h-8 sort and tabs).
+const HEADER_SKELETON = (
+  <>
+    <div className="flex items-center gap-2 max-md:w-full">
+      <div className="h-9 w-72 animate-pulse rounded-lg bg-muted max-md:w-full max-md:min-w-0 max-md:flex-1 xl:w-96" />
+    </div>
+    <div className="ml-auto flex items-center gap-2 max-md:ml-0 max-md:w-full max-md:justify-between md:gap-3">
+      {/* The real count span is flex-1, so it owns the slack and pushes sort +
+          tabs to the right edge; the pulse block inside keeps a text-sized bar
+          rather than stretching across that whole slack. */}
+      <div className="flex-1">
+        <div className="h-5 w-20 animate-pulse rounded bg-muted" />
+      </div>
+      <div className="h-8 w-28 animate-pulse rounded-lg bg-muted" />
+      <div className="h-8 w-20 animate-pulse rounded-lg bg-muted" />
+    </div>
+  </>
+);
+
 // Shown while the catalog loader runs (a slow catalog.json fetch). Reuses the app shell,
 // rail + empty sidebar + Column header/footer, with a skeleton grid body, so a
 // slow load reads as the page filling in rather than a blank or spinner. The
@@ -529,12 +553,7 @@ function ListPending() {
   return (
     <FilterLayout sidebar={<div className="size-full" />}>
       <Column
-        header={
-          <>
-            <div className="h-9 w-72 max-w-full animate-pulse rounded-lg bg-muted" />
-            <div className="ml-auto h-6 w-24 animate-pulse rounded bg-muted" />
-          </>
-        }
+        header={HEADER_SKELETON}
         footer={<PreviewBar />}
       >
         <SkeletonGrid view="grid" />
@@ -576,12 +595,7 @@ function FirstPagePending() {
   return (
     <FilterLayout sidebar={<div className="size-full" />}>
       <Column
-        header={
-          <>
-            <div className="h-9 w-72 max-w-full animate-pulse rounded-lg bg-muted" />
-            <div className="ml-auto h-6 w-24 animate-pulse rounded bg-muted" />
-          </>
-        }
+        header={HEADER_SKELETON}
         footer={<PreviewBar />}
       >
         {/* Both layouts are rendered; CSS shows the one matching data-view, so

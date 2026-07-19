@@ -221,10 +221,18 @@ export function SkeletonGrid({ view }: { view: ViewMode }) {
       ))}
     </div>
   ) : (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {keys.map((k) => (
-        <SkeletonCard key={k} />
-      ))}
+    // Container queries, not md:/lg: viewport breakpoints: the real grid gets
+    // its column count from columnsFor(container width), and the filter panel
+    // narrows the list well below the matching viewport breakpoint. At 1440px
+    // the list is ~1000px and the real grid picks 2 columns while `lg:` would
+    // put 3 here, so the skeleton reflowed the moment the cards took over.
+    // Breakpoints mirror columnsFor's.
+    <div className="@container">
+      <div className="grid @min-[1024px]:grid-cols-3 @min-[768px]:grid-cols-2 grid-cols-1 gap-4">
+        {keys.map((k) => (
+          <SkeletonCard key={k} />
+        ))}
+      </div>
     </div>
   );
 }
@@ -247,8 +255,10 @@ function SkeletonCard() {
 
 function SkeletonLine() {
   return (
-    <div className="flex h-28 flex-col justify-center gap-3 border-b">
-      <div className="h-3 w-40 animate-pulse rounded bg-muted" />
+    // px-2 mirrors FontRow's inner rows, so the bars start on the same x as the
+    // real name/preview text instead of flush against the panel edge.
+    <div className="flex h-28 flex-col justify-center gap-3 border-b px-2">
+      <div className="h-3 w-40 max-w-[60%] animate-pulse rounded bg-muted" />
       <div className="h-7 w-2/3 animate-pulse rounded bg-muted" />
     </div>
   );
