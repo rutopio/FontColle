@@ -13,15 +13,21 @@ export interface LanguageMeta {
   regions: string[];
 }
 
-// Continent buckets in the order Google Fonts lists them; "Other" (languages
-// with no CLDR region) trails at the end when present.
+// Continent buckets in the order Google Fonts lists them. These strings are
+// both the bucket keys and the headings the UI renders, and they must match
+// REGION_ORDER in scripts/harvester/langcov.py, which stamps them into
+// languages.json; a rename on one side alone silently empties the bucket.
+// NO_LANGUAGE_REGION collects languages tied to no country, meaning constructed
+// ones like Volapük and extinct ones like Prussian, and trails at the end.
+export const NO_LANGUAGE_REGION = "Constructed & historical";
+
 export const LANGUAGE_REGIONS = [
   "Africa",
   "Americas",
   "Asia",
   "Europe",
   "Oceania",
-  "Other",
+  NO_LANGUAGE_REGION,
 ] as const;
 
 const scripts = scriptsRaw as Record<string, string>;
@@ -55,7 +61,7 @@ export function languagePopulation(id: string): number {
  *  just as it does on Google Fonts. */
 export function languageRegions(id: string): string[] {
   const r = languages[id]?.regions;
-  return r && r.length > 0 ? r : ["Other"];
+  return r && r.length > 0 ? r : [NO_LANGUAGE_REGION];
 }
 
 /** Bucket items by the continents of their language id, preserving input order

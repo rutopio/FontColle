@@ -63,8 +63,12 @@ def _scripts():
 
 
 # Continent order the frontend renders in; mirrors LANGUAGE_REGIONS in
-# src/lib/fonts/labels.ts. "Other" (no mapped country) trails at the end.
-REGION_ORDER = ["Africa", "Americas", "Asia", "Europe", "Oceania", "Other"]
+# src/lib/fonts/labels.ts, which must be kept in sync since these strings are
+# both the bucket keys and the headings the UI renders. NO_REGION trails at the
+# end and holds languages tied to no country: constructed ones like Volapuek and
+# extinct ones like Old Prussian.
+NO_REGION = "Constructed & historical"
+REGION_ORDER = ["Africa", "Americas", "Asia", "Europe", "Oceania", NO_REGION]
 
 
 @lru_cache(maxsize=1)
@@ -91,7 +95,9 @@ def language_regions(lang):
     en_Latn_US -> Americas). That answered "if we must pick one, which?" but
     nothing required picking one, and it silently dropped four fifths of
     English's footprint. Languages with no mapped country fall back to CLDR's
-    primary territory, then to "Other".
+    primary territory, then to NO_REGION; CLDR maximizes constructed and
+    extinct languages to territory 001 ("World"), which is not a country and so
+    has no continent, which is exactly the right answer for them.
 
     Returns continents in LANGUAGE_REGIONS order so the frontend can render
     them without re-sorting.
@@ -107,7 +113,7 @@ def language_regions(lang):
         if g:
             found = {g}
     if not found:
-        return ["Other"]
+        return [NO_REGION]
     return [r for r in REGION_ORDER if r in found]
 
 
