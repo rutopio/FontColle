@@ -85,13 +85,13 @@ export function FontGrid({
   // input.
   const mountedAt = useRef(0);
   if (mountedAt.current === 0) mountedAt.current = Date.now();
-  // biome-ignore lint/correctness/useExhaustiveDependencies: `fonts` is the trigger, not read in the body, the effect fires on result-set change to open the entrance-animation window.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `fonts`/`view` are the triggers, not read in the body, the effect fires on result-set or layout change to open the entrance-animation window.
   useEffect(() => {
     if (Date.now() - mountedAt.current < 500) return;
     setAnimating(true);
     const t = setTimeout(() => setAnimating(false), 260);
     return () => clearTimeout(t);
-  }, [fonts]);
+  }, [fonts, view]);
 
   useLayoutEffect(() => {
     const measure = () => {
@@ -171,7 +171,11 @@ export function FontGrid({
           // first font's id forces a correct remount.
           return (
             <div
-              key={rowFonts[0]?.id ?? row.key}
+              // `view` is part of the key so a grid<->row switch remounts the
+              // row. Without it the key is identical across the switch, React
+              // reuses the DOM node, and a CSS animation on a reused element
+              // never restarts — the entrance would silently no-op.
+              key={`${view}-${rowFonts[0]?.id ?? row.key}`}
               data-index={row.index}
               style={{
                 position: "absolute",
