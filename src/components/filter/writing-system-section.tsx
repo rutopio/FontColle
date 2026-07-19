@@ -8,6 +8,12 @@ import { FacetSearchSection } from "./facet-search-section";
 // list lives inline: pills show the top 10 by real-world speaker population
 // (summed per script from gflanguages), the rest sit behind a "N more"
 // expander, and a search box filters across all of them.
+//
+// Note the two rankings pull apart: population picks which pills show, but
+// FacetSearchSection orders them by font count. So Simplified Han (1.3B
+// writers, 10 fonts) earns a pill yet lands last, while Greek (135 fonts) is
+// collapsed. That is deliberate, ranking exposure by font count would bury
+// every non-Latin system; the info tooltip explains it to the user.
 export function WritingSystemSection({
   scripts,
   selectedScripts,
@@ -39,6 +45,7 @@ export function WritingSystemSection({
       onToggle={onToggleScript}
       onReset={onResetScripts}
       searchPlaceholder="Search writing systems"
+      info="The 10 most spoken writing systems show up front, ranked by how many people write in them, then sorted by how many fonts support each. The two rankings differ, so a widely written system with few fonts still gets a pill while a well-served one like Greek can sit behind “N more”. Use search to reach any of them."
       rankBy={scriptPopulation}
       topN={10}
       mode={mode}
