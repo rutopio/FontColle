@@ -75,10 +75,17 @@ export function AppSidebar({
 
       {/* Second sidebar: the page's own panel, filling the remaining width. The
           panel provides its own ScrollArea for scrolling, the Sidebar's
-          flex-col h-full gives it a bounded height to scroll within. */}
+          flex-col h-full gives it a bounded height to scroll within.
+
+          min-w-0 is load-bearing: as a flex item this defaults to
+          min-width:auto, so however wide its content wants to be wins over
+          flex-basis:0. Expanding a long list (Variable axes' "more") pushed it
+          from its 318px share to 365px inside a 391px sidebar and the panel
+          spilled out. With min-w-0 it keeps its share and the content wraps or
+          truncates inside instead. */}
       <Sidebar
         collapsible="none"
-        className="hidden flex-1 bg-background md:flex"
+        className="hidden min-w-0 flex-1 bg-background md:flex"
       >
         {children}
       </Sidebar>
