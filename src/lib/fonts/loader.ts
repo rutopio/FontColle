@@ -96,11 +96,13 @@ export function ensureFontLoaded(family: string, weights: number[]) {
 }
 
 /**
- * Load a family for the detail-page tester: request the *full* range of each
- * registered axis (wght/wdth/opsz/…) so sliders can move across the whole space.
- * css2 needs the axes listed alphabetically with lowercase-before-uppercase
- * tags; we only send registered lowercase axes it accepts (custom axes like GRAD
- * still animate via font-variation-settings on the variable file css2 returns).
+ * Load a family as a VARIABLE file: request the *full* range of every axis it
+ * declares (wght/wdth/opsz plus custom tags like MORF/GRAD) so both the
+ * detail-page tester and the list's sidebar sliders can move across the whole
+ * space. Requesting the ranges is what guarantees css2 serves the variable
+ * file — the bare `?family=<name>` form yields a static instance instead.
+ * Tags must be listed lowercase-before-uppercase, alphabetical within each
+ * group (see axisSortKey).
  */
 export function ensureFontRangeLoaded(
   family: string,
@@ -112,9 +114,20 @@ export function ensureFontRangeLoaded(
   if (loaded.has(key)) return;
   loaded.add(key);
 
-  const registered = axes
-    .filter((a) => /^[a-z]{4}$/.test(a.tag) && a.min != null && a.max != null)
-    .sort((a, b) => a.tag.localeCompare(b.tag));
+  // Every axis with a real range, not just the registered lowercase ones. css2
+  // accepts custom uppercase tags too (verified against MORF/EDPT/EHLT), and
+  // asking for them is what makes the variable file explicit: a family whose
+  // only axes are custom (Kablammo/MORF, Nabla/EDPT+EHLT, 13 in the catalog)
+  // would otherwise fall through to the bare `?family=<name>` form, the exact
+  // request css2 answers with a static single-instance face.
+  //
+  // css2 requires tags sorted lowercase-before-uppercase, each group
+  // alphabetical, so sort on that key rather than a plain localeCompare.
+  const variableAxes = axes
+    .filter(
+      (a) => /^[a-zA-Z]{4}$/.test(a.tag) && a.min != null && a.max != null
+    )
+    .sort((a, b) => axisSortKey(a.tag).localeCompare(axisSortKey(b.tag)));
 
   // css2 wants the `ital` dimension expressed as a tuple prefix: with an italic
   // cut we request both ital=0 (upright) and ital=1 so the tester can switch.
@@ -122,10 +135,13 @@ export function ensureFontRangeLoaded(
   // still serves under ital=1. Tags must be listed alphabetically; `ital` sorts
   // before the lowercase axes, so it leads the tuple.
   let spec = encodeFamily(family);
-  if (hasItalic || registered.length) {
+  if (hasItalic || variableAxes.length) {
     const dims = [
       ...(hasItalic ? [{ tag: "ital", values: "0;1" }] : []),
-      ...registered.map((a) => ({ tag: a.tag, values: `${a.min}..${a.max}` })),
+      ...variableAxes.map((a) => ({
+        tag: a.tag,
+        values: `${a.min}..${a.max}`,
+      })),
     ];
     if (hasItalic) {
       // With ital present, every dimension becomes a tuple axis: css2 needs a
@@ -140,15 +156,29 @@ export function ensureFontRangeLoaded(
         .join(",");
       spec = `${spec}:${tags}@${upright};${italic}`;
     } else {
-      const tags = registered.map((a) => a.tag).join(",");
-      const ranges = registered.map((a) => `${a.min}..${a.max}`).join(",");
+      const tags = variableAxes.map((a) => a.tag).join(",");
+      const ranges = variableAxes.map((a) => `${a.min}..${a.max}`).join(",");
       spec = `${spec}:${tags}@${ranges}`;
     }
   }
-  appendLink(`https://fonts.googleapis.com/css2?family=${spec}&display=block`);
-  // Plain fallback in case the range spec is rejected for some family.
+  // The plain `?family=<name>` form is a fallback ONLY, never appended
+  // alongside: css2 answers it with a static single-instance face (font-weight:
+  // 400, no axis ranges) under the same family name. Appended unconditionally it
+  // came second and won the cascade, so the browser rendered a file with no axes
+  // and font-variation-settings had nothing to act on — the sidebar's opsz/wght
+  // sliders moved nothing in the list, while the detail tester (which never
+  // loaded that second sheet) worked.
+  //
+  // It still has to exist: a few catalog entries are marked variable but have no
+  // such axis upstream (Capriola), or the family was retired, and css2 answers
+  // the range spec with 400. Waiting for the error keeps the static face out of
+  // the cascade in the normal case while still rendering *something* there.
   appendLink(
-    `https://fonts.googleapis.com/css2?family=${encodeFamily(family)}&display=block`
+    `https://fonts.googleapis.com/css2?family=${spec}&display=block`,
+    () =>
+      appendLink(
+        `https://fonts.googleapis.com/css2?family=${encodeFamily(family)}&display=block`
+      )
   );
 }
 
@@ -156,9 +186,19 @@ function encodeFamily(family: string) {
   return family.trim().replace(/\s+/g, "+");
 }
 
-function appendLink(href: string) {
+// css2 rejects a spec whose axis tags aren't sorted lowercase-first, then
+// alphabetically within each case group ("opsz,wght,GRAD", never "GRAD,opsz").
+// Prefixing the case makes one localeCompare produce that order.
+function axisSortKey(tag: string): string {
+  return `${/^[a-z]/.test(tag) ? "0" : "1"}${tag}`;
+}
+
+function appendLink(href: string, onError?: () => void) {
   const link = document.createElement("link");
   link.rel = "stylesheet";
   link.href = href;
+  // A stylesheet <link> fires `error` when the response isn't usable CSS, which
+  // is how a rejected axis spec (css2 400s it) reaches us.
+  if (onError) link.addEventListener("error", onError, { once: true });
   document.head.appendChild(link);
 }

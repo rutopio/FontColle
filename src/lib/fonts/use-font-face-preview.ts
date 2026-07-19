@@ -6,7 +6,7 @@ import {
   previewFontFamily,
   useFontLoaded,
 } from "@/lib/fonts/loader";
-import { variationSettings } from "@/lib/fonts/preview-style";
+import { opticalSizing, variationSettings } from "@/lib/fonts/preview-style";
 import type { FontRecord } from "@/lib/fonts/types";
 import { usePreviewCoords } from "@/lib/fonts/use-preview-coords";
 import { MOTION } from "@/lib/motion";
@@ -53,6 +53,9 @@ export function useFontFacePreview(
     fontWeight: activeWeight,
     fontStyle: previewItalic ? "italic" : undefined,
     fontVariationSettings: settings || undefined,
+    // Without this an explicit opsz coord is ignored: the browser's default
+    // `auto` drives the axis from the rendered font-size instead.
+    fontOpticalSizing: opticalSizing(variationCoords),
     // Opt out of the app's <html> tracking: non-zero letter-spacing suppresses
     // ligatures, and a preview must show the font as it is. See previewStyle
     // in ./preview-style for the full reasoning.

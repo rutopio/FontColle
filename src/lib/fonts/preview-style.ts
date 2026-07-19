@@ -35,6 +35,19 @@ export function previewStyle({
     fontWeight: coords.wght ? Math.round(coords.wght) : undefined,
     fontStyle: italic ? "italic" : undefined,
     fontVariationSettings: settings || undefined,
+    // See opticalSizing: an explicit opsz coord is inert while the browser's
+    // default `auto` keeps driving the axis from the rendered font-size.
+    fontOpticalSizing: opticalSizing(coords),
     letterSpacing: "normal",
   };
+}
+
+/** `font-optical-sizing` for a coord set. Browsers default it to `auto`, which
+ *  ties the `opsz` axis to the rendered font-size and silently overrides any
+ *  `opsz` in `font-variation-settings` — so the sidebar's opsz slider moved the
+ *  value but nothing on screen changed. Switching to `none` while opsz is being
+ *  driven explicitly hands the axis back to the slider. Left `auto` otherwise,
+ *  where automatic optical sizing is the correct default. */
+export function opticalSizing(coords: Record<string, number>): "auto" | "none" {
+  return "opsz" in coords ? "none" : "auto";
 }
