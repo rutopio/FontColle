@@ -11,6 +11,10 @@
 //   public/designer-index.json   - {id, name, designer}[] for published families
 //                                   (the detail page's Designer tab buckets these
 //                                   by designer name, client-side).
+//   public/catalog-slim.json     - every published family projected to the
+//                                   query-relevant fields (~2 MB vs the full
+//                                   13 MB), for LLM agents. Documented in
+//                                   public/llms.txt, unused by the app itself.
 //   public/catalog-first.json    - the first ~24 full FontRecords in the home
 //                                   page's DEFAULT sort order (popularity). The
 //                                   index loader returns just this slice so the
@@ -104,6 +108,63 @@ export async function genCatalog() {
   );
   console.log(
     `[catalog] wrote designer-index.json (${(indexJson.length / 1024).toFixed(0)} KB)`
+  );
+
+  // Slim catalog for LLM / agent consumption (documented in public/llms.txt).
+  // The full catalog is ~13 MB, past any model's context window, so an agent
+  // asked "find me a playful variable sans" can only use it by downloading and
+  // scripting over it. This projection keeps every field a semantic query
+  // filters or ranks on and drops the bulk: `languages` (~9 KB per record, the
+  // single fattest field), `instances`, `about`, `versionHistory`,
+  // `designerProfiles`, `specimen`, `licenseHeader`, and the raw vertical
+  // metrics that `metrics.ts` only reads to derive ratios from.
+  //
+  // `axes` flattens to its tags: an agent filtering "has a wght axis" needs the
+  // tag, not each axis's min/max/default. Full per-axis ranges stay in
+  // catalog.json and the per-font files.
+  //
+  // `tags` (Google Fonts classification scores, 0-100) is kept in full rather
+  // than thresholded at the UI's >= 50: the scores are what make ranking by
+  // "how playful" possible, and keeping them costs only ~0.2 MB.
+  const slim = fonts.map((f) => ({
+    id: f.id,
+    name: f.name,
+    designer: f.designer ?? null,
+    class: f.class,
+    license: f.license,
+    isVariable: f.isVariable,
+    isMonospace: f.isMonospace,
+    isNoto: f.isNoto,
+    weights: f.weights,
+    widthClass: f.widthClass,
+    unitsPerEm: f.unitsPerEm,
+    axes: (f.axes ?? []).map((a) => a.tag),
+    features: f.features,
+    facets: f.facets,
+    subsets: f.subsets,
+    scripts: f.scripts,
+    colorTables: f.colorTables,
+    glyphCount: f.glyphCount,
+    fileSize: f.fileSize,
+    contrast: f.contrast,
+    xHeight: f.xHeight,
+    capHeight: f.capHeight,
+    avgCharWidth: f.avgCharWidth,
+    popularityRank: f.popularityRank,
+    trendingRank: f.trendingRank,
+    dateAdded: f.dateAdded,
+    repositoryUrl: f.repositoryUrl,
+    vendorId: f.vendorId,
+    tags: f.tags ?? {},
+  }));
+  const slimJson = JSON.stringify(slim);
+  await writeFile(
+    path.join(ROOT, "public/catalog-slim.json"),
+    slimJson,
+    "utf8"
+  );
+  console.log(
+    `[catalog] wrote catalog-slim.json (${slim.length} records, ${(slimJson.length / 1024 / 1024).toFixed(1)} MB)`
   );
 
   // First-page SSR slice: the first FIRST_PAGE_SIZE full FontRecords in the home

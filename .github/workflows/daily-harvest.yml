@@ -156,6 +156,11 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # Build-time only: gen-sitemap.mjs skips sitemap.xml + llms.txt
+          # without it, and the absolute-URL SEO fields (canonical, og:url,
+          # JSON-LD) are omitted. wrangler.jsonc's `vars` comes too late, it
+          # only reaches the deployed Worker, not this build.
+          VITE_SITE_URL: https://fontcolle.com
         run: |
           # The data assets are already in place: the pre-harvest sync restored
           # them and the harvest updated them (build.mjs re-syncs if missing).

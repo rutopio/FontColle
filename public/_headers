@@ -33,6 +33,9 @@
 /catalog-first.json
   Cache-Control: public, max-age=3600
 
+/catalog-slim.json
+  Cache-Control: public, max-age=3600
+
 /catalog/*
   Cache-Control: public, max-age=3600
 

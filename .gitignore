@@ -28,6 +28,7 @@ scripts/harvester/og_ids.txt
 # data the site serves in place of a database.
 /public/catalog.json
 /public/catalog-first.json
+/public/catalog-slim.json
 /public/catalog/
 /public/catalog-v/
 /public/catalog-manifest.json
