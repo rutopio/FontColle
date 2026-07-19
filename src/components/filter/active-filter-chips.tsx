@@ -30,11 +30,43 @@ export function ActiveFilterChips({
   align?: "center" | "left";
 }) {
   const groups = groupActiveFilters(filter);
-  if (groups.length === 0) return null;
+  // The empty state ("center") collapses outright: there is no grid under it to
+  // shift, so an unmount costs nothing.
+  if (groups.length === 0 && align === "center") return null;
+  // In the list ("left") the row stays mounted even while empty, and animates
+  // its own height instead. Unmounting it meant the first chip mounted a fresh
+  // AnimatePresence — `initial: false` only suppresses children added to an
+  // existing container, so that chip still faded in — and the row's height went
+  // 0 -> ~28px in one frame, snapping the grid down under it. Keeping the
+  // container alive fixes the flash; animating height turns the push into a
+  // transition. Collapsed it is height 0 with no margin, so it takes up nothing.
+  const filled = groups.length > 0;
   return (
-    <div
+    <motion.div
+      // `height: auto` rather than a fixed value, so a wrapped second row of
+      // chips animates to its real height too.
+      //
+      // The parent list is `flex flex-col gap-4 md:gap-6`, so this row is a flex
+      // child even at height 0 and still contributes a full gap — which sat
+      // under the header and pushed the grid permanently down once the row
+      // stopped unmounting. Collapsing marginBottom by the same amount cancels
+      // that gap, restoring the original spacing when there are no chips.
+      animate={{
+        height: filled ? "auto" : 0,
+        marginBottom: filled ? 0 : "calc(var(--chip-row-gap) * -1)",
+      }}
+      initial={false}
+      // Asymmetric on purpose: opening animates, so the grid is pushed down
+      // rather than snapping. Closing is instant — an animated collapse drags
+      // the whole list upward for 200ms after the chip is already gone, which
+      // reads as the page lurching rather than as the row tidying itself away.
+      transition={{ duration: filled ? MOTION_S.base : 0, ease: "easeOut" }}
+      // The chips would otherwise paint outside the collapsed box mid-animation.
+      style={{ overflow: "hidden" }}
       className={cn(
-        "flex flex-wrap gap-1.5",
+        // --chip-row-gap mirrors the parent's gap-4 / md:gap-6 so the negative
+        // margin above cancels exactly, at both breakpoints.
+        "flex flex-wrap gap-1.5 [--chip-row-gap:1rem] md:[--chip-row-gap:1.5rem]",
         align === "center" ? "max-w-2xl justify-center" : "justify-start"
       )}
     >
@@ -63,6 +95,6 @@ export function ActiveFilterChips({
           </motion.button>
         ))}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 }
