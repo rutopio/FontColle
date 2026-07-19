@@ -11,15 +11,12 @@
 
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+// Imported, not mirrored: site-meta.ts is import-free and touches no
+// import.meta.env, so node's type stripping can load it here. llms.txt reuses
+// the same summary.
+import { SITE_DESCRIPTION, SITE_NAME } from "../src/lib/site-meta.ts";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
-
-// Kept in sync with src/lib/site.ts (that module reads import.meta.env, so it
-// can't be imported from a plain node script). llms.txt reuses the same summary.
-const SITE_NAME = "FontColle";
-const SITE_DESCRIPTION =
-  "An enhanced Google Fonts collection that filters by real OpenType features, " +
-  "variable axes, weight, writing systems, and color, and saves your favorites.";
 
 // Mirror src/lib/fonts/slug.ts fontSlug: spaces -> underscores (case kept).
 const fontSlug = (name) => name.replace(/ /g, "_");

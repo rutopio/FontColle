@@ -4,18 +4,25 @@
 
 ![](/public/og/_default.png)
 
-An enhanced Google Fonts collection that filters OpenType features, variable-font axes, weight/width steps, writing systems, languages, and color vs. monochrome. Preview any weight or named instance live, edit the specimen text inline, and save favorites.
+FontColle is an enhanced Google **Font**s **Colle**ction that filters OpenType features, variable-font axes, weight/width steps, writing systems, languages, and color vs. monochrome. Preview any weight or named instance live, edit the specimen text inline, and save favorites.
 
 
 ![TanStack Start](https://img.shields.io/badge/TanStack_Start-FF4154?style=flat&logo=react&logoColor=white)
 ![React 19](https://img.shields.io/badge/React_19-61DAFB?style=flat&logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
-![Cloudflare Workers](https://img.shields.io/badge/Cloudflare_Workers-F38020?style=flat&logo=cloudflare&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)
+
+
 ![Tailwind CSS v4](https://img.shields.io/badge/Tailwind_CSS_v4-06B6D4?style=flat&logo=tailwindcss&logoColor=white)
 ![shadcn/ui](https://img.shields.io/badge/shadcn%2Fui-000000?style=flat&logo=shadcnui&logoColor=white)
 ![Vite 8](https://img.shields.io/badge/Vite_8-646CFF?style=flat&logo=vite&logoColor=white)
 ![Biome](https://img.shields.io/badge/Biome-60A5FA?style=flat&logo=biome&logoColor=white)
-![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)
+
+
+Host on ![Cloudflare Workers](https://img.shields.io/badge/Cloudflare_Workers-F38020?style=flat&logo=cloudflare&logoColor=white)
+
+
+[![Daily incremental harvest](https://github.com/rutopio/FontColle/actions/workflows/daily-harvest.yml/badge.svg)](https://github.com/rutopio/FontColle/actions/workflows/daily-harvest.yml)
 
 
 </div>
@@ -111,3 +118,11 @@ Font metadata errors (wrong tags, missing languages, bad axis ranges) are best r
 MIT, covering this project's own code and metadata index only.
 
 The fonts listed in this project are not distributed here; every font file and download links out to Google Fonts. Each font remains under its own license (SIL Open Font License, Apache 2.0, Ubuntu Font License, etc.) as declared by its original authors and foundries. Check a family's license before using it.
+
+---
+
+<div align="center">
+
+Made by [ChingRu(@rutopio)](https://chingru.com)
+
+</div>

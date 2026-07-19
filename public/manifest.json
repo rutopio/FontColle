@@ -1,7 +1,7 @@
 {
   "short_name": "FontColle",
   "name": "FontColle",
-  "description": "An enhanced Google Fonts collection with real feature, axis, and color filters.",
+  "description": "An enhanced Google Fonts Collection that filters by what type actually does: OpenType features, variable axes, weight and width steps, writing systems, and color vs. monochrome.",
   "icons": [
     {
       "src": "favicon.ico",

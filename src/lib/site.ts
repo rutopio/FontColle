@@ -1,9 +1,10 @@
 // Site-wide metadata defaults, shared by the root head and per-page overrides.
-export const SITE_NAME = "FontColle";
+// The name and description live in site-meta.ts (import-free, so the build
+// scripts can read them too) and are re-exported here so app code has one
+// import for all site metadata.
+import { SITE_NAME } from "./site-meta";
 
-export const SITE_DESCRIPTION =
-  "An enhanced Google Fonts collection that filters by real OpenType features, " +
-  "variable axes, weight, writing systems, and color, and saves your favorites.";
+export { SITE_DESCRIPTION, SITE_NAME } from "./site-meta";
 
 /** Compose a page title as "Page - FontColle"; bare name for the home page. */
 export function pageTitle(page?: string): string {

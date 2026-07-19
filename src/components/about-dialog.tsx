@@ -17,14 +17,11 @@ import {
 } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAbout } from "@/lib/about/context";
-import { SITE_NAME } from "@/lib/site";
+import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
 
 const REPO_URL = "https://github.com/rutopio/FontColle";
 const AUTHOR_URL = "https://chingru.com";
 const SPONSOR_URL = "https://buymeacoffee.com/chingru";
-
-const TAGLINE =
-  "FontColle is an enhanced Google Fonts collection that filters by what type actually does: OpenType features, variable axes, weight and width steps, writing systems, and color vs. monochrome.";
 
 // The lockup alone: mark and wordmark. Title is passed in rather than imported,
 // because the Dialog and Sheet shells each need their own primitive for the
@@ -61,7 +58,7 @@ function AboutBody({
   return (
     <>
       <div className="flex flex-col gap-4 text-center text-muted-foreground text-sm leading-relaxed">
-        <Description className="text-balance">{TAGLINE}</Description>
+        <Description className="text-balance">{SITE_DESCRIPTION}</Description>
         <p className="text-balance">
           The fonts keep their own licenses, mostly the SIL Open Font License;
           each family's terms are on its License tab.
