@@ -87,7 +87,7 @@ export function describeActiveFilters(f: FilterState): FilterChip[] {
   for (const v of f.color)
     push(`color:${v}`, "Color", COLOR_LABEL[v] ?? v, "color", v);
   for (const v of f.colorFormats)
-    push(`cfmt:${v}`, "Color format", colorFormatLabel(v), "colorFormats", v);
+    push(`cfmt:${v}`, "Format", colorFormatLabel(v), "colorFormats", v);
   for (const v of f.scripts)
     push(`script:${v}`, "Writing system", scriptLabel(v), "scripts", v);
   for (const v of f.languages)

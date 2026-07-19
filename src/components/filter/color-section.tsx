@@ -75,7 +75,7 @@ export function ColorFormatSection({
   return (
     <div className="flex flex-col gap-2">
       <SectionHeader
-        title="Color format"
+        title="Format"
         icon={StackIcon}
         info="A font can carry several color tables at once, so these counts overlap and add up to more than the number of colorful families. Selecting two formats narrows to the fonts providing both, not either. COLR/CPAL and CBDT/CBLC are table pairs shown as one pill. Formats no published font uses stay listed at zero rather than disappearing."
         hasSelection={selected.length > 0}
