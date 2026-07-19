@@ -1,13 +1,15 @@
 import {
   ArrowsOutLineHorizontalIcon,
+  BookmarkSimpleIcon,
   ClockCounterClockwiseIcon,
   SlidersHorizontalIcon,
+  SmileyMeltingIcon,
   TagIcon,
   TextAaIcon,
   TextItalicIcon,
 } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   ACTIVITY_LABELS,
@@ -140,6 +142,18 @@ export function FilterSidebar({
   const colorSelected = actions.colorSelection(filter);
   const fontTypeSelected = actions.fontTypeSelection(filter);
 
+  // The classification sub-lists, split by the group they render under. Both
+  // feed a single ClassificationSection, so the shared OR/AND mode and reset sit
+  // on one header instead of being hosted by whichever sub-list came first.
+  const styleClassifications = useMemo(
+    () => index.classifications.filter((s) => s.group === "style"),
+    [index.classifications]
+  );
+  const moodClassifications = useMemo(
+    () => index.classifications.filter((s) => s.group === "mood"),
+    [index.classifications]
+  );
+
   // Metrics: set or clear one range key; toggle a boolean facet (off = absent).
   const setMetric = (key: MetricKey, next: MetricRange | undefined) => {
     const metrics = { ...filter.metrics };
@@ -215,52 +229,44 @@ export function FilterSidebar({
                   onToggle={toggleCategory}
                   onReset={() => clearSection("classes", index.classes)}
                 />
-                {index.classifications
-                  .filter((s) => s.group === "style")
-                  .map((section, i) => (
-                    <ClassificationSection
-                      key={section.title}
-                      title={section.title}
-                      items={section.items}
-                      selected={filter.classifications}
-                      onToggle={(v) => toggle("classifications", v)}
-                      onReset={() =>
-                        clearSection("classifications", section.items)
-                      }
-                      // Serif/Sans/Script share one `classifications` state key,
-                      // so they share one OR/AND mode. Host that single toggle on
-                      // the first section's header.
-                      mode={i === 0 ? modeOf("classifications") : undefined}
-                      onToggleMode={
-                        i === 0
-                          ? () => toggleMode("classifications")
-                          : undefined
-                      }
-                    />
-                  ))}
+                {/* Serif/Sans/Slab/Script share the one `classifications` key,
+                    so they render as sub-lists under a single "Style" header
+                    that hosts their shared OR/AND toggle and reset. */}
+                <ClassificationSection
+                  title="Style"
+                  icon={BookmarkSimpleIcon}
+                  groups={styleClassifications}
+                  selected={filter.classifications}
+                  onToggle={(v) => toggle("classifications", v)}
+                  onReset={() =>
+                    clearSection(
+                      "classifications",
+                      styleClassifications.flatMap((s) => s.items)
+                    )
+                  }
+                  mode={modeOf("classifications")}
+                  onToggleMode={() => toggleMode("classifications")}
+                />
               </>
             )}
-            {group === "mood" &&
-              index.classifications
-                .filter((s) => s.group === "mood")
-                .map((section, i) => (
-                  <ClassificationSection
-                    key={section.title}
-                    title={section.title}
-                    items={section.items}
-                    selected={filter.classifications}
-                    onToggle={(v) => toggle("classifications", v)}
-                    onReset={() =>
-                      clearSection("classifications", section.items)
-                    }
-                    // Shares the single classifications OR/AND mode with Style;
-                    // host the toggle on this group's first section too.
-                    mode={i === 0 ? modeOf("classifications") : undefined}
-                    onToggleMode={
-                      i === 0 ? () => toggleMode("classifications") : undefined
-                    }
-                  />
-                ))}
+            {/* Same shape as Style above, and the same shared OR/AND mode. */}
+            {group === "mood" && (
+              <ClassificationSection
+                title="Mood"
+                icon={SmileyMeltingIcon}
+                groups={moodClassifications}
+                selected={filter.classifications}
+                onToggle={(v) => toggle("classifications", v)}
+                onReset={() =>
+                  clearSection(
+                    "classifications",
+                    moodClassifications.flatMap((s) => s.items)
+                  )
+                }
+                mode={modeOf("classifications")}
+                onToggleMode={() => toggleMode("classifications")}
+              />
+            )}
             {group === "tag" && (
               // One flat list of natural-language trait pills, static/variable
               // included. Font type also lives in Axes as a radio (same state).

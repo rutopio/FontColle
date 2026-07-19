@@ -1,8 +1,8 @@
 import {
   BoundingBoxIcon,
-  GitCommitIcon,
   GridFourIcon,
   InfoIcon,
+  RulerIcon,
 } from "@phosphor-icons/react";
 import { useMemo } from "react";
 import { EditableValue } from "@/components/ui/editable-value";
@@ -242,7 +242,7 @@ export function MetricsSection({
     <div className="flex flex-col gap-4">
       <SectionHeader
         title="Metrics"
-        icon={GitCommitIcon}
+        icon={RulerIcon}
         hasSelection={hasSelection}
         onReset={onReset}
         canSort={false}

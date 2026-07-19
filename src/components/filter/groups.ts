@@ -1,13 +1,13 @@
 import {
+  CodeIcon,
   DotsThreeOutlineIcon,
   type Icon,
   IntersectThreeIcon,
   PaletteIcon,
   RulerIcon,
   ShapesIcon,
-  SparkleIcon,
+  SmileyMeltingIcon,
   TagIcon,
-  ToggleRightIcon,
   TranslateIcon,
   UserIcon,
 } from "@phosphor-icons/react";
@@ -59,7 +59,7 @@ export const FILTER_GROUPS: FilterGroup[] = [
   {
     id: "mood",
     label: "Mood",
-    icon: SparkleIcon,
+    icon: SmileyMeltingIcon,
     keys: ["classifications"],
   },
   {
@@ -92,7 +92,7 @@ export const FILTER_GROUPS: FilterGroup[] = [
   {
     id: "features",
     label: "Feature",
-    icon: ToggleRightIcon,
+    icon: CodeIcon,
     keys: ["features"],
   },
   // Browse by who made the font: Source (Noto / Non-Noto), designer names, and

@@ -3,6 +3,7 @@ import { featureName } from "@/lib/fonts/features";
 import {
   ACTIVITY_LABELS,
   CLASSIFICATION_SECTIONS,
+  classificationGroupOf,
   type FilterState,
   MODE_KEYS,
   type ModeKey,
@@ -17,11 +18,25 @@ import {
 } from "@/lib/fonts/metrics";
 import { facetLabel, subTagLabel, weightLabel, widthLabel } from "./constants";
 
-// The classification section a tag path belongs to ("/Serif/Old Style Garalde"
-// -> "Serif"), so its chip reads with the same section name the sidebar shows.
+// The classification sub-list a tag path belongs to ("/Serif/Old Style Garalde"
+// -> "Serif"), used as a per-value prefix inside the chip.
+const classificationSubList = (path: string): string =>
+  CLASSIFICATION_SECTIONS.find((s) => path.startsWith(s.prefix))?.title ?? "";
+
+// Classifications fold into one chip per rail panel ("Style" / "Mood"), matching
+// the sidebar, where Serif/Sans/Slab/Script are sub-lists under a single header
+// sharing one OR/AND mode. They previously chipped per sub-list, which implied
+// four independently combinable sections. The sub-list name survives as a prefix
+// on each value ("Sans Serif: Rounded"), so the tag stays unambiguous — "Modern"
+// and "Humanist" appear under more than one sub-list.
 const classificationSection = (path: string): string =>
-  CLASSIFICATION_SECTIONS.find((s) => path.startsWith(s.prefix))?.title ??
-  "Style";
+  classificationGroupOf(path) === "mood" ? "Mood" : "Style";
+
+const classificationValue = (path: string): string => {
+  const subList = classificationSubList(path);
+  const label = subTagLabel(path);
+  return subList ? `${subList}: ${label}` : label;
+};
 
 // One active-filter chip: what to show and enough to remove it. Grouping is by
 // display section; `key` + `rawValue` say which FilterState field the condition
@@ -66,7 +81,7 @@ export function describeActiveFilters(f: FilterState): FilterChip[] {
     push(
       `cls:${v}`,
       classificationSection(v),
-      subTagLabel(v),
+      classificationValue(v),
       "classifications",
       v
     );
