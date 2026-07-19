@@ -341,9 +341,9 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
               />
               {(activeCount > 0 || hasQuery) && (
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   onClick={reset}
-                  className="text-destructive"
+                  className="h-9 text-destructive"
                 >
                   Reset
                   <Kbd>Esc</Kbd>

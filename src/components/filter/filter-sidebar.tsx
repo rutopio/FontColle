@@ -11,7 +11,6 @@ import { useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   ACTIVITY_LABELS,
-  FACET_LABELS,
   type FacetIndex,
   type FilterState,
   ITALIC_LABELS,
@@ -26,7 +25,7 @@ import { CardGrid } from "./card-grid";
 import { CategoryCards } from "./category-cards";
 import { ClassificationSection } from "./classification-section";
 import { ColorFormatSection, ColorSection } from "./color-section";
-import { weightLabel, widthLabel } from "./constants";
+import { facetLabel, weightLabel, widthLabel } from "./constants";
 import { DesignerSection } from "./designer-section";
 import { FeatureSection } from "./feature-section";
 import { FontTypeSection } from "./font-type-section";
@@ -56,9 +55,6 @@ interface Props {
   axisValues: Record<string, number>;
   onAxisValueChange: (tag: string, pct: number) => void;
 }
-
-// Human display for a derived facet id; falls back to the raw id.
-const facetLabel = (v: string) => FACET_LABELS[v] ?? v;
 
 export function FilterSidebar({
   index,

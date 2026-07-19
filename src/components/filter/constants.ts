@@ -1,4 +1,4 @@
-import { WEIGHT_LABELS, WIDTH_LABELS } from "@/lib/fonts/filter";
+import { FACET_LABELS, WEIGHT_LABELS, WIDTH_LABELS } from "@/lib/fonts/filter";
 
 // Pills for facets with fewer than this many fonts stay hidden behind a
 // collapsible until the user opens it, unless they're already selected.
@@ -8,6 +8,11 @@ export const RARE_THRESHOLD = 20;
 // numeric step, while the toggle value stays numeric.
 export const weightLabel = (v: string) => WEIGHT_LABELS[Number(v)] ?? v;
 export const widthLabel = (v: string) => WIDTH_LABELS[Number(v)] ?? v;
+
+// Human display for a derived facet id ("has-italic" -> "Italic"); falls back
+// to the raw id. Shared by the Tag panel's pills and its active-filter chips so
+// the two can never drift apart.
+export const facetLabel = (v: string) => FACET_LABELS[v] ?? v;
 
 // A few classification sub-tags carry a longer internal name than Google Fonts
 // shows on its own UI. The tag path stays the harvest key; only the pill label

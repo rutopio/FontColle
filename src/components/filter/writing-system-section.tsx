@@ -45,7 +45,7 @@ export function WritingSystemSection({
       onToggle={onToggleScript}
       onReset={onResetScripts}
       searchPlaceholder="Search writing systems"
-      info="The 10 most spoken writing systems show up front, ranked by how many people write in them, then sorted by how many fonts support each. The two rankings differ, so a widely written system with few fonts still gets a pill while a well-served one like Greek can sit behind “N more”. Use search to reach any of them."
+      info="The 10 most spoken writing systems show up front, ranked by how many people write in them, then sorted by how many fonts support each. Speaker figures come from gflanguages, summed across every language written in each system."
       rankBy={scriptPopulation}
       topN={10}
       mode={mode}

@@ -13,7 +13,7 @@ import { PillButton } from "./pill-button";
 import { SectionHeader, type SortMode } from "./section-header";
 
 // A pill-list filter section: a header (title + reset/sort) over a Pills list.
-// Used for Properties. Rare values (below RARE_THRESHOLD, or outside the
+// Used for the Tag panel. Rare values (below RARE_THRESHOLD, or outside the
 // top-N when set) collapse behind a "more" expander.
 export function Section({
   title,

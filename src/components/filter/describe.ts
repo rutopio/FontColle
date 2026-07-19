@@ -15,7 +15,7 @@ import {
   METRIC_SPECS,
   type MetricKey,
 } from "@/lib/fonts/metrics";
-import { subTagLabel, weightLabel, widthLabel } from "./constants";
+import { facetLabel, subTagLabel, weightLabel, widthLabel } from "./constants";
 
 // The classification section a tag path belongs to ("/Serif/Old Style Garalde"
 // -> "Serif"), so its chip reads with the same section name the sidebar shows.
@@ -60,7 +60,8 @@ export function describeActiveFilters(f: FilterState): FilterChip[] {
   ) => chips.push({ id, section, value, key, rawValue });
 
   for (const v of f.classes) push(`class:${v}`, "Category", v, "classes", v);
-  for (const v of f.facets) push(`facet:${v}`, "Properties", v, "facets", v);
+  for (const v of f.facets)
+    push(`facet:${v}`, "Tag", facetLabel(v), "facets", v);
   for (const v of f.classifications)
     push(
       `cls:${v}`,

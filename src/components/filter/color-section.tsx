@@ -40,6 +40,11 @@ export function ColorSection({
 // at once, so selecting two formats narrows to the fonts providing both, and
 // the per-format counts overlap (they sum above the colorful total).
 //
+// The pill id is one table of a pair (COLR, CBDT); its partner (CPAL, CBLC) is
+// counted separately in the facet index but folded into the label, so no pill
+// is shown for it. Counts come from buildFacetIndex, which walks published
+// families only, so they read lower than a scan of the raw dataset.
+//
 // All four formats always render, even the ones no published font uses. They
 // stay clickable and simply yield an empty result, rather than hiding a filter
 // that would silently reappear the day Google ships such a font.
@@ -72,6 +77,7 @@ export function ColorFormatSection({
       <SectionHeader
         title="Color format"
         icon={StackIcon}
+        info="A font can carry several color tables at once, so these counts overlap and add up to more than the number of colorful families. Selecting two formats narrows to the fonts providing both, not either. COLR/CPAL and CBDT/CBLC are table pairs shown as one pill. Formats no published font uses stay listed at zero rather than disappearing."
         hasSelection={selected.length > 0}
         onReset={onReset}
         canSort={false}

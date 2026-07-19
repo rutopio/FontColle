@@ -197,7 +197,7 @@ export function toggleMatchMode(
 }
 
 /** Clear only the values a given section shows. Several sections share one
- *  FilterState key (Properties and Font type both live in `facets`), so scope
+ *  FilterState key (Tag and Font type both live in `facets`), so scope
  *  the reset to the items that section actually renders. */
 export function clearSection(
   filter: FilterState,

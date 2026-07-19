@@ -91,7 +91,7 @@ export const emptyFilter: FilterState = {
 
 // The two `facets` values that say whether a family is a variable font. They
 // live in `facets` like any other tag, but the UI surfaces them as their own
-// radio pair (Axes > Font type) rather than as pills in Properties, so
+// radio pair (Axes > Font type) rather than as pills in Tag, so
 // buildFacetIndex keeps them out of the `facets` list it emits.
 export const FONT_TYPE_FACETS = ["static", "variable"];
 
