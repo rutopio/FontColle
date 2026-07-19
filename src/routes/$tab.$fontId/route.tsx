@@ -108,18 +108,12 @@ export const Route = createFileRoute("/$tab/$fontId")({
     // Per-font share card: the family name set in its own typeface, pre-rendered
     // to public/og/<id>.png by `pnpm gen:og`. Needs an absolute URL like og:url.
     const ogImage = absoluteUrl(`/og/${font.id}.png`);
-    // Structured data for the family, so search engines can surface designer +
-    // license. Only emitted with an absolute origin (needs a real URL).
-    const jsonLd = canonical
-      ? JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "CreativeWork",
-          name,
-          url: canonical,
-          ...(font.designer ? { creator: font.designer } : {}),
-          ...(font.license ? { license: font.license } : {}),
-        })
-      : undefined;
+    // Structured data is NOT emitted here. Neither head()'s `scripts` (rendered
+    // by <Scripts/>) nor `headScripts` (rendered by <HeadContent/>) put a
+    // ld+json tag in the SSR document in this version, verified against
+    // production both ways. DetailPage renders the tag in its own JSX instead,
+    // which React serializes reliably. Google accepts JSON-LD anywhere in the
+    // document, so living in <body> costs nothing.
     return {
       meta: [
         { title: pageTitle(name) },
@@ -140,9 +134,6 @@ export const Route = createFileRoute("/$tab/$fontId")({
         { name: "twitter:description", content: description },
       ],
       links: canonical ? [{ rel: "canonical", href: canonical }] : [],
-      scripts: jsonLd
-        ? [{ type: "application/ld+json", children: jsonLd }]
-        : [],
     };
   },
   notFoundComponent: () => (
@@ -312,6 +303,22 @@ function DetailPage() {
     );
   const sidebarPanel = hasControls ? renderSidebarPanel() : null;
 
+  // Structured data for the family, so search engines can surface designer and
+  // license. Rendered here rather than through head() because that path emits
+  // nothing in the SSR document (see the note in head()). React serializes this
+  // into the streamed HTML; Google reads JSON-LD from <body> just as well.
+  const canonicalUrl = absoluteUrl(`/specimen/${fontSlug(font.id)}`);
+  const jsonLd = canonicalUrl
+    ? JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "CreativeWork",
+        name: font.displayName ?? font.name,
+        url: canonicalUrl,
+        ...(font.designer ? { creator: font.designer } : {}),
+        ...(font.license ? { license: font.license } : {}),
+      })
+    : undefined;
+
   return (
     <FilterLayout
       // Read-only spec views (Detail/Designer/License) collapse the panel to
@@ -323,6 +330,13 @@ function DetailPage() {
       rail={<DetailRail active={tab} onSelect={selectTab} />}
       sidebar={sidebarPanel}
     >
+      {jsonLd ? (
+        <script
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON.stringify output of catalog data, not user input; a script tag's contents cannot be set any other way.
+          dangerouslySetInnerHTML={{ __html: jsonLd }}
+          type="application/ld+json"
+        />
+      ) : null}
       <Detail
         font={font}
         tab={tab}
