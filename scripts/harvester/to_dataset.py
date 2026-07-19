@@ -204,10 +204,11 @@ def write_label_maps(records, out):
     scripts_out = {c: smap.get(c, c) for c in sorted(used_scripts)}
     langs_out = {l: lmap[l] for l in sorted(used_langs) if l in lmap}
     d = os.path.dirname(out) or "."
-    json.dump(scripts_out, open(os.path.join(d, "scripts.json"), "w"),
-              indent=2, ensure_ascii=False)
-    json.dump(langs_out, open(os.path.join(d, "languages.json"), "w"),
-              indent=2, ensure_ascii=False)
+    for name, payload in (("scripts.json", scripts_out),
+                          ("languages.json", langs_out)):
+        with open(os.path.join(d, name), "w") as fh:
+            json.dump(payload, fh, indent=2, ensure_ascii=False)
+            fh.write("\n")
     print(f"wrote {len(scripts_out)} scripts, {len(langs_out)} languages to {d}")
 
 
