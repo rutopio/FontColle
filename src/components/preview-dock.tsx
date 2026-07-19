@@ -1,9 +1,8 @@
 import { ArrowUpIcon, XIcon } from "@phosphor-icons/react";
-import { useEffect, useState } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { usePreview } from "@/lib/preview/context";
-import { useDebouncedValue } from "@/lib/use-debounced-value";
 
 // The shared preview-text field: type here to preview the string across every
 // font. The Column footer bar supplies the chrome, so the field itself is
@@ -18,26 +17,34 @@ const PREVIEW_DEBOUNCE_MS = 150;
 function PreviewField() {
   const { text, setText } = usePreview();
   const [draft, setDraft] = useState(text);
-  const debounced = useDebouncedValue(draft, PREVIEW_DEBOUNCE_MS);
+  // Pending debounced commit, scheduled from onChange. A timer that outlives
+  // the field just commits the final keystrokes — the same thing the debounce
+  // would have done — so no unmount cleanup is needed.
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  // Commit the settled draft to the shared context (skip when it already equals
-  // the current context text).
-  // biome-ignore lint/correctness/useExhaustiveDependencies: only the debounced value drives the commit; text/setText are read to compare, not to trigger.
-  useEffect(() => {
-    if (debounced !== text) setText(debounced);
-  }, [debounced]);
-
-  // Keep the field in sync when the text changes from outside (e.g. Clear, or a
-  // value restored from localStorage on mount).
-  useEffect(() => {
+  // Adopt outside changes to the shared text (Clear on the other page, the
+  // value restored from localStorage after mount) by comparing against the
+  // last-seen context value during render. Not a key-remount: our own commits
+  // also change `text`, and remounting mid-typing would drop focus.
+  const [prevText, setPrevText] = useState(text);
+  if (text !== prevText) {
+    setPrevText(text);
     setDraft(text);
-  }, [text]);
+  }
+
+  // Echo the keystroke instantly; push to the shared context once typing
+  // settles for the debounce window.
+  const commit = (value: string) => {
+    setDraft(value);
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => setText(value), PREVIEW_DEBOUNCE_MS);
+  };
 
   return (
     <>
       <Input
         value={draft}
-        onChange={(e) => setDraft(e.target.value)}
+        onChange={(e) => commit(e.target.value)}
         placeholder="Type to preview across all fonts…"
         className="h-9 flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0"
         aria-label="Preview text"
@@ -47,6 +54,8 @@ function PreviewField() {
           variant="ghost"
           size="icon"
           onClick={() => {
+            // Cancel any in-flight commit so it can't resurrect cleared text.
+            clearTimeout(timer.current);
             setDraft("");
             setText("");
           }}

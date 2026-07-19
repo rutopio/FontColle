@@ -610,10 +610,15 @@ function SearchInput({
   const [draft, setDraft] = useState(query);
   const composing = useRef(false);
 
-  // Keep the draft in sync when the query changes from outside (e.g. reset).
-  useEffect(() => {
+  // Keep the draft in sync when the query changes from outside (e.g. reset),
+  // by comparing against the last-seen prop during render. Not a key-remount:
+  // our own commits also round-trip through `query`, and remounting mid-typing
+  // would drop focus and break IME composition.
+  const [prevQuery, setPrevQuery] = useState(query);
+  if (query !== prevQuery) {
+    setPrevQuery(query);
     setDraft(query);
-  }, [query]);
+  }
 
   const commit = (value: string) => {
     setDraft(value);
