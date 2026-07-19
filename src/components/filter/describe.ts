@@ -1,5 +1,4 @@
 import { colorFormatLabel } from "@/lib/fonts/color";
-import { featureName } from "@/lib/fonts/features";
 import {
   ACTIVITY_LABELS,
   CLASSIFICATION_SECTIONS,
@@ -98,8 +97,11 @@ export function describeActiveFilters(f: FilterState): FilterChip[] {
   for (const v of f.widths)
     push(`width:${v}`, "Width", widthLabel(v), "widths", v);
   for (const v of f.axes) push(`axis:${v}`, "Variable axes", v, "axes", v);
-  for (const v of f.features)
-    push(`feat:${v}`, "Features", featureName(v), "features", v);
+  // The raw 4-letter tag, matching the sidebar pills (which are mono-styled and
+  // show the tag, with the full name only in their tooltip). featureName would
+  // expand "ccmp" to "Glyph Composition / Decomposition", far too long for a
+  // chip that sits inline with the results.
+  for (const v of f.features) push(`feat:${v}`, "Features", v, "features", v);
   for (const v of f.designers) push(`dsr:${v}`, "Designer", v, "designers", v);
   for (const v of f.vendors)
     push(`vnd:${v}`, "Vendor", vendorLabel(v), "vendors", v);
