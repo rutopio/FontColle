@@ -6,6 +6,16 @@
   "main": "src/server-entry.ts",
   "compatibility_date": "2025-07-01",
   "compatibility_flags": ["nodejs_compat"],
+  // The site is served from fontcolle.com (attached as a Custom Domain in the
+  // Cloudflare dashboard, which is why there's no `routes` here). Turn off the
+  // fontcolle.<subdomain>.workers.dev URL so the same content isn't reachable
+  // from a second origin: duplicate origins split SEO ranking signals and would
+  // serve the absolute canonical/og:url/sitemap URLs (all baked to
+  // fontcolle.com at build time) from a domain that contradicts them.
+  // preview_urls defaults to false already, but it's stated for the same
+  // reason: per-version <version>-fontcolle.<subdomain>.workers.dev origins.
+  "workers_dev": false,
+  "preview_urls": false,
   // Static assets binding so the detail page's SSR loader can read the prebuilt
   // per-font JSON via env.ASSETS.fetch() (a Worker fetching its own URL would
   // recurse instead of hitting assets). directory is the vite build's client
