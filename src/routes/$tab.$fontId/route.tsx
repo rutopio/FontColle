@@ -1,5 +1,11 @@
 import { SlidersHorizontalIcon, SquaresFourIcon } from "@phosphor-icons/react";
-import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  notFound,
+  redirect,
+  useCanGoBack,
+  useRouter,
+} from "@tanstack/react-router";
 import { AnimatePresence } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import { FilterLayout } from "@/components/filter-layout";
@@ -154,6 +160,8 @@ function DetailPage() {
   const { font, siblingsByDesigner } = Route.useLoaderData();
   const { tab: tabSlug } = Route.useParams();
   const navigate = Route.useNavigate();
+  const router = useRouter();
+  const canGoBack = useCanGoBack();
 
   // Feature/axis state live at the page level so the sidebar controls and the
   // type tester share one source of truth. The W3C default state seeds default-on
@@ -196,6 +204,31 @@ function DetailPage() {
       params: { tab: slugFromTab(id), fontId: fontSlug(font.id) },
       replace: true,
     });
+
+  // Escape returns to the catalog, the page this one is always entered from.
+  // Skipped while typing (the specimen and the glyph search are editable) and
+  // while a dialog/drawer is open, where Escape means "close that" instead.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const el = e.target as HTMLElement | null;
+      if (
+        el?.tagName === "INPUT" ||
+        el?.tagName === "TEXTAREA" ||
+        el?.isContentEditable
+      )
+        return;
+      if (document.querySelector("[data-slot=sheet-content], [role=dialog]"))
+        return;
+      // Same rule as the Back control: step back if we came from the list, so
+      // its filters and scroll position survive; otherwise go to it fresh.
+      if (canGoBack) router.history.back();
+      else navigate({ to: "/" });
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [navigate, router, canGoBack]);
 
   // Glyphs view: fetch the font's Unicode coverage, and derive the blocks it
   // actually covers. Active block lives here so its sidebar (the block list) and

@@ -7,7 +7,7 @@ import {
 } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActiveFilterChips } from "@/components/filter/active-filter-chips";
 import { FilterDrawer } from "@/components/filter/filter-drawer";
 import { FilterRail } from "@/components/filter/filter-rail";
@@ -29,6 +29,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
+import { Kbd } from "@/components/ui/kbd";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFilter } from "@/lib/filter/context";
 import { catalogQueryOptions } from "@/lib/fonts/catalog";
@@ -54,6 +55,7 @@ import { absoluteUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { useListScrollRestore } from "@/lib/use-list-scroll-restore";
 import { useLocalStorageState } from "@/lib/use-local-storage-state";
+import { cn } from "@/lib/utils";
 import { SortControl } from "./-components/sort-control";
 
 // How long the filter must stay unchanged before the catalog is re-filtered.
@@ -266,13 +268,23 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
 
   const setView = (next: ViewMode) => setViewPref(next);
   // Clear every filter and the search query, keeping only display prefs.
-  const reset = () => setFilter(emptyFilter);
+  const reset = useCallback(() => setFilter(emptyFilter), []);
+
+  // Toggle the favorites-only view, matching the rail's heart link: drop the
+  // param when leaving, set it when entering, keeping the rest of the search.
+  const toggleFavOnly = useCallback(() => {
+    navigate({
+      search: (prev) => ({ ...prev, fav: favOnly ? undefined : "1" }),
+      replace: true,
+    });
+  }, [navigate, favOnly]);
 
   // Catalog keyboard shortcuts, the usual directory-site set: "/" focuses the
-  // search field, "g"/"r" switch the grid/row view. They're ignored while a text
-  // field is focused (so typing "r" into the search box types an r, and the
-  // field's own Escape/blur still works). Bound to the document since there's no
-  // single focused element to hang them off.
+  // search field, "g"/"r" switch the grid/row view, "f" toggles the favorites
+  // view, Escape resets the filters.
+  // They're ignored while a text field is focused (so typing "r" into the search
+  // box types an r, and the field's own Escape/blur still works). Bound to the
+  // document since there's no single focused element to hang them off.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
@@ -285,15 +297,19 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
       if (e.key === "/") {
         e.preventDefault();
         searchRef.current?.focus();
+      } else if (e.key === "Escape") {
+        reset();
       } else if (e.key === "g") {
         setViewPref("grid");
       } else if (e.key === "r") {
         setViewPref("row");
+      } else if (e.key === "f") {
+        toggleFavOnly();
       }
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [setViewPref]);
+  }, [setViewPref, reset, toggleFavOnly]);
   // Leave the favorites view and clear filters, landing on the full catalog,
   // the CTA shown when there are no favorites yet.
   const discoverFonts = () => {
@@ -350,6 +366,7 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
                   className="text-destructive"
                 >
                   Reset
+                  <Kbd>Esc</Kbd>
                 </Button>
               )}
             </div>
@@ -635,8 +652,13 @@ function SearchInput({
         }}
         placeholder="Search family or designer"
         aria-label="Search fonts by family or designer"
-        className="h-9 pl-8"
+        className={cn("h-9 pl-8", !draft && "pr-8")}
       />
+      {/* Advertises the "/"-to-focus shortcut. Hidden once the field has text,
+          where it would crowd the query and the native clear button. */}
+      {!draft && (
+        <Kbd className="absolute top-1/2 right-2.5 -translate-y-1/2">/</Kbd>
+      )}
     </div>
   );
 }
