@@ -1,7 +1,8 @@
 packages: []
 
-allowBuilds:
-  esbuild: true
-  lightningcss: true
-  unrs-resolver: true
-  msw: false
+# Packages allowed to run install scripts (pnpm 10 blocks them by default).
+# workerd is the Workers runtime behind `pnpm preview` / wrangler dev.
+onlyBuiltDependencies:
+  - esbuild
+  - lightningcss
+  - workerd
