@@ -21,11 +21,11 @@ import { PreviewProvider } from "@/lib/preview/context";
 import { absoluteUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
 import appCss from "@/styles.css?url";
 
-// Applies the effective theme before first paint so an SSR'd light shell doesn't
-// flash before a dark preference hydrates. An explicit localStorage choice wins;
-// with no saved value we fall back to the system prefers-color-scheme. Static
-// string, no user input.
-const themeScript = `try{var t=localStorage.theme;if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}`;
+// Applies the saved theme before first paint so an SSR'd light shell doesn't
+// flash before a dark preference hydrates. Only an explicit localStorage choice
+// turns on dark; with no saved value we stay light rather than following the
+// system prefers-color-scheme. Static string, no user input.
+const themeScript = `try{if(localStorage.theme==='dark')document.documentElement.classList.add('dark')}catch(e){}`;
 
 // Same idea for the list's grid/row preference. The pending list is rendered
 // server-side, where localStorage is unreachable, so a row-mode visitor used to
@@ -45,19 +45,10 @@ export const Route = createRootRouteWithContext<{
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: SITE_NAME },
       { name: "description", content: SITE_DESCRIPTION },
-      // Theme-color per scheme: the app defaults to light (white chrome) and
-      // dark is opt-in, so the browser UI should match rather than always be
-      // black. media picks the right one for the user's system preference.
-      {
-        name: "theme-color",
-        content: "#ffffff",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        name: "theme-color",
-        content: "#0a0a0a",
-        media: "(prefers-color-scheme: dark)",
-      },
+      // Single light value, no media split: the app always renders light on
+      // first paint (dark is opt-in via the toggle and never inherited from the
+      // system), so a dark chrome would not match the page underneath it.
+      { name: "theme-color", content: "#ffffff" },
       // Social cards. Relative-safe fields are always emitted; og:image and
       // og:url need an absolute origin, so they degrade to nothing when
       // SITE_URL (VITE_SITE_URL) is unset rather than emit a wrong domain.
