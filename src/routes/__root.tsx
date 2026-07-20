@@ -29,7 +29,7 @@ const themeScript = `try{if(localStorage.theme==='dark')document.documentElement
 
 // Same idea for the list's grid/row preference. The pending list is rendered
 // server-side, where localStorage is unreachable, so a row-mode visitor used to
-// get the grid layout (288px cards) and watch it swap to rows (112px) once the
+// get the grid layout (288px cards) and watch it swap to rows (144px) once the
 // catalog resolved and the real list read the preference. Stamping the value on
 // <html> before first paint lets CSS pick the right layout immediately; the
 // pending markup renders both variants and shows one, so no measurement or

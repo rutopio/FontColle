@@ -19,8 +19,8 @@ export function TypeTester({
       onEditText={onEditText}
       ariaLabel="preview text"
       multiline
-      buttonClassName="w-full cursor-text break-words text-start leading-tight"
-      fieldClassName="field-sizing-content w-full resize-none break-words bg-transparent text-start leading-tight outline-none"
+      buttonClassName="w-full cursor-text break-words text-start leading-loose"
+      fieldClassName="field-sizing-content w-full resize-none break-words bg-transparent text-start leading-loose outline-none"
     />
   );
 }
