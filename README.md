@@ -4,7 +4,7 @@
 
 ▌　[https://fontcolle.com](https://fontcolle.com)　▐
 
-![](/cover.png)
+[![FontColle](/cover.png)](https://fontcolle.com)
 
 FontColle is an enhanced Google **Font**s **Colle**ction that filters OpenType features, variable-font axes, weight/width steps, writing systems, languages, and color vs. monochrome. Preview any weight or named instance live, edit the specimen text inline, and save favorites.
 
@@ -24,7 +24,7 @@ Host on ![Cloudflare Workers](https://img.shields.io/badge/Cloudflare_Workers-F3
 
 </div>
 
-File-based routing on Cloudflare Workers, with a **static JSON catalog** built from `src/data/fonts.json` and served as CDN-cached assets, with no database (see [Data pipeline](#data-pipeline)). A **Python harvester** (`scripts/harvester`) builds the dataset from the Google Fonts catalog and `gflanguages`.
+File-based routing on Cloudflare Workers, with a **static JSON catalog** built from `src/data/fonts.json` and served as CDN-cached assets, with no database (see [Data pipeline](#data-pipeline)). A **Python harvester** (`scripts/harvester`) builds the dataset from the [Google Fonts](https://fonts.google.com) catalog and [`gflanguages`](https://github.com/googlefonts/lang).
 
 ## Development
 
@@ -34,7 +34,7 @@ pnpm pull:data    # fetch the data assets from R2 (first clone only)
 pnpm dev          # vite dev server on :3000
 ```
 
-`pnpm pull:data` needs a `CLOUDFLARE_API_TOKEN` with R2 read on the `fontcolle-assets` bucket: see [Data pipeline](#data-pipeline).
+`pnpm pull:data` needs a `CLOUDFLARE_API_TOKEN` with R2 read on the `fontcolle-assets` bucket, which only the maintainers have: see [Data pipeline](#data-pipeline). **Outside contributors should [build a small dataset locally](#running-without-r2-access) instead** — no Cloudflare account or API key required.
 
 `pnpm check` runs Biome (with `--write`) then `tsc --noEmit`; run it before committing. `pnpm build` produces the Workers bundle in `dist/`.
 
@@ -60,6 +60,29 @@ The font data is read-only, identical for every visitor, and refreshed once a da
 | `pnpm publish:assets --daily` | local → R2, bumps the manifest (CI runs this)           |
 
 `pnpm build` calls `sync-assets.mjs` automatically when any of those paths are missing, so a fresh clone (including Cloudflare Workers Builds) self-heals. Trees that already have the files skip the pull.
+
+### Running without R2 access
+
+The R2 bucket is maintainer-only, so `pnpm pull:data` will not work on a fork. You do not need it: the harvester reads straight from the public [google/fonts](https://github.com/google/fonts) repo, so you can build a small dataset yourself and develop against that. A handful of families is enough to exercise the UI.
+
+```bash
+cd scripts/harvester
+printf 'roboto\nlato\ninter\n' | python3 harvest.py -   # -> stress_output.json
+python3 to_dataset.py stress_output.json ../../src/data/fonts.json
+cd ../..
+pnpm dev
+```
+
+Run it from `scripts/harvester/`: `harvest.py` writes `stress_output.json` to the working directory, and only that path is gitignored.
+
+Two things worth knowing before you run it:
+
+- The input is the family's **directory name** in google/fonts (lowercase: `roboto`, not `Roboto`), optionally `license<TAB>dir` when it is not under `ofl/`. A wrong name is a bare `HTTP Error 404`.
+- Pass families on **stdin with `-`**. As positional args only the first is a family; the second is parsed as the worker count (`harvest.py <family> [workers]`).
+
+`to_dataset.py` needs no Google Fonts API key: without `published.json` it marks every family published and skips ranking, which is fine for local work. `pnpm dev`/`pnpm build` then slices whatever `fonts.json` holds, so a 3-family catalog runs the real site.
+
+Glyph coverage data and OG images stay in R2 and are not rebuilt by the above; the pages that use them degrade rather than fail. Do not commit the resulting `src/data/fonts.json` — it is gitignored, and the manifest is the only thing that should change in git.
 
 Each publish uploads `fonts.json` as a dated snapshot, `fonts/<YYYYMMDD>.json`, and points the manifest at it; days the catalog does not change produce no snapshot. An R2 lifecycle rule (`expire-fonts-versions`, prefix `fonts/`) expires them after 30 days, so rollback reaches back a month: revert the manifest commit to ship an earlier snapshot. `glyphs/` and `og/` are long-lived base objects and are not covered by the rule.
 
@@ -91,18 +114,21 @@ The detail page reads its per-font file through the Workers `ASSETS` binding on 
 
 ```bash
 python3 scripts/harvester/fetch_published.py   # refresh Developer API signals
+                                               # (developers.google.com/fonts/docs/developer_api)
 python3 scripts/harvester/daily_update.py      # harvest new/updated families,
                                                # merge, refresh whole-catalog
                                                # signals -> og_ids.txt
 ```
 
-New families come from the google/fonts GitHub tree; updated ones from a newer `lastModified`; removed ones are flipped to `isPublished=false`. The workflow then re-renders OG cards for `og_ids.txt`, publishes the new `fonts.json` and changed OG images to R2, commits the bumped `data-manifest.json`, and deploys, so the deploy's `pnpm build` regenerates the static catalog from it. A no-change day is a no-op.
+New families come from the [google/fonts](https://github.com/google/fonts) GitHub tree; updated ones from a newer `lastModified`; removed ones are flipped to `isPublished=false`. The workflow then re-renders OG cards for `og_ids.txt`, publishes the new `fonts.json` and changed OG images to R2, and commits the bumped `data-manifest.json`. A no-change day is a no-op.
+
+That commit is what ships the update: Cloudflare's Git integration builds and deploys from the push, and its `pnpm build` re-syncs the R2 assets per the new manifest to regenerate the static catalog. The workflow itself does not deploy. `wrangler.jsonc` declares no `routes` and sets `workers_dev`/`preview_urls` to false, so fontcolle.com is served by a dashboard Custom Domain that the Git integration's deployment owns; a `wrangler deploy` here would only upload a version for that deployment to supersede moments later. If the Git integration is ever turned off, this workflow needs a deploy step again.
 
 The workflow needs these repository secrets: `GOOGLE_FONTS_API_KEY`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`. The token must carry R2 read+write on `fontcolle-assets`: the pull and publish steps fail without it.
 
 ## Open Graph images
 
-Each published family has a share card at `public/og/<id>.png` with the family name set **in its own typeface** (traced to a path at build time via the CSS2 API + opentype.js, rasterized with resvg). `pnpm gen:og` renders them all (`--force` re-renders existing; `--ids=<file>` restricts to a subset). The per-font route wires `og:image`; the daily workflow re-renders only changed families and pushes them to R2 as per-object deltas over the base tarball.
+Each published family has a share card at `public/og/<id>.png` with the family name set **in its own typeface** (traced to a path at build time via the [CSS2 API](https://developers.google.com/fonts/docs/css2) + [opentype.js](https://github.com/opentypejs/opentype.js), rasterized with [resvg](https://github.com/yisibl/resvg-js)). `pnpm gen:og` renders them all (`--force` re-renders existing; `--ids=<file>` restricts to a subset). The per-font route wires `og:image`; the daily workflow re-renders only changed families and pushes them to R2 as per-object deltas over the base tarball.
 
 ## Contribution
 
@@ -114,7 +140,7 @@ Font metadata errors (wrong tags, missing languages, bad axis ranges) are best r
 
 MIT, covering this project's own code and metadata index only.
 
-The fonts listed in this project are not distributed here; every font file and download links out to Google Fonts. Each font remains under its own license (SIL Open Font License, Apache 2.0, Ubuntu Font License, etc.) as declared by its original authors and foundries. Check a family's license before using it.
+The fonts listed in this project are not distributed here; every font file and download links out to Google Fonts. Each font remains under its own license ([SIL Open Font License](https://openfontlicense.org), [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0), [Ubuntu Font License](https://ubuntu.com/legal/font-licence), etc.) as declared by its original authors and foundries. Check a family's license before using it.
 
 ---
 

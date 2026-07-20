@@ -157,18 +157,13 @@ jobs:
             done
           fi
 
-      - name: Deploy
-        if: steps.update.outputs.changed == 'true'
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          # Build-time only: gen-sitemap.mjs skips sitemap.xml + llms.txt
-          # without it, and the absolute-URL SEO fields (canonical, og:url,
-          # JSON-LD) are omitted. wrangler.jsonc's `vars` comes too late, it
-          # only reaches the deployed Worker, not this build.
-          VITE_SITE_URL: https://fontcolle.com
-        run: |
-          # The data assets are already in place: the pre-harvest sync restored
-          # them and the harvest updated them (build.mjs re-syncs if missing).
-          pnpm build
-          pnpm exec wrangler deploy
+      # No deploy step here on purpose. The manifest commit pushed above is what
+      # ships the new dataset: Cloudflare's Git integration picks up the push and
+      # builds + deploys from it (its build re-syncs the R2 assets per the new
+      # manifest). This workflow used to also run `pnpm build && wrangler deploy`,
+      # but wrangler.jsonc has no `routes` and workers_dev/preview_urls are both
+      # false, so fontcolle.com is served via a dashboard Custom Domain that the
+      # Git integration's deployment owns. The result was two deployments ~40s
+      # apart, the second always superseding the first. Deploy lives in exactly
+      # one place now; if the Git integration is ever turned off, this workflow
+      # needs its deploy step back.

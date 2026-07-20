@@ -45,7 +45,7 @@ export function columnsFor(width: number, view: ViewMode): number {
 // Card/line heights, shared with the loading skeleton so its placeholders match
 // the real cells.
 export const CARD_H = 288; // grid card height (h-72)
-export const LINE_H = 112; // row-mode line height (h-28)
+export const LINE_H = 144; // row-mode line height (h-36)
 
 const GAP = 16; // Tailwind gap-4
 
@@ -257,9 +257,9 @@ function SkeletonLine() {
   return (
     // px-2 mirrors FontRow's inner rows, so the bars start on the same x as the
     // real name/preview text instead of flush against the panel edge.
-    <div className="flex h-28 flex-col justify-center gap-3 border-b px-2">
+    <div className="flex h-36 flex-col justify-center gap-3 border-b px-2">
       <div className="h-3 w-40 max-w-[60%] animate-pulse rounded bg-muted" />
-      <div className="h-7 w-2/3 animate-pulse rounded bg-muted" />
+      <div className="h-15 w-2/3 animate-pulse rounded bg-muted" />
     </div>
   );
 }

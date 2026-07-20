@@ -40,8 +40,8 @@ export function InstanceRow({
         style={style}
         onEditText={onEditText}
         ariaLabel={`preview text for ${inst.name}`}
-        buttonClassName="w-full cursor-text truncate border-transparent border-b text-start text-3xl leading-tight"
-        fieldClassName="w-full border-transparent border-b bg-transparent text-start text-3xl leading-tight outline-none focus:border-foreground"
+        buttonClassName="w-full cursor-text truncate border-transparent border-b text-start text-3xl leading-loose"
+        fieldClassName="w-full border-transparent border-b bg-transparent text-start text-3xl leading-loose outline-none focus:border-foreground"
       />
     </div>
   );
