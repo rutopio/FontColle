@@ -254,6 +254,7 @@ export function FilterSidebar({
               <ClassificationSection
                 title="Mood"
                 icon={SmileyMeltingIcon}
+                info="The following data comes from Google Fonts."
                 groups={moodClassifications}
                 selected={filter.classifications}
                 onToggle={(v) => toggle("classifications", v)}

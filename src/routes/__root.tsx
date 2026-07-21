@@ -100,6 +100,16 @@ export const Route = createRootRouteWithContext<{
       { rel: "icon", href: "/favicon.ico", sizes: "any" },
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
       { rel: "manifest", href: "/manifest.json" },
+      // Point LLMs / AI search tools at the machine-readable guide (field
+      // tables, the tag vocabulary, URL params). The llms.txt convention has no
+      // registered rel, so use type=text/markdown title=llms.txt — the pattern
+      // agents look for. On every page's head, so it's found from any entry.
+      {
+        rel: "alternate",
+        type: "text/markdown",
+        href: "/llms.txt",
+        title: "llms.txt",
+      },
     ],
   }),
   notFoundComponent: () => <NotFound />,

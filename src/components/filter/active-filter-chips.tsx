@@ -84,7 +84,7 @@ export function ActiveFilterChips({
             // spill onto its own second line, so the row still reads as chips
             // flowing left-to-right. Height matches PillButton: taller tap
             // target on mobile, compact on desktop.
-            className="flex min-h-9 max-w-full flex-wrap items-center gap-x-1.5 gap-y-1 rounded-md border border-input px-2.5 py-2 text-left text-muted-foreground text-xs transition-colors hover:border-foreground hover:text-foreground md:min-h-0 md:py-1"
+            className="flex min-h-9 max-w-full flex-wrap items-center gap-x-1.5 gap-y-1 rounded-md border border-input px-2.5 py-2 text-left text-muted-foreground text-xs transition-colors hover:border-foreground hover:text-foreground md:min-h-8 md:py-1"
             aria-label={`Remove filter ${group.section}: ${group.values
               .map((v) => v.value)
               .join(` ${group.joiner} `)}`}

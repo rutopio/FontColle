@@ -1,4 +1,5 @@
 import {
+  InfoIcon,
   SlidersHorizontalIcon,
   TextAaIcon,
   ToggleRightIcon,
@@ -8,6 +9,11 @@ import type { CSSProperties } from "react";
 import { useMemo } from "react";
 import { EditableValue } from "@/components/ui/editable-value";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { DEFAULT_ON, featureName } from "@/lib/fonts/features";
 import type { FontRecord } from "@/lib/fonts/types";
 import { useScrollReset } from "@/lib/use-scroll-reset";
@@ -244,7 +250,21 @@ export function DetailSidebar({
             <div className="flex items-center justify-between gap-2">
               <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase">
                 <ToggleRightIcon className="size-4" />
-                OpenType features
+                Features Toggle
+                <Tooltip>
+                  <TooltipTrigger
+                    type="button"
+                    aria-label="About the default toggle states"
+                    className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <InfoIcon className="size-3.5" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs normal-case">
+                    Each toggle starts in the state browsers apply by default
+                    per the W3C CSS Fonts spec: features like liga, calt, kern
+                    and ccmp are on, the rest off.
+                  </TooltipContent>
+                </Tooltip>
               </h2>
               <ResetButton
                 active={dirty}

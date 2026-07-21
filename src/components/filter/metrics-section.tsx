@@ -192,7 +192,7 @@ function MetricRangeRow({
                     onClick={() => pickQuartile(q)}
                     aria-pressed={active}
                     className={cn(
-                      "rounded border py-0.5 text-center text-[11px] transition-colors",
+                      "flex min-h-9 items-center justify-center rounded border py-0.5 text-center text-[11px] transition-colors md:min-h-8",
                       active
                         ? "border-primary bg-muted font-semibold text-foreground"
                         : "text-muted-foreground hover:border-foreground hover:text-foreground"

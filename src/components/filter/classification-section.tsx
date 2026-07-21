@@ -27,6 +27,7 @@ export function ClassificationSection({
   selected,
   onToggle,
   onReset,
+  info,
   mode,
   onToggleMode,
 }: {
@@ -38,6 +39,8 @@ export function ClassificationSection({
   selected: string[];
   onToggle: (v: string) => void;
   onReset: () => void;
+  // Optional tooltip note behind an info icon after the title (see SectionHeader).
+  info?: React.ReactNode;
   mode?: MatchMode;
   onToggleMode?: () => void;
 }) {
@@ -54,6 +57,7 @@ export function ClassificationSection({
         canSort={false}
         sort="count"
         onToggleSort={() => {}}
+        info={info}
         mode={mode}
         onToggleMode={onToggleMode}
       />

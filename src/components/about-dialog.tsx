@@ -1,4 +1,4 @@
-import { CloverIcon, GithubLogoIcon } from "@phosphor-icons/react";
+import { CloverIcon, GithubLogoIcon, HeartIcon } from "@phosphor-icons/react";
 import { LogoIcon } from "@/components/logo-icon";
 import { Button } from "@/components/ui/button";
 import {
@@ -65,6 +65,9 @@ function AboutBody({
         </p>
         <p className="text-balance">
           {SITE_NAME} itself is open source under the MIT license.
+        </p>
+        <p className="mx-auto">
+          <HeartIcon weight="fill" />
         </p>
         <p>
           Made by{" "}

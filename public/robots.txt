@@ -2,4 +2,7 @@
 User-agent: *
 Disallow:
 
+# LLMs / AI search tools: machine-readable catalog guide at
+# https://fontcolle.com/llms.txt (field tables, tag vocabulary, URL params).
+
 Sitemap: https://fontcolle.com/sitemap.xml

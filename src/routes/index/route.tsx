@@ -8,8 +8,8 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
+  startTransition,
   useCallback,
-  useDeferredValue,
   useEffect,
   useMemo,
   useRef,
@@ -164,12 +164,26 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
   //  - `filter` is derived from `search`, so it reflects the live URL and drives
   //    everything that must respond instantly: pills, rail, chips, active count,
   //    the search input and the sort write.
-  //  - `deferredFilter` trails it (useDeferredValue): the heavy applyFilters +
-  //    grid re-render run against this deferred copy, so React keeps the previous
-  //    results on screen while a burst of changes settles. The list never
-  //    flashes a skeleton or a transient "no results" between two chips.
+  //  - `deferredFilter` trails it: the heavy applyFilters + grid re-render run
+  //    against this deferred copy, so React keeps the previous results on screen
+  //    while a burst of changes settles. The list never flashes a skeleton or a
+  //    transient "no results" between two chips.
+  //
+  // `deferredFilter` is a plain state mirror advanced inside startTransition,
+  // NOT useDeferredValue. `filter` comes from Route.useSearch() — an external
+  // store (the URL) that navigate() updates synchronously, so every filter
+  // change is already a high-priority render by the time useDeferredValue sees
+  // it; the deferred copy has nothing to lag behind and the grid re-ran on the
+  // blocking commit. Copying `filter` into state via startTransition marks that
+  // copy (and everything it drives: applyFilters, the grid, its webfont loads)
+  // as an interruptible low-priority update, so the pill's active state and the
+  // chip's entrance animation paint on the urgent commit while results settle
+  // after. That is the "decouple the animation from the results/webfont" fix.
   const filter = useMemo(() => searchToFilter(search), [search]);
-  const deferredFilter = useDeferredValue(filter);
+  const [deferredFilter, setDeferredFilter] = useState(filter);
+  useEffect(() => {
+    startTransition(() => setDeferredFilter(filter));
+  }, [filter]);
 
   // Commit a filter change to the URL. Preserves the non-filter view modes
   // (sort, favorites) that live in the URL alongside the filter but aren't part
@@ -557,10 +571,7 @@ const HEADER_SKELETON = (
 function ListPending() {
   return (
     <FilterLayout sidebar={<div className="size-full" />}>
-      <Column
-        header={HEADER_SKELETON}
-        footer={<PreviewBar />}
-      >
+      <Column header={HEADER_SKELETON} footer={<PreviewBar />}>
         <SkeletonGrid view="grid" />
       </Column>
     </FilterLayout>
@@ -599,10 +610,7 @@ function FirstPagePending() {
 
   return (
     <FilterLayout sidebar={<div className="size-full" />}>
-      <Column
-        header={HEADER_SKELETON}
-        footer={<PreviewBar />}
-      >
+      <Column header={HEADER_SKELETON} footer={<PreviewBar />}>
         {/* Both layouts are rendered; CSS shows the one matching data-view, so
             the SSR'd list already matches the visitor's saved preference. See
             pending-grid-only / pending-row-only in styles.css. */}
