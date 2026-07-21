@@ -11,32 +11,85 @@ See tasks/todo.md + the gf-website-repo-lag memory. Needs GOOGLE_FONTS_API_KEY.
 """
 import json, os, sys
 
+import urllib.parse
 import urllib.request
 
+import harvest
 import harvest_api
-from to_dataset import to_record
+from to_dataset import apply_published_signals, load_published_map, to_record
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATASET = os.path.join(HERE, "..", "..", "src", "data", "fonts.json")
+# Where the repo harvester keeps primary TTFs; the backfills read from here.
+CACHE = os.path.join(HERE, "ttf_cache")
 API = harvest_api.API
-# The webfonts v1 API omits designer; the unofficial metadata endpoint carries it
-# (designers[]). Use it to fill the one field build_record can't.
+# The webfonts v1 API omits designer and license; the unofficial metadata
+# endpoint carries both. The catalog-wide list has designers[] but no license,
+# so the license needs the per-family endpoint (one request per family).
 METADATA = "https://fonts.google.com/metadata/fonts"
+
+
+def fetch_metadata(path=""):
+    """GET the metadata endpoint and strip Google's )]}' XSSI prefix."""
+    req = urllib.request.Request(
+        METADATA + path, headers={"User-Agent": "font-harvester/1.0"}
+    )
+    with urllib.request.urlopen(req, timeout=30) as r:
+        raw = r.read().decode("utf-8")
+    return json.loads(raw[raw.index("{"):])
 
 
 def designer_map():
     """name -> designer string (joined) from the metadata endpoint."""
-    req = urllib.request.Request(METADATA, headers={"User-Agent": "font-harvester/1.0"})
-    with urllib.request.urlopen(req, timeout=30) as r:
-        raw = r.read().decode("utf-8")
-    raw = raw[raw.index("{"):]  # strip the )]}' XSSI prefix
-    d = json.loads(raw)
+    d = fetch_metadata()
     out = {}
     for f in d.get("familyMetadataList", []):
         ds = f.get("designers") or []
         if ds:
             out[f["family"]] = ", ".join(ds)
     return out
+
+
+# The metadata endpoint spells licenses lowercase ("ofl"); the dataset uses the
+# repo's uppercase license-directory names, so map rather than upper().
+LICENSE_IDS = {"ofl": "OFL", "apache2": "APACHE2", "ufl": "UFL"}
+
+
+def license_for(family):
+    """Uppercase license id (OFL/APACHE2/UFL) for one family, None if unknown."""
+    try:
+        raw = fetch_metadata("/" + urllib.parse.quote(family))
+    except Exception as e:  # noqa: BLE001 - best-effort backfill, never fatal
+        print(f"WARN: license lookup failed for {family}: {e}", file=sys.stderr)
+        return None
+    return LICENSE_IDS.get((raw.get("license") or "").lower())
+
+def seed_cache(rec, item):
+    """Mirror a family's primary TTF into ttf_cache under the repo layout
+    ({licenseDir}/{id}/{primaryTtf}) and set the two fields that address it.
+
+    gstatic serves hash-named files, so synthesize a repo-style filename from
+    the family name and its axes. Nothing parses this name, it only has to be
+    stable so re-runs hit the same path."""
+    files = item.get("files") or {}
+    url = files.get("regular") or next(iter(files.values()), None)
+    if not url or not rec.get("license"):
+        return
+    stem = rec["name"].replace(" ", "")
+    axes = ",".join(a["tag"] for a in (rec.get("axes") or []))
+    fname = f"{stem}[{axes}].ttf" if axes else f"{stem}-Regular.ttf"
+    license_dir = rec["license"].lower()
+    path = os.path.join(CACHE, license_dir, rec["id"], fname)
+    if not os.path.exists(path):
+        # harvest.fetch is URL-cached, so this is usually a local copy, not a
+        # second download of the file build_record already pulled.
+        data = harvest.fetch(url.replace("http://", "https://"), binary=True)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "wb") as fh:
+            fh.write(data)
+    rec["licenseDir"] = license_dir
+    rec["primaryTtf"] = fname
+
 
 # The families we want that the repo lacks. Kept explicit so we never pull the
 # whole webfonts catalog by accident.
@@ -66,11 +119,26 @@ def main():
             raws.append(rec)
 
     finals = [to_record(r) for r in raws if r.get("name")]
+    # to_record() alone omits the published-signal fields (isPublished,
+    # displayName, popularity/trending ranks, isNoto/isBrandFont/isOpenSource);
+    # the full pipeline adds them in a second pass over the whole catalog. Run
+    # that same pass here so these records carry every key a repo record does.
+    apply_published_signals(finals, load_published_map())
     # Fill designer from the metadata endpoint (webfonts v1 omits it).
     dmap = designer_map()
     for r in finals:
         if not r.get("designer") and r["name"] in dmap:
             r["designer"] = dmap[r["name"]]
+        # License likewise comes from metadata, not webfonts v1. Without it the
+        # detail page's License panel has no boilerplate to show at all.
+        if not r.get("license"):
+            r["license"] = license_for(r["name"])
+        # Mirror the primary TTF into ttf_cache under the repo layout so the
+        # cache-reading backfills (glyph coverage in particular) can find it;
+        # without licenseDir/primaryTtf they skip these families and the Glyphs
+        # page shows "No glyph coverage."
+        if not r.get("primaryTtf"):
+            seed_cache(r, items[r["name"]])
         # Mark these as API-sourced so the daily repo diff (daily_update.py)
         # doesn't treat them as "removed" for being absent from the repo tree.
         r["apiOnly"] = True
