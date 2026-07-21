@@ -74,6 +74,21 @@ def main():
         # Mark these as API-sourced so the daily repo diff (daily_update.py)
         # doesn't treat them as "removed" for being absent from the repo tree.
         r["apiOnly"] = True
+        # The repo-only backfills (version_history, about, specimens, license,
+        # contrast) never run for these families, so the fields they add are
+        # absent. FontRecord declares versionHistory/designerProfiles as
+        # non-null arrays and the rest as nullable — the detail page iterates
+        # versionHistory and reads .length, so a missing value throws
+        # ("history is not iterable"). Seed every backfill field to its
+        # type-correct empty value so the record satisfies the FontRecord
+        # contract exactly like a repo family before its backfills run.
+        r.setdefault("versionHistory", [])
+        r.setdefault("designerProfiles", [])
+        r.setdefault("specimen", None)
+        r.setdefault("contrast", None)
+        r.setdefault("firstCommitDate", None)
+        r.setdefault("about", None)
+        r.setdefault("licenseHeader", None)
     print(f"\n=== {len(finals)} records transformed ===", file=sys.stderr)
     for r in finals:
         print(f"  {r['id']:28} class={r.get('class'):8} "
