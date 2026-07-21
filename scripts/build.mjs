@@ -7,20 +7,39 @@
 // TypeSpan's build wrapper, do not revert to plain `vite build`.)
 process.env.NODE_ENV ??= "production";
 
-// The data assets (src/data/fonts.json, public/glyphs, public/og) live in R2,
-// not git (see src/data/data-manifest.json). A build from a fresh clone,
+// The full data assets (src/data/fonts.json, public/glyphs, public/og) live in
+// R2, not git (see src/data/data-manifest.json). A build from a fresh clone,
 // notably Cloudflare Workers Builds, which clones the repo on every push,
 // must pull them first. Local trees that already have the files skip this;
 // `pnpm pull:data` refreshes explicitly.
-import { existsSync } from "node:fs";
+//
+// A fork without R2 credentials (a UI/UX contributor) can't pull. When the sync
+// fails, fall back to the committed 24-record sample (src/data/fonts.sample.json)
+// so the build still produces a working, if small, catalog. The full dataset
+// needs a harvest — see the README's Contributing section.
+import { copyFileSync, existsSync } from "node:fs";
 
+const url = (p) => new URL(p, import.meta.url);
 const assetPaths = [
   "../src/data/fonts.json",
   "../public/glyphs",
   "../public/og",
 ];
-if (assetPaths.some((p) => !existsSync(new URL(p, import.meta.url)))) {
-  await import("./sync-assets.mjs");
+if (assetPaths.some((p) => !existsSync(url(p)))) {
+  try {
+    await import("./sync-assets.mjs");
+  } catch (err) {
+    if (existsSync(url("../src/data/fonts.json"))) throw err;
+    console.warn(
+      `[build] R2 sync failed (${err?.message ?? err}); falling back to the ` +
+        "sample catalog (src/data/fonts.sample.json). Run a harvest for the " +
+        "full dataset — see the README."
+    );
+    copyFileSync(
+      url("../src/data/fonts.sample.json"),
+      url("../src/data/fonts.json")
+    );
+  }
 }
 
 // Emit public/sitemap.xml (+ robots Sitemap line) before the build so the

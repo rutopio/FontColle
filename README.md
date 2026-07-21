@@ -34,7 +34,7 @@ pnpm pull:data    # fetch the data assets from R2 (first clone only)
 pnpm dev          # vite dev server on :3000
 ```
 
-`pnpm pull:data` needs a `CLOUDFLARE_API_TOKEN` with R2 read on the `fontcolle-assets` bucket, which only the maintainers have: see [Data pipeline](#data-pipeline). **Outside contributors should [build a small dataset locally](#running-without-r2-access) instead** — no Cloudflare account or API key required.
+`pnpm pull:data` needs a `CLOUDFLARE_API_TOKEN` with R2 read on the `fontcolle-assets` bucket, which only the maintainers have: see [Data pipeline](#data-pipeline). **Outside contributors skip it** — `pnpm build` falls back to a committed 24-family sample, so `pnpm build && pnpm dev` runs with no Cloudflare account or API key. Details, and how to harvest more families, in [Running without R2 access](#running-without-r2-access).
 
 `pnpm check` runs Biome (with `--write`) then `tsc --noEmit`; run it before committing. `pnpm build` produces the Workers bundle in `dist/`.
 
@@ -63,7 +63,16 @@ The font data is read-only, identical for every visitor, and refreshed once a da
 
 ### Running without R2 access
 
-The R2 bucket is maintainer-only, so `pnpm pull:data` will not work on a fork. You do not need it: the harvester reads straight from the public [google/fonts](https://github.com/google/fonts) repo, so you can build a small dataset yourself and develop against that. A handful of families is enough to exercise the UI.
+The R2 bucket is maintainer-only, so `pnpm pull:data` will not work on a fork. **You do not need it to work on the UI.** A 24-family sample dataset ships in git (`src/data/fonts.sample.json`), and `pnpm build` falls back to it automatically when the R2 pull fails, so a fresh clone runs with zero data setup:
+
+```bash
+pnpm install
+pnpm build && pnpm dev   # first build seeds the sample catalog; dev after that
+```
+
+That is enough to exercise the layout, filters, detail page and most components against real records. Glyph-coverage data and OG images still live in R2, so the few pages that use them degrade rather than fail.
+
+Want more families? The harvester reads straight from the public [google/fonts](https://github.com/google/fonts) repo, so you can build your own dataset of any size — no Cloudflare account or API key required:
 
 ```bash
 cd scripts/harvester
@@ -73,7 +82,7 @@ cd ../..
 pnpm dev
 ```
 
-Run it from `scripts/harvester/`: `harvest.py` writes `stress_output.json` to the working directory, and only that path is gitignored.
+This overwrites `src/data/fonts.json` (gitignored) with your harvested set, taking precedence over the sample. Run it from `scripts/harvester/`: `harvest.py` writes `stress_output.json` to the working directory, and only that path is gitignored.
 
 Two things worth knowing before you run it:
 
