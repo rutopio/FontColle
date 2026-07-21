@@ -399,7 +399,7 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
         scrollViewportRef={scrollRef}
         header={
           <>
-            <div className="flex items-center gap-2 max-md:w-full">
+            <div className="flex min-w-0 flex-1 items-center gap-2 max-md:w-full">
               <SearchInput
                 inputRef={searchRef}
                 query={filter.query}
@@ -745,7 +745,7 @@ function SearchInput({
   };
 
   return (
-    <div className="relative w-72 max-md:w-full max-md:min-w-0 max-md:flex-1 xl:w-96">
+    <div className="relative min-w-0 flex-1 md:max-w-72 xl:max-w-96">
       <MagnifyingGlassIcon className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
       <Input
         ref={inputRef}

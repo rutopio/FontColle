@@ -54,6 +54,19 @@ function haystackFor(font: FontRecord): string {
   return parts.join(" ");
 }
 
+// How literally a font's name answers the query. uFuzzy ranks by match shape
+// alone, so "Noto Sans" and "Noto Sans TC" score alike; this tier pulls the
+// exact family ahead of its derivatives. Lower is better.
+function exactnessTier(font: FontRecord, needle: string): number {
+  const names = [font.name, font.displayName].filter(Boolean) as string[];
+  const folded = names.map((n) => n.toLowerCase());
+  if (folded.some((n) => n === needle)) return 0;
+  if (folded.some((n) => n.startsWith(`${needle} `))) return 1;
+  if (folded.some((n) => n.startsWith(needle))) return 2;
+  if (folded.some((n) => n.includes(needle))) return 3;
+  return 4;
+}
+
 // Fuzzy text search over name / display name / designers / vendor, returning the
 // matches best-first. The caller runs this AFTER applyFilters, so `fonts` is
 // already the facet-filtered candidate set; an empty query is handled upstream.
@@ -70,8 +83,20 @@ export function searchByQuery(
   if (!idxs || idxs.length === 0) return [];
   // With ranking info, `order` indexes into `info.idx`; without it (very short
   // needles that skip the info pass) `idxs` is already the match set.
-  if (info && order) return order.map((o) => fonts[info.idx[o]]);
-  return idxs.map((i) => fonts[i]);
+  const ranked =
+    info && order ? order.map((o) => fonts[info.idx[o]]) : idxs.map((i) => fonts[i]);
+  // Stable re-sort: literal name hits first, uFuzzy's relevance order within a
+  // tier, and the shorter name wins a tie so "Noto Sans" precedes "Noto Sans TC".
+  const lower = needle.toLowerCase();
+  return ranked
+    .map((font, i) => ({ font, i, tier: exactnessTier(font, lower) }))
+    .sort(
+      (a, b) =>
+        a.tier - b.tier ||
+        (a.tier < 4 ? a.font.name.length - b.font.name.length : 0) ||
+        a.i - b.i
+    )
+    .map((e) => e.font);
 }
 
 // Levenshtein edit distance between two short strings, capped implicitly by

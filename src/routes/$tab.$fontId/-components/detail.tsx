@@ -374,29 +374,22 @@ export function Detail({
               // "menu" is a synthetic subset (the family name glyphs), not a
               // real script subset, so exclude it from the list and the count.
               count={subsets.length || undefined}
-              className="md:col-span-1"
+              // flex-col + a flex-1 body give ColumnList a real height to fill:
+              // the panel is already stretched to the row's tallest card, but
+              // without this chain that height stops at the section.
+              className="flex flex-col md:col-span-1"
+              bodyClassName="flex-1"
             >
-              <div className="grid grid-cols-1 gap-x-3 gap-y-1 text-sm lg:grid-cols-2">
-                {subsets.map((s) => (
-                  <span key={s} className="truncate text-muted-foreground">
-                    {s}
-                  </span>
-                ))}
-              </div>
+              <ColumnList items={subsets} />
             </Panel>
             {font.scripts.length > 0 && (
               <Panel
                 label="Writing systems"
                 count={font.scripts.length}
-                className="md:col-span-1"
+                className="flex flex-col md:col-span-1"
+                bodyClassName="flex-1"
               >
-                <div className="grid grid-cols-1 gap-x-3 gap-y-1 text-sm lg:grid-cols-2">
-                  {font.scripts.map((s) => (
-                    <span key={s} className="truncate text-muted-foreground">
-                      {scriptLabel(s)}
-                    </span>
-                  ))}
-                </div>
+                <ColumnList items={font.scripts.map(scriptLabel)} />
               </Panel>
             )}
 
@@ -476,6 +469,35 @@ const DATE_FMT = new Intl.DateTimeFormat("en-US", {
 function formatDate(iso: string): string {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso;
   return DATE_FMT.format(new Date(`${iso}T00:00:00Z`));
+}
+
+// A bulleted list whose left column fills to the bottom of the panel before
+// anything spills into the right one.
+//
+// This is what CSS multi-column does under `column-fill: auto` — but only when
+// the container has a height to fill. The default `balance` instead evens the
+// columns out, which is why an auto-height list splits ~50/50. So the list runs
+// h-full inside a panel whose body is stretched (flex-col + flex-1 on the
+// Panel), giving the columns the row's full card height to work against.
+//
+// The bullet is a ::before dot rather than list-disc: a marker is painted
+// outside the item's content box, so `truncate` (overflow-hidden) on a long
+// entry clips it away.
+function ColumnList({ items }: { items: string[] }) {
+  return (
+    <ul className="h-full columns-1 gap-x-3 text-sm [column-fill:auto] lg:columns-2">
+      {items.map((item) => (
+        <li
+          key={item}
+          // Row spacing is a per-item margin, not gap-y: the parent is a
+          // multi-column container, where gap only sets the column gutter.
+          className="mb-2 flex min-w-0 items-center gap-1.5 text-muted-foreground before:size-1 before:shrink-0 before:rounded-full before:bg-current before:content-['']"
+        >
+          <span className="truncate">{item}</span>
+        </li>
+      ))}
+    </ul>
+  );
 }
 
 // The version shipped on (or most recently before) a given "yyyy-MM-dd" date,

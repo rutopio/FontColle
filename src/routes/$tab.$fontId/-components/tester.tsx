@@ -33,6 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import { previewStyle } from "@/lib/fonts/preview-style";
 import type { FontInstance } from "@/lib/fonts/types";
@@ -473,7 +474,7 @@ function TesterInner({
           the same scope the Style dropdown works on. Clicking the lit chip
           again clears it, so a block can go back to the document default. */}
       {instances.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 border-b pb-3">
+        <div className="mb-4 flex flex-wrap items-center gap-2">
           <span className="text-muted-foreground text-xs">Instance</span>
           {instances.map((inst) => {
             const style = instanceStyle(inst.coords, inst.italic);
@@ -503,6 +504,11 @@ function TesterInner({
         </div>
       )}
 
+      {/* Full-bleed: negative margins cancel the Column body's own padding
+          (p-4, md:p-6) so the rule spans the whole column instead of stopping
+          at the text edge. The values have to track that padding at both
+          breakpoints, hence the md: variant. */}
+      <Separator className="-mx-4 data-horizontal:w-auto md:-mx-6" />
       {/* EDITOR: the document surface. Only vertical padding: the toolbar and
           the document share the column's left edge, so an inset here would
           make the text hang off it. Colour comes from the theme. */}
