@@ -1,10 +1,10 @@
 {
   "version": 1,
   "fonts": {
-    "key": "fonts/20260720.json",
-    "date": "20260720",
-    "sha256": "d009f399837e261d043e9e63f0962e6dfe5a1aae104d7c4e673a1931df9c1e17",
-    "bytes": 20994444
+    "key": "fonts/20260721.json",
+    "date": "20260721",
+    "sha256": "cf5443859c7b29266c47e9b68538dda1d86d36f19720e4fbac2b325000433905",
+    "bytes": 20994445
   },
   "glyphs": {
     "key": "glyphs/glyphs.tar.gz",
