@@ -11,9 +11,10 @@ import {
 
 // A fully-populated FilterState touching every field of the interface, so the
 // round-trip test exercises the whole codec, not just the common ones. Values
-// are chosen to be underscore-free where the encoder joins with "_" (class,
-// facet, feature, axis, weight, width, script, color, cfmt, vnd, lic, repo,
-// act, flag, ital, upm), an underscore inside a value would be indistinguish-
+// are chosen to be underscore-free where the encoder joins with "_" (category,
+// tag, feature, axis, weight, width, script, color, colorformat, vendor,
+// license, repo, activity, noto, italic, upm), an underscore inside a value
+// would be indistinguish-
 // able from the separator on decode, which is a real (accepted) limitation of
 // the scheme, not something these fields ever hold in practice.
 const fullFilter: FilterState = {
@@ -28,7 +29,9 @@ const fullFilter: FilterState = {
   languages: ["en_Latn", "ru_Cyrl"], // comma-joined, "_" is safe here
   color: ["color"],
   colorFormats: ["COLR", "SVG"],
-  classifications: ["/Serif/Didone", "/Sans/Humanist"],
+  // One form ("style" group) and one feel ("mood" group) path, so the round-trip
+  // exercises both the `style` and `mood` URL params the codec splits into.
+  classifications: ["/Serif/Didone", "/Expressive/Playful"],
   // FINDING (real bug, documented, see "designer values ..." test below):
   // designer tokens must NOT themselves contain a comma, because filterToSearch
   // comma-joins them and searchToFilter comma-splits them. A single stored
@@ -41,7 +44,7 @@ const fullFilter: FilterState = {
   license: ["OFL", "APACHE2"],
   repoHosts: ["github", "gitlab"],
   activity: ["active"],
-  flags: ["noto"],
+  flags: ["others"], // encodes to noto=non-noto, exercising the source remap
   italic: ["italic"],
   upm: ["1000", "2048"],
   metrics: {
@@ -101,8 +104,8 @@ describe("searchToFilter(filterToSearch(f)) round-trip", () => {
   it("distinguishes hasHinting false from undefined", () => {
     const off = filterToSearch({ ...emptyFilter, hasHinting: undefined });
     const no = filterToSearch({ ...emptyFilter, hasHinting: false });
-    expect(off.hint).toBeUndefined();
-    expect(no.hint).toBe("0");
+    expect(off.hinting).toBeUndefined();
+    expect(no.hinting).toBe("unhinted");
     expect(searchToFilter(no).hasHinting).toBe(false);
     expect(searchToFilter(off).hasHinting).toBeUndefined();
   });
@@ -133,11 +136,11 @@ describe("filterToSearch normalization", () => {
     expect(s.mode).toBe("facets:any");
   });
 
-  it("joins list params with underscore, dsr/lang with comma", () => {
+  it("joins list params with underscore, designer/lang with comma", () => {
     const s = filterToSearch(fullFilter);
-    expect(s.class).toBe("Serif_Sans");
+    expect(s.category).toBe("Serif_Sans");
     expect(s.weight).toBe("400_700");
-    expect(s.dsr).toContain(","); // designer names keep the comma
+    expect(s.designer).toContain(","); // designer names keep the comma
     expect(s.lang).toBe("en_Latn,ru_Cyrl");
   });
 
@@ -146,7 +149,36 @@ describe("filterToSearch normalization", () => {
       ...emptyFilter,
       classifications: ["/Serif/Didone", "/Sans/Humanist"],
     });
-    expect(s.cls).toBe("Serif.Didone_Sans.Humanist");
+    expect(s.style).toBe("Serif.Didone_Sans.Humanist");
+  });
+
+  it("splits classifications into style (form) and mood (feel) params", () => {
+    const s = filterToSearch({
+      ...emptyFilter,
+      classifications: ["/Serif/Didone", "/Expressive/Playful", "/Sans/Humanist"],
+    });
+    expect(s.style).toBe("Serif.Didone_Sans.Humanist");
+    expect(s.mood).toBe("Expressive.Playful");
+  });
+
+  it("merges style and mood params back into one classifications array", () => {
+    const f = searchToFilter({
+      style: "Serif.Didone",
+      mood: "Expressive.Playful",
+    });
+    expect(f.classifications).toEqual(["/Serif/Didone", "/Expressive/Playful"]);
+  });
+
+  it("spells the source radio with its pill labels (noto / non-noto)", () => {
+    expect(filterToSearch({ ...emptyFilter, flags: ["noto"] }).noto).toBe(
+      "noto"
+    );
+    expect(filterToSearch({ ...emptyFilter, flags: ["others"] }).noto).toBe(
+      "non-noto"
+    );
+    // and back: the URL "non-noto" decodes to the internal "others" flag.
+    expect(searchToFilter({ noto: "non-noto" }).flags).toEqual(["others"]);
+    expect(searchToFilter({ noto: "noto" }).flags).toEqual(["noto"]);
   });
 });
 
@@ -155,31 +187,30 @@ describe("searchToFilter reverse-direction edge cases", () => {
     expect(searchToFilter({})).toEqual(emptyFilter);
   });
 
-  it("accepts legacy comma-separated list params", () => {
-    // Links shared before the underscore-join change use commas; splitUnderscore
-    // must still honour them.
-    expect(searchToFilter({ class: "Serif,Sans" }).classes).toEqual([
+  it("accepts either comma or underscore as the list separator", () => {
+    // splitUnderscore honours both, so a hand-typed comma URL still parses.
+    expect(searchToFilter({ category: "Serif,Sans" }).classes).toEqual([
       "Serif",
       "Sans",
     ]);
   });
 
-  it("accepts legacy comma/slash classification form", () => {
+  it("accepts the raw comma/slash classification form", () => {
     expect(
-      searchToFilter({ cls: "/Serif/Didone,/Sans/Humanist" }).classifications
+      searchToFilter({ style: "/Serif/Didone,/Sans/Humanist" }).classifications
     ).toEqual(["/Serif/Didone", "/Sans/Humanist"]);
   });
 
   it("drops a fully non-numeric metric range", () => {
     // "abc".split("-") -> ["abc"]; both bounds NaN, so the range is dropped.
-    expect(searchToFilter({ mxh: "abc" }).metrics).toEqual({});
+    expect(searchToFilter({ xheight: "abc" }).metrics).toEqual({});
   });
 
   // Regression: Number("") is 0, so a truncated half-open range like "0.4-"
   // used to silently decode to [0.4, 0]. parseRange now rejects empty parts.
   it("drops a half-open metric range instead of mis-parsing it", () => {
-    expect(searchToFilter({ mxh: "0.4-" }).metrics).toEqual({});
-    expect(searchToFilter({ mxh: "-0.4" }).metrics).toEqual({});
+    expect(searchToFilter({ xheight: "0.4-" }).metrics).toEqual({});
+    expect(searchToFilter({ xheight: "-0.4" }).metrics).toEqual({});
   });
 
   it("designer values containing a comma round-trip lossily (documented)", () => {
@@ -204,12 +235,12 @@ describe("searchToFilter reverse-direction edge cases", () => {
     // search object.
     const canonical: FilterSearch = {
       q: "roboto",
-      class: "Sans",
+      category: "Sans",
       weight: "400_700",
       lang: "en_Latn",
-      cls: "Sans.Humanist",
-      mxh: "0.45-0.55",
-      hint: "1",
+      style: "Sans.Humanist",
+      xheight: "0.45-0.55",
+      hinting: "hinted",
       mode: "facets:any",
     };
     expect(filterToSearch(searchToFilter(canonical))).toEqual(canonical);

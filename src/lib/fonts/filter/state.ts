@@ -2,6 +2,7 @@
 // live in the URL so they persist across list <-> detail navigation and the
 // detail sidebar can link back to the list with a filter applied.
 import type { MetricKey, MetricRange } from "@/lib/fonts/metrics";
+import { classificationGroupOf } from "./facets";
 import {
   type MatchMode,
   MODE_KEYS,
@@ -95,36 +96,46 @@ export const emptyFilter: FilterState = {
 // buildFacetIndex keeps them out of the `facets` list it emits.
 export const FONT_TYPE_FACETS = ["static", "variable"];
 
-// URL search-param shape. Arrays are comma-joined; empty keys are omitted.
+// URL search-param shape. Param names track the field's meaning (and, where a
+// UI section owns exactly one field, its section title) so a shared URL reads
+// plainly: ?category=Sans&style=Serif.Transitional. Arrays are comma-joined;
+// empty keys are omitted.
 export interface FilterSearch {
   q?: string;
-  class?: string;
-  facet?: string;
-  feature?: string;
-  axis?: string;
+  category?: string; // primary class ("Serif", "Sans", …), the Category cards
+  tag?: string; // trait facet tags, "_"-joined
+  feature?: string; // OpenType feature tags
+  axis?: string; // variable-axis tags
   weight?: string;
   width?: string;
   script?: string;
   lang?: string;
   color?: string;
-  cfmt?: string;
-  cls?: string; // classification tag paths, "Section.Subtag"-joined by "_"
-  dsr?: string; // designer names, comma-joined
-  vnd?: string; // vendor ids (folded), comma-joined
-  lic?: string; // license ids
-  repo?: string; // repository host buckets, comma-joined
-  act?: string; // activity radio: "latest" | "active" | "recent" | "dormant"
-  flag?: string; // source radio: "noto" | "others"
-  ital?: string; // italic radio: "italic" | "upright"
-  upm?: string; // units-per-em values, comma-joined
-  // Metric ranges, each "lo-hi" (e.g. mxh=0.45-0.55). One key per metric.
-  mxh?: string; // x-height ratio
-  mch?: string; // cap-height ratio
-  mlh?: string; // line-height ratio
-  maw?: string; // avg width ratio
-  mct?: string; // contrast ratio
-  mfs?: string; // file size (raw bytes)
-  hint?: string; // "1" = Hinted, "0" = No Hinted
+  colorformat?: string; // color-table formats ("COLR", "SVG", …)
+  // Classification tag paths, "Section.Subtag"-joined by "_". The single
+  // `classifications` state splits across two params by rail group so the URL
+  // matches the panels: form sections -> `style`, feel sections -> `mood`.
+  style?: string; // form classifications (Serif / Sans / Script …)
+  mood?: string; // feel classifications (Expressive / Theme / Seasonal)
+  designer?: string; // designer names, comma-joined
+  vendor?: string; // vendor ids (folded), "_"-joined
+  license?: string; // license ids
+  repo?: string; // repository host buckets
+  activity?: string; // activity radio: "latest" | "active" | "recent" | "dormant"
+  // Noto-membership radio. The URL value tracks the section's pill labels
+  // ("noto" | "non-noto"); the "non-noto" spelling maps to the internal flag
+  // value "others" (see encodeSource/decodeSource).
+  noto?: string;
+  italic?: string; // italic radio: "italic" | "upright"
+  upm?: string; // units-per-em values
+  // Metric ranges, each "lo-hi" (e.g. xheight=0.45-0.55). One key per metric.
+  xheight?: string; // x-height ratio
+  capheight?: string; // cap-height ratio
+  lineheight?: string; // line-height ratio
+  avgwidth?: string; // avg width ratio
+  contrast?: string; // contrast ratio
+  filesize?: string; // file size (raw bytes)
+  hinting?: string; // "hinted" | "unhinted" (radio-style, like `italic`)
   // Non-default section modes, comma-joined "key:mode" (e.g. "facets:any").
   mode?: string;
   sort?: string; // sort key, not a filter (view mode lives in localStorage)
@@ -151,20 +162,20 @@ const splitUnderscore = (v: string | undefined): string[] => {
   return v.split(sep).filter(Boolean);
 };
 
-// The `cls` param carries classification tag paths ("/Serif/Didone", …). Comma-
-// joining them like every other list makes an unreadable URL, because both the
-// "," between entries and the "/" inside each path percent-encode (?cls=%2FSerif
-// %2FDidone%2C…). Every path is exactly "/Section/Subtag" (no path has three
-// segments and no segment contains "." or "_"), so a friendlier lossless form is
-// to drop the leading "/", write the inner "/" as ".", and join entries with
-// "_": ?cls=Serif.Didone_Sans.Humanist. Decode still accepts the legacy comma
-// form so URLs shared before this change keep working.
+// The `style`/`mood` params carry classification tag paths ("/Serif/Didone", …).
+// Comma-joining them like every other list makes an unreadable URL, because both
+// the "," between entries and the "/" inside each path percent-encode
+// (?style=%2FSerif%2FDidone%2C…). Every path is exactly "/Section/Subtag" (no
+// path has three segments and no segment contains "." or "_"), so a friendlier
+// lossless form is to drop the leading "/", write the inner "/" as ".", and join
+// entries with "_": ?style=Serif.Didone_Sans.Humanist.
 const encodeClasses = (paths: string[]): string =>
   paths.map((p) => p.replace(/^\//, "").replace(/\//g, ".")).join("_");
 
 const decodeClasses = (v: string | undefined): string[] => {
   if (!v) return [];
-  // Legacy form still contains raw slashes; split on comma and keep as-is.
+  // A raw slash means the caller hand-typed the "/Section/Subtag" form; split on
+  // comma and keep as-is.
   if (v.includes("/")) return v.split(",").filter(Boolean);
   return v
     .split("_")
@@ -172,18 +183,49 @@ const decodeClasses = (v: string | undefined): string[] => {
     .map((seg) => `/${seg.replace(/\./g, "/")}`);
 };
 
+// classifications is one state array but two URL params: `style` (form sections)
+// and `mood` (feel sections), matching the two rail panels. Split on encode by
+// each path's rail group; a path whose prefix matches no section (group null)
+// falls back to `style` so it never silently vanishes. Merge both params on
+// decode back into the single array. Order within each param is preserved;
+// across params, style entries precede mood, which is fine because
+// classifications is an unordered set (OR-within by default).
+function encodeClassifications(paths: string[], s: FilterSearch): void {
+  const style = paths.filter((p) => classificationGroupOf(p) !== "mood");
+  const mood = paths.filter((p) => classificationGroupOf(p) === "mood");
+  if (style.length) s.style = encodeClasses(style);
+  if (mood.length) s.mood = encodeClasses(mood);
+}
+
+function decodeClassifications(s: FilterSearch): string[] {
+  return [...decodeClasses(s.style), ...decodeClasses(s.mood)];
+}
+
+// Source (Noto-membership) radio. The internal flag value is "noto" | "others";
+// the URL spells the second bucket "non-noto" to match the "Non-Noto" pill. Only
+// this one value is remapped, so a plain lookup each way keeps the round-trip
+// lossless and leaves an unknown token to fall through unchanged.
+const encodeSource = (v: string): string => (v === "others" ? "non-noto" : v);
+const decodeSource = (v: string): string => (v === "non-noto" ? "others" : v);
+
 // URL <-> metric-range codec. "lo-hi", each a plain number so the round-trip is
 // lossless; negatives never occur in these domains, so "-" is a safe separator.
 // The URL param name per metric. Every one is a string-valued FilterSearch key,
 // so encode can assign a string to it without widening to view/sort.
-type MetricParam = "mxh" | "mch" | "mlh" | "maw" | "mct" | "mfs";
+type MetricParam =
+  | "xheight"
+  | "capheight"
+  | "lineheight"
+  | "avgwidth"
+  | "contrast"
+  | "filesize";
 const METRIC_PARAM: Record<MetricKey, MetricParam> = {
-  xHeight: "mxh",
-  capHeight: "mch",
-  lineHeight: "mlh",
-  avgWidth: "maw",
-  contrast: "mct",
-  fileSize: "mfs",
+  xHeight: "xheight",
+  capHeight: "capheight",
+  lineHeight: "lineheight",
+  avgWidth: "avgwidth",
+  contrast: "contrast",
+  fileSize: "filesize",
 };
 
 const parseRange = (v: string | undefined): MetricRange | undefined => {
@@ -242,29 +284,34 @@ function encodeModes(modes: FilterState["matchModes"]): string | undefined {
 export function searchToFilter(s: FilterSearch): FilterState {
   return {
     query: s.q ?? "",
-    classes: splitUnderscore(s.class),
-    facets: splitUnderscore(s.facet),
+    classes: splitUnderscore(s.category),
+    facets: splitUnderscore(s.tag),
     features: splitUnderscore(s.feature),
     axes: splitUnderscore(s.axis),
     weights: splitUnderscore(s.weight),
     widths: splitUnderscore(s.width),
     scripts: splitUnderscore(s.script),
-    // dsr and lang keep the comma: designer names contain "," and ".", language
-    // ids contain "_", so neither has a safe underscore separator.
+    // designer and lang keep the comma: designer names contain "," and ".",
+    // language ids contain "_", so neither has a safe underscore separator.
     languages: splitCsv(s.lang),
     color: splitUnderscore(s.color),
-    colorFormats: splitUnderscore(s.cfmt),
-    classifications: decodeClasses(s.cls),
-    designers: splitCsv(s.dsr),
-    vendors: splitUnderscore(s.vnd),
-    license: splitUnderscore(s.lic),
+    colorFormats: splitUnderscore(s.colorformat),
+    classifications: decodeClassifications(s),
+    designers: splitCsv(s.designer),
+    vendors: splitUnderscore(s.vendor),
+    license: splitUnderscore(s.license),
     repoHosts: splitUnderscore(s.repo),
-    activity: splitUnderscore(s.act),
-    flags: splitUnderscore(s.flag),
-    italic: splitUnderscore(s.ital),
+    activity: splitUnderscore(s.activity),
+    flags: splitUnderscore(s.noto).map(decodeSource),
+    italic: splitUnderscore(s.italic),
     upm: splitUnderscore(s.upm),
     metrics: decodeMetrics(s),
-    hasHinting: s.hint === "1" ? true : s.hint === "0" ? false : undefined,
+    hasHinting:
+      s.hinting === "hinted"
+        ? true
+        : s.hinting === "unhinted"
+          ? false
+          : undefined,
     matchModes: decodeModes(s.mode),
   };
 }
@@ -272,28 +319,29 @@ export function searchToFilter(s: FilterSearch): FilterState {
 export function filterToSearch(f: FilterState): FilterSearch {
   const s: FilterSearch = {};
   if (f.query) s.q = f.query;
-  if (f.classes.length) s.class = joinUnderscore(f.classes);
-  if (f.facets.length) s.facet = joinUnderscore(f.facets);
+  if (f.classes.length) s.category = joinUnderscore(f.classes);
+  if (f.facets.length) s.tag = joinUnderscore(f.facets);
   if (f.features.length) s.feature = joinUnderscore(f.features);
   if (f.axes.length) s.axis = joinUnderscore(f.axes);
   if (f.weights.length) s.weight = joinUnderscore(f.weights);
   if (f.widths.length) s.width = joinUnderscore(f.widths);
   if (f.scripts.length) s.script = joinUnderscore(f.scripts);
-  // dsr and lang keep the comma (see searchToFilter).
+  // designer and lang keep the comma (see searchToFilter).
   if (f.languages.length) s.lang = f.languages.join(",");
   if (f.color.length) s.color = joinUnderscore(f.color);
-  if (f.colorFormats.length) s.cfmt = joinUnderscore(f.colorFormats);
-  if (f.classifications.length) s.cls = encodeClasses(f.classifications);
-  if (f.designers.length) s.dsr = f.designers.join(",");
-  if (f.vendors.length) s.vnd = joinUnderscore(f.vendors);
-  if (f.license.length) s.lic = joinUnderscore(f.license);
+  if (f.colorFormats.length) s.colorformat = joinUnderscore(f.colorFormats);
+  if (f.classifications.length) encodeClassifications(f.classifications, s);
+  if (f.designers.length) s.designer = f.designers.join(",");
+  if (f.vendors.length) s.vendor = joinUnderscore(f.vendors);
+  if (f.license.length) s.license = joinUnderscore(f.license);
   if (f.repoHosts.length) s.repo = joinUnderscore(f.repoHosts);
-  if (f.activity.length) s.act = joinUnderscore(f.activity);
-  if (f.flags.length) s.flag = joinUnderscore(f.flags);
-  if (f.italic.length) s.ital = joinUnderscore(f.italic);
+  if (f.activity.length) s.activity = joinUnderscore(f.activity);
+  if (f.flags.length) s.noto = joinUnderscore(f.flags.map(encodeSource));
+  if (f.italic.length) s.italic = joinUnderscore(f.italic);
   if (f.upm.length) s.upm = joinUnderscore(f.upm);
   encodeMetrics(f.metrics, s);
-  if (f.hasHinting !== undefined) s.hint = f.hasHinting ? "1" : "0";
+  if (f.hasHinting !== undefined)
+    s.hinting = f.hasHinting ? "hinted" : "unhinted";
   const mode = encodeModes(f.matchModes);
   if (mode) s.mode = mode;
   return s;
@@ -336,8 +384,8 @@ export function parseFilterSearch(raw: Record<string, unknown>): FilterSearch {
   const numCsv = (v: unknown) => (typeof v === "number" ? String(v) : str(v));
   return {
     q: str(raw.q),
-    class: str(raw.class),
-    facet: str(raw.facet),
+    category: str(raw.category),
+    tag: str(raw.tag),
     axis: str(raw.axis),
     feature: str(raw.feature),
     weight: numCsv(raw.weight),
@@ -345,23 +393,24 @@ export function parseFilterSearch(raw: Record<string, unknown>): FilterSearch {
     script: str(raw.script),
     lang: str(raw.lang),
     color: str(raw.color),
-    cfmt: str(raw.cfmt),
-    cls: str(raw.cls),
-    dsr: str(raw.dsr),
-    vnd: str(raw.vnd),
-    lic: str(raw.lic),
+    colorformat: str(raw.colorformat),
+    style: str(raw.style),
+    mood: str(raw.mood),
+    designer: str(raw.designer),
+    vendor: str(raw.vendor),
+    license: str(raw.license),
     repo: str(raw.repo),
-    act: str(raw.act),
-    flag: str(raw.flag),
-    ital: str(raw.ital),
+    activity: str(raw.activity),
+    noto: str(raw.noto),
+    italic: str(raw.italic),
     upm: numCsv(raw.upm),
-    mxh: str(raw.mxh),
-    mch: str(raw.mch),
-    mlh: str(raw.mlh),
-    maw: str(raw.maw),
-    mct: str(raw.mct),
-    mfs: str(raw.mfs),
-    hint: str(raw.hint),
+    xheight: str(raw.xheight),
+    capheight: str(raw.capheight),
+    lineheight: str(raw.lineheight),
+    avgwidth: str(raw.avgwidth),
+    contrast: str(raw.contrast),
+    filesize: str(raw.filesize),
+    hinting: str(raw.hinting),
     mode: str(raw.mode),
     sort: str(raw.sort),
     fav: str(raw.fav),
