@@ -176,11 +176,19 @@ describe("applyFilters, weight and width ranges", () => {
     font({ name: "Reg", weights: [400], widthClass: 5 }),
     font({ name: "Bold", weights: [700], widthClass: 5 }),
     font({ name: "Cond", weights: [400], widthClass: 5, axes: [wght] }),
+    font({ name: "Both", weights: [400, 700], widthClass: 5 }),
   ];
-  it("OR within weights: family offers at least one selected step", () => {
-    expect(names(applyFilters(fonts, filter({ weights: ["700"] })))).toEqual([
-      "Bold",
-    ]);
+  it("OR within weights (default): family offers at least one selected step", () => {
+    expect(
+      names(applyFilters(fonts, filter({ weights: ["400", "700"] })))
+    ).toEqual(["Reg", "Bold", "Cond", "Both"]);
+  });
+  it("AND within weights (toggle): family covers every selected step", () => {
+    const out = applyFilters(
+      fonts,
+      filter({ weights: ["400", "700"], matchModes: { weights: "all" } })
+    );
+    expect(names(out)).toEqual(["Both"]);
   });
   it("width covers the wdth-axis range (75-125% -> steps 3..6)", () => {
     // Cond's wdth axis spans 75..125%, which includes step 3 (75%).
@@ -290,6 +298,30 @@ describe("applyFilters, designers, vendors, license, repo, upm", () => {
   it("designer matches a comma-split token", () => {
     expect(
       names(applyFilters(fonts, filter({ designers: ["José Scaglione"] })))
+    ).toEqual(["A"]);
+  });
+  it("OR within designers (default): family lists at least one selected name", () => {
+    expect(
+      names(
+        applyFilters(
+          fonts,
+          filter({ designers: ["José Scaglione", "Steve Matteson"] })
+        )
+      )
+    ).toEqual(["A", "B"]);
+  });
+  it("AND within designers (toggle): co-designed by every selected name", () => {
+    // A is by both Burian and Scaglione; B is Matteson only.
+    expect(
+      names(
+        applyFilters(
+          fonts,
+          filter({
+            designers: ["Veronika Burian", "José Scaglione"],
+            matchModes: { designers: "all" },
+          })
+        )
+      )
     ).toEqual(["A"]);
   });
   it("vendor matches the folded id", () => {

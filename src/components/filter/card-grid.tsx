@@ -1,4 +1,5 @@
 import type { Icon } from "@phosphor-icons/react";
+import type { MatchMode } from "@/lib/fonts/filter";
 import { CardButton } from "./card-button";
 import { SectionHeader } from "./section-header";
 import { WeightSpecimen, WidthSpecimen } from "./specimen-icon";
@@ -18,13 +19,15 @@ export function CardGrid({
   label,
   axis,
   flashKey,
+  mode,
+  onToggleMode,
 }: {
   title: string;
   icon: Icon;
   items: [string, number][];
   selected: string[];
   onToggle: (v: string) => void;
-  // Clear this section's selection (single-select, so this section only).
+  // Clear this section's selection (scoped to this section).
   onReset: () => void;
   // Map a raw value to a display label (e.g. "700" -> "Bold").
   label: (value: string) => string;
@@ -33,6 +36,10 @@ export function CardGrid({
   // Bumped when this section's pick was cleared by the sibling axis (see
   // FilterSidebar), so the header flashes to hint at the swap.
   flashKey?: number;
+  // OR/AND toggle: pass both to show it. "Any" matches a family offering any
+  // selected step, "All" one that covers every selected step.
+  mode?: MatchMode;
+  onToggleMode?: () => void;
 }) {
   return (
     <div className="flex flex-col gap-2">
@@ -45,8 +52,10 @@ export function CardGrid({
         sort="count"
         onToggleSort={() => {}}
         flashKey={flashKey}
+        mode={mode}
+        onToggleMode={onToggleMode}
       />
-      {/* At most one value per section (enforced by the handler). */}
+      {/* Multi-select OR/AND per the section mode. */}
       <div className="grid grid-cols-3 gap-3">
         {items.map(([value, count]) => (
           <CardButton

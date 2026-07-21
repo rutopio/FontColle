@@ -1,5 +1,6 @@
 import { BuildingsIcon, UserIcon } from "@phosphor-icons/react";
 import { useMemo } from "react";
+import type { MatchMode } from "@/lib/fonts/filter";
 import { vendorLabel } from "@/lib/fonts/labels";
 import { FacetSearchSection } from "./facet-search-section";
 
@@ -22,6 +23,8 @@ export function DesignerSection({
   onToggleVendor,
   onResetDesigners,
   onResetVendors,
+  designerMode,
+  onToggleDesignerMode,
   vendorCasing,
 }: {
   designers: [string, number][];
@@ -32,6 +35,11 @@ export function DesignerSection({
   onToggleVendor: (v: string) => void;
   onResetDesigners: () => void;
   onResetVendors: () => void;
+  // OR/AND toggle for Designer only. A family's designer field can list several
+  // collaborators, so "all" (co-designed by every selected name) is meaningful.
+  // Vendor has no toggle: a font carries one vendor id, so AND would be empty.
+  designerMode: MatchMode;
+  onToggleDesignerMode: () => void;
   // Folded vendor code -> the code as fonts embed it, for the tooltip.
   vendorCasing: Map<string, string>;
 }) {
@@ -55,6 +63,8 @@ export function DesignerSection({
         onReset={onResetDesigners}
         searchPlaceholder="Search designers"
         topN={12}
+        mode={designerMode}
+        onToggleMode={onToggleDesignerMode}
       />
       <FacetSearchSection
         title="Vendor"

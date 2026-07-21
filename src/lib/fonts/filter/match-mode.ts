@@ -17,7 +17,10 @@ export type ModeKey =
   | "axes"
   | "scripts"
   | "languages"
-  | "colorFormats";
+  | "colorFormats"
+  | "weights"
+  | "widths"
+  | "designers";
 
 export const MODE_KEYS: ModeKey[] = [
   "classifications",
@@ -27,11 +30,15 @@ export const MODE_KEYS: ModeKey[] = [
   "scripts",
   "languages",
   "colorFormats",
+  "weights",
+  "widths",
+  "designers",
 ];
 
 // Each section's mode when the user hasn't touched the toggle, chosen so an
-// empty `matchModes` reproduces the pre-toggle behaviour exactly. Classification
-// was OR; the rest were AND.
+// empty `matchModes` reproduces the pre-toggle behaviour exactly. Classification,
+// Weight/Width, and Designer were OR-within (match any selected value); the rest
+// were AND.
 export const SECTION_DEFAULT_MODE: Record<ModeKey, MatchMode> = {
   classifications: "any",
   facets: "all",
@@ -40,6 +47,9 @@ export const SECTION_DEFAULT_MODE: Record<ModeKey, MatchMode> = {
   scripts: "all",
   languages: "all",
   colorFormats: "all",
+  weights: "any",
+  widths: "any",
+  designers: "any",
 };
 
 /** The effective mode for a section: the user's override, else the default. */

@@ -354,6 +354,8 @@ export function FilterSidebar({
                   label={weightLabel}
                   axis="wght"
                   flashKey={flashKeyFor("weights")}
+                  mode={modeOf("weights")}
+                  onToggleMode={() => toggleMode("weights")}
                 />
                 <CardGrid
                   title="Width"
@@ -365,6 +367,8 @@ export function FilterSidebar({
                   label={widthLabel}
                   axis="wdth"
                   flashKey={flashKeyFor("widths")}
+                  mode={modeOf("widths")}
+                  onToggleMode={() => toggleMode("widths")}
                 />
                 <VariableAxesSection
                   icon={SlidersHorizontalIcon}
@@ -431,6 +435,8 @@ export function FilterSidebar({
                     onChange({ ...filter, designers: [] })
                   }
                   onResetVendors={() => onChange({ ...filter, vendors: [] })}
+                  designerMode={modeOf("designers")}
+                  onToggleDesignerMode={() => toggleMode("designers")}
                   vendorCasing={index.vendorCasing}
                 />
               </>

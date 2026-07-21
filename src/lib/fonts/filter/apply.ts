@@ -154,15 +154,18 @@ export function applyFilters(
       !combine("axes", f.axes, (tag) => font.axes.some((a) => a.tag === tag))
     )
       return false;
-    // OR within weights: family must offer at least one selected weight step.
+    // Weights: OR by default (offer at least one selected step), AND when
+    // toggled (cover every selected step, e.g. both Light and Bold cuts).
     if (f.weights.length) {
       const set = familyWeightSet(font);
-      if (!f.weights.some((w) => set.includes(Number(w)))) return false;
+      if (!combine("weights", f.weights, (w) => set.includes(Number(w))))
+        return false;
     }
-    // OR within widths.
+    // Widths: OR by default, AND when toggled.
     if (f.widths.length) {
       const set = familyWidthSet(font);
-      if (!f.widths.some((w) => set.includes(Number(w)))) return false;
+      if (!combine("widths", f.widths, (w) => set.includes(Number(w))))
+        return false;
     }
     // Writing systems: AND by default (cover every selected), OR when toggled.
     if (
@@ -201,13 +204,14 @@ export function applyFilters(
       )
     )
       return false;
-    // OR within designers: family lists at least one selected designer (its
-    // designer field is comma-joined, so match on the split tokens).
-    if (
-      f.designers.length &&
-      !designerTokens(font).some((d) => f.designers.includes(d))
-    )
-      return false;
+    // Designers: OR by default (family lists at least one selected designer),
+    // AND when toggled (co-designed by every selected name). The designer field
+    // is comma-joined, so match on the split tokens.
+    if (f.designers.length) {
+      const tokens = designerTokens(font);
+      if (!combine("designers", f.designers, (d) => tokens.includes(d)))
+        return false;
+    }
     // OR within vendors: family's folded vendor id is one of the selected.
     if (f.vendors.length) {
       const vnd = foldVendor(font.vendorId);

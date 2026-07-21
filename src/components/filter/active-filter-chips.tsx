@@ -6,10 +6,17 @@ import { MOTION_S } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { groupActiveFilters } from "./describe";
 
-// Each chip fades in on add and out on remove; `layout` slides the survivors
-// into the freed space so the row reflows smoothly.
+// Each chip fades in on add and out on remove; `layout="position"` slides the
+// survivors into the freed space so the row reflows smoothly.
+//
+// "position", not true: a multi-value section is ONE chip whose width grows as
+// values are added (Latin -> Latin OR Greek). `layout: true` animates size too,
+// which motion does by tweening a scaleX on the box — that visibly stretches the
+// text inside for a frame before it settles. Animating position only lets the
+// chip jump straight to its real width (no text distortion) while its neighbours
+// still glide into place.
 const CHIP_MOTION = {
-  layout: true,
+  layout: "position",
   initial: { opacity: 0 },
   animate: { opacity: 1 },
   exit: { opacity: 0 },

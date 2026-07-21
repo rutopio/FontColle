@@ -1,9 +1,26 @@
 import {
   type FilterState,
   FONT_TYPE_FACETS,
+  MODE_KEYS,
   type ModeKey,
   SECTION_DEFAULT_MODE,
 } from "./filter";
+
+// Drop the OR/AND override of any mode section that no longer holds a value. A
+// section's combine mode only means something while it has >= 2 selected values;
+// once it's empty the override is invisible state that would otherwise ride
+// along in the URL (a "pristine" filter carrying ?mode=facets:any) and silently
+// re-apply the next time that section is used. Called at the tail of every
+// action that can empty a mode section, so clearing always fully resets it.
+function pruneEmptyModes(f: FilterState): FilterState {
+  const stale = MODE_KEYS.filter(
+    (k) => f.matchModes[k] != null && f[k].length === 0
+  );
+  if (stale.length === 0) return f;
+  const matchModes = { ...f.matchModes };
+  for (const k of stale) delete matchModes[k];
+  return { ...f, matchModes };
+}
 
 // The FilterState fields that hold a plain string[], i.e. the ones toggle/
 // clearSection operate on. Excludes `metrics` (object) and the boolean facets.
@@ -42,7 +59,9 @@ const EXCLUSIVE_AXIS: Record<"weights" | "widths", string> = {
   widths: "wdth",
 };
 
-/** Multi-select toggle for a plain array key (classes, facets, features, …). */
+/** Multi-select toggle for a plain array key (classes, facets, features, …).
+ *  New picks append to the tail, so the last-clicked value is always last in
+ *  the array — the preview reads that end to render the most recent pick. */
 export function toggle(
   filter: FilterState,
   key: ArrayKey,
@@ -52,7 +71,7 @@ export function toggle(
   const next = cur.includes(value)
     ? cur.filter((x) => x !== value)
     : [...cur, value];
-  return { ...filter, [key]: next };
+  return pruneEmptyModes({ ...filter, [key]: next });
 }
 
 /** Variable-axis toggle: selecting wght/wdth clears the matching Weight/Width
@@ -63,29 +82,31 @@ export function toggleAxis(filter: FilterState, tag: string): FilterState {
     ? [...filter.axes, tag]
     : filter.axes.filter((x) => x !== tag);
   const cleared = turningOn ? AXIS_EXCLUSIVE[tag] : undefined;
-  return {
+  return pruneEmptyModes({
     ...filter,
     axes: nextAxes,
     ...(cleared ? { [cleared]: [] } : {}),
-  };
+  });
 }
 
-/** Radio-style select for Weight/Width: at most one value; clicking the current
- *  selection clears it. Selecting one also clears the mutually exclusive
- *  variable axis (wght/wdth). */
+/** Multi-select for Weight/Width (OR within: a family matches any selected
+ *  step). New picks append to the tail so the preview can render the last one
+ *  clicked; re-clicking a selected step removes it. Turning a step on clears the
+ *  mutually exclusive variable axis (wght/wdth), which drives the same thing. */
 export function select(
   filter: FilterState,
   key: "weights" | "widths",
   value: string
 ): FilterState {
-  const turningOn = !filter[key].includes(value);
-  const next = turningOn ? [value] : [];
+  const cur = filter[key];
+  const turningOn = !cur.includes(value);
+  const next = turningOn ? [...cur, value] : cur.filter((x) => x !== value);
   const axisTag = EXCLUSIVE_AXIS[key];
-  return {
+  return pruneEmptyModes({
     ...filter,
     [key]: next,
     axes: turningOn ? filter.axes.filter((x) => x !== axisTag) : filter.axes,
-  };
+  });
 }
 
 // Picking a color format already implies Colorful (only a font with a color
@@ -141,20 +162,24 @@ export function selectFontType(
   const base = withoutFontType(filter);
   const variableImpliedByAxes = filter.axes.length > 0;
   if (value === "variable" && variableImpliedByAxes) {
-    return { ...filter, facets: base, axes: [] };
+    return pruneEmptyModes({ ...filter, facets: base, axes: [] });
   }
   const turningOff = filter.facets.includes(value);
   const facets = turningOff ? base : [...base, value];
-  return {
+  return pruneEmptyModes({
     ...filter,
     facets,
     axes: facets.includes("static") ? [] : filter.axes,
-  };
+  });
 }
 
 /** Reset the Font type section: clear its facets and the implied axes. */
 export function resetFontType(filter: FilterState): FilterState {
-  return { ...filter, facets: withoutFontType(filter), axes: [] };
+  return pruneEmptyModes({
+    ...filter,
+    facets: withoutFontType(filter),
+    axes: [],
+  });
 }
 
 /** Radio-style Source select (Noto / Others): at most one value; re-clicking
@@ -205,5 +230,8 @@ export function clearSection(
   items: [string, number][]
 ): FilterState {
   const own = new Set(items.map(([v]) => v));
-  return { ...filter, [key]: filter[key].filter((v) => !own.has(v)) };
+  return pruneEmptyModes({
+    ...filter,
+    [key]: filter[key].filter((v) => !own.has(v)),
+  });
 }

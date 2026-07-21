@@ -17,10 +17,14 @@ export interface PreviewCoords {
 }
 
 /** Derive the preview weight + variation coords a FilterSelection implies for a
- *  given font. Weight/Width are single-select steps; axisValues holds the live
- *  0-100% slider position per selected variable axis, mapped onto this font's
- *  own axis range (ranges differ per font). The wght slider and wdth slider
- *  override the Weight/Width step selections when both are in play. */
+ *  given font. Weight/Width are multi-select OR filters; axisValues holds the
+ *  live 0-100% slider position per selected variable axis, mapped onto this
+ *  font's own axis range (ranges differ per font). The wght slider and wdth
+ *  slider override the Weight/Width step selections when both are in play.
+ *
+ *  Preview renders the LAST-clicked step, i.e. the tail of the array (the
+ *  toggle actions append new picks). So clicking Light -> Bold -> Regular
+ *  previews each in turn even though all three stay in the filter. */
 export function usePreviewCoords(
   font: FontRecord,
   selection: FilterSelection,
@@ -30,13 +34,14 @@ export function usePreviewCoords(
   const selectedWidths = selection.widths;
   const selectedAxes = selection.axes;
 
-  const activeWeight = Number(selectedWeights[0]) || 400;
+  const activeWeight = Number(selectedWeights.at(-1)) || 400;
 
   const widthCoord = useMemo(() => {
     const wdth = font.axes.find((a) => a.tag === "wdth");
     if (!wdth || wdth.min == null || wdth.max == null) return null;
-    const step = Number(selectedWidths[0]);
-    if (!selectedWidths[0]) return null;
+    const last = selectedWidths.at(-1);
+    const step = Number(last);
+    if (!last) return null;
     const pct = WIDTH_STEP_PCT[step];
     if (pct == null) return null;
     return Math.min(wdth.max, Math.max(wdth.min, pct));
