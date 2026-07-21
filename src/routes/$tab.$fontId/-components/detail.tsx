@@ -401,13 +401,19 @@ export function Detail({
             )}
 
             {/* VERSION HISTORY, release timeline from google/fonts git history,
-                newest first. Hidden entirely when none could be extracted. */}
-            {font.versionHistory.length > 0 && (
-              <Panel
-                label="Version history"
-                count={font.versionHistory.length}
-                className="md:col-span-1"
-              >
+                newest first. The panel always shows: when nothing could be
+                extracted it says so rather than vanishing, so the grid layout
+                doesn't shift between fonts. */}
+            <Panel
+              label="Version history"
+              count={
+                font.versionHistory.length > 0
+                  ? font.versionHistory.length
+                  : undefined
+              }
+              className="md:col-span-1"
+            >
+              {font.versionHistory.length > 0 ? (
                 <Table>
                   <TableBody>
                     {[...font.versionHistory].reverse().map((v) => (
@@ -422,8 +428,12 @@ export function Detail({
                     ))}
                   </TableBody>
                 </Table>
-              </Panel>
-            )}
+              ) : (
+                <p className="text-muted-foreground text-sm">
+                  No version history.
+                </p>
+              )}
+            </Panel>
           </div>
 
           {/* METRICS, the derived style metrics FontColle filters on, with a
