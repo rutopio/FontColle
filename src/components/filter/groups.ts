@@ -40,28 +40,11 @@ export interface FilterGroup {
   keys: (keyof Omit<FilterState, "query">)[];
 }
 
-// Rail order, top to bottom: Tag, Mood, Style, Variant, Language, Color,
-// Feature, Designer, Metric, More.
+// Rail order, top to bottom: Style, Variant, Language, Color, Feature,
+// Designer, Metric, Mood, More, Tag. Style leads because form (Serif / Sans /
+// Script) is the most common entry point into browsing; the broad,
+// browse-everything panels (Mood, Tag) sit at the bottom.
 export const FILTER_GROUPS: FilterGroup[] = [
-  // Natural-language trait tags: one flat list of plain-language pills
-  // (Ligatures, Monospace, Colorful, Noto, Latin, Static/Variable, …). The Tag
-  // panel owns the whole `tags` state; Font type is also shown as a radio in
-  // the Variant panel (group id "axes"), backed by the same state.
-  {
-    id: "tag",
-    label: "Tag",
-    icon: TagIcon,
-    keys: ["tags"],
-  },
-  // Feel, not form: the Expressive / Theme / Seasonal classification sections.
-  // Shares the `style` state with Style; countKey splits by prefix so
-  // each rail badge counts only its own sections.
-  {
-    id: "mood",
-    label: "Mood",
-    icon: SmileyMeltingIcon,
-    keys: ["style"],
-  },
   {
     id: "style",
     label: "Style",
@@ -110,16 +93,34 @@ export const FILTER_GROUPS: FilterGroup[] = [
     icon: RulerIcon,
     keys: ["metrics", "upm", "hasHinting"],
   },
+  // Feel, not form: the Expressive / Theme / Seasonal classification sections.
+  // Shares the `style` state with Style; countKey splits by prefix so
+  // each rail badge counts only its own sections.
+  {
+    id: "mood",
+    label: "Mood",
+    icon: SmileyMeltingIcon,
+    keys: ["style"],
+  },
   {
     id: "other",
     label: "More",
     icon: DotsThreeOutlineIcon,
     keys: ["license", "repoHosts", "activity"],
   },
+  // Natural-language trait tags: one flat list of plain-language pills
+  // (Ligatures, Monospace, Colorful, Noto, Latin, Static/Variable, …). The Tag
+  // panel owns the whole `tags` state; Font type is also shown as a radio in
+  // the Variant panel (group id "axes"), backed by the same state.
+  {
+    id: "tag",
+    label: "Tag",
+    icon: TagIcon,
+    keys: ["tags"],
+  },
 ];
 
-// The rail opens on Style even though it sits third in the rail order, form
-// (Serif / Sans / Script) is the most common entry point into browsing.
+// The rail opens on Style, which is also the first button in the rail.
 export const DEFAULT_FILTER_GROUP: FilterGroupId = "style";
 
 // `tags` is shared by two panels: the Tag panel shows the whole list (so its
