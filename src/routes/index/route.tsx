@@ -7,14 +7,8 @@ import {
 } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import {
-  startTransition,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { motion } from "motion/react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActiveFilterChips } from "@/components/filter/active-filter-chips";
 import { FilterDrawer } from "@/components/filter/filter-drawer";
 import { FilterRail } from "@/components/filter/filter-rail";
@@ -58,6 +52,7 @@ import {
 import { fetchFirstPage } from "@/lib/fonts/first-page";
 import { DEFAULT_SORT, type SortKey, sortFonts } from "@/lib/fonts/sort";
 import type { FontRecord } from "@/lib/fonts/types";
+import { MOTION_S } from "@/lib/motion";
 import { usePreview } from "@/lib/preview/context";
 import { absoluteUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
 import { useListScrollRestore } from "@/lib/use-list-scroll-restore";
@@ -119,6 +114,21 @@ function isDefaultView(search: FilterSearch): boolean {
   return activeFilterCount(searchToFilter(search)) === 0;
 }
 
+// A stable string identity for a filter's chip-driving part, so we can tell
+// whether the live filter has diverged from the one the list is showing. `filter`
+// is a fresh object on every render, so `===` is no use; filterToSearch already
+// flattens a filter to a plain URL-param object, and JSON of that is order-stable
+// for our shapes (string values / string arrays).
+//
+// The text query (`q`) is deliberately excluded: it comes from the search box,
+// not a chip, and search-as-you-type must stay live — folding it in would fade
+// the whole list out and back on every keystroke. Query-only changes bypass the
+// fade and update the results immediately (see the effect in Catalog).
+function filterKey(f: FilterState): string {
+  const { q: _q, ...rest } = filterToSearch(f);
+  return JSON.stringify(rest);
+}
+
 // Fetches the static catalog on the client (see catalogQueryOptions). While it
 // loads we show a skeleton (or, on the default `/` view, the loader's first-page
 // slice as real cards); on success the real Catalog view swaps in. Fetching the
@@ -165,25 +175,36 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
   //    everything that must respond instantly: pills, rail, chips, active count,
   //    the search input and the sort write.
   //  - `deferredFilter` trails it: the heavy applyFilters + grid re-render run
-  //    against this deferred copy, so React keeps the previous results on screen
-  //    while a burst of changes settles. The list never flashes a skeleton or a
-  //    transient "no results" between two chips.
-  //
-  // `deferredFilter` is a plain state mirror advanced inside startTransition,
-  // NOT useDeferredValue. `filter` comes from Route.useSearch() — an external
-  // store (the URL) that navigate() updates synchronously, so every filter
-  // change is already a high-priority render by the time useDeferredValue sees
-  // it; the deferred copy has nothing to lag behind and the grid re-ran on the
-  // blocking commit. Copying `filter` into state via startTransition marks that
-  // copy (and everything it drives: applyFilters, the grid, its webfont loads)
-  // as an interruptible low-priority update, so the pill's active state and the
-  // chip's entrance animation paint on the urgent commit while results settle
-  // after. That is the "decouple the animation from the results/webfont" fix.
+  //    against this deferred copy, and it advances only while the list is faded
+  //    out (see below), so the results and the chip row swap together, unseen.
   const filter = useMemo(() => searchToFilter(search), [search]);
+  // The filter the results list + its chip row currently show. It trails `filter`
+  // by one fade: when `filter` changes we fade the list out, and only once it has
+  // reached opacity 0 do we advance `deferredFilter` to it. So the new results
+  // and the chip-row reflow (a chip appearing, or the row collapsing to nothing)
+  // both happen while the list is invisible; the list then fades back in already
+  // in its final position. The user never sees a half-applied result set, and
+  // never sees the grid jump up or down as the chip row above it resizes.
   const [deferredFilter, setDeferredFilter] = useState(filter);
+  // `fading` is true from the moment `filter`'s chip part diverges from what the
+  // list shows until the fade-out completes and we commit the new filter. It
+  // drives the list's opacity: true -> fade out, false -> fade in.
+  const fading = filterKey(filter) !== filterKey(deferredFilter);
+  // The chip fade-out advances `deferredFilter` from the wrapper's
+  // onAnimationComplete (see the body), which fires only after opacity has
+  // reached 0 — so the results recompute and swap while invisible, then fade
+  // back in. The wrapper wraps BOTH the list and the empty state, so that
+  // callback fires whichever is on screen (an earlier version hung it off the
+  // list alone and stranded "No fonts found" when a chip was cleared back to a
+  // non-empty result).
+  //
+  // Query-only edits (typing in the search box) don't fade — commit them at once
+  // so results track the text live.
   useEffect(() => {
-    startTransition(() => setDeferredFilter(filter));
-  }, [filter]);
+    if (!fading && filter.query !== deferredFilter.query) {
+      setDeferredFilter(filter);
+    }
+  }, [fading, filter, deferredFilter.query]);
 
   // Commit a filter change to the URL. Preserves the non-filter view modes
   // (sort, favorites) that live in the URL alongside the filter but aren't part
@@ -451,67 +472,92 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
           />
         }
       >
-        {results.length === 0 ? (
-          <Empty className="py-16">
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                {favOnly ? <HeartIcon /> : <MagnifyingGlassIcon />}
-              </EmptyMedia>
-              <EmptyTitle>
-                {favOnly ? "No favorites yet" : "No fonts found"}
-              </EmptyTitle>
-              <EmptyDescription>
-                {favOnly
-                  ? "Tap the heart on a font to add it here."
-                  : "No fonts match your filters and search. Remove a condition below, or broaden them."}
-              </EmptyDescription>
-            </EmptyHeader>
-            {/* Surface the search text as a removable chip: it lives in the
+        {/* Chips live OUTSIDE the opacity wrapper and read the live `filter`, so
+            they keep their own layout animation (a chip springs in / the row
+            collapses) and react the instant a pill is pressed. Only the results
+            below fade. The empty state renders its own chips inside <Empty>. */}
+        {results.length > 0 && (
+          <ActiveFilterChips
+            filter={filter}
+            onChange={commitFilter}
+            align="left"
+          />
+        )}
+        {/* Opacity wrapper over the RESULTS only (list or empty state). A chip
+            change fades it to 0; its onAnimationComplete then commits the new
+            filter, so the results swap while invisible and fade back in.
+            Wrapping both branches (not just the list) keeps the commit firing
+            even when the result set is empty. Opacity only — no transform. */}
+        <motion.div
+          className="flex flex-1 flex-col"
+          animate={{ opacity: fading ? 0 : 1 }}
+          transition={{ duration: MOTION_S.base, ease: "easeOut" }}
+          onAnimationComplete={() => {
+            // Fires at the end of both directions; only the fade-OUT (still
+            // fading) should commit the live filter, flipping `fading` false and
+            // starting the fade back in.
+            if (fading) setDeferredFilter(filter);
+          }}
+        >
+          {results.length === 0 ? (
+            <Empty className="py-16">
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  {favOnly ? <HeartIcon /> : <MagnifyingGlassIcon />}
+                </EmptyMedia>
+                <EmptyTitle>
+                  {favOnly ? "No favorites yet" : "No fonts found"}
+                </EmptyTitle>
+                <EmptyDescription>
+                  {favOnly
+                    ? "Tap the heart on a font to add it here."
+                    : "No fonts match your filters and search. Remove a condition below, or broaden them."}
+                </EmptyDescription>
+              </EmptyHeader>
+              {/* Surface the search text as a removable chip: it lives in the
                 sidebar input, easy to forget as the reason nothing matches. */}
-            {filter.query.trim() && (
-              <button
-                type="button"
-                onClick={() => commitFilter({ ...filter, query: "" })}
-                className="flex items-center gap-1.5 rounded-md border border-input px-2.5 py-1 text-muted-foreground text-xs transition-colors hover:border-foreground hover:text-foreground"
-                aria-label={`Remove search: ${filter.query.trim()}`}
-              >
-                <span className="opacity-60">Search</span>
-                <span className="text-foreground">{filter.query.trim()}</span>
-                <XIcon className="size-3 opacity-60" />
-              </button>
-            )}
-            {/* Typo-tolerant nudge: swap the query for the closest family name. */}
-            {suggestion && (
-              <p className="text-muted-foreground text-sm">
-                Did you mean{" "}
+              {filter.query.trim() && (
                 <button
                   type="button"
-                  onClick={() => commitFilter({ ...filter, query: suggestion })}
-                  className="font-medium text-foreground underline decoration-muted-foreground/50 hover:decoration-foreground"
+                  onClick={() => commitFilter({ ...filter, query: "" })}
+                  className="flex items-center gap-1.5 rounded-md border border-input px-2.5 py-1 text-muted-foreground text-xs transition-colors hover:border-foreground hover:text-foreground"
+                  aria-label={`Remove search: ${filter.query.trim()}`}
                 >
-                  {suggestion}
+                  <span className="opacity-60">Search</span>
+                  <span className="text-foreground">{filter.query.trim()}</span>
+                  <XIcon className="size-3 opacity-60" />
                 </button>
-                ?
-              </p>
-            )}
-            <ActiveFilterChips filter={filter} onChange={commitFilter} />
-            {favOnly ? (
-              <Button variant="outline" onClick={discoverFonts}>
-                Discover Font
-              </Button>
-            ) : (
-              <Button variant="outline" onClick={reset}>
-                Reset
-              </Button>
-            )}
-          </Empty>
-        ) : (
-          <>
-            <ActiveFilterChips
-              filter={filter}
-              onChange={commitFilter}
-              align="left"
-            />
+              )}
+              {/* Typo-tolerant nudge: swap the query for the closest family name. */}
+              {suggestion && (
+                <p className="text-muted-foreground text-sm">
+                  Did you mean{" "}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      commitFilter({ ...filter, query: suggestion })
+                    }
+                    className="font-medium text-foreground underline decoration-muted-foreground/50 hover:decoration-foreground"
+                  >
+                    {suggestion}
+                  </button>
+                  ?
+                </p>
+              )}
+              {/* Live filter, like the in-list chips, so removing a condition
+                  here reacts instantly and the chip animates itself. */}
+              <ActiveFilterChips filter={filter} onChange={commitFilter} />
+              {favOnly ? (
+                <Button variant="outline" onClick={discoverFonts}>
+                  Discover Font
+                </Button>
+              ) : (
+                <Button variant="outline" onClick={reset}>
+                  Reset
+                </Button>
+              )}
+            </Empty>
+          ) : (
             <FontGrid
               fonts={results}
               previewText={previewText}
@@ -522,8 +568,8 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
               axisValues={axisValues}
               scrollRef={scrollRef}
             />
-          </>
-        )}
+          )}
+        </motion.div>
       </Column>
       {/* Mobile-only filter access (FAB + bottom drawer). Same shared filter
           state as the desktop rail/panel; hidden on desktop. */}

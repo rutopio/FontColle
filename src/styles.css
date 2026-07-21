@@ -138,9 +138,9 @@
   /* Motion duration scale: three steps, mirrored in src/lib/motion.ts. fast =
      confirmations/hover, base = entrances and most transitions, slow = the
      larger, expressive beats. Keep in sync with the TS constants. */
-  --motion-fast: 150ms;
-  --motion-base: 200ms;
-  --motion-slow: 280ms;
+  --motion-fast: 120ms;
+  --motion-base: 160ms;
+  --motion-slow: 220ms;
 
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
@@ -281,28 +281,6 @@
   @media (min-width: 1536px) {
     max-width: 1536px;
   }
-}
-
-/* Card entrance: a slight rise, no fade. Applied when the result set changes
-   (filter/search) or the grid/row view switches, so cards ease in instead of
-   hard-swapping. Keyed on content so React remounts trigger it. Disabled under
-   reduced-motion.
-
-   Deliberately opacity-free: the cards carry a specimen rendered in the font
-   itself, and fading a whole grid of them read as the page flickering on every
-   chip toggle. The rise alone gives the same "these are new results" beat
-   without touching legibility. */
-@keyframes rise-in {
-  from {
-    transform: translateY(6px);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-
-@utility animate-card-in {
-  animation: rise-in var(--motion-base) ease-out both;
 }
 
 /* Grid/row switch for the SSR'd pending list. The real list reads the

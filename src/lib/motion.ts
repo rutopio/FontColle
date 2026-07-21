@@ -11,14 +11,14 @@
 //
 // Values are milliseconds. motion/react wants seconds, so use the *_S helpers.
 export const MOTION = {
-  fast: 150,
-  base: 200,
-  slow: 280,
+  fast: 120,
+  base: 160,
+  slow: 220,
 } as const;
 
 // Seconds form for motion/react `transition.duration`.
 export const MOTION_S = {
-  fast: MOTION.fast / 1000, // 0.15
-  base: MOTION.base / 1000, // 0.2
-  slow: MOTION.slow / 1000, // 0.28
+  fast: MOTION.fast / 1000, // 0.12
+  base: MOTION.base / 1000, // 0.16
+  slow: MOTION.slow / 1000, // 0.22
 } as const;

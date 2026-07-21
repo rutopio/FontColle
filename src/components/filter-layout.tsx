@@ -97,7 +97,7 @@ export function FilterLayout({
           {/* Mobile-only chrome, outside RouteFade so it stays put like the
               desktop rail (which never fades). Desktop hides it via md:hidden. */}
           <MobileTopBar favoriteFontId={favoriteFontId} />
-          <RouteFade className="flex min-h-0 flex-1 flex-col">
+          <RouteFade distance={16} className="flex min-h-0 flex-1 flex-col">
             {children}
           </RouteFade>
         </SidebarInset>

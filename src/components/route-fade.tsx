@@ -32,9 +32,14 @@ let lastPath: string | undefined;
 export function RouteFade({
   className,
   children,
+  // Entry travel in px. The rail and sidebar barely change between the list and
+  // detail routes, so they use the small default; the main area gets a larger
+  // value so the page-to-page transition actually reads as motion.
+  distance = 6,
 }: {
   className?: string;
   children: ReactNode;
+  distance?: number;
 }) {
   // The entry animation is disabled under prefers-reduced-motion via the
   // MotionConfig reducedMotion="user" wrapper in __root (it zeroes transform/
@@ -51,7 +56,7 @@ export function RouteFade({
 
   return (
     <motion.div
-      initial={changed ? { opacity: 0, y: 6 } : false}
+      initial={changed ? { opacity: 0, y: distance } : false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: MOTION_S.slow, ease: "easeOut" }}
       className={className}

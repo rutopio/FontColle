@@ -48,11 +48,11 @@ export const FontRow = memo(function FontRow({
     <Link
       to="/$tab/$fontId"
       params={{ tab: "instances", fontId: fontSlug(font.id) }}
-      className="flex h-36 flex-col justify-center gap-3 overflow-hidden border-b transition-colors hover:bg-muted focus-visible:bg-muted/80 focus-visible:outline-none"
+      className="flex h-32 flex-col justify-center gap-4 overflow-hidden transition-colors hover:bg-muted focus-visible:bg-muted/80 focus-visible:outline-none"
     >
       {/* Narrow (mobile): [name + actions] row over a designer row, stacked.
           Wide: name, designer and traits all inline, actions on the right. */}
-      <div className="flex flex-col gap-0.5 px-2">
+      <div className="flex flex-col gap-0.5 px-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex min-w-0 items-center gap-2">
             <h3 className="truncate sm:shrink-0">{font.name}</h3>
@@ -87,7 +87,7 @@ export const FontRow = memo(function FontRow({
         <p
           dir="auto"
           style={previewStyle}
-          className="truncate px-2 text-3xl leading-loose"
+          className="truncate px-4 text-3xl leading-loose"
         >
           {previewText || specimenFor(font)}
         </p>
@@ -95,7 +95,7 @@ export const FontRow = memo(function FontRow({
         // Matches the loaded preview's box: mx-2 mirrors its px-2 so the line
         // doesn't shift horizontally on swap, and h-15 = text-3xl/leading-loose.
         <div
-          className="mx-2 h-15 w-2/3 animate-pulse rounded bg-muted"
+          className="mx-4 h-15 w-2/3 animate-pulse rounded bg-muted"
           aria-hidden
         />
       )}

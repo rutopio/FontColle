@@ -11,6 +11,7 @@ import { FontCard } from "@/components/font-card";
 import { FontRow } from "@/components/font-row";
 import type { FilterSelection } from "@/lib/fonts/filter";
 import type { FontRecord } from "@/lib/fonts/types";
+import { Separator } from "./ui/separator";
 
 export type ViewMode = "grid" | "row";
 
@@ -45,7 +46,7 @@ export function columnsFor(width: number, view: ViewMode): number {
 // Card/line heights, shared with the loading skeleton so its placeholders match
 // the real cells.
 export const CARD_H = 288; // grid card height (h-72)
-export const LINE_H = 144; // row-mode line height (h-36)
+export const LINE_H = 128; // row-mode line height (h-32)
 
 const GAP = 16; // Tailwind gap-4
 
@@ -69,29 +70,6 @@ export function FontGrid({
   // SSR renders a fixed first batch so crawlers/no-JS see content; after mount
   // the element virtualizer takes over.
   const [mounted, setMounted] = useState(false);
-
-  // Card entrance animation only fires right after the result set changes
-  // (filter/search), not on every scroll-mount. We open a short window when
-  // `fonts` changes and apply the animation class only during it.
-  const [animating, setAnimating] = useState(false);
-  // Timestamp of the first render, not a boolean. A single `firstRun` flag is
-  // not enough: the list feeds FontGrid from a useDeferredValue copy of the
-  // filter, so the initial load delivers `fonts` twice in quick succession (the
-  // urgent pass, then the deferred one). The second pass is a new array
-  // identity, the effect read it as a filter change, and every visible card
-  // played the entrance animation ~1.7s into the load — the whole grid
-  // flashing once the catalog resolved. Changes within this settle window are
-  // the initial fill; a real filter/search change always lands later, on user
-  // input.
-  const mountedAt = useRef(0);
-  if (mountedAt.current === 0) mountedAt.current = Date.now();
-  // biome-ignore lint/correctness/useExhaustiveDependencies: `fonts`/`view` are the triggers, not read in the body, the effect fires on result-set or layout change to open the entrance-animation window.
-  useEffect(() => {
-    if (Date.now() - mountedAt.current < 500) return;
-    setAnimating(true);
-    const t = setTimeout(() => setAnimating(false), 260);
-    return () => clearTimeout(t);
-  }, [fonts, view]);
 
   useLayoutEffect(() => {
     const measure = () => {
@@ -120,15 +98,18 @@ export function FontGrid({
 
   const renderCell = (font: FontRecord) =>
     view === "row" ? (
-      <FontRow
-        key={font.id}
-        font={font}
-        previewText={previewText}
-        isFavorite={favSet.has(font.id)}
-        onToggleFavorite={onToggleFavorite}
-        selection={selection}
-        axisValues={axisValues}
-      />
+      <div className="flex flex-col">
+        <FontRow
+          key={font.id}
+          font={font}
+          previewText={previewText}
+          isFavorite={favSet.has(font.id)}
+          onToggleFavorite={onToggleFavorite}
+          selection={selection}
+          axisValues={axisValues}
+        />
+        <Separator className="px-4" />
+      </div>
     ) : (
       <FontCard
         key={font.id}
@@ -186,12 +167,10 @@ export function FontGrid({
               }}
             >
               {view === "row" ? (
-                <div className={animating ? "animate-card-in" : undefined}>
-                  {rowFonts.map(renderCell)}
-                </div>
+                <div>{rowFonts.map(renderCell)}</div>
               ) : (
                 <div
-                  className={`grid gap-4 pb-4 ${animating ? "animate-card-in" : ""}`}
+                  className="grid gap-4 pb-4"
                   style={{
                     gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
                   }}
@@ -257,7 +236,7 @@ function SkeletonLine() {
   return (
     // px-2 mirrors FontRow's inner rows, so the bars start on the same x as the
     // real name/preview text instead of flush against the panel edge.
-    <div className="flex h-36 flex-col justify-center gap-3 border-b px-2">
+    <div className="flex h-32 flex-col justify-center gap-3 border-b px-2">
       <div className="h-3 w-40 max-w-[60%] animate-pulse rounded bg-muted" />
       <div className="h-15 w-2/3 animate-pulse rounded bg-muted" />
     </div>
