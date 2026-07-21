@@ -37,9 +37,15 @@ export function ActiveFilterChips({
   align?: "center" | "left";
 }) {
   const groups = groupActiveFilters(filter);
+  // The text query is deliberately kept out of describeActiveFilters (it has its
+  // own input, and activeFilterCount/filterKey exclude it). But it's still an
+  // active condition, and with results showing it's the only one without a chip.
+  // Fold it in here as a lead chip so both the list header and the empty state
+  // surface it; removing it clears the query like any other section.
+  const query = filter.query.trim();
   // The empty state ("center") collapses outright: there is no grid under it to
   // shift, so an unmount costs nothing.
-  if (groups.length === 0 && align === "center") return null;
+  if (groups.length === 0 && !query && align === "center") return null;
   // In the list ("left") the row stays mounted even while empty, and animates
   // its own height instead. Unmounting it meant the first chip mounted a fresh
   // AnimatePresence — `initial: false` only suppresses children added to an
@@ -47,7 +53,7 @@ export function ActiveFilterChips({
   // 0 -> ~28px in one frame, snapping the grid down under it. Keeping the
   // container alive fixes the flash; animating height turns the push into a
   // transition. Collapsed it is height 0 with no margin, so it takes up nothing.
-  const filled = groups.length > 0;
+  const filled = groups.length > 0 || query.length > 0;
   return (
     <motion.div
       // `height: auto` rather than a fixed value, so a wrapped second row of
@@ -79,6 +85,20 @@ export function ActiveFilterChips({
       )}
     >
       <AnimatePresence initial={false} mode="popLayout">
+        {query && (
+          <motion.button
+            key="__query__"
+            {...CHIP_MOTION}
+            type="button"
+            onClick={() => onChange({ ...filter, query: "" })}
+            className="flex min-h-9 max-w-full flex-wrap items-center gap-x-1.5 gap-y-1 rounded-md border border-input px-2.5 py-2 text-left text-muted-foreground text-xs transition-colors hover:border-foreground hover:text-foreground md:min-h-8 md:py-1"
+            aria-label={`Remove search: ${query}`}
+          >
+            <span className="shrink-0 opacity-60">Search |</span>
+            <span className="break-words text-foreground">{query}</span>
+            <XIcon className="ml-auto size-3 shrink-0 opacity-60" />
+          </motion.button>
+        )}
         {groups.map((group) => (
           <motion.button
             key={group.id}

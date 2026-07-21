@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@base-ui/react": "1.6.0",
+    "@leeoniya/ufuzzy": "1.0.19",
     "@lexical/react": "0.47.0",
     "@lexical/rich-text": "0.47.0",
     "@lexical/selection": "0.47.0",

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { FontRecord } from "@/lib/fonts/types";
-import { applyFilters, queryRelevance, suggestFamily } from "./apply";
+import { applyFilters, searchByQuery, suggestFamilies } from "./apply";
 import { emptyFilter, type FilterState } from "./state";
 
 // A minimal FontRecord factory: every field the matcher reads gets a sane
@@ -85,17 +85,9 @@ describe("applyFilters, text query", () => {
     font({ name: "Roboto", designer: "Christian Robertson" }),
     font({ name: "Lato", displayName: "Lato Display" }),
   ];
-  it("matches on name substring", () => {
-    expect(names(applyFilters(fonts, filter({ query: "rob" })))).toEqual([
-      "Roboto",
-    ]);
-  });
-  it("matches on displayName and designer too", () => {
-    expect(applyFilters(fonts, filter({ query: "display" }))).toHaveLength(1);
-    expect(applyFilters(fonts, filter({ query: "christian" }))).toHaveLength(1);
-  });
-  it("excludes non-matches", () => {
-    expect(applyFilters(fonts, filter({ query: "zzz" }))).toHaveLength(0);
+  it("does NOT gate on the query (searchByQuery owns text search now)", () => {
+    // applyFilters is the pure facet pass; the query is applied downstream.
+    expect(applyFilters(fonts, filter({ query: "rob" }))).toHaveLength(3);
   });
 });
 
@@ -403,46 +395,83 @@ describe("applyFilters, metric ranges", () => {
   });
 });
 
-describe("queryRelevance ordering", () => {
-  it("ranks exact > prefix > word-boundary > mid-word > designer-only", () => {
-    const exact = queryRelevance(font({ name: "HK" }), "hk");
-    const prefix = queryRelevance(font({ name: "HK Grotesk" }), "hk");
-    const boundary = queryRelevance(font({ name: "Noto Sans HK" }), "hk");
-    // "hk" sits mid-word (index 2, preceded by "s", not whitespace).
-    const midword = queryRelevance(font({ name: "Ashko" }), "hk");
-    const designer = queryRelevance(
-      font({ name: "Zzz", designer: "HK Studio" }),
-      "hk"
-    );
-    expect(exact).toBeGreaterThan(prefix);
-    expect(prefix).toBeGreaterThan(boundary);
-    expect(boundary).toBeGreaterThan(midword);
-    expect(midword).toBeGreaterThan(designer);
-    expect(designer).toBeGreaterThan(0);
+describe("searchByQuery", () => {
+  it("returns the input unchanged for an empty query", () => {
+    const fonts = [font({ name: "Inter" }), font({ name: "Roboto" })];
+    expect(searchByQuery(fonts, "  ")).toBe(fonts);
   });
-  it("returns 0 for an empty query and for no match", () => {
-    expect(queryRelevance(font({ name: "Inter" }), "")).toBe(0);
-    expect(queryRelevance(font({ name: "Inter" }), "zzz")).toBe(0);
+
+  it("filters to matches and drops non-matches", () => {
+    const fonts = [
+      font({ name: "Inter" }),
+      font({ name: "Roboto" }),
+      font({ name: "Lato" }),
+    ];
+    expect(names(searchByQuery(fonts, "rob"))).toEqual(["Roboto"]);
+    expect(searchByQuery(fonts, "zzzzz")).toEqual([]);
+  });
+
+  it("matches on designer and on vendor (name + id)", () => {
+    const fonts = [
+      font({ name: "Alpha", designer: "Christian Robertson" }),
+      font({ name: "Beta", vendorId: "GOOG" }), // vendorLabel -> "Google"
+    ];
+    expect(names(searchByQuery(fonts, "christian"))).toEqual(["Alpha"]);
+    expect(names(searchByQuery(fonts, "goog"))).toEqual(["Beta"]);
+  });
+
+  it("ranks a name hit above a designer-only hit", () => {
+    const fonts = [
+      font({ name: "Studio Sans", designer: "Someone" }), // name contains "studio"
+      font({ name: "Zzz", designer: "Studio Foundry" }), // designer only
+    ];
+    expect(names(searchByQuery(fonts, "studio"))[0]).toBe("Studio Sans");
+  });
+
+  it("tolerates a single typo (huninnn -> Bpmf Huninn)", () => {
+    const fonts = [font({ name: "Bpmf Huninn" }), font({ name: "Inter" })];
+    expect(names(searchByQuery(fonts, "huninnn"))).toEqual(["Bpmf Huninn"]);
   });
 });
 
-describe("suggestFamily", () => {
+describe("suggestFamilies", () => {
   const fonts = [
     font({ name: "Inter" }),
     font({ name: "Roboto" }),
     font({ name: "Noto Sans" }),
   ];
-  it("suggests the closest name for a typo within edit budget", () => {
-    expect(suggestFamily("robato", fonts)).toBe("Roboto");
-    expect(suggestFamily("intr", fonts)).toBe("Inter");
+  it("suggests the closest name first for a typo within edit budget", () => {
+    expect(suggestFamilies("robato", fonts)[0]).toBe("Roboto");
+    expect(suggestFamilies("intr", fonts)[0]).toBe("Inter");
+  });
+  it("tolerates two edits on a longer query (looser than the search)", () => {
+    // "robotaa" is edit-distance 2 from "Roboto"; the ~len/3 budget allows it
+    // even though the single-error fuzzy search would miss it.
+    expect(suggestFamilies("robotaa", fonts)[0]).toBe("Roboto");
   });
   it("matches an individual word of a multi-word family", () => {
-    expect(suggestFamily("noto", fonts)).toBe("Noto Sans");
+    expect(suggestFamilies("noto", fonts)).toContain("Noto Sans");
   });
-  it("returns null for a too-short query", () => {
-    expect(suggestFamily("ab", fonts)).toBeNull();
+  it("lists every family within the edit budget, closest first", () => {
+    // "huninnn" is edit-distance 1 from both cuts' shared "Huninn" word.
+    const cuts = [
+      font({ name: "Bpmf Huninn" }),
+      font({ name: "Klee Huninn" }),
+      font({ name: "Inter" }),
+    ];
+    const out = suggestFamilies("huninnn", cuts);
+    expect(out).toEqual(["Bpmf Huninn", "Klee Huninn"]);
   });
-  it("returns null when nothing is close enough", () => {
-    expect(suggestFamily("xylophone", fonts)).toBeNull();
+  it("caps the list at MAX_SUGGESTIONS", () => {
+    const many = Array.from({ length: 8 }, (_, i) =>
+      font({ name: `Huninn ${i}` })
+    );
+    expect(suggestFamilies("huninnn", many).length).toBeLessThanOrEqual(5);
+  });
+  it("returns empty for a too-short query", () => {
+    expect(suggestFamilies("ab", fonts)).toEqual([]);
+  });
+  it("returns empty when nothing is close enough", () => {
+    expect(suggestFamilies("xylophone", fonts)).toEqual([]);
   });
 });

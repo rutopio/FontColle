@@ -1,5 +1,7 @@
 // Filtering and search relevance: turn a FilterState into the matching subset.
+import uFuzzy from "@leeoniya/ufuzzy";
 import { isColorFont } from "@/lib/fonts/color";
+import { vendorLabel } from "@/lib/fonts/labels";
 import {
   METRIC_SPECS,
   type MetricKey,
@@ -18,38 +20,58 @@ import { MODE_KEYS, type ModeKey, matchMode } from "./match-mode";
 import type { FilterState } from "./state";
 import { familyWeightSet, familyWidthSet } from "./weights";
 
-// Relevance of a font to a search query, higher = better. Name/display-name
-// matches rank above designer-only matches, and exact/prefix/word-boundary
-// matches rank above a mid-word substring, so "hk" surfaces "Noto Sans HK"
-// ahead of the many designers whose names merely contain "hk". Returns 0 when
-// the query matches nothing (the caller only scores rows that already passed
-// the text filter, so 0 means "designer match with no name hit").
-export function queryRelevance(font: FontRecord, rawQuery: string): number {
-  const q = rawQuery.trim().toLowerCase();
-  if (!q) return 0;
+// One uFuzzy instance, reused across searches. `unicode: true` so CJK family
+// names (now the common case for the Google catalog) match; `intraIns: 1` lets a
+// stray extra char inside a term still hit ("huninnn" -> "Huninn"). SingleError
+// tolerates one substitution/transposition/deletion per term, giving the
+// typo-forgiveness the old editDistance path only offered on a zero-result
+// fallback. Term bounds stay loose (default) so mid-name matches still surface.
+const uf = new uFuzzy({
+  unicode: true,
+  intraIns: 1,
+  intraMode: 1,
+  intraSub: 1,
+  intraTrn: 1,
+  intraDel: 1,
+});
 
-  const names = [font.name, font.displayName].filter((n): n is string => !!n);
-  let best = 0;
-  for (const name of names) {
-    const n = name.toLowerCase();
-    const idx = n.indexOf(q);
-    if (idx < 0) continue;
-    let score: number;
-    if (n === q)
-      score = 100; // exact name
-    else if (idx === 0)
-      score = 80; // name starts with query
-    else if (/\s/.test(n[idx - 1] ?? ""))
-      score = 60; // word-boundary (e.g. " HK")
-    else score = 40; // mid-word substring
-    // Shorter names with the same match tier are a tighter fit.
-    score += Math.max(0, 10 - n.length / 8);
-    best = Math.max(best, score);
+// The searchable text for a font, in priority order: name first so a name hit
+// ranks above a vendor/designer-only hit (uFuzzy rewards earlier, tighter, more
+// contiguous matches, and the name leads the string). Includes the family name,
+// its Google display name, every designer token, and the vendor — both the
+// human foundry name ("Google") and the raw 4-char id ("GOOG").
+function haystackFor(font: FontRecord): string {
+  const parts = [font.name];
+  if (font.displayName && font.displayName !== font.name)
+    parts.push(font.displayName);
+  parts.push(...designerTokens(font));
+  const vnd = foldVendor(font.vendorId);
+  if (vnd) {
+    const label = vendorLabel(vnd);
+    parts.push(label);
+    if (label !== vnd) parts.push(vnd);
   }
-  if (best > 0) return best;
+  return parts.join(" ");
+}
 
-  // Designer-only match: weakest, so name hits always come first.
-  return font.designer?.toLowerCase().includes(q) ? 10 : 0;
+// Fuzzy text search over name / display name / designers / vendor, returning the
+// matches best-first. The caller runs this AFTER applyFilters, so `fonts` is
+// already the facet-filtered candidate set; an empty query is handled upstream.
+// Falls back to the input order when uFuzzy finds nothing (so a non-matching
+// query yields an empty list, which the empty state + suggestFamilies handle).
+export function searchByQuery(
+  fonts: FontRecord[],
+  rawQuery: string
+): FontRecord[] {
+  const needle = rawQuery.trim();
+  if (!needle) return fonts;
+  const haystack = fonts.map(haystackFor);
+  const [idxs, info, order] = uf.search(haystack, needle);
+  if (!idxs || idxs.length === 0) return [];
+  // With ranking info, `order` indexes into `info.idx`; without it (very short
+  // needles that skip the info pass) `idxs` is already the match set.
+  if (info && order) return order.map((o) => fonts[info.idx[o]]);
+  return idxs.map((i) => fonts[i]);
 }
 
 // Levenshtein edit distance between two short strings, capped implicitly by
@@ -72,23 +94,32 @@ function editDistance(a: string, b: string): number {
   return prev[b.length];
 }
 
-// The closest family name to a search query that returned nothing, or null when
-// no name is close enough to be worth suggesting. Powers a "Did you mean …?"
-// hint on the empty state, a typo-tolerant fallback over the pure-substring
+// How many "Did you mean" suggestions to offer at most.
+const MAX_SUGGESTIONS = 5;
+
+// Family names close to a search query that returned nothing, closest first —
+// empty when none are near enough to be worth suggesting. Powers the "Did you
+// mean …?" hint on the empty state, a typo-tolerant fallback over the fuzzy
 // search. Compares the query against each family/display name and, for
 // multi-word names, their individual words, so "intr" finds "Inter" and
-// "robato" finds "Roboto". A match must be within ~1 edit per 4 query chars.
-export function suggestFamily(
+// "huninnn" finds "Bpmf Huninn". A match must be within ~1 edit per 4 query
+// chars. Returns several so a query near more than one family (e.g. "huninnn"
+// vs several "… Huninn" cuts) lists them all rather than picking one.
+export function suggestFamilies(
   rawQuery: string,
   fonts: FontRecord[]
-): string | null {
+): string[] {
   const q = rawQuery.trim().toLowerCase();
   // Too short to typo-correct meaningfully (every 3-letter name is ~2 edits away).
-  if (q.length < 3) return null;
-  const maxDist = Math.max(1, Math.floor(q.length / 4));
+  if (q.length < 3) return [];
+  // ~1 edit per 3 query chars: looser than the fuzzy search's single-error match,
+  // so a two-typo query the search itself misses ("robotaa" -> "Roboto", distance
+  // 2) still surfaces as a suggestion. Short queries (3-5) stay at a single edit.
+  const maxDist = Math.max(1, Math.floor(q.length / 3));
 
-  let bestName: string | null = null;
-  let bestDist = maxDist + 1;
+  // Best (smallest) edit distance seen per family name, so each family appears
+  // once even when several of its words match, ranked by its closest word.
+  const best = new Map<string, number>();
   for (const font of fonts) {
     const names = [font.name, font.displayName].filter((n): n is string => !!n);
     for (const name of names) {
@@ -98,26 +129,30 @@ export function suggestFamily(
         name.toLowerCase(),
         ...name.toLowerCase().split(/\s+/),
       ];
+      let nameDist = maxDist + 1;
       for (const cand of candidates) {
         // Skip candidates whose length is too far off to ever be within range.
-        if (Math.abs(cand.length - q.length) > bestDist) continue;
+        if (Math.abs(cand.length - q.length) > maxDist) continue;
         const d = editDistance(q, cand);
-        if (d < bestDist) {
-          bestDist = d;
-          bestName = name;
-          if (d === 0) return name;
-        }
+        if (d < nameDist) nameDist = d;
+        if (nameDist === 0) break;
+      }
+      if (nameDist <= maxDist) {
+        const prev = best.get(name);
+        if (prev === undefined || nameDist < prev) best.set(name, nameDist);
       }
     }
   }
-  return bestName;
+  return [...best.entries()]
+    .sort((a, b) => a[1] - b[1] || a[0].localeCompare(b[0]))
+    .slice(0, MAX_SUGGESTIONS)
+    .map(([name]) => name);
 }
 
 export function applyFilters(
   fonts: FontRecord[],
   f: FilterState
 ): FontRecord[] {
-  const q = f.query.trim().toLowerCase();
   const metricKeys = Object.keys(f.metrics) as MetricKey[];
   // Each section's OR/AND mode depends only on the filter, not the font, so
   // resolve the toggleable sections once here rather than per font in the
@@ -130,15 +165,10 @@ export function applyFilters(
   // caller's length guard, so `has` runs over a non-empty list.
   const combine = <T>(key: ModeKey, values: T[], has: (v: T) => boolean) =>
     isAny[key] ? values.some(has) : values.every(has);
+  // The text query is NOT applied here: it's a fuzzy text search over several
+  // fields, run by searchByQuery after this facet pass so the query both filters
+  // and orders in one step. applyFilters is the pure facet gate.
   return fonts.filter((font) => {
-    // Match the family name, its Google Fonts display name, or the designer.
-    if (
-      q &&
-      !font.name.toLowerCase().includes(q) &&
-      !font.displayName?.toLowerCase().includes(q) &&
-      !font.designer?.toLowerCase().includes(q)
-    )
-      return false;
     if (f.classes.length && !f.classes.includes(font.class)) return false;
     if (
       f.tags.length &&

@@ -3,12 +3,18 @@ import {
   MagnifyingGlassIcon,
   RowsIcon,
   SquaresFourIcon,
-  XIcon,
 } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { ActiveFilterChips } from "@/components/filter/active-filter-chips";
 import { FilterDrawer } from "@/components/filter/filter-drawer";
 import { FilterRail } from "@/components/filter/filter-rail";
@@ -45,9 +51,9 @@ import {
   type FilterState,
   filterToSearch,
   parseFilterSearch,
-  queryRelevance,
+  searchByQuery,
   searchToFilter,
-  suggestFamily,
+  suggestFamilies,
 } from "@/lib/fonts/filter";
 import { fetchFirstPage } from "@/lib/fonts/first-page";
 import { DEFAULT_SORT, type SortKey, sortFonts } from "@/lib/fonts/sort";
@@ -276,16 +282,11 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
     const filtered = favDep
       ? matched.filter((f) => favDep.includes(f.id))
       : matched;
-    const sorted = sortFonts(filtered, sort);
-    // With a search query, surface the best textual matches first (ignoring the
-    // sort dropdown for ranking), then fall back to the chosen sort as the
-    // tiebreaker. Stable sort keeps the sorted order within equal-relevance ties.
-    if (!deferredFilter.query.trim()) return sorted;
-    return [...sorted].sort(
-      (a, b) =>
-        queryRelevance(b, deferredFilter.query) -
-        queryRelevance(a, deferredFilter.query)
-    );
+    // With a search query, uFuzzy both filters and ranks the facet-passed
+    // candidates (best textual match first, ignoring the sort dropdown). Without
+    // one, the chosen sort orders the full set.
+    if (!deferredFilter.query.trim()) return sortFonts(filtered, sort);
+    return searchByQuery(filtered, deferredFilter.query);
   }, [fonts, deferredFilter, sort, favDep]);
 
   useListScrollRestore(scrollRef, listScrollY);
@@ -372,12 +373,12 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
   // nothing, suggest the closest family name ("Did you mean Inter?"). Only run
   // the edit-distance scan on the empty state, and skip it when the suggestion
   // would just echo the query.
-  const suggestion = useMemo(() => {
-    if (results.length > 0 || !hasQuery) return null;
-    const s = suggestFamily(filter.query, fonts);
-    return s && s.toLowerCase() !== filter.query.trim().toLowerCase()
-      ? s
-      : null;
+  const suggestions = useMemo(() => {
+    if (results.length > 0 || !hasQuery) return [];
+    const q = filter.query.trim().toLowerCase();
+    return suggestFamilies(filter.query, fonts).filter(
+      (s) => s.toLowerCase() !== q
+    );
   }, [results.length, hasQuery, filter.query, fonts]);
 
   return (
@@ -416,7 +417,7 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
               )}
             </div>
 
-            <div className="ml-auto flex items-center gap-2 max-md:ml-0 max-md:w-full max-md:justify-between md:gap-3">
+            <div className="ml-auto flex items-center gap-2 max-md:ml-0 max-md:w-full max-md:justify-between md:shrink-0 md:gap-3">
               <span
                 className="flex-1 text-muted-foreground text-sm"
                 aria-live="polite"
@@ -516,33 +517,29 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
                     : "No fonts match your filters and search. Remove a condition below, or broaden them."}
                 </EmptyDescription>
               </EmptyHeader>
-              {/* Surface the search text as a removable chip: it lives in the
-                sidebar input, easy to forget as the reason nothing matches. */}
-              {filter.query.trim() && (
-                <button
-                  type="button"
-                  onClick={() => commitFilter({ ...filter, query: "" })}
-                  className="flex items-center gap-1.5 rounded-md border border-input px-2.5 py-1 text-muted-foreground text-xs transition-colors hover:border-foreground hover:text-foreground"
-                  aria-label={`Remove search: ${filter.query.trim()}`}
-                >
-                  <span className="opacity-60">Search</span>
-                  <span className="text-foreground">{filter.query.trim()}</span>
-                  <XIcon className="size-3 opacity-60" />
-                </button>
-              )}
-              {/* Typo-tolerant nudge: swap the query for the closest family name. */}
-              {suggestion && (
+              {/* The search text now surfaces as a removable chip inside the
+                  ActiveFilterChips row below, alongside the other conditions. */}
+              {/* Typo-tolerant nudge: the nearest family names, each swapping
+                  the query for that name. Comma-separated, "or" before the last. */}
+              {suggestions.length > 0 && (
                 <p className="text-muted-foreground text-sm">
                   Did you mean{" "}
-                  <button
-                    type="button"
-                    onClick={() =>
-                      commitFilter({ ...filter, query: suggestion })
-                    }
-                    className="font-medium text-foreground underline decoration-muted-foreground/50 hover:decoration-foreground"
-                  >
-                    {suggestion}
-                  </button>
+                  {suggestions.map((s, i) => (
+                    <Fragment key={s}>
+                      {i > 0 && (
+                        <span>
+                          {i === suggestions.length - 1 ? " or " : ", "}
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => commitFilter({ ...filter, query: s })}
+                        className="font-medium text-foreground underline decoration-muted-foreground/50 hover:decoration-foreground"
+                      >
+                        {s}
+                      </button>
+                    </Fragment>
+                  ))}
                   ?
                 </p>
               )}
