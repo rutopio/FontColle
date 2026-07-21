@@ -4,14 +4,13 @@ import {
   GoogleLogoIcon,
 } from "@phosphor-icons/react";
 import { Link, useCanGoBack, useRouter } from "@tanstack/react-router";
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Column } from "@/components/filter-layout";
 import { FontTraits } from "@/components/font-traits";
 import { PreviewBar } from "@/components/preview-dock";
 import { repoHostIcon } from "@/components/repo-host-icon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import type { DesignerSibling } from "@/lib/fonts/detail";
 import { buildFeatureSettings } from "@/lib/fonts/features";
@@ -20,13 +19,12 @@ import { scriptLabel } from "@/lib/fonts/labels";
 import { ensureFontRangeLoaded, useFontLoaded } from "@/lib/fonts/loader";
 import { previewStyle } from "@/lib/fonts/preview-style";
 import { fontSlug } from "@/lib/fonts/slug";
-import { specimenFor } from "@/lib/fonts/specimen";
+import { specimenFor, specimenLinesFor } from "@/lib/fonts/specimen";
 import type { FontRecord } from "@/lib/fonts/types";
 import { usePreview } from "@/lib/preview/context";
 import { DesignerPanel } from "./designer-panel";
 import { type DetailTab, DetailTabBar } from "./detail-rail";
 import { GlyphsPanel } from "./glyphs";
-import { InstanceChips } from "./instance-chips";
 import { InstanceRow } from "./instance-row";
 import { LanguageSupport } from "./language-support";
 import { LicensePanel } from "./license-panel";
@@ -34,7 +32,7 @@ import { LinksDrawer } from "./links-drawer";
 import { MetricsPanel } from "./metrics-panel";
 import { Panel } from "./panel";
 import { type SpecRow, SpecTable } from "./spec-table";
-import { TypeTester } from "./type-tester";
+import { Tester } from "./tester";
 import { UsePanel } from "./use";
 
 export function Detail({
@@ -44,7 +42,6 @@ export function Detail({
   size,
   axisState,
   italic,
-  onLoadInstance,
   featureState,
   glyphBlock,
   glyphRanges,
@@ -57,7 +54,6 @@ export function Detail({
   size: number;
   axisState: Record<string, number>;
   italic: boolean;
-  onLoadInstance: (coords: Record<string, number>, isItalic?: boolean) => void;
   featureState: Record<string, boolean>;
   glyphBlock: string;
   glyphRanges: [number, number][];
@@ -75,6 +71,12 @@ export function Detail({
   useEffect(() => setMounted(true), []);
   const canGoBack = useCanGoBack() && mounted;
   const specimen = text || specimenFor(font);
+  // The Tester's opening document: always the family's own three-line
+  // specimen passage, deliberately decoupled from the shared preview sentence.
+  // The editor owns its text once mounted, so borrowing the dock's sentence
+  // would make the two look linked when only the first render ever reads it.
+  // Every visit to the tab therefore starts from the same known document.
+  const seedLines = specimenLinesFor(font);
   // The Column's ScrollArea viewport, shared with the Glyphs grid so its
   // row-virtualizer scrolls in the same container the rest of the page does
   // (matching how the list's FontGrid scrolls in its Column).
@@ -131,18 +133,53 @@ export function Detail({
     font.license && { label: "License", value: font.license },
   ].filter(Boolean) as SpecRow[];
 
-  const specimenStyle: React.CSSProperties = useMemo(() => {
-    // Preview at every axis's current value; add the size + feature settings
-    // the tester exposes on top of the shared preview style.
+  // The sidebar's feature toggles as a font-feature-settings value. Shared by
+  // every preview surface (Tester document, instance rows) so one
+  // toggle reads the same everywhere.
+  const featureSettings = useMemo(
+    () => buildFeatureSettings(featureState),
+    [featureState]
+  );
+
+  // Axis tags whose value actually differs across the family's named instances.
+  // A family's instances often pin a dozen axes at one shared value (Roboto
+  // Flex names 13 but only varies wght and slnt), and a badge repeating that
+  // same number on every row carries no information. Computed once here rather
+  // than per row: it's a property of the family, not of one instance.
+  const varyingAxisTags = useMemo(() => {
+    const seen = new Map<string, number>();
+    const varying = new Set<string>();
+    for (const inst of font.instances) {
+      for (const [tag, value] of Object.entries(inst.coords)) {
+        // First sighting records the value; any later disagreement (including
+        // an instance that omits a tag others carry) marks the axis as varying.
+        if (!seen.has(tag)) {
+          seen.set(tag, value);
+          if (inst !== font.instances[0]) varying.add(tag);
+        } else if (seen.get(tag) !== value) {
+          varying.add(tag);
+        }
+      }
+      for (const tag of seen.keys()) {
+        if (!(tag in inst.coords)) varying.add(tag);
+      }
+    }
+    return varying;
+  }, [font.instances]);
+
+  // The family styling the Tester document renders at, with no font-size:
+  // the editor sets that per block type itself. Axis coords come from the
+  // sidebar sliders and the instance chips (both write axisState), and the
+  // feature settings from the sidebar toggles.
+  const testerFontStyle: React.CSSProperties = useMemo(() => {
     const coords = Object.fromEntries(
       font.axes.map((a) => [a.tag, axisState[a.tag]])
     );
     return {
       ...previewStyle({ name: font.name, loaded: fontLoaded, coords, italic }),
-      fontSize: `${size}px`,
-      fontFeatureSettings: buildFeatureSettings(featureState),
+      fontFeatureSettings: featureSettings,
     };
-  }, [font.name, font.axes, axisState, size, italic, featureState, fontLoaded]);
+  }, [font.name, font.axes, axisState, italic, featureSettings, fontLoaded]);
 
   return (
     <Column
@@ -260,54 +297,52 @@ export function Detail({
         </>
       }
       footer={<PreviewBar />}
-      // The preview sentence field is only relevant to the Sample tester; on the
-      // other views it slides away.
+      // The preview sentence field drives the instance rows, so it's up on
+      // Instances only. The Tester seeds its document from the sentence once,
+      // on mount, then owns it: a live field there would look like it edits
+      // the document when it no longer does.
       footerHidden={tab !== "sample"}
     >
-      {tab === "sample" && (
-        <>
-          {/* TYPE TESTER, named-instance chips set the preview axes; the
-              sentence below is the editable specimen. */}
-          <Panel label="Type tester">
-            {font.instances.length > 0 && (
-              <InstanceChips
-                instances={font.instances}
-                fontName={font.name}
-                fontLoaded={fontLoaded}
-                axisState={axisState}
-                italic={italic}
-                onLoadInstance={onLoadInstance}
-              />
-            )}
-            <TypeTester
+      {/* PLAYGROUND, a rich-text editor (not the shared preview string): mix
+          Heading 1/2/3 and Normal text in one document, with per-level size +
+          line-height, like the Google Fonts specimen. Its instance chips work
+          at the same scope the Style dropdown does, on the block the caret is
+          in, so one paragraph can be Bold while the next stays Light.
+          Unwrapped, like the Instances rows: the tab already names the view,
+          so a titled card around it would just be a second frame. */}
+      {tab === "tester" && (
+        <Tester
+          fontStyle={testerFontStyle}
+          seedLines={seedLines}
+          instances={font.instances}
+          fontName={font.name}
+          fontLoaded={fontLoaded}
+        />
+      )}
+
+      {/* NAMED INSTANCES, one instance per row: its label + coords on the first
+      line, an editable preview of it on the second. Editing any row's text
+      updates the shared preview, so every row (and the tester) changes.
+      Unwrapped, and styled like the list's FontRow: the tab already names the
+      view, so a titled card around it would just be a second frame. */}
+      {tab === "sample" && font.instances.length > 0 && (
+        // One flush stack, not a gapped list: each row carries its own bottom
+        // border, so the Column body's gap-4 would break them apart.
+        <div className="flex flex-col">
+          {font.instances.map((inst) => (
+            <InstanceRow
+              key={`row:${inst.italic ? "i" : "u"}:${inst.name}`}
+              inst={inst}
               specimen={specimen}
-              style={specimenStyle}
+              fontName={font.name}
+              fontLoaded={fontLoaded}
+              size={size}
+              featureSettings={featureSettings}
+              varyingAxisTags={varyingAxisTags}
               onEditText={setText}
             />
-          </Panel>
-
-          {/* NAMED INSTANCES, ROW VIEW, one instance per block: its label on the
-          first line, an editable preview of it on the second. Editing any row's
-          text updates the shared preview, so every row (and the tester) changes. */}
-          {font.instances.length > 0 && (
-            <Panel label="Named instances" count={font.instances.length}>
-              <div className="flex flex-col">
-                {font.instances.map((inst, i) => (
-                  <Fragment key={`row:${inst.italic ? "i" : "u"}:${inst.name}`}>
-                    {i > 0 && <Separator />}
-                    <InstanceRow
-                      inst={inst}
-                      specimen={specimen}
-                      fontName={font.name}
-                      fontLoaded={fontLoaded}
-                      onEditText={setText}
-                    />
-                  </Fragment>
-                ))}
-              </div>
-            </Panel>
-          )}
-        </>
+          ))}
+        </div>
       )}
 
       {tab === "glyphs" && (
@@ -410,7 +445,7 @@ export function Detail({
           hidden below md. Fixed-position, so it renders as a page overlay
           regardless of where it sits in the tree. It keeps the lower slot on
           every tab; ControlsDrawer stacks above it where it renders. The stack
-          drops with the preview dock, which is up on Specimen only (see
+          drops with the preview dock, which is up on Instances only (see
           footerHidden above). */}
       <LinksDrawer font={font} dockVisible={tab === "sample"} />
     </Column>

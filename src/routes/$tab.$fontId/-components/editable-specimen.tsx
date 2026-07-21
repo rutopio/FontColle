@@ -1,88 +1,60 @@
 import { type CSSProperties, useState } from "react";
 
-// A specimen line that doubles as a text field. Idle it's a button showing the
-// current text; clicking swaps in an input/textarea seeded with that text and
-// pushes every keystroke (trimmed) to `onEditText`, so all specimen surfaces
-// update live. Escape closes the editor. In the single-line input plain Enter
-// commits; in the multiline textarea Enter keeps inserting newlines, so
-// Cmd/Ctrl+Enter commits instead (blur also exits either way).
+// A specimen line that is always a real text field, never a button that swaps
+// into one. Every keystroke goes to `onEditText`, so all specimen surfaces
+// update live.
 //
-// `multiline` picks a textarea (the type tester, which wraps) over an input
-// (instance rows, one line). `buttonClassName` / `fieldClassName` let each
-// caller keep its own sizing and underline treatment.
+// It used to render an idle <button> and only mount the <input> on click,
+// resolving the click's viewport point to a character offset
+// (caretPositionFromPoint / caretRangeFromPoint) to seed the caret. That mapping
+// was the fragile part: it silently returned null whenever the point missed the
+// button's own text node — the common case for a truncated line, a click in the
+// row's padding, or keyboard activation — and it could never support the things
+// a field gets for free anyway (drag-select, double-click a word, IME
+// composition, native undo). Rendering the input directly hands all of that to
+// the browser and deletes the geometry entirely.
 export function EditableSpecimen({
   text,
   style,
   onEditText,
   ariaLabel,
-  multiline = false,
-  buttonClassName,
-  fieldClassName,
+  className,
 }: {
+  // The text to show. This is the *resolved* specimen: the shared preview
+  // string when the user has typed one, else the family's own default.
   text: string;
   style: CSSProperties;
   onEditText: (value: string) => void;
   ariaLabel: string;
-  multiline?: boolean;
-  buttonClassName: string;
-  fieldClassName: string;
+  className: string;
 }) {
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState("");
-
-  if (editing) {
-    const shared = {
-      dir: "auto" as const,
-      value: draft,
-      "aria-label": ariaLabel,
-      autoFocus: true,
-      onChange: (
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-      ) => {
-        setDraft(e.target.value);
-        onEditText(e.target.value.trim());
-      },
-      onBlur: () => setEditing(false),
-      style,
-      className: fieldClassName,
-    };
-    return multiline ? (
-      <textarea
-        {...shared}
-        rows={1}
-        onKeyDown={(e) => {
-          if (e.key === "Escape") setEditing(false);
-          // Enter still inserts a newline; Cmd/Ctrl+Enter commits (exits edit).
-          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-            e.preventDefault();
-            setEditing(false);
-          }
-        }}
-      />
-    ) : (
-      <input
-        {...shared}
-        type="text"
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === "Escape") setEditing(false);
-        }}
-      />
-    );
-  }
+  // While this field has focus it owns its value, so what the user typed
+  // survives the round-trip through shared state. Two things would otherwise
+  // fight them mid-word: the shared text is stored trimmed (a trailing space
+  // would vanish as it was typed), and an emptied field falls back to the
+  // family's default specimen (clearing the line would refill it).
+  const [draft, setDraft] = useState<string | null>(null);
 
   return (
-    <button
-      type="button"
-      onClick={() => {
-        setDraft(text);
-        setEditing(true);
+    <input
+      type="text"
+      value={draft ?? text}
+      onChange={(e) => {
+        setDraft(e.target.value);
+        onEditText(e.target.value.trim());
+      }}
+      // Hand control back to the shared text: blurring re-syncs this row with
+      // whatever every other row is showing.
+      onFocus={(e) => setDraft(e.target.value)}
+      onBlur={() => setDraft(null)}
+      // Escape gives up focus; there is no separate edit mode to close.
+      onKeyDown={(e) => {
+        if (e.key === "Escape") e.currentTarget.blur();
       }}
       aria-label={ariaLabel}
       dir="auto"
       style={style}
-      className={buttonClassName}
-    >
-      {text}
-    </button>
+      className={className}
+    />
   );
 }

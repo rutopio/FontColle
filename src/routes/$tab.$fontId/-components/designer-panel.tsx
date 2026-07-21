@@ -133,7 +133,7 @@ export function DesignerPanel({
                               <Link
                                 to="/$tab/$fontId"
                                 params={{
-                                  tab: "specimen",
+                                  tab: "instances",
                                   fontId: fontSlug(s.id),
                                 }}
                                 className="truncate py-0.5 text-sm hover:text-foreground"

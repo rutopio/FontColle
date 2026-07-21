@@ -2,6 +2,7 @@ import {
   BookOpenIcon,
   CodeIcon,
   EyesIcon,
+  PenNibIcon,
   ScrollIcon,
   SquaresFourIcon,
   UserIcon,
@@ -10,6 +11,7 @@ import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 
 export type DetailTab =
+  | "tester"
   | "sample"
   | "glyphs"
   | "use"
@@ -18,19 +20,31 @@ export type DetailTab =
   | "license";
 
 // The icon-rail switcher for the detail page, matching the list's FilterRail:
-// one button per view (the type-tester sample vs. the font's specs vs. the
-// designer vs. the license). Icons are chosen to not collide with the list's
-// FilterRail set.
+// one button per view (the named instances vs. the Tester editor vs. the
+// font's specs vs. the designer vs. the license). Icons are chosen to not
+// collide with the list's FilterRail set.
 //
-// `slug` is the URL segment (/{slug}/{fontId}); it differs from the internal
-// tab id where the user-facing name diverged (specimen) from the original code
-// name (sample).
+// `slug` is the URL segment (/{slug}/{fontId}). It matches the tab id
+// everywhere except `sample`, whose code name predates the Instances label it
+// now renders under. Slugs track the labels, so a shared link reads as the tab
+// it opens. `instances` is the canonical tab: it's what every list card links
+// to and what the canonical URL points at.
+//
+// Instances leads the rail and is the default view: a family's named styles are
+// what a visitor wants to see first, with the Tester there for trying text
+// against them.
 export const TABS = [
   {
     id: "sample" as const,
-    slug: "specimen",
-    label: "Specimen",
+    slug: "instances",
+    label: "Instances",
     icon: EyesIcon,
+  },
+  {
+    id: "tester" as const,
+    slug: "tester",
+    label: "Tester",
+    icon: PenNibIcon,
   },
   {
     id: "glyphs" as const,

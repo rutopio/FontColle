@@ -8,7 +8,7 @@ export function fontSlug(id: string): string {
 }
 
 // Normalize a slug for lookup. family_dir is already lowercase, but lowercasing
-// here keeps /specimen/Inter and /specimen/inter resolving to the same family.
+// here keeps /instances/Inter and /instances/inter resolving to the same family.
 export function slugKey(slug: string): string {
   return slug.toLowerCase();
 }

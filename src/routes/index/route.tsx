@@ -71,7 +71,7 @@ export const Route = createFileRoute("/")({
   // Returns ONLY the first-page slice (~24 records, a few tens of KB), never the
   // full catalog, the Worker must not parse the 14 MB catalog (Error 1102). The
   // full catalog still loads client-side via catalogQueryOptions. This slice is
-  // what lets a default `/` visit's SSR HTML carry real font cards + /specimen/
+  // what lets a default `/` visit's SSR HTML carry real font cards + /instances/
   // links for crawlers and non-JS fetchers (see the first-page render in App).
   loader: async () => ({ firstPage: await fetchFirstPage() }),
   head: () => {
@@ -579,7 +579,7 @@ function ListPending() {
 }
 
 // Pending state for the DEFAULT `/` view: renders the loader's first-page slice
-// as real, non-virtualized FontCards (real <Link> /specimen/ anchors), so a
+// as real, non-virtualized FontCards (real <Link> /instances/ anchors), so a
 // crawler or non-JS fetch of `/` sees ~24 actual fonts in the SSR HTML instead
 // of an empty shell. Below the real cards sits a skeleton grid, so the panel
 // reads as "filling in" until the full catalog resolves and Catalog takes over.

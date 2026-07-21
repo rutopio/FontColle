@@ -1,4 +1,5 @@
 import { MagnifyingGlassIcon, SquaresFourIcon } from "@phosphor-icons/react";
+import { motion } from "motion/react";
 import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { CoveredBlock } from "@/lib/fonts/glyph-coverage";
@@ -41,7 +42,14 @@ export function GlyphsSidebar({
   return (
     <aside className="flex h-full w-full min-w-0 flex-col text-sidebar-foreground">
       <ScrollArea viewportRef={viewportRef} className="min-h-0 flex-1">
-        <div className="flex flex-col gap-4 p-4">
+        {/* Matches DetailSidebar (and the list's FilterSidebar): the panel
+            fades and rises when the rail switches to this tab. */}
+        <motion.div
+          className="flex flex-col gap-4 p-4"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.15, ease: "easeOut" }}
+        >
           <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase">
             <SquaresFourIcon className="size-4" />
             Unicode blocks
@@ -113,7 +121,7 @@ export function GlyphsSidebar({
               })}
             </div>
           )}
-        </div>
+        </motion.div>
       </ScrollArea>
     </aside>
   );

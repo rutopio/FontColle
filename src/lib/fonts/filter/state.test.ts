@@ -208,26 +208,26 @@ describe("searchToFilter reverse-direction edge cases", () => {
     ).toEqual(["/Serif/Didone", "/Sans/Humanist"]);
   });
 
-  // Regression: the "1" instance bucket is all digits, so TanStack Router
-  // parses a hand-typed ?instances=1 into the number 1. parseFilterSearch must
-  // coerce it back to a string or the bucket is silently dropped.
-  it("accepts a numeric instances bucket id", () => {
+  // The single-instance bucket encodes as "1-1", so a hand-typed ?instances=1
+  // is a truncated range with no upper bound and is rejected rather than
+  // silently decoding to [1, 0]. parseFilterSearch still has to coerce a
+  // number-shaped param to a string first, or it would never reach the codec.
+  it("coerces a numeric instances param to a string", () => {
     expect(parseFilterSearch({ instances: 1 }).instances).toBe("1");
-    expect(searchToFilter(parseFilterSearch({ instances: 1 })).instances).toEqual(
-      [1, 1]
-    );
   });
 
-  it("ignores an unknown instances bucket id", () => {
+  it("ignores a malformed instances range", () => {
     expect(searchToFilter({ instances: "bogus" }).instances).toBeUndefined();
+    expect(searchToFilter({ instances: "1" }).instances).toBeUndefined();
+    expect(searchToFilter({ instances: "2-" }).instances).toBeUndefined();
   });
 
   // The slider can land on any range, not just a bucket, so the codec has to
   // carry arbitrary bounds and sanitize hand-typed ones.
   it("round-trips an arbitrary instances range", () => {
-    expect(filterToSearch({ ...emptyFilter, instances: [3, 27] }).instances).toBe(
-      "3-27"
-    );
+    expect(
+      filterToSearch({ ...emptyFilter, instances: [3, 27] }).instances
+    ).toBe("3-27");
     expect(searchToFilter({ instances: "3-27" }).instances).toEqual([3, 27]);
   });
 
@@ -240,10 +240,6 @@ describe("searchToFilter reverse-direction edge cases", () => {
     expect(
       filterToSearch({ ...emptyFilter, instances: [1, 74] }).instances
     ).toBeUndefined();
-  });
-
-  it("accepts the legacy >18 bucket spelling", () => {
-    expect(searchToFilter({ instances: "19+" }).instances).toEqual([19, 74]);
   });
 
   it("drops a fully non-numeric metric range", () => {

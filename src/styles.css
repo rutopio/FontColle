@@ -397,6 +397,84 @@
   color: var(--syntax-number);
 }
 
+/* The detail page's Tester rich-text editor. One document mixes heading levels
+   and normal paragraphs, so each block renders at its own size, driven by the
+   --pg-* custom properties the Tester toolbar sets on the editor root. Editing
+   a level's slider updates every block of that level. The `--pg-` prefix is
+   short for "playground", the tab's original name, and is kept only because it
+   is terse; everything else reads as Tester. */
+
+/* The document is a font preview, so it must show the family as it really is.
+   The base layer styles every h1-h6 with `font-heading tracking-wide`, and
+   those land directly on the seeded heading elements: more specific than the
+   `font-family`/`letter-spacing: normal` that previewStyle puts on the editor
+   root, so the root's reset alone never reached them. Headings were rendering
+   in the UI's heading face, tracked wide, which also breaks ligatures (the
+   spacing is inserted between the very units "fi"/"ffi" would join).
+
+   Both are handed back to the editor root here, which carries the previewed
+   family and the preview's `letter-spacing: normal`, so a heading now matches
+   the instance rows: the real typeface at its real spacing. */
+.tester-editor :is(h1, h2, h3, h4, h5, h6) {
+  font-family: inherit;
+  letter-spacing: inherit;
+}
+/* Line height is a fixed 1.2 at every level: the Tester is a type specimen,
+   so the leading stays out of the way and only size/weight distinguish the
+   levels. Set once here rather than per level, and no longer adjustable from
+   the toolbar. */
+.tester-editor :is(h1, h2, h3, p) {
+  line-height: 1.2;
+}
+/* Headings are seeded carrying a named instance (see headingInstance in
+   tester.tsx), whose inline font-weight is a real cut of the family and
+   wins over these. The literals are the fallback for a family with no
+   instances at all, and for a heading the user has cleared back to the
+   document default. */
+.tester-editor h1 {
+  font-size: var(--pg-size-h1);
+  font-weight: 700;
+}
+.tester-editor h2 {
+  font-size: var(--pg-size-h2);
+  font-weight: 600;
+}
+.tester-editor h3 {
+  font-size: var(--pg-size-h3);
+  font-weight: 500;
+}
+.tester-editor p {
+  font-size: var(--pg-size-normal);
+}
+/* Space between blocks, so the seeded h1/h2/h3 stack reads as separate
+   specimens rather than one run-on column. An em, not a fixed length, so the
+   gap tracks whatever size the block below it is set to: a 48px heading earns
+   more room above it than an 18px paragraph. Only later siblings get the
+   margin, so the document still starts flush with the editor's padded edge. */
+.tester-editor > * + * {
+  margin-top: 1em;
+}
+
+/* The block the caret is in. Both the Style/Size/Line-height controls and the
+   instance chips apply to the whole block, not the selected word, so the tint
+   shows how far the next change will reach. Set as a data attribute by the
+   editor rather than a Lexical node property, to keep the highlight out of the
+   document's undo history (see the effect in tester.tsx).
+
+   The negative inline margin + matching padding bleeds the band past the text
+   column so it reads as a full-width row rather than a box hugging the glyphs;
+   box-decoration-break keeps it continuous when a block wraps onto more lines.
+   Transition on background-color only: the caret moves between blocks often,
+   and animating anything geometric would make the document twitch. */
+.tester-editor [data-pg-active] {
+  background-color: var(--color-muted);
+  border-radius: var(--radius-sm);
+  margin-inline: -0.35em;
+  padding-inline: 0.35em;
+  box-decoration-break: clone;
+  transition: background-color 150ms ease-out;
+}
+
 /* Respect reduced-motion globally: near-instant transitions/animations for any
    non-essential motion (card entrance, accordion expand, hover transitions),
    without having to opt each component out. */

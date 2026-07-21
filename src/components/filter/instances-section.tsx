@@ -5,8 +5,8 @@ import {
   INSTANCE_BUCKETS,
   INSTANCE_MAX,
   INSTANCE_MIN,
-  instanceBucketOf,
   type InstanceRange,
+  instanceBucketOf,
   instanceRangeOf,
 } from "@/lib/fonts/filter";
 import { cn } from "@/lib/utils";
@@ -55,8 +55,11 @@ export function InstancesSection({
 
   // Families in a range, summed from the histogram (no second catalog pass).
   const countIn = (rlo: number, rhi: number) =>
-    histogram.reduce((sum, [n, c]) => (n >= rlo && n <= rhi ? sum + c : sum), 0);
-  const matched = useMemo(() => countIn(lo, hi), [histogram, lo, hi]);
+    histogram.reduce(
+      (sum, [n, c]) => (n >= rlo && n <= rhi ? sum + c : sum),
+      0
+    );
+  const matched = countIn(lo, hi);
 
   // Store the real counts; a range spanning the whole domain filters nothing,
   // so it clears instead (keeping All lit rather than showing a no-op filter).
@@ -104,7 +107,9 @@ export function InstancesSection({
         min={0}
         max={stops.length - 1}
         step={1}
-        getAriaLabel={(i) => `Instance count ${i === 0 ? "minimum" : "maximum"}`}
+        getAriaLabel={(i) =>
+          `Instance count ${i === 0 ? "minimum" : "maximum"}`
+        }
       />
       {/* Bucket presets + All, mirroring the metric rows' quartile buttons. */}
       <div className="grid grid-cols-5 gap-1">

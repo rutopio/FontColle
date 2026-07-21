@@ -19,7 +19,7 @@
 //                                   page's DEFAULT sort order (popularity). The
 //                                   index loader returns just this slice so the
 //                                   SSR HTML of a default `/` visit ships real
-//                                   font cards + /specimen/ links for crawlers,
+//                                   font cards + /instances/ links for crawlers,
 //                                   while the full catalog still loads client-side
 //                                   (never in the Worker, Error 1102).
 //

@@ -47,7 +47,7 @@ export const FontRow = memo(function FontRow({
   return (
     <Link
       to="/$tab/$fontId"
-      params={{ tab: "specimen", fontId: fontSlug(font.id) }}
+      params={{ tab: "instances", fontId: fontSlug(font.id) }}
       className="flex h-36 flex-col justify-center gap-3 overflow-hidden border-b transition-colors hover:bg-muted focus-visible:bg-muted/80 focus-visible:outline-none"
     >
       {/* Narrow (mobile): [name + actions] row over a designer row, stacked.

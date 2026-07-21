@@ -602,8 +602,13 @@ export function GlyphsPanel({
   // Always fall back to Adobe Blank (empty glyphs), never NotDef, so a stray
   // absent cell stays blank. While the font loads we are already on Blank, the
   // same look, so no special-casing needed.
+  //
+  // letterSpacing is reset for the same reason the preview helpers do it: the
+  // app tracks its UI wide on <html>, and an inherited value appends that
+  // spacing to every glyph, nudging each one off the centre of its cell.
   const glyphStyle: CSSProperties = {
     fontFamily: `"${font.name}", "Adobe Blank"`,
+    letterSpacing: "normal",
   };
   // fontLoaded is accepted so the panel re-renders once the face is ready and
   // the browser repaints real glyphs over the blank ones.

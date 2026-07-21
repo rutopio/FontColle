@@ -21,7 +21,7 @@ const assetFetch = createIsomorphicFn()
 // The home page's first-page slice: the first ~24 FontRecords in the default
 // (popularity) sort, built at build time by scripts/gen-catalog.mjs. The index
 // loader returns ONLY this slice, so a default `/` visit ships real font cards
-// and /specimen/ links in the SSR HTML, without the Worker ever loading the
+// and /instances/ links in the SSR HTML, without the Worker ever loading the
 // full 14 MB catalog (Error 1102). The full catalog still loads client-side via
 // catalogQueryOptions, exactly as before. Returns [] on any fetch/parse failure
 // so the loader never throws the home page into an error boundary.

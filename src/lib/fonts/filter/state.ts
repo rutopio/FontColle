@@ -3,12 +3,7 @@
 // detail sidebar can link back to the list with a filter applied.
 import type { MetricKey, MetricRange } from "@/lib/fonts/metrics";
 import { classificationGroupOf } from "./facets";
-import {
-  INSTANCE_MAX,
-  INSTANCE_MIN,
-  type InstanceRange,
-  instanceRangeOf,
-} from "./instances";
+import { INSTANCE_MAX, INSTANCE_MIN, type InstanceRange } from "./instances";
 import {
   type MatchMode,
   MODE_KEYS,
@@ -137,9 +132,9 @@ export interface FilterSearch {
   noto?: string;
   italic?: string; // italic radio: "italic" | "upright"
   upm?: string; // units-per-em values
-  // Instance-count range, "lo-hi" (e.g. instances=2-9). The slider can land on
-  // any range, so the id-only form isn't enough; bucket presets happen to
-  // encode as their own bounds, which keeps a preset link readable.
+  // Instance-count range, "lo-hi" (e.g. instances=2-9), like the metric ranges.
+  // Always the bounds, never a bucket id: the slider can land on any range, and
+  // a preset bucket is just one whose bounds happen to have a button.
   instances?: string;
   // Metric ranges, each "lo-hi" (e.g. xheight=0.45-0.55). One key per metric.
   xheight?: string; // x-height ratio
@@ -263,17 +258,16 @@ function decodeMetrics(s: FilterSearch): FilterState["metrics"] {
 
 // Instance range shares the metric "lo-hi" spelling. Bounds are clamped into
 // the domain and ordered, so a hand-typed ?instances=99-2 still lands sanely;
-// a range covering the whole domain filters nothing and is dropped. The legacy
-// ">18" bucket spelling ("19+") is accepted so older links keep working.
+// a range covering the whole domain filters nothing and is dropped.
 function decodeInstances(v: string | undefined): InstanceRange | undefined {
-  if (!v) return undefined;
-  const preset = instanceRangeOf(v);
-  const r = preset ?? parseRange(v);
+  const r = parseRange(v);
   if (!r) return undefined;
-  const fit = (n: number) =>
+  // Named `clampToDomain`, not `fit`: biome reads a bare `fit(` as vitest's
+  // focused-test helper and flags the whole function.
+  const clampToDomain = (n: number) =>
     Math.min(INSTANCE_MAX, Math.max(INSTANCE_MIN, Math.round(n)));
-  const lo = Math.min(fit(r[0]), fit(r[1]));
-  const hi = Math.max(fit(r[0]), fit(r[1]));
+  const lo = Math.min(clampToDomain(r[0]), clampToDomain(r[1]));
+  const hi = Math.max(clampToDomain(r[0]), clampToDomain(r[1]));
   if (lo <= INSTANCE_MIN && hi >= INSTANCE_MAX) return undefined;
   return [lo, hi];
 }

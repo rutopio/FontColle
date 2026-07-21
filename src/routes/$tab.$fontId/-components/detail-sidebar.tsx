@@ -5,8 +5,10 @@ import {
   ToggleRightIcon,
   XIcon,
 } from "@phosphor-icons/react";
+import { motion } from "motion/react";
 import type { CSSProperties } from "react";
 import { useMemo } from "react";
+import { Badge } from "@/components/ui/badge";
 import { EditableValue } from "@/components/ui/editable-value";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -18,11 +20,16 @@ import { DEFAULT_ON, featureName } from "@/lib/fonts/features";
 import type { FontRecord } from "@/lib/fonts/types";
 import { useScrollReset } from "@/lib/use-scroll-reset";
 
-// Preset values offered in the click-to-edit dropdown. Starts at the size min
-// (16), smaller values would be filtered out by EditableValue as out-of-range,
-// so listing them here is dead. Top values are clamped to max (200) at commit.
-const SIZE_PRESETS = [
-  16, 18, 20, 24, 28, 32, 36, 40, 48, 52, 60, 72, 100, 160, 200,
+// Preview font-size bounds, shared by the slider and the click-to-edit value so
+// the two can't drift apart. Exported because the Tester's own size control
+// offers the same range and presets.
+export const SIZE_MIN = 12;
+export const SIZE_MAX = 72;
+// Preset values offered in the click-to-edit dropdown. Bounded by SIZE_MIN /
+// SIZE_MAX: EditableValue filters out-of-range presets, so anything outside
+// would be dead.
+export const SIZE_PRESETS = [
+  12, 14, 16, 18, 20, 24, 28, 32, 36, 40, 48, 52, 60, 72,
 ];
 // Per-axis presets; axes without an entry just get free-form entry.
 const AXIS_PRESETS: Record<string, number[]> = {
@@ -110,23 +117,35 @@ function featureToggleClass(on: boolean) {
 // its OpenType features as toggle pills. Both drive the type tester via shared
 // page state; feature defaults follow the browser/W3C behavior.
 export function DetailSidebar({
+  panelKey,
   size,
   onSizeChange,
+  showSize = true,
   axes,
   axisState,
   onAxisChange,
   onResetAxes,
+  showAxes = true,
   features,
   featureState,
   onToggleFeature,
   onResetFeatures,
 }: {
+  // Which tab's controls these are. Only used to key the panel transition, so
+  // switching tabs replays the fade-and-rise instead of mutating in place.
+  panelKey: string;
   size: number;
   onSizeChange: (value: number) => void;
+  // Hidden on the Tester tab, whose editor sets a size per block type in
+  // its own toolbar, so one shared size would control nothing.
+  showSize?: boolean;
   axes: FontRecord["axes"];
   axisState: Record<string, number>;
   onAxisChange: (tag: string, value: number) => void;
   onResetAxes: () => void;
+  // Hidden on the Instances tab, where every row is pinned to its own named
+  // instance's coords, so a shared axis slider would control nothing.
+  showAxes?: boolean;
   features: string[];
   featureState: Record<string, boolean>;
   onToggleFeature: (tag: string) => void;
@@ -159,37 +178,49 @@ export function DetailSidebar({
   return (
     <aside className="flex h-full w-full min-w-0 flex-col text-sidebar-foreground">
       <ScrollArea viewportRef={viewportRef} className="min-h-0 flex-1">
-        <div className="flex flex-col gap-8 p-4">
+        {/* Same fade-and-rise the list's FilterSidebar plays when the rail
+            switches panels, keyed on the tab so a Tester <-> Instances switch
+            animates. Inside the ScrollArea, so the scroll container itself
+            stays put while its content swaps. */}
+        <motion.div
+          key={panelKey}
+          className="flex flex-col gap-8 p-4"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.15, ease: "easeOut" }}
+        >
           {/* gap-1.5 + the slider's my-2, matching the metric range sliders. */}
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center justify-between gap-2">
-              <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase">
-                <TextAaIcon className="size-4" />
-                Font Size
-              </h2>
-              <EditableValue
+          {showSize && (
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase">
+                  <TextAaIcon className="size-4" />
+                  Font Size
+                </h2>
+                <EditableValue
+                  value={size}
+                  min={SIZE_MIN}
+                  max={SIZE_MAX}
+                  suffix="px"
+                  presets={SIZE_PRESETS}
+                  onChange={onSizeChange}
+                  ariaLabel="Preview font size"
+                />
+              </div>
+              <input
+                type="range"
+                min={SIZE_MIN}
+                max={SIZE_MAX}
                 value={size}
-                min={16}
-                max={200}
-                suffix="px"
-                presets={SIZE_PRESETS}
-                onChange={onSizeChange}
-                ariaLabel="Preview font size"
+                onChange={(e) => onSizeChange(Number(e.target.value))}
+                aria-label="Preview font size"
+                aria-valuetext={`${size} px`}
+                className={RANGE_SLIDER_CLASS}
+                style={rangeFillStyle(size, SIZE_MIN, SIZE_MAX)}
               />
             </div>
-            <input
-              type="range"
-              min={16}
-              max={200}
-              value={size}
-              onChange={(e) => onSizeChange(Number(e.target.value))}
-              aria-label="Preview font size"
-              aria-valuetext={`${size} px`}
-              className={RANGE_SLIDER_CLASS}
-              style={rangeFillStyle(size, 16, 200)}
-            />
-          </div>
-          {axes.length > 0 && (
+          )}
+          {showAxes && axes.length > 0 && (
             <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between gap-2">
                 <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase">
@@ -206,11 +237,17 @@ export function DetailSidebar({
                 {axes.map((a) => (
                   <div key={a.tag} className="flex flex-col gap-1.5">
                     <div className="flex items-baseline justify-between gap-2">
-                      <span className="text-sm">
+                      {/* The raw four-letter tag sits in an outline badge so it
+                          reads as the axis's code rather than part of its
+                          name. */}
+                      <span className="flex items-baseline gap-1.5 text-sm">
                         {a.name ?? a.tag}
-                        <span className="ml-1.5 font-mono text-muted-foreground text-xs">
+                        <Badge
+                          variant="outline"
+                          className="font-mono font-normal text-muted-foreground text-xs"
+                        >
                           {a.tag}
-                        </span>
+                        </Badge>
                       </span>
                       <EditableValue
                         value={Math.round(axisState[a.tag])}
@@ -298,7 +335,7 @@ export function DetailSidebar({
               </div>
             )}
           </div>
-        </div>
+        </motion.div>
       </ScrollArea>
     </aside>
   );

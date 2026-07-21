@@ -103,8 +103,8 @@ export const Route = createFileRoute("/$tab/$fontId")({
     if (!name || !font) return {};
     const description = detailDescription(font);
     // The six tabs render near-identical content on overlapping URLs, so point
-    // every tab's canonical at the specimen tab to consolidate ranking signals.
-    const canonical = absoluteUrl(`/specimen/${fontSlug(font.id)}`);
+    // every tab's canonical at the Instances tab to consolidate ranking signals.
+    const canonical = absoluteUrl(`/instances/${fontSlug(font.id)}`);
     // Per-font share card: the family name set in its own typeface, pre-rendered
     // to public/og/<id>.png by `pnpm gen:og`. Needs an absolute URL like og:url.
     const ogImage = absoluteUrl(`/og/${font.id}.png`);
@@ -173,16 +173,17 @@ function DetailPage() {
   const setAxis = (tag: string, value: number) =>
     setAxisState((prev) => ({ ...prev, [tag]: value }));
   const resetAxes = () => setAxisState(axisDefaults());
-  // Whether the tester currently renders an italic style. Set when an italic
-  // named instance is loaded; cleared for an upright one. Drives font-style.
-  const [italic, setItalic] = useState(false);
-  const loadInstance = (coords: Record<string, number>, isItalic = false) => {
-    setAxisState((prev) => ({ ...prev, ...coords }));
-    setItalic(isItalic);
-  };
+  // Whether the page's shared preview style is italic. The Tester's chips
+  // set italic per block on the node itself, so nothing flips this at the page
+  // level any more; it stays the family's upright default, which is what the
+  // Tester's document default and the Use tab's snippets want.
+  const italic = false;
 
-  // Preview font size lives here too, since its control is in the sidebar.
-  const [size, setSize] = useState(48);
+  // Preview font size lives here too, since its control is in the sidebar. Only
+  // the Instances rows read it: the Tester editor sets a size per block type
+  // in its own toolbar. A list of instances is meant to be scanned, so it starts
+  // smaller than a single showcase sentence would.
+  const [size, setSize] = useState(24);
 
   // Which detail view is active. Driven by the URL slug (the loader has already
   // rejected unknown ones), so the tab is shareable/bookmarkable. Selecting a
@@ -271,11 +272,12 @@ function DetailPage() {
     ? glyphBlock
     : (coveredBlocks[0]?.block.name ?? "");
 
-  // The Specimen/Glyphs sidebar panel, reused by both the desktop sidebar slot
-  // and the mobile ControlsDrawer, so the two stay in sync (state lives here on
-  // the page, above both). Only these two tabs have controls. `onDismiss` is
-  // passed only by the drawer, which is the only host that can be closed.
-  const hasControls = tab === "sample" || tab === "glyphs";
+  // The Tester/Instances/Glyphs sidebar panel, reused by both the desktop
+  // sidebar slot and the mobile ControlsDrawer, so the two stay in sync (state
+  // lives here on the page, above both). Only these tabs have controls.
+  // `onDismiss` is passed only by the drawer, which is the only host that can
+  // be closed.
+  const hasControls = tab === "tester" || tab === "sample" || tab === "glyphs";
   const renderSidebarPanel = (onDismiss?: () => void) =>
     tab === "glyphs" ? (
       <GlyphsSidebar
@@ -289,12 +291,20 @@ function DetailPage() {
       />
     ) : (
       <DetailSidebar
+        panelKey={tab}
         size={size}
         onSizeChange={setSize}
+        // The two tabs want opposite halves of this panel: the Tester sizes
+        // per block type in its own toolbar but reweights the whole document
+        // from the axis sliders, while Instances pins each row to its own
+        // named instance's coords and only needs one shared size. Features
+        // apply to both.
+        showSize={tab === "sample"}
         axes={font.axes}
         axisState={axisState}
         onAxisChange={setAxis}
         onResetAxes={resetAxes}
+        showAxes={tab !== "sample"}
         features={font.features}
         featureState={featureState}
         onToggleFeature={toggleFeature}
@@ -307,7 +317,7 @@ function DetailPage() {
   // license. Rendered here rather than through head() because that path emits
   // nothing in the SSR document (see the note in head()). React serializes this
   // into the streamed HTML; Google reads JSON-LD from <body> just as well.
-  const canonicalUrl = absoluteUrl(`/specimen/${fontSlug(font.id)}`);
+  const canonicalUrl = absoluteUrl(`/instances/${fontSlug(font.id)}`);
   const jsonLd = canonicalUrl
     ? JSON.stringify({
         "@context": "https://schema.org",
@@ -344,24 +354,23 @@ function DetailPage() {
         size={size}
         axisState={axisState}
         italic={italic}
-        onLoadInstance={loadInstance}
         featureState={featureState}
         glyphBlock={activeGlyphBlock}
         glyphRanges={ranges}
         glyphLoading={glyphLoading}
         glyphHighlightCp={highlightCp}
       />
-      {/* Mobile-only controls access for the two tabs that have a sidebar.
+      {/* Mobile-only controls access for the tabs that have a sidebar.
           AnimatePresence keeps the FAB mounted through its exit animation when
-          switching to a tab without controls. No per-tab key: Specimen and
-          Glyphs both keep the FAB, so it stays put and only swaps its icon
-          rather than cross-fading two buttons in the same spot. */}
+          switching to a tab without controls. No per-tab key: Tester,
+          Instances and Glyphs all keep the FAB, so it stays put and only swaps
+          its icon rather than cross-fading two buttons in the same spot. */}
       <AnimatePresence initial={false}>
         {hasControls && (
           <ControlsDrawer
             title={tab === "glyphs" ? "Unicode blocks" : "Preview controls"}
             icon={tab === "glyphs" ? SquaresFourIcon : SlidersHorizontalIcon}
-            // Mirrors Detail's footerHidden: the dock is up on Specimen only.
+            // Mirrors Detail's footerHidden: the dock is up on Instances only.
             dockVisible={tab === "sample"}
           >
             {(close) => renderSidebarPanel(close)}

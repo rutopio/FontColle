@@ -2,7 +2,7 @@
 //
 // The ~2000 per-font pages are this site's long-tail; without a sitemap they're
 // effectively invisible to crawlers. One <url> for the home page plus one per
-// published family, pointing at its canonical specimen tab (matching the
+// published family, pointing at its canonical instances tab (matching the
 // canonical tag in the detail route head).
 //
 // Needs an absolute origin. When VITE_SITE_URL is unset we skip generation
@@ -134,7 +134,7 @@ fonts
   .slice(0, 10);
 \`\`\`
 
-Then link the user to \`${siteUrl}/specimen/<Family_Name>\` for each result, and to the equivalent filtered list (see "Linking to a filtered list").
+Then link the user to \`${siteUrl}/instances/<Family_Name>\` for each result, and to the equivalent filtered list (see "Linking to a filtered list").
 
 ## Slim catalog fields
 
@@ -243,7 +243,7 @@ So the worked example above links to:
 
 ## Per-font pages
 
-Each family has a canonical specimen page at \`${siteUrl}/specimen/<name>\`, where \`<name>\` is the family name with spaces replaced by underscores, original casing kept (e.g. \`${siteUrl}/specimen/Roboto_Slab\`). Note this differs from the catalog \`id\`, which is lowercased with spaces removed.
+Each family has a canonical instances page at \`${siteUrl}/instances/<name>\`, where \`<name>\` is the family name with spaces replaced by underscores, original casing kept (e.g. \`${siteUrl}/instances/Roboto_Slab\`). Note this differs from the catalog \`id\`, which is lowercased with spaces removed.
 
 ## Notes
 
@@ -273,7 +273,7 @@ export async function genSitemap() {
   // home page's lastmod is the max across all fonts (the catalog's freshness),
   // omitted if no font has a usable date.
   const fontEntries = published.map((f) => ({
-    loc: `${siteUrl}/specimen/${fontSlug(f.name)}`,
+    loc: `${siteUrl}/instances/${fontSlug(f.name)}`,
     lastmod: lastmodOf(f),
   }));
   const maxLastmod = fontEntries.reduce(
