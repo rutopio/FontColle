@@ -152,7 +152,15 @@ def main():
     all_families = list_all_families()
     changed = compute_changed(dataset, published, all_families)
     now_dirs = set(all_families)
-    removed = {r["id"] for r in dataset if r["id"] not in now_dirs}
+    # apiOnly families (Google Sans, Edu Hand batch — see harvest_api_supplement.py)
+    # live in the webfonts API but NOT the repo tree, so they're absent from
+    # now_dirs by design. Exempt them from the "removed" set, or every daily run
+    # would flip them to isPublished=false for not being in the repo.
+    removed = {
+        r["id"]
+        for r in dataset
+        if r["id"] not in now_dirs and not r.get("apiOnly")
+    }
 
     print(f"to harvest: {len(changed)} | removed dirs: {len(removed)}")
 

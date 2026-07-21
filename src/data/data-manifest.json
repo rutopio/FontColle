@@ -1,10 +1,10 @@
 {
   "version": 1,
   "fonts": {
-    "key": "fonts/20260720.json",
-    "date": "20260720",
-    "sha256": "d009f399837e261d043e9e63f0962e6dfe5a1aae104d7c4e673a1931df9c1e17",
-    "bytes": 20994444
+    "key": "fonts/20260721.json",
+    "date": "20260721",
+    "sha256": "4860d221e3b569ef8b0799602ffc300c3d8eec97ce27b288de7ecd3d3a76b683",
+    "bytes": 21084998
   },
   "glyphs": {
     "key": "glyphs/glyphs.tar.gz",
@@ -17,6 +17,15 @@
       "sha256": "aa8646586784aead52ed9a2c1415be97ab3e5a919d3b756a759f91aa171ae18c",
       "count": 1935
     },
-    "deltas": []
+    "deltas": [
+      "og/edunswactcursive.png",
+      "og/edunswacthandpre.png",
+      "og/eduqldhand.png",
+      "og/edusahand.png",
+      "og/eduvicwanthand.png",
+      "og/eduvicwanthandpre.png",
+      "og/googlesans.png",
+      "og/googlesansflex.png"
+    ]
   }
 }
