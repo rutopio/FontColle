@@ -63,11 +63,12 @@ export function ActiveFilterChips({
         marginBottom: filled ? 0 : "calc(var(--chip-row-gap) * -1)",
       }}
       initial={false}
-      // Asymmetric on purpose: opening animates, so the grid is pushed down
-      // rather than snapping. Closing is instant — an animated collapse drags
-      // the whole list upward for 200ms after the chip is already gone, which
-      // reads as the page lurching rather than as the row tidying itself away.
-      transition={{ duration: filled ? MOTION_S.base : 0, ease: "easeOut" }}
+      // Both directions are instant. In the list the caller drives this row off
+      // the committed (deferred) filter, so any height change lands while the
+      // results are faded to opacity 0 — the row snaps to its new size unseen and
+      // is already in place when the list fades back in. An animated open/close
+      // here would instead play a visible 200ms push against the fading list.
+      transition={{ duration: 0 }}
       // The chips would otherwise paint outside the collapsed box mid-animation.
       style={{ overflow: "hidden" }}
       className={cn(

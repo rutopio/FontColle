@@ -39,21 +39,35 @@ export function useFontLoaded(name: string): boolean {
     let cancelled = false;
     // `check` needs a size+family; a nominal 16px is enough to query the set.
     const probe = `16px "${name}"`;
+    const settle = () => {
+      if (!cancelled) setReady(document.fonts.check(probe));
+    };
+
     if (document.fonts.check(probe)) {
       setReady(true);
       return;
     }
     setReady(false);
+    // Kick a direct load, but don't rely on its resolution alone: the @font-face
+    // that actually renders this family is injected by ensureFontLoaded /
+    // ensureFontRangeLoaded as a <link>, which registers into document.fonts a
+    // beat later. A load(probe) fired before that link is parsed can resolve
+    // with check() still false, leaving the preview stuck on Adobe Blank with
+    // nothing to re-check it. Listening for `loadingdone` re-checks every time a
+    // font finishes — including the family's own link — so the preview flips to
+    // ready as soon as the real cut lands, whenever that link arrives.
     document.fonts
       .load(probe)
-      .then(() => {
-        if (!cancelled) setReady(document.fonts.check(probe));
-      })
+      .then(settle)
       .catch(() => {
-        if (!cancelled) setReady(true); // don't get stuck on Blank if load errors
+        // Don't get stuck on Blank if the direct load rejects outright; show
+        // the family (NotDef boxes for any genuinely missing glyph).
+        if (!cancelled) setReady(true);
       });
+    document.fonts.addEventListener("loadingdone", settle);
     return () => {
       cancelled = true;
+      document.fonts.removeEventListener("loadingdone", settle);
     };
   }, [name]);
 

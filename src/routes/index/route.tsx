@@ -472,13 +472,15 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
           />
         }
       >
-        {/* Chips live OUTSIDE the opacity wrapper and read the live `filter`, so
-            they keep their own layout animation (a chip springs in / the row
-            collapses) and react the instant a pill is pressed. Only the results
-            below fade. The empty state renders its own chips inside <Empty>. */}
+        {/* Chips live OUTSIDE the opacity wrapper but read the COMMITTED
+            (deferred) filter, so their own layout animation (a chip springs in /
+            the row collapses) fires only once the results have faded to 0 — never
+            before, which would yank the list up while it's still visible. They
+            keep the spring; it just plays during the invisible beat. The empty
+            state renders its own chips inside <Empty>. */}
         {results.length > 0 && (
           <ActiveFilterChips
-            filter={filter}
+            filter={deferredFilter}
             onChange={commitFilter}
             align="left"
           />
@@ -544,9 +546,12 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
                   ?
                 </p>
               )}
-              {/* Live filter, like the in-list chips, so removing a condition
-                  here reacts instantly and the chip animates itself. */}
-              <ActiveFilterChips filter={filter} onChange={commitFilter} />
+              {/* Committed filter, like the in-list chips, so the row's reflow
+                  stays in step with the faded results rather than jumping ahead. */}
+              <ActiveFilterChips
+                filter={deferredFilter}
+                onChange={commitFilter}
+              />
               {favOnly ? (
                 <Button variant="outline" onClick={discoverFonts}>
                   Discover Font

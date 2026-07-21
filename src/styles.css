@@ -135,12 +135,14 @@
   --chart-5: oklch(0.269 0 0);
   --radius: 0.625rem;
 
-  /* Motion duration scale: three steps, mirrored in src/lib/motion.ts. fast =
-     confirmations/hover, base = entrances and most transitions, slow = the
-     larger, expressive beats. Keep in sync with the TS constants. */
-  --motion-fast: 120ms;
-  --motion-base: 160ms;
-  --motion-slow: 220ms;
+  /* One motion duration for the whole app, mirrored by MOTION_MS in
+     src/lib/motion.ts — change both together. The fast/base/slow names are kept
+     as aliases so existing var() references keep resolving; they all point at
+     --motion now. */
+  --motion: 60ms;
+  --motion-fast: var(--motion);
+  --motion-base: var(--motion);
+  --motion-slow: var(--motion);
 
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);

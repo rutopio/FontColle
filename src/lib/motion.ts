@@ -1,24 +1,25 @@
-// The app's motion duration scale: three steps, one system. Every animation
-// snaps to one of these, fast for confirmations/hover, base for entrances and
-// most transitions, slow for the larger, more expressive beats (route change,
-// celebratory pop).
+// The app's motion duration, one number for the whole system. Every animation
+// snaps to it. There used to be a fast/base/slow scale, but the three steps
+// were tuned to the same value, so this collapses them to a single source:
+// change MOTION_MS and every animation (JS + CSS) follows.
 //
-// Dual-sourced: these numbers are mirrored as CSS custom properties in
-// src/styles.css (--motion-fast / --motion-base / --motion-slow). CSS
-// animations reference the var(); motion/react configs and other JS import
-// these constants. Keep the two locations in sync, if you change a value
-// here, change it there too.
-//
-// Values are milliseconds. motion/react wants seconds, so use the *_S helpers.
+// Dual-sourced with src/styles.css: the CSS `--motion-*` custom properties all
+// resolve to `--motion` there, which must carry this same number. Keep the two
+// in sync — if you change MOTION_MS here, change --motion there too.
+export const MOTION_MS = 60;
+
+// Milliseconds form. The fast/base/slow keys are kept as aliases of the single
+// duration so existing callers (MOTION.base, MOTION_S.slow, …) keep working
+// without a sweep; they all resolve to the same value now.
 export const MOTION = {
-  fast: 120,
-  base: 160,
-  slow: 220,
+  fast: MOTION_MS,
+  base: MOTION_MS,
+  slow: MOTION_MS,
 } as const;
 
 // Seconds form for motion/react `transition.duration`.
 export const MOTION_S = {
-  fast: MOTION.fast / 1000, // 0.12
-  base: MOTION.base / 1000, // 0.16
-  slow: MOTION.slow / 1000, // 0.22
+  fast: MOTION_MS / 1000,
+  base: MOTION_MS / 1000,
+  slow: MOTION_MS / 1000,
 } as const;
