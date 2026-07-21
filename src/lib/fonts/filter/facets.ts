@@ -18,7 +18,7 @@ export const TAG_MEMBERSHIP_THRESHOLD = 50;
 // sub-tag paths. Sub-tag order is by family count descending, from the current
 // dataset. `group` routes the section to a rail panel: "style" (form: Sans
 // Serif / Serif / Script) or "mood" (feel: Expressive / Theme / Seasonal). Both
-// share the one `classifications` state; group only decides where it renders.
+// share the one `style` state; group only decides where it renders.
 export const CLASSIFICATION_SECTIONS: {
   title: string;
   prefix: string;
@@ -141,7 +141,7 @@ export const CLASSIFICATION_SECTIONS: {
 
 // Which rail panel a classification tag path belongs to ("style" vs "mood"),
 // matched by section prefix. Lets a group's badge count only its own tags even
-// though every classification shares the one `classifications` state.
+// though every classification shares the one `style` state.
 export function classificationGroupOf(tag: string): "style" | "mood" | null {
   const section = CLASSIFICATION_SECTIONS.find((s) => tag.startsWith(s.prefix));
   return section?.group ?? null;
@@ -360,9 +360,9 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     classes: sorted(classes),
     // Every facet, INCLUDING static/variable: the Tag panel shows them as plain
     // multi-select pills (Font type is still a radio in the Axes panel, backed
-    // by the same `facets` state). Static + Variable are mutually exclusive, so
+    // by the same `tags` state). Static + Variable are mutually exclusive, so
     // selecting both AND-filters to nothing, accepted, the user's call.
-    facets: sorted(facets),
+    tags: sorted(facets),
     features: sorted(features),
     axes: sorted(axes),
     weights: byStep(weights),
@@ -376,7 +376,7 @@ export function buildFacetIndex(fonts: FontRecord[]) {
       ["color", color.get("color") ?? 0],
     ] as [string, number][],
     // Static/Variable in fixed order, the sole entry point for this filter.
-    // Same underlying `facets` values, so applyFilters needs no special case.
+    // Same underlying `tags` values, so applyFilters needs no special case.
     fontTypes: FONT_TYPE_FACETS.map(
       (v) => [v, facets.get(v) ?? 0] as [string, number]
     ),
@@ -385,9 +385,9 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     colorFormats: COLOR_FORMATS.map(
       (f) => [f.id, colorFormats.get(f.id) ?? 0] as [string, number]
     ),
-    // One entry per classification section: its sub-tag pills in fixed order,
+    // One entry per Style section: its sub-tag pills in fixed order,
     // each [full tag path, count].
-    classifications: CLASSIFICATION_SECTIONS.map((section) => ({
+    style: CLASSIFICATION_SECTIONS.map((section) => ({
       title: section.title,
       group: section.group,
       items: section.tags.map(

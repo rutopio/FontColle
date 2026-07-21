@@ -1,11 +1,13 @@
 import type { Icon } from "@phosphor-icons/react";
-import { PillButton } from "./pill-button";
 import { SectionHeader } from "./section-header";
+import { SegmentedPills } from "./segmented-pills";
 
-// A two-per-row grid of radio-style pills: at most one selected, clicking the
-// current value clears it. Used for the mutually exclusive either/or filters
-// (Monochrome vs Colorful, Static vs Variable) where a multi-select would only
-// ever produce an empty result.
+// A titled section wrapping a SegmentedPills control: at most one selected,
+// clicking the current value clears it. Used for the mutually exclusive
+// either/or filters (Monochrome vs Colorful, Static vs Variable) where a
+// multi-select would only ever produce an empty result. The segmented control's
+// flush single-border group is what marks these apart from the multi-select
+// pills.
 export function RadioPillSection({
   title,
   icon,
@@ -36,19 +38,12 @@ export function RadioPillSection({
         sort="count"
         onToggleSort={() => {}}
       />
-      <div className="grid grid-cols-2 gap-1.5">
-        {items.map(([value, count]) => (
-          <PillButton
-            key={value}
-            value={value}
-            count={count}
-            label={labels[value] ?? value}
-            selected={selected.includes(value)}
-            onToggle={onToggle}
-            className="min-w-0"
-          />
-        ))}
-      </div>
+      <SegmentedPills
+        items={items}
+        labels={labels}
+        selected={selected}
+        onToggle={onToggle}
+      />
     </div>
   );
 }

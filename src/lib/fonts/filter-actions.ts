@@ -9,7 +9,7 @@ import {
 // Drop the OR/AND override of any mode section that no longer holds a value. A
 // section's combine mode only means something while it has >= 2 selected values;
 // once it's empty the override is invisible state that would otherwise ride
-// along in the URL (a "pristine" filter carrying ?mode=facets:any) and silently
+// along in the URL (a "pristine" filter carrying ?mode=tags:any) and silently
 // re-apply the next time that section is used. Called at the tail of every
 // action that can empty a mode section, so clearing always fully resets it.
 function pruneEmptyModes(f: FilterState): FilterState {
@@ -26,7 +26,7 @@ function pruneEmptyModes(f: FilterState): FilterState {
 // clearSection operate on. Excludes `metrics` (object) and the boolean facets.
 type ArrayKey =
   | "classes"
-  | "facets"
+  | "tags"
   | "features"
   | "axes"
   | "weights"
@@ -35,11 +35,12 @@ type ArrayKey =
   | "languages"
   | "color"
   | "colorFormats"
-  | "classifications"
+  | "style"
   | "designers"
   | "vendors"
   | "license"
   | "repoHosts"
+  | "activity"
   | "upm";
 
 // Pure filter-state transitions, lifted out of FilterSidebar so the app's
@@ -89,10 +90,11 @@ export function toggleAxis(filter: FilterState, tag: string): FilterState {
   });
 }
 
-/** Multi-select for Weight/Width (OR within: a family matches any selected
- *  step). New picks append to the tail so the preview can render the last one
- *  clicked; re-clicking a selected step removes it. Turning a step on clears the
- *  mutually exclusive variable axis (wght/wdth), which drives the same thing. */
+/** Multi-select for Weight/Width. New picks append to the tail so the preview
+ *  can render the last one clicked; re-clicking a selected step removes it.
+ *  Turning a step on clears the mutually exclusive variable axis (wght/wdth),
+ *  which drives the same thing. Combine mode (AND by default) lives in
+ *  match-mode; this action only edits the value list. */
 export function select(
   filter: FilterState,
   key: "weights" | "widths",
@@ -135,21 +137,21 @@ export function selectColor(filter: FilterState, value: string): FilterState {
   };
 }
 
-// Static/Variable live in `facets`, which is AND-ed, selecting both would
-// always return nothing. They behave radio-style, leaving the other facets
+// Static/Variable live in `tags`, which is AND-ed, selecting both would
+// always return nothing. They behave radio-style, leaving the other tags
 // (ligatures, fractions, …) untouched.
 function withoutFontType(filter: FilterState): string[] {
-  return filter.facets.filter((f) => !FONT_TYPE_FACETS.includes(f));
+  return filter.tags.filter((f) => !FONT_TYPE_FACETS.includes(f));
 }
 
 // Picking a variable axis already implies Variable (only a variable font has
-// axes), so Variable shows selected without duplicating it into `facets`.
+// axes), so Variable shows selected without duplicating it into `tags`.
 // Mirrors how a color format implies Colorful.
 /** The font-type values to show as selected, folding in the axis-implied Variable. */
 export function fontTypeSelection(filter: FilterState): string[] {
   return filter.axes.length > 0
     ? ["variable"]
-    : filter.facets.filter((f) => FONT_TYPE_FACETS.includes(f));
+    : filter.tags.filter((f) => FONT_TYPE_FACETS.includes(f));
 }
 
 /** Radio-style Static/Variable. Two couplings with the variable axes:
@@ -162,22 +164,22 @@ export function selectFontType(
   const base = withoutFontType(filter);
   const variableImpliedByAxes = filter.axes.length > 0;
   if (value === "variable" && variableImpliedByAxes) {
-    return pruneEmptyModes({ ...filter, facets: base, axes: [] });
+    return pruneEmptyModes({ ...filter, tags: base, axes: [] });
   }
-  const turningOff = filter.facets.includes(value);
-  const facets = turningOff ? base : [...base, value];
+  const turningOff = filter.tags.includes(value);
+  const tags = turningOff ? base : [...base, value];
   return pruneEmptyModes({
     ...filter,
-    facets,
-    axes: facets.includes("static") ? [] : filter.axes,
+    tags,
+    axes: tags.includes("static") ? [] : filter.axes,
   });
 }
 
-/** Reset the Font type section: clear its facets and the implied axes. */
+/** Reset the Font type section: clear its font-type tags and the implied axes. */
 export function resetFontType(filter: FilterState): FilterState {
   return pruneEmptyModes({
     ...filter,
-    facets: withoutFontType(filter),
+    tags: withoutFontType(filter),
     axes: [],
   });
 }
@@ -196,16 +198,6 @@ export function selectItalic(filter: FilterState, value: string): FilterState {
   return { ...filter, italic: next };
 }
 
-/** Radio-style Activity select (Latest / Active / Recent / Dormant): at most
- *  one value; re-clicking the active one clears it. Stored in `activity`. */
-export function selectActivity(
-  filter: FilterState,
-  value: string
-): FilterState {
-  const next = filter.activity.includes(value) ? [] : [value];
-  return { ...filter, activity: next };
-}
-
 /** Flip a section's OR/AND mode. Stores the override only while it differs from
  *  the section default, so returning to the default drops the entry (keeping a
  *  pristine filter's matchModes empty). */
@@ -222,7 +214,7 @@ export function toggleMatchMode(
 }
 
 /** Clear only the values a given section shows. Several sections share one
- *  FilterState key (Tag and Font type both live in `facets`), so scope
+ *  FilterState key (Tag and Font type both live in `tags`), so scope
  *  the reset to the items that section actually renders. */
 export function clearSection(
   filter: FilterState,

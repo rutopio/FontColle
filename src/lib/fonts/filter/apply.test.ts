@@ -111,23 +111,23 @@ describe("applyFilters, class", () => {
   });
 });
 
-describe("applyFilters, facets (AND default, OR toggle)", () => {
+describe("applyFilters, tags (AND default, OR toggle)", () => {
   const both = font({ name: "Both", facets: ["ligatures", "small-caps"] });
   const one = font({ name: "One", facets: ["ligatures"] });
   const fonts = [both, one];
-  it("AND-mode requires every selected facet", () => {
+  it("AND-mode requires every selected tag", () => {
     const out = applyFilters(
       fonts,
-      filter({ facets: ["ligatures", "small-caps"] })
+      filter({ tags: ["ligatures", "small-caps"] })
     );
     expect(names(out)).toEqual(["Both"]);
   });
-  it("any-mode requires at least one selected facet", () => {
+  it("any-mode requires at least one selected tag", () => {
     const out = applyFilters(
       fonts,
       filter({
-        facets: ["ligatures", "small-caps"],
-        matchModes: { facets: "any" },
+        tags: ["ligatures", "small-caps"],
+        matchModes: { tags: "any" },
       })
     );
     expect(names(out)).toEqual(["Both", "One"]);
@@ -178,17 +178,17 @@ describe("applyFilters, weight and width ranges", () => {
     font({ name: "Cond", weights: [400], widthClass: 5, axes: [wght] }),
     font({ name: "Both", weights: [400, 700], widthClass: 5 }),
   ];
-  it("OR within weights (default): family offers at least one selected step", () => {
+  it("AND within weights (default): family covers every selected step", () => {
     expect(
       names(applyFilters(fonts, filter({ weights: ["400", "700"] })))
-    ).toEqual(["Reg", "Bold", "Cond", "Both"]);
+    ).toEqual(["Both"]);
   });
-  it("AND within weights (toggle): family covers every selected step", () => {
+  it("OR within weights (toggle): family offers at least one selected step", () => {
     const out = applyFilters(
       fonts,
-      filter({ weights: ["400", "700"], matchModes: { weights: "all" } })
+      filter({ weights: ["400", "700"], matchModes: { weights: "any" } })
     );
-    expect(names(out)).toEqual(["Both"]);
+    expect(names(out)).toEqual(["Reg", "Bold", "Cond", "Both"]);
   });
   it("width covers the wdth-axis range (75-125% -> steps 3..6)", () => {
     // Cond's wdth axis spans 75..125%, which includes step 3 (75%).
@@ -256,7 +256,7 @@ describe("applyFilters, color and color formats", () => {
   });
 });
 
-describe("applyFilters, classifications (OR default, threshold 50)", () => {
+describe("applyFilters, style (OR default, threshold 50)", () => {
   const fonts = [
     font({ name: "Didone", tags: { "/Serif/Didone": 80 } }),
     font({ name: "Weak", tags: { "/Serif/Didone": 40 } }), // below threshold
@@ -264,13 +264,13 @@ describe("applyFilters, classifications (OR default, threshold 50)", () => {
   ];
   it("includes only fonts scoring >=50 for a selected tag", () => {
     expect(
-      names(applyFilters(fonts, filter({ classifications: ["/Serif/Didone"] })))
+      names(applyFilters(fonts, filter({ style: ["/Serif/Didone"] })))
     ).toEqual(["Didone"]);
   });
   it("OR by default across selected tags", () => {
     const out = applyFilters(
       fonts,
-      filter({ classifications: ["/Serif/Didone", "/Sans/Humanist"] })
+      filter({ style: ["/Serif/Didone", "/Sans/Humanist"] })
     );
     expect(names(out)).toEqual(["Didone", "Sans"]);
   });

@@ -1,10 +1,12 @@
 import { cn } from "@/lib/utils";
 
 // The shared filter pill: a bordered toggle showing a label and a font count.
-// One primitive behind Pills (Tag/features/languages), RadioPillSection
-// (Monochrome/Colorful, Static/Variable) and ColorFormatSection. The variable-
-// axes pill is deliberately NOT built on this, its flex-basis slider animation
-// needs bespoke classes (see variable-axes-section.tsx).
+// The multi-select primitive behind Pills (Tag/features/languages) and
+// ColorFormatSection. The radio-style either/or filters use SegmentedPills
+// instead, so their flush single-border group reads apart from these separate
+// boxes. The variable-axes pill is deliberately NOT built on this, its
+// flex-basis slider animation needs bespoke classes (see
+// variable-axes-section.tsx).
 //
 // `aria-pressed` is always emitted (the Pills call sites historically omitted it;
 // setting it uniformly is a behavior-neutral a11y fix). `spread` controls the

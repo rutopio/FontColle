@@ -14,7 +14,7 @@ import {
 export interface FilterState {
   query: string;
   classes: string[]; // primary class, OR within
-  facets: string[]; // facet tags, AND across
+  tags: string[]; // Tag-panel facet tags, AND across
   features: string[]; // OpenType feature tags, AND across
   axes: string[]; // axis tags, AND across
   weights: string[]; // standard weight steps ("100".."900"), OR within
@@ -25,9 +25,9 @@ export interface FilterState {
   // Color-table formats ("COLR", "SVG", …), AND across: a font carrying both
   // COLR and SVG matches when both are selected. Counts therefore overlap.
   colorFormats: string[];
-  // Google Fonts classification tag paths ("/Serif/Didone", …), OR within: a
+  // Style-panel classification tag paths ("/Serif/Didone", …), OR within: a
   // font matches when any selected tag scores tags[path] >= 50.
-  classifications: string[];
+  style: string[];
   // Designer names, OR within: a family matches when any of its (comma-split)
   // designers is selected. Vendor is the folded OS/2 achVendID, also OR within.
   designers: string[];
@@ -36,7 +36,7 @@ export interface FilterState {
   // Repository host buckets ("github","gitlab","sourcehut","none"), OR within.
   repoHosts: string[];
   // Maintenance-activity buckets ("latest","active","recent","dormant"),
-  // radio-style (at most one; they partition the catalog).
+  // OR within (they partition the catalog, so multi-select unions buckets).
   activity: string[];
   // Source: radio-style Noto / Others, stored as a 0- or 1-length array.
   flags: string[];
@@ -66,13 +66,13 @@ export interface FilterState {
 // the grid passes one object instead of six loose arrays.
 export type FilterSelection = Pick<
   FilterState,
-  "classes" | "facets" | "color" | "axes" | "weights" | "widths" | "italic"
+  "classes" | "tags" | "color" | "axes" | "weights" | "widths" | "italic"
 >;
 
 export const emptyFilter: FilterState = {
   query: "",
   classes: [],
-  facets: [],
+  tags: [],
   features: [],
   axes: [],
   weights: [],
@@ -81,7 +81,7 @@ export const emptyFilter: FilterState = {
   languages: [],
   color: [],
   colorFormats: [],
-  classifications: [],
+  style: [],
   designers: [],
   vendors: [],
   license: [],
@@ -94,10 +94,10 @@ export const emptyFilter: FilterState = {
   matchModes: {},
 };
 
-// The two `facets` values that say whether a family is a variable font. They
-// live in `facets` like any other tag, but the UI surfaces them as their own
-// radio pair (Axes > Font type) rather than as pills in Tag, so
-// buildFacetIndex keeps them out of the `facets` list it emits.
+// The two facet values that say whether a family is a variable font. They
+// live in `tags` like any other Tag-panel value, but the UI surfaces them as
+// their own radio pair (Axes > Font type) rather than as pills in Tag, so
+// buildFacetIndex keeps them out of the `tags` list it emits.
 export const FONT_TYPE_FACETS = ["static", "variable"];
 
 // URL search-param shape. Param names track the field's meaning (and, where a
@@ -117,7 +117,7 @@ export interface FilterSearch {
   color?: string;
   colorformat?: string; // color-table formats ("COLR", "SVG", …)
   // Classification tag paths, "Section.Subtag"-joined by "_". The single
-  // `classifications` state splits across two params by rail group so the URL
+  // `style` state splits across two params by rail group so the URL
   // matches the panels: form sections -> `style`, feel sections -> `mood`.
   style?: string; // form classifications (Serif / Sans / Script …)
   mood?: string; // feel classifications (Expressive / Theme / Seasonal)
@@ -125,7 +125,7 @@ export interface FilterSearch {
   vendor?: string; // vendor ids (folded), "_"-joined
   license?: string; // license ids
   repo?: string; // repository host buckets
-  activity?: string; // activity radio: "latest" | "active" | "recent" | "dormant"
+  activity?: string; // activity buckets: "latest" | "active" | "recent" | "dormant"
   // Noto-membership radio. The URL value tracks the section's pill labels
   // ("noto" | "non-noto"); the "non-noto" spelling maps to the internal flag
   // value "others" (see encodeSource/decodeSource).
@@ -144,7 +144,7 @@ export interface FilterSearch {
   contrast?: string; // contrast ratio
   filesize?: string; // file size (raw bytes)
   hinting?: string; // "hinted" | "unhinted" (radio-style, like `italic`)
-  // Non-default section modes, comma-joined "key:mode" (e.g. "facets:any").
+  // Non-default section modes, comma-joined "key:mode" (e.g. "tags:any").
   mode?: string;
   sort?: string; // sort key, not a filter (view mode lives in localStorage)
   fav?: string; // "1" = show only hearted fonts; a view mode, not a filter
@@ -191,13 +191,13 @@ const decodeClasses = (v: string | undefined): string[] => {
     .map((seg) => `/${seg.replace(/\./g, "/")}`);
 };
 
-// classifications is one state array but two URL params: `style` (form sections)
+// The `style` state is one array but two URL params: `style` (form sections)
 // and `mood` (feel sections), matching the two rail panels. Split on encode by
 // each path's rail group; a path whose prefix matches no section (group null)
 // falls back to `style` so it never silently vanishes. Merge both params on
 // decode back into the single array. Order within each param is preserved;
-// across params, style entries precede mood, which is fine because
-// classifications is an unordered set (OR-within by default).
+// across params, style entries precede mood, which is fine because the
+// `style` state is an unordered set (OR-within by default).
 function encodeClassifications(paths: string[], s: FilterSearch): void {
   const style = paths.filter((p) => classificationGroupOf(p) !== "mood");
   const mood = paths.filter((p) => classificationGroupOf(p) === "mood");
@@ -309,7 +309,7 @@ export function searchToFilter(s: FilterSearch): FilterState {
   return {
     query: s.q ?? "",
     classes: splitUnderscore(s.category),
-    facets: splitUnderscore(s.tag),
+    tags: splitUnderscore(s.tag),
     features: splitUnderscore(s.feature),
     axes: splitUnderscore(s.axis),
     weights: splitUnderscore(s.weight),
@@ -320,7 +320,7 @@ export function searchToFilter(s: FilterSearch): FilterState {
     languages: splitCsv(s.lang),
     color: splitUnderscore(s.color),
     colorFormats: splitUnderscore(s.colorformat),
-    classifications: decodeClassifications(s),
+    style: decodeClassifications(s),
     designers: splitCsv(s.designer),
     vendors: splitUnderscore(s.vendor),
     license: splitUnderscore(s.license),
@@ -345,7 +345,7 @@ export function filterToSearch(f: FilterState): FilterSearch {
   const s: FilterSearch = {};
   if (f.query) s.q = f.query;
   if (f.classes.length) s.category = joinUnderscore(f.classes);
-  if (f.facets.length) s.tag = joinUnderscore(f.facets);
+  if (f.tags.length) s.tag = joinUnderscore(f.tags);
   if (f.features.length) s.feature = joinUnderscore(f.features);
   if (f.axes.length) s.axis = joinUnderscore(f.axes);
   if (f.weights.length) s.weight = joinUnderscore(f.weights);
@@ -355,7 +355,7 @@ export function filterToSearch(f: FilterState): FilterSearch {
   if (f.languages.length) s.lang = f.languages.join(",");
   if (f.color.length) s.color = joinUnderscore(f.color);
   if (f.colorFormats.length) s.colorformat = joinUnderscore(f.colorFormats);
-  if (f.classifications.length) encodeClassifications(f.classifications, s);
+  if (f.style.length) encodeClassifications(f.style, s);
   if (f.designers.length) s.designer = f.designers.join(",");
   if (f.vendors.length) s.vendor = joinUnderscore(f.vendors);
   if (f.license.length) s.license = joinUnderscore(f.license);
@@ -383,7 +383,7 @@ export function filterToSearch(f: FilterState): FilterSearch {
 export function activeFilterCount(f: FilterState): number {
   return (
     f.classes.length +
-    f.facets.length +
+    f.tags.length +
     f.features.length +
     f.axes.length +
     f.weights.length +
@@ -392,7 +392,7 @@ export function activeFilterCount(f: FilterState): number {
     f.languages.length +
     f.color.length +
     f.colorFormats.length +
-    f.classifications.length +
+    f.style.length +
     f.designers.length +
     f.vendors.length +
     f.license.length +

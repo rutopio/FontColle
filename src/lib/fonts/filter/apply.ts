@@ -141,8 +141,8 @@ export function applyFilters(
       return false;
     if (f.classes.length && !f.classes.includes(font.class)) return false;
     if (
-      f.facets.length &&
-      !combine("facets", f.facets, (x) => font.facets.includes(x))
+      f.tags.length &&
+      !combine("tags", f.tags, (x) => font.facets.includes(x))
     )
       return false;
     if (
@@ -155,14 +155,14 @@ export function applyFilters(
       !combine("axes", f.axes, (tag) => font.axes.some((a) => a.tag === tag))
     )
       return false;
-    // Weights: OR by default (offer at least one selected step), AND when
-    // toggled (cover every selected step, e.g. both Light and Bold cuts).
+    // Weights: AND by default (cover every selected step, e.g. both Light and
+    // Bold cuts), OR when toggled (offer at least one selected step).
     if (f.weights.length) {
       const set = familyWeightSet(font);
       if (!combine("weights", f.weights, (w) => set.includes(Number(w))))
         return false;
     }
-    // Widths: OR by default, AND when toggled.
+    // Widths: AND by default, OR when toggled.
     if (f.widths.length) {
       const set = familyWidthSet(font);
       if (!combine("widths", f.widths, (w) => set.includes(Number(w))))
@@ -194,13 +194,13 @@ export function applyFilters(
       )
     )
       return false;
-    // Classifications: OR by default (carry any selected tag scoring >= 50),
+    // Style: OR by default (carry any selected tag scoring >= 50),
     // AND when toggled.
     if (
-      f.classifications.length &&
+      f.style.length &&
       !combine(
-        "classifications",
-        f.classifications,
+        "style",
+        f.style,
         (t) => (font.tags[t] ?? 0) >= TAG_MEMBERSHIP_THRESHOLD
       )
     )
@@ -227,7 +227,8 @@ export function applyFilters(
       !f.repoHosts.includes(repoHost(font.repositoryUrl))
     )
       return false;
-    // Activity: radio-style; family's maintenance bucket is the selected one.
+    // Activity: multi-select OR; family's maintenance bucket is one of the
+    // selected ones.
     if (f.activity.length && !f.activity.includes(fontActivity(font)))
       return false;
     // Source: radio-style Noto / Others (at most one). Every published family

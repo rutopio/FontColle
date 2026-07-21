@@ -11,8 +11,8 @@ export type MatchMode = "any" | "all";
 // select, per-font single-value, numeric steps) is excluded, a toggle there
 // would be a no-op or would always empty the results.
 export type ModeKey =
-  | "classifications"
-  | "facets"
+  | "style"
+  | "tags"
   | "features"
   | "axes"
   | "scripts"
@@ -23,8 +23,8 @@ export type ModeKey =
   | "designers";
 
 export const MODE_KEYS: ModeKey[] = [
-  "classifications",
-  "facets",
+  "style",
+  "tags",
   "features",
   "axes",
   "scripts",
@@ -35,20 +35,20 @@ export const MODE_KEYS: ModeKey[] = [
   "designers",
 ];
 
-// Each section's mode when the user hasn't touched the toggle, chosen so an
-// empty `matchModes` reproduces the pre-toggle behaviour exactly. Classification,
-// Weight/Width, and Designer were OR-within (match any selected value); the rest
-// were AND.
+// Each section's default combine mode. Style (mutually exclusive sub-styles, so
+// AND would always empty) and Designer default OR-within (match any selected
+// value); the rest AND, so multi-selecting narrows. Weight/Width AND by default:
+// selecting Light + Bold asks for families shipping both cuts.
 export const SECTION_DEFAULT_MODE: Record<ModeKey, MatchMode> = {
-  classifications: "any",
-  facets: "all",
+  style: "any",
+  tags: "all",
   features: "all",
   axes: "all",
   scripts: "all",
   languages: "all",
   colorFormats: "all",
-  weights: "any",
-  widths: "any",
+  weights: "all",
+  widths: "all",
   designers: "any",
 };
 

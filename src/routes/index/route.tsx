@@ -708,7 +708,7 @@ const NOOP = () => {};
 const EMPTY_AXES: Record<string, number> = {};
 const FIRST_PAGE_SELECTION = {
   classes: emptyFilter.classes,
-  facets: emptyFilter.facets,
+  tags: emptyFilter.tags,
   color: emptyFilter.color,
   axes: emptyFilter.axes,
   weights: emptyFilter.weights,

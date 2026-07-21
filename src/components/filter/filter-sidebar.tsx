@@ -1,7 +1,6 @@
 import {
   ArrowsOutLineHorizontalIcon,
   BookmarkSimpleIcon,
-  ClockCounterClockwiseIcon,
   SlidersHorizontalIcon,
   SmileyMeltingIcon,
   TagIcon,
@@ -12,7 +11,6 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-  ACTIVITY_LABELS,
   type FacetIndex,
   type FilterState,
   ITALIC_LABELS,
@@ -35,6 +33,7 @@ import type { FilterGroupId } from "./groups";
 import { InstancesSection } from "./instances-section";
 import { LanguageSection } from "./language-section";
 import { LicenseSection } from "./license-section";
+import { MaintenanceSection } from "./maintenance-section";
 import {
   HintSection,
   MetricsSection,
@@ -147,12 +146,12 @@ export function FilterSidebar({
   // feed a single ClassificationSection, so the shared OR/AND mode and reset sit
   // on one header instead of being hosted by whichever sub-list came first.
   const styleClassifications = useMemo(
-    () => index.classifications.filter((s) => s.group === "style"),
-    [index.classifications]
+    () => index.style.filter((s) => s.group === "style"),
+    [index.style]
   );
   const moodClassifications = useMemo(
-    () => index.classifications.filter((s) => s.group === "mood"),
-    [index.classifications]
+    () => index.style.filter((s) => s.group === "mood"),
+    [index.style]
   );
 
   // Metrics: set or clear one range key; toggle a boolean facet (off = absent).
@@ -230,23 +229,23 @@ export function FilterSidebar({
                   onToggle={toggleCategory}
                   onReset={() => clearSection("classes", index.classes)}
                 />
-                {/* Serif/Sans/Slab/Script share the one `classifications` key,
+                {/* Serif/Sans/Slab/Script share the one `style` key,
                     so they render as sub-lists under a single "Style" header
                     that hosts their shared OR/AND toggle and reset. */}
                 <ClassificationSection
                   title="Style"
                   icon={BookmarkSimpleIcon}
                   groups={styleClassifications}
-                  selected={filter.classifications}
-                  onToggle={(v) => toggle("classifications", v)}
+                  selected={filter.style}
+                  onToggle={(v) => toggle("style", v)}
                   onReset={() =>
                     clearSection(
-                      "classifications",
+                      "style",
                       styleClassifications.flatMap((s) => s.items)
                     )
                   }
-                  mode={modeOf("classifications")}
-                  onToggleMode={() => toggleMode("classifications")}
+                  mode={modeOf("style")}
+                  onToggleMode={() => toggleMode("style")}
                 />
               </>
             )}
@@ -257,16 +256,16 @@ export function FilterSidebar({
                 icon={SmileyMeltingIcon}
                 info="The following data comes from Google Fonts."
                 groups={moodClassifications}
-                selected={filter.classifications}
-                onToggle={(v) => toggle("classifications", v)}
+                selected={filter.style}
+                onToggle={(v) => toggle("style", v)}
                 onReset={() =>
                   clearSection(
-                    "classifications",
+                    "style",
                     moodClassifications.flatMap((s) => s.items)
                   )
                 }
-                mode={modeOf("classifications")}
-                onToggleMode={() => toggleMode("classifications")}
+                mode={modeOf("style")}
+                onToggleMode={() => toggleMode("style")}
               />
             )}
             {group === "tag" && (
@@ -275,14 +274,14 @@ export function FilterSidebar({
               <Section
                 title="Tag"
                 icon={TagIcon}
-                items={index.facets}
-                selected={filter.facets}
-                onToggle={(v) => toggle("facets", v)}
-                onReset={() => clearSection("facets", index.facets)}
+                items={index.tags}
+                selected={filter.tags}
+                onToggle={(v) => toggle("tags", v)}
+                onReset={() => clearSection("tags", index.tags)}
                 label={facetLabel}
                 expandAll
-                mode={modeOf("facets")}
-                onToggleMode={() => toggleMode("facets")}
+                mode={modeOf("tags")}
+                onToggleMode={() => toggleMode("tags")}
               />
             )}
             {group === "color" && (
@@ -386,7 +385,7 @@ export function FilterSidebar({
                   onReset={() => clearSection("axes", index.axes)}
                   sliderValue={axisValues}
                   onSliderChange={onAxisValueChange}
-                  disabled={filter.facets.includes("static")}
+                  disabled={filter.tags.includes("static")}
                   mode={modeOf("axes")}
                   onToggleMode={() => toggleMode("axes")}
                   flashKey={flashKeyFor("axes")}
@@ -463,13 +462,10 @@ export function FilterSidebar({
                   onToggle={(v) => toggle("repoHosts", v)}
                   onReset={() => onChange({ ...filter, repoHosts: [] })}
                 />
-                <RadioPillSection
-                  title="Maintenance"
-                  icon={ClockCounterClockwiseIcon}
+                <MaintenanceSection
                   items={index.activity}
-                  labels={ACTIVITY_LABELS}
                   selected={filter.activity}
-                  onToggle={(v) => onChange(actions.selectActivity(filter, v))}
+                  onToggle={(v) => toggle("activity", v)}
                   onReset={() => onChange({ ...filter, activity: [] })}
                 />
               </>

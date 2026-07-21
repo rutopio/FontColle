@@ -76,14 +76,13 @@ export function describeActiveFilters(f: FilterState): FilterChip[] {
   ) => chips.push({ id, section, value, key, rawValue });
 
   for (const v of f.classes) push(`class:${v}`, "Category", v, "classes", v);
-  for (const v of f.facets)
-    push(`facet:${v}`, "Tag", facetLabel(v), "facets", v);
-  for (const v of f.classifications)
+  for (const v of f.tags) push(`facet:${v}`, "Tag", facetLabel(v), "tags", v);
+  for (const v of f.style)
     push(
       `cls:${v}`,
       classificationSection(v),
       classificationValue(v),
-      "classifications",
+      "style",
       v
     );
   for (const v of f.color)
@@ -218,7 +217,7 @@ export function groupActiveFilters(f: FilterState): FilterChipGroup[] {
 
 // Clear a whole section at once. Every chip in a section shares one state field;
 // array fields drop just this section's values (so a sibling section on the same
-// `classifications` key survives), and the two scalar fields reset outright.
+// `style` key survives), and the two scalar fields reset outright.
 function removeSection(f: FilterState, chips: FilterChip[]): FilterState {
   const key = chips[0].key;
   if (key === "hasHinting") return { ...f, hasHinting: undefined };

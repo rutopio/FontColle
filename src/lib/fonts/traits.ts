@@ -22,8 +22,8 @@ export function fontTraits(
       // A selected variable axis is inherently a "variable" filter, so it also
       // lights up the Variable badge.
       active: font.isVariable
-        ? selection.facets.includes("variable") || selection.axes.length > 0
-        : selection.facets.includes("static"),
+        ? selection.tags.includes("variable") || selection.axes.length > 0
+        : selection.tags.includes("static"),
     },
     {
       label: isColorFont(font) ? "Colorful" : "Monochrome",

@@ -45,38 +45,38 @@ export interface FilterGroup {
 export const FILTER_GROUPS: FilterGroup[] = [
   // Natural-language trait tags: one flat list of plain-language pills
   // (Ligatures, Monospace, Colorful, Noto, Latin, Static/Variable, …). The Tag
-  // panel owns the whole `facets` state; Font type is also shown as a radio in
+  // panel owns the whole `tags` state; Font type is also shown as a radio in
   // the Variant panel (group id "axes"), backed by the same state.
   {
     id: "tag",
     label: "Tag",
     icon: TagIcon,
-    keys: ["facets"],
+    keys: ["tags"],
   },
   // Feel, not form: the Expressive / Theme / Seasonal classification sections.
-  // Shares the `classifications` state with Style; countKey splits by prefix so
+  // Shares the `style` state with Style; countKey splits by prefix so
   // each rail badge counts only its own sections.
   {
     id: "mood",
     label: "Mood",
     icon: SmileyMeltingIcon,
-    keys: ["classifications"],
+    keys: ["style"],
   },
   {
     id: "style",
     label: "Style",
     icon: ShapesIcon,
-    keys: ["classes", "classifications"],
+    keys: ["classes", "style"],
   },
   // Weight/Width and the wght/wdth variable axes are mutually exclusive, one
   // clears the other, so they have to share a panel. Also owns Font type (the
-  // static/variable facets), Italic (the has-italic radio) and Instances (how
+  // static/variable tags), Italic (the has-italic radio) and Instances (how
   // many named styles the family ships).
   {
     id: "axes",
     label: "Variant",
     icon: IntersectThreeIcon,
-    keys: ["weights", "widths", "axes", "facets", "italic", "instances"],
+    keys: ["weights", "widths", "axes", "tags", "italic", "instances"],
   },
   {
     id: "language",
@@ -122,8 +122,8 @@ export const FILTER_GROUPS: FilterGroup[] = [
 // (Serif / Sans / Script) is the most common entry point into browsing.
 export const DEFAULT_FILTER_GROUP: FilterGroupId = "style";
 
-// `facets` is shared by two panels: the Tag panel shows the whole list (so its
-// badge counts every selected facet), while the Variant panel (group id "axes")
+// `tags` is shared by two panels: the Tag panel shows the whole list (so its
+// badge counts every selected tag), while the Variant panel (group id "axes")
 // shows only static/variable as a Font type radio (so its badge counts just
 // those). Split accordingly.
 function countKey(
@@ -139,21 +139,19 @@ function countKey(
   // Section OR/AND modes are modifiers, not conditions, never counted. (No
   // group lists this key anyway; the guard is here to satisfy the type union.)
   if (key === "matchModes") return 0;
-  // Style and Mood share the `classifications` state; each counts only the tags
+  // Style and Mood share the `style` state; each counts only the tags
   // whose section belongs to it (Style = form, Mood = feel).
-  if (key === "classifications") {
+  if (key === "style") {
     const want = group.id === "mood" ? "mood" : "style";
-    return filter.classifications.filter(
-      (t) => classificationGroupOf(t) === want
-    ).length;
+    return filter.style.filter((t) => classificationGroupOf(t) === want).length;
   }
-  if (key !== "facets") return filter[key].length;
+  if (key !== "tags") return filter[key].length;
   if (group.id === "axes") {
     const isFontType = (v: string) => FONT_TYPE_FACETS.includes(v);
-    return filter.facets.filter(isFontType).length;
+    return filter.tags.filter(isFontType).length;
   }
-  // Tag panel: every selected facet (font-type pills included).
-  return filter.facets.length;
+  // Tag panel: every selected tag (font-type pills included).
+  return filter.tags.length;
 }
 
 // How many values the group's own filter keys currently hold.

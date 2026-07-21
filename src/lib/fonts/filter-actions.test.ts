@@ -55,24 +55,24 @@ describe("weight/width <-> variable-axis mutual exclusion still holds", () => {
 });
 
 describe("mode override is dropped once its section empties", () => {
-  it("clearSection drops a non-default facets mode", () => {
-    let f = { ...emptyFilter, facets: ["ligatures", "fractions"] };
-    f = toggleMatchMode(f, "facets"); // facets -> "any" (non-default)
-    expect(f.matchModes.facets).toBe("any");
-    f = clearSection(f, "facets", [
+  it("clearSection drops a non-default tags mode", () => {
+    let f = { ...emptyFilter, tags: ["ligatures", "fractions"] };
+    f = toggleMatchMode(f, "tags"); // tags -> "any" (non-default)
+    expect(f.matchModes.tags).toBe("any");
+    f = clearSection(f, "tags", [
       ["ligatures", 1],
       ["fractions", 1],
     ]);
-    expect(f.facets).toEqual([]);
-    expect(f.matchModes.facets).toBeUndefined(); // no stale ?mode=facets:any
+    expect(f.tags).toEqual([]);
+    expect(f.matchModes.tags).toBeUndefined(); // no stale ?mode=tags:any
   });
 
-  it("toggling the last facet off drops the mode too", () => {
-    let f = toggle(emptyFilter, "facets", "ligatures");
-    f = toggleMatchMode(f, "facets");
-    f = toggle(f, "facets", "ligatures"); // remove the only value
-    expect(f.facets).toEqual([]);
-    expect(f.matchModes.facets).toBeUndefined();
+  it("toggling the last tag off drops the mode too", () => {
+    let f = toggle(emptyFilter, "tags", "ligatures");
+    f = toggleMatchMode(f, "tags");
+    f = toggle(f, "tags", "ligatures"); // remove the only value
+    expect(f.tags).toEqual([]);
+    expect(f.matchModes.tags).toBeUndefined();
   });
 
   it("clearing the axes section (via Static) drops a non-default axes mode", () => {
@@ -93,10 +93,10 @@ describe("mode override is dropped once its section empties", () => {
   });
 
   it("keeps the mode while the section still holds a value", () => {
-    let f = { ...emptyFilter, facets: ["ligatures", "fractions"] };
-    f = toggleMatchMode(f, "facets");
-    f = clearSection(f, "facets", [["ligatures", 1]]); // one value remains
-    expect(f.facets).toEqual(["fractions"]);
-    expect(f.matchModes.facets).toBe("any"); // still meaningful, kept
+    let f = { ...emptyFilter, tags: ["ligatures", "fractions"] };
+    f = toggleMatchMode(f, "tags");
+    f = clearSection(f, "tags", [["ligatures", 1]]); // one value remains
+    expect(f.tags).toEqual(["fractions"]);
+    expect(f.matchModes.tags).toBe("any"); // still meaningful, kept
   });
 });

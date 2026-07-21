@@ -1,7 +1,7 @@
 import { GoogleLogoIcon } from "@phosphor-icons/react";
 import { FLAG_LABELS } from "@/lib/fonts/filter";
-import { PillButton } from "./pill-button";
 import { SectionHeader } from "./section-header";
+import { SegmentedPills } from "./segmented-pills";
 
 // Noto filter: Noto / Others, two per row. Radio-style, at most one, and they
 // partition the catalog (every published family is Noto or not). Selecting one
@@ -29,19 +29,12 @@ export function NotoSection({
         sort="count"
         onToggleSort={() => {}}
       />
-      <div className="grid grid-cols-2 gap-1.5">
-        {items.map(([value, count]) => (
-          <PillButton
-            key={value}
-            value={value}
-            count={count}
-            label={FLAG_LABELS[value] ?? value}
-            selected={selected.includes(value)}
-            onToggle={onToggle}
-            className="min-w-0"
-          />
-        ))}
-      </div>
+      <SegmentedPills
+        items={items}
+        labels={FLAG_LABELS}
+        selected={selected}
+        onToggle={onToggle}
+      />
     </div>
   );
 }

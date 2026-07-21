@@ -21,7 +21,7 @@ import {
 const fullFilter: FilterState = {
   query: "noto sans",
   classes: ["Serif", "Sans"],
-  facets: ["ligatures", "small-caps"],
+  tags: ["ligatures", "small-caps"],
   features: ["liga", "smcp"],
   axes: ["wght", "wdth"],
   weights: ["400", "700"],
@@ -32,7 +32,7 @@ const fullFilter: FilterState = {
   colorFormats: ["COLR", "SVG"],
   // One form ("style" group) and one feel ("mood" group) path, so the round-trip
   // exercises both the `style` and `mood` URL params the codec splits into.
-  classifications: ["/Serif/Didone", "/Expressive/Playful"],
+  style: ["/Serif/Didone", "/Expressive/Playful"],
   // FINDING (real bug, documented, see "designer values ..." test below):
   // designer tokens must NOT themselves contain a comma, because filterToSearch
   // comma-joins them and searchToFilter comma-splits them. A single stored
@@ -55,7 +55,7 @@ const fullFilter: FilterState = {
     fileSize: [16384, 353980],
   },
   hasHinting: true,
-  matchModes: { facets: "any", classifications: "all" }, // both differ from default
+  matchModes: { tags: "any", style: "all" }, // both differ from default
 };
 
 describe("searchToFilter(filterToSearch(f)) round-trip", () => {
@@ -121,22 +121,22 @@ describe("filterToSearch normalization", () => {
   });
 
   it("drops matchMode entries equal to the section default", () => {
-    // facets defaults to "all"; setting it explicitly to "all" is redundant and
+    // tags defaults to "all"; setting it explicitly to "all" is redundant and
     // must not appear in the URL.
     const s = filterToSearch({
       ...emptyFilter,
-      matchModes: { facets: "all", classifications: "any" },
+      matchModes: { tags: "all", style: "any" },
     });
-    // classifications default is "any", so it's also dropped -> no mode param.
+    // style default is "any", so it's also dropped -> no mode param.
     expect(s.mode).toBeUndefined();
   });
 
   it("keeps only non-default matchMode entries", () => {
     const s = filterToSearch({
       ...emptyFilter,
-      matchModes: { facets: "any" }, // default is "all", so kept
+      matchModes: { tags: "any" }, // default is "all", so kept
     });
-    expect(s.mode).toBe("facets:any");
+    expect(s.mode).toBe("tags:any");
   });
 
   it("joins list params with underscore, designer/lang with comma", () => {
@@ -150,30 +150,26 @@ describe("filterToSearch normalization", () => {
   it("encodes classification paths as friendly dot/underscore form", () => {
     const s = filterToSearch({
       ...emptyFilter,
-      classifications: ["/Serif/Didone", "/Sans/Humanist"],
+      style: ["/Serif/Didone", "/Sans/Humanist"],
     });
     expect(s.style).toBe("Serif.Didone_Sans.Humanist");
   });
 
-  it("splits classifications into style (form) and mood (feel) params", () => {
+  it("splits the style state into style (form) and mood (feel) params", () => {
     const s = filterToSearch({
       ...emptyFilter,
-      classifications: [
-        "/Serif/Didone",
-        "/Expressive/Playful",
-        "/Sans/Humanist",
-      ],
+      style: ["/Serif/Didone", "/Expressive/Playful", "/Sans/Humanist"],
     });
     expect(s.style).toBe("Serif.Didone_Sans.Humanist");
     expect(s.mood).toBe("Expressive.Playful");
   });
 
-  it("merges style and mood params back into one classifications array", () => {
+  it("merges style and mood params back into one style array", () => {
     const f = searchToFilter({
       style: "Serif.Didone",
       mood: "Expressive.Playful",
     });
-    expect(f.classifications).toEqual(["/Serif/Didone", "/Expressive/Playful"]);
+    expect(f.style).toEqual(["/Serif/Didone", "/Expressive/Playful"]);
   });
 
   it("spells the source radio with its pill labels (noto / non-noto)", () => {
@@ -204,7 +200,7 @@ describe("searchToFilter reverse-direction edge cases", () => {
 
   it("accepts the raw comma/slash classification form", () => {
     expect(
-      searchToFilter({ style: "/Serif/Didone,/Sans/Humanist" }).classifications
+      searchToFilter({ style: "/Serif/Didone,/Sans/Humanist" }).style
     ).toEqual(["/Serif/Didone", "/Sans/Humanist"]);
   });
 
@@ -267,8 +263,8 @@ describe("searchToFilter reverse-direction edge cases", () => {
   });
 
   it("ignores unknown mode keys and invalid modes", () => {
-    const f = searchToFilter({ mode: "bogus:any,facets:sideways,facets:any" });
-    expect(f.matchModes).toEqual({ facets: "any" });
+    const f = searchToFilter({ mode: "bogus:any,tags:sideways,tags:any" });
+    expect(f.matchModes).toEqual({ tags: "any" });
   });
 
   it("reverse round-trips a search back to itself", () => {
@@ -282,18 +278,18 @@ describe("searchToFilter reverse-direction edge cases", () => {
       style: "Sans.Humanist",
       xheight: "0.45-0.55",
       hinting: "hinted",
-      mode: "facets:any",
+      mode: "tags:any",
     };
     expect(filterToSearch(searchToFilter(canonical))).toEqual(canonical);
   });
 
   // FINDING (documented, not a change): mode:pairs whose key is valid but whose
   // value equals the section default are dropped on decode, so a hand-typed
-  // ?mode=facets:all yields an empty matchModes, which then re-encodes to no
+  // ?mode=tags:all yields an empty matchModes, which then re-encodes to no
   // mode param. This is intentional (defaults stay implicit) but means the raw
   // search string is NOT byte-preserved for redundant modes.
   it("drops a redundant (default-valued) mode pair on decode", () => {
-    expect(searchToFilter({ mode: "facets:all" }).matchModes).toEqual({});
+    expect(searchToFilter({ mode: "tags:all" }).matchModes).toEqual({});
   });
 });
 
