@@ -32,6 +32,7 @@ import { DesignerSection } from "./designer-section";
 import { FeatureSection } from "./feature-section";
 import { FontTypeSection } from "./font-type-section";
 import type { FilterGroupId } from "./groups";
+import { InstancesSection } from "./instances-section";
 import { LanguageSection } from "./language-section";
 import { LicenseSection } from "./license-section";
 import {
@@ -343,6 +344,13 @@ export function FilterSidebar({
                   selected={filter.italic}
                   onToggle={selectItalic}
                   onReset={() => onChange({ ...filter, italic: [] })}
+                />
+                {/* How many named styles the family ships: a range over the
+                    counts the catalog actually has. */}
+                <InstancesSection
+                  histogram={index.instances}
+                  value={filter.instances}
+                  onChange={(next) => onChange({ ...filter, instances: next })}
                 />
                 <CardGrid
                   title="Weight"

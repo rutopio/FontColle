@@ -3,6 +3,7 @@
 import { COLOR_FORMATS, isColorFont } from "@/lib/fonts/color";
 import { catalogUpmCounts } from "@/lib/fonts/metrics";
 import type { FontRecord } from "@/lib/fonts/types";
+import { instanceCount } from "./instances";
 import { FONT_TYPE_FACETS } from "./state";
 import { familyWeightSet, familyWidthSet } from "./weights";
 
@@ -312,6 +313,7 @@ export function buildFacetIndex(fonts: FontRecord[]) {
   const activity = new Map<string, number>();
   const flags = new Map<string, number>();
   const italic = new Map<string, number>();
+  const instances = new Map<string, number>();
   let hintedCount = 0;
   let unhintedCount = 0;
   const bump = (m: Map<string, number>, k: string) =>
@@ -347,6 +349,7 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     bump(activity, fontActivity(font));
     bump(flags, font.isNoto ? "noto" : "others");
     bump(italic, font.facets.includes("has-italic") ? "italic" : "upright");
+    bump(instances, String(instanceCount(font)));
   }
   const sorted = (m: Map<string, number>) =>
     [...m.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
@@ -423,6 +426,13 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     italic: ITALIC_VALUES.map(
       (v) => [v, italic.get(v) ?? 0] as [string, number]
     ),
+    // Instance-count histogram: [count, families] ascending by count. Drives
+    // the range slider's stop list, so only counts the catalog actually has are
+    // reachable (1..12, then 14, 16, 18, 20, 32, … — no dead stops between).
+    instances: [...instances.entries()]
+      .map(([n, c]) => [Number(n), c] as [number, number])
+      .filter(([n]) => n > 0)
+      .sort((a, b) => a[0] - b[0]),
     // Units-per-em pill items ([value, family count]) for the Metrics tab.
     upmCounts: catalogUpmCounts(fonts),
     // Family counts for the Hint pills.

@@ -6,6 +6,7 @@ import {
   type FilterSearch,
   type FilterState,
   filterToSearch,
+  parseFilterSearch,
   searchToFilter,
 } from "./state";
 
@@ -47,6 +48,8 @@ const fullFilter: FilterState = {
   flags: ["others"], // encodes to noto=non-noto, exercising the source remap
   italic: ["italic"],
   upm: ["1000", "2048"],
+  // Instance bucket range; the URL carries its id ("2-9"), not the raw range.
+  instances: [2, 9],
   metrics: {
     xHeight: [0.45, 0.55],
     fileSize: [16384, 353980],
@@ -203,6 +206,44 @@ describe("searchToFilter reverse-direction edge cases", () => {
     expect(
       searchToFilter({ style: "/Serif/Didone,/Sans/Humanist" }).classifications
     ).toEqual(["/Serif/Didone", "/Sans/Humanist"]);
+  });
+
+  // Regression: the "1" instance bucket is all digits, so TanStack Router
+  // parses a hand-typed ?instances=1 into the number 1. parseFilterSearch must
+  // coerce it back to a string or the bucket is silently dropped.
+  it("accepts a numeric instances bucket id", () => {
+    expect(parseFilterSearch({ instances: 1 }).instances).toBe("1");
+    expect(searchToFilter(parseFilterSearch({ instances: 1 })).instances).toEqual(
+      [1, 1]
+    );
+  });
+
+  it("ignores an unknown instances bucket id", () => {
+    expect(searchToFilter({ instances: "bogus" }).instances).toBeUndefined();
+  });
+
+  // The slider can land on any range, not just a bucket, so the codec has to
+  // carry arbitrary bounds and sanitize hand-typed ones.
+  it("round-trips an arbitrary instances range", () => {
+    expect(filterToSearch({ ...emptyFilter, instances: [3, 27] }).instances).toBe(
+      "3-27"
+    );
+    expect(searchToFilter({ instances: "3-27" }).instances).toEqual([3, 27]);
+  });
+
+  it("clamps and orders an out-of-domain instances range", () => {
+    expect(searchToFilter({ instances: "27-3" }).instances).toEqual([3, 27]);
+    expect(searchToFilter({ instances: "0-999" }).instances).toBeUndefined();
+  });
+
+  it("drops a full-domain instances range (it filters nothing)", () => {
+    expect(
+      filterToSearch({ ...emptyFilter, instances: [1, 74] }).instances
+    ).toBeUndefined();
+  });
+
+  it("accepts the legacy >18 bucket spelling", () => {
+    expect(searchToFilter({ instances: "19+" }).instances).toEqual([19, 74]);
   });
 
   it("drops a fully non-numeric metric range", () => {

@@ -4,6 +4,8 @@ import {
   CLASSIFICATION_SECTIONS,
   classificationGroupOf,
   type FilterState,
+  INSTANCE_BUCKETS,
+  instanceBucketOf,
   MODE_KEYS,
   type ModeKey,
   matchMode,
@@ -119,6 +121,19 @@ export function describeActiveFilters(f: FilterState): FilterChip[] {
       v
     );
   for (const v of f.upm) push(`upm:${v}`, "Units per em", v, "upm", v);
+  if (f.instances) {
+    // A range matching a bucket reads as its label (">18"); any other range
+    // the slider produced reads as its bounds.
+    const id = instanceBucketOf(f.instances);
+    const bucket = INSTANCE_BUCKETS.find((b) => b.id === id);
+    const [lo, hi] = f.instances;
+    chips.push({
+      id: "inst",
+      section: "Instances",
+      value: bucket ? bucket.label : lo === hi ? String(lo) : `${lo}–${hi}`,
+      key: "instances",
+    });
+  }
 
   for (const key of Object.keys(f.metrics) as MetricKey[]) {
     const range = f.metrics[key];

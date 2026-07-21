@@ -70,12 +70,13 @@ export const FILTER_GROUPS: FilterGroup[] = [
   },
   // Weight/Width and the wght/wdth variable axes are mutually exclusive, one
   // clears the other, so they have to share a panel. Also owns Font type (the
-  // static/variable facets) and Italic (the has-italic radio).
+  // static/variable facets), Italic (the has-italic radio) and Instances (how
+  // many named styles the family ships).
   {
     id: "axes",
     label: "Variant",
     icon: IntersectThreeIcon,
-    keys: ["weights", "widths", "axes", "facets", "italic"],
+    keys: ["weights", "widths", "axes", "facets", "italic", "instances"],
   },
   {
     id: "language",
@@ -133,6 +134,8 @@ function countKey(
   // Metric ranges: one count per active slider. Boolean facets: one when on.
   if (key === "metrics") return Object.keys(filter.metrics).length;
   if (key === "hasHinting") return filter.hasHinting !== undefined ? 1 : 0;
+  // Instance range: one condition when set (a range, not a value list).
+  if (key === "instances") return filter.instances ? 1 : 0;
   // Section OR/AND modes are modifiers, not conditions, never counted. (No
   // group lists this key anyway; the guard is here to satisfy the type union.)
   if (key === "matchModes") return 0;

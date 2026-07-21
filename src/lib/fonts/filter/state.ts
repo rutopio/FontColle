@@ -4,6 +4,12 @@
 import type { MetricKey, MetricRange } from "@/lib/fonts/metrics";
 import { classificationGroupOf } from "./facets";
 import {
+  INSTANCE_MAX,
+  INSTANCE_MIN,
+  type InstanceRange,
+  instanceRangeOf,
+} from "./instances";
+import {
   type MatchMode,
   MODE_KEYS,
   type ModeKey,
@@ -44,6 +50,9 @@ export interface FilterState {
   // not. The two partition the whole catalog.
   italic: string[];
   upm: string[]; // units-per-em values ("1000", "2048"…), OR within
+  // Instance-count range (how many named styles the family ships), inclusive.
+  // Only stored while it narrows the domain; absent means "any", like metrics.
+  instances?: InstanceRange;
   // Derived-metric range sliders (x-height ratio, file size, …), AND across.
   // Only active ranges (a thumb off its domain edge) are present; an absent key
   // filters nothing. See ../metrics for the derivations and domains.
@@ -128,6 +137,10 @@ export interface FilterSearch {
   noto?: string;
   italic?: string; // italic radio: "italic" | "upright"
   upm?: string; // units-per-em values
+  // Instance-count range, "lo-hi" (e.g. instances=2-9). The slider can land on
+  // any range, so the id-only form isn't enough; bucket presets happen to
+  // encode as their own bounds, which keeps a preset link readable.
+  instances?: string;
   // Metric ranges, each "lo-hi" (e.g. xheight=0.45-0.55). One key per metric.
   xheight?: string; // x-height ratio
   capheight?: string; // cap-height ratio
@@ -248,6 +261,23 @@ function decodeMetrics(s: FilterSearch): FilterState["metrics"] {
   return out;
 }
 
+// Instance range shares the metric "lo-hi" spelling. Bounds are clamped into
+// the domain and ordered, so a hand-typed ?instances=99-2 still lands sanely;
+// a range covering the whole domain filters nothing and is dropped. The legacy
+// ">18" bucket spelling ("19+") is accepted so older links keep working.
+function decodeInstances(v: string | undefined): InstanceRange | undefined {
+  if (!v) return undefined;
+  const preset = instanceRangeOf(v);
+  const r = preset ?? parseRange(v);
+  if (!r) return undefined;
+  const fit = (n: number) =>
+    Math.min(INSTANCE_MAX, Math.max(INSTANCE_MIN, Math.round(n)));
+  const lo = Math.min(fit(r[0]), fit(r[1]));
+  const hi = Math.max(fit(r[0]), fit(r[1]));
+  if (lo <= INSTANCE_MIN && hi >= INSTANCE_MAX) return undefined;
+  return [lo, hi];
+}
+
 function encodeMetrics(metrics: FilterState["metrics"], s: FilterSearch): void {
   for (const key of Object.keys(METRIC_PARAM) as MetricKey[]) {
     const r = metrics[key];
@@ -305,6 +335,7 @@ export function searchToFilter(s: FilterSearch): FilterState {
     flags: splitUnderscore(s.noto).map(decodeSource),
     italic: splitUnderscore(s.italic),
     upm: splitUnderscore(s.upm),
+    instances: decodeInstances(s.instances),
     metrics: decodeMetrics(s),
     hasHinting:
       s.hinting === "hinted"
@@ -339,6 +370,12 @@ export function filterToSearch(f: FilterState): FilterSearch {
   if (f.flags.length) s.noto = joinUnderscore(f.flags.map(encodeSource));
   if (f.italic.length) s.italic = joinUnderscore(f.italic);
   if (f.upm.length) s.upm = joinUnderscore(f.upm);
+  // A full-domain range filters nothing, so it never reaches the URL.
+  if (
+    f.instances &&
+    (f.instances[0] > INSTANCE_MIN || f.instances[1] < INSTANCE_MAX)
+  )
+    s.instances = `${f.instances[0]}-${f.instances[1]}`;
   encodeMetrics(f.metrics, s);
   if (f.hasHinting !== undefined)
     s.hinting = f.hasHinting ? "hinted" : "unhinted";
@@ -370,6 +407,7 @@ export function activeFilterCount(f: FilterState): number {
     f.flags.length +
     f.italic.length +
     f.upm.length +
+    (f.instances ? 1 : 0) +
     Object.keys(f.metrics).length +
     (f.hasHinting !== undefined ? 1 : 0)
   );
@@ -404,6 +442,9 @@ export function parseFilterSearch(raw: Record<string, unknown>): FilterSearch {
     noto: str(raw.noto),
     italic: str(raw.italic),
     upm: numCsv(raw.upm),
+    // The "1" bucket id is all digits, so a hand-typed ?instances=1 arrives as
+    // a number; coerce like weight/upm or the bucket would be dropped.
+    instances: numCsv(raw.instances),
     xheight: str(raw.xheight),
     capheight: str(raw.capheight),
     lineheight: str(raw.lineheight),

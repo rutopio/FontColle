@@ -13,6 +13,7 @@ import {
   repoHost,
   TAG_MEMBERSHIP_THRESHOLD,
 } from "./facets";
+import { instanceInRange } from "./instances";
 import { MODE_KEYS, type ModeKey, matchMode } from "./match-mode";
 import type { FilterState } from "./state";
 import { familyWeightSet, familyWidthSet } from "./weights";
@@ -243,6 +244,8 @@ export function applyFilters(
     }
     // OR within upm: family's units-per-em is one of the selected values.
     if (f.upm.length && !f.upm.includes(String(font.unitsPerEm))) return false;
+    // Instance count within the selected range (inclusive).
+    if (f.instances && !instanceInRange(font, f.instances)) return false;
     // AND across metric ranges: the font's derived value must fall in every
     // active range. A font with a null input to an active metric is excluded.
     for (const key of metricKeys) {
