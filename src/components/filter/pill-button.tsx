@@ -49,9 +49,7 @@ export function PillButton({
         selected
           ? "border-primary bg-muted font-semibold text-foreground"
           : "text-muted-foreground",
-        !disabled &&
-          !selected &&
-          "hover:border-foreground hover:text-foreground",
+        !disabled && !selected && "hover:bg-muted hover:text-primary",
         className
       )}
     >

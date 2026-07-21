@@ -341,7 +341,7 @@ export function Detail({
               count={subsets.length || undefined}
               className="md:col-span-1"
             >
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-3 gap-y-1 text-sm">
+              <div className="grid grid-cols-1 gap-x-3 gap-y-1 text-sm lg:grid-cols-2">
                 {subsets.map((s) => (
                   <span key={s} className="truncate text-muted-foreground">
                     {s}
@@ -355,7 +355,7 @@ export function Detail({
                 count={font.scripts.length}
                 className="md:col-span-1"
               >
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-3 gap-y-1 text-sm">
+                <div className="grid grid-cols-1 gap-x-3 gap-y-1 text-sm lg:grid-cols-2">
                   {font.scripts.map((s) => (
                     <span key={s} className="truncate text-muted-foreground">
                       {scriptLabel(s)}

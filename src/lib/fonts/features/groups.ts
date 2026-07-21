@@ -10,8 +10,13 @@ export type FeatureGroupId =
   | "letterCase"
   | "numerals"
   | "positioning"
-  | "shaping"
+  | "shapingGeneral"
+  | "shapingIndic"
+  | "shapingKorean"
+  | "shapingArabic"
+  | "shapingMath"
   | "cjk"
+  | "vertical"
   | "other";
 
 // `topN` caps how many pills a group shows up front, by font count; the rest
@@ -24,20 +29,29 @@ export const FEATURE_GROUPS: {
 }[] = [
   { id: "ligatures", title: "Ligatures" },
   { id: "alternates", title: "Alternates", topN: 9 },
-  { id: "stylisticSets", title: "Stylistic sets" },
-  { id: "characterVariants", title: "Character variants", topN: 15 },
   { id: "letterCase", title: "Letter case" },
   { id: "numerals", title: "Numerals" },
   { id: "positioning", title: "Positioning & kerning" },
-  { id: "shaping", title: "Script shaping", topN: 30 },
-  { id: "cjk", title: "CJK & vertical", topN: 12 },
-  { id: "other", title: "Other", topN: 3 },
+  { id: "shapingGeneral", title: "Script shaping: General" },
+  { id: "shapingIndic", title: "Script shaping: Indic", topN: 12 },
+  { id: "shapingKorean", title: "Script shaping: Korean" },
+  { id: "shapingArabic", title: "Script shaping: Arabic" },
+  { id: "shapingMath", title: "Script shaping: Math" },
+  { id: "cjk", title: "CJK", topN: 12 },
+  { id: "vertical", title: "Vertical" },
+  { id: "stylisticSets", title: "Stylistic sets" },
+  { id: "characterVariants", title: "Character variants", topN: 15 },
+  { id: "other", title: "Private & other", topN: 3 },
 ];
 
 // Explicit tag -> group. ss##/cv## are matched by pattern instead (there are
-// 20 and 81 of them in the catalog). Anything unlisted falls to "other", which
-// is where the unregistered tags live (zz01–zz52, APLF, a broken 3-letter
-// "lig", …), 64 of the catalog's 272 tags, so the bucket cannot be dropped.
+// 20 and 81 of them in the catalog). Anything unlisted falls to "other" (shown
+// as "Private & other"), which is where the private/reserved tags live (zz01–
+// zz52, the uppercase vendor tags APLF/MOSC/…, a broken 3-letter "lig", …), 62
+// of the catalog's 272 tags, so the bucket cannot be dropped. Only size (Optical
+// Size) and elli among them are registered features, but neither has a natural
+// home group, so they stay here too. rvrn and crcy were moved out to their real
+// groups below.
 const FEATURE_GROUP_OF: Record<string, FeatureGroupId> = {
   // Ligatures
   liga: "ligatures",
@@ -81,6 +95,7 @@ const FEATURE_GROUP_OF: Record<string, FeatureGroupId> = {
   subs: "numerals",
   sinf: "numerals",
   ordn: "numerals",
+  crcy: "numerals", // currency symbols, alongside zero/frac/ordn
   // Positioning & kerning
   kern: "positioning",
   vkrn: "positioning",
@@ -95,55 +110,63 @@ const FEATURE_GROUP_OF: Record<string, FeatureGroupId> = {
   opbd: "positioning",
   lfbd: "positioning",
   rtbd: "positioning",
-  // Script shaping
-  ccmp: "shaping",
-  locl: "shaping",
-  init: "shaping",
-  medi: "shaping",
-  fina: "shaping",
-  isol: "shaping",
-  akhn: "shaping",
-  rphf: "shaping",
-  blwf: "shaping",
-  pstf: "shaping",
-  half: "shaping",
-  pres: "shaping",
-  abvs: "shaping",
-  blws: "shaping",
-  psts: "shaping",
-  abvm: "shaping",
-  blwm: "shaping",
-  abvf: "shaping",
-  cjct: "shaping",
-  nukt: "shaping",
-  rkrf: "shaping",
-  vatu: "shaping",
-  pref: "shaping",
-  haln: "shaping",
-  ljmo: "shaping",
-  tjmo: "shaping",
-  vjmo: "shaping",
-  fin2: "shaping",
-  fin3: "shaping",
-  med2: "shaping",
-  ltrm: "shaping",
-  rtlm: "shaping",
-  rtla: "shaping",
-  stch: "shaping",
-  dtls: "shaping",
-  flac: "shaping",
-  ssty: "shaping",
-  mgrk: "shaping",
-  ruby: "shaping",
-  // CJK & vertical
-  vert: "cjk",
-  vrt2: "cjk",
+  // Script shaping: General — script-agnostic shaping. ccmp/locl apply to any
+  // script; the cursive-join quartet (init/medi/fina/isol) and rvrn (mandatory
+  // variation pass) are shared machinery, not tied to one writing system.
+  rvrn: "shapingGeneral",
+  ccmp: "shapingGeneral",
+  locl: "shapingGeneral",
+  init: "shapingGeneral",
+  medi: "shapingGeneral",
+  fina: "shapingGeneral",
+  isol: "shapingGeneral",
+  // Script shaping: Indic — the Brahmic shaping engine's reordering/conjunct
+  // features (Devanagari, Bengali, Tamil, …).
+  akhn: "shapingIndic",
+  rphf: "shapingIndic",
+  blwf: "shapingIndic",
+  pstf: "shapingIndic",
+  half: "shapingIndic",
+  pres: "shapingIndic",
+  abvs: "shapingIndic",
+  blws: "shapingIndic",
+  psts: "shapingIndic",
+  abvm: "shapingIndic",
+  blwm: "shapingIndic",
+  abvf: "shapingIndic",
+  cjct: "shapingIndic",
+  nukt: "shapingIndic",
+  rkrf: "shapingIndic",
+  vatu: "shapingIndic",
+  pref: "shapingIndic",
+  haln: "shapingIndic",
+  // Script shaping: Korean — Hangul jamo composition (leading/vowel/trailing).
+  ljmo: "shapingKorean",
+  tjmo: "shapingKorean",
+  vjmo: "shapingKorean",
+  // Script shaping: Arabic & RTL — Syriac final/medial forms, bidi mirroring,
+  // and Syriac stretching.
+  fin2: "shapingArabic",
+  fin3: "shapingArabic",
+  med2: "shapingArabic",
+  ltrm: "shapingArabic",
+  rtlm: "shapingArabic",
+  rtla: "shapingArabic",
+  stch: "shapingArabic",
+  // Script shaping: Math — math-mode script styles, flattened accents, dotless.
+  dtls: "shapingMath",
+  flac: "shapingMath",
+  ssty: "shapingMath",
+  mgrk: "shapingMath",
+  // CJK: widths, JIS/kanji form variants, simplified/traditional, ruby notation.
+  // hkna is the horizontal kana pair, so it stays here; its vertical partner
+  // vkna moves to "vertical" below.
+  ruby: "cjk",
   fwid: "cjk",
   hwid: "cjk",
   twid: "cjk",
   qwid: "cjk",
   pwid: "cjk",
-  vkna: "cjk",
   hkna: "cjk",
   jp78: "cjk",
   jp83: "cjk",
@@ -155,8 +178,12 @@ const FEATURE_GROUP_OF: Record<string, FeatureGroupId> = {
   trad: "cjk",
   smpl: "cjk",
   chws: "cjk",
-  vchw: "cjk",
   ital: "cjk",
+  // Vertical: features that only apply when text is set top-to-bottom.
+  vert: "vertical",
+  vrt2: "vertical",
+  vkna: "vertical",
+  vchw: "vertical",
 };
 
 /** Which section a feature tag belongs to. */

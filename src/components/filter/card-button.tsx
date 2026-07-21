@@ -28,7 +28,7 @@ export function CardButton({
         "relative flex cursor-pointer flex-col items-center gap-2 rounded-md border p-2 text-center shadow-xs outline-none transition-[color,box-shadow,border-color,background-color,transform] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 active:scale-[0.98]",
         selected
           ? "border-primary bg-muted"
-          : "border-input hover:border-foreground/40",
+          : "hover:bg-muted hover:text-primary",
         className
       )}
     >

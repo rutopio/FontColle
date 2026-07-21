@@ -155,7 +155,11 @@ describe("filterToSearch normalization", () => {
   it("splits classifications into style (form) and mood (feel) params", () => {
     const s = filterToSearch({
       ...emptyFilter,
-      classifications: ["/Serif/Didone", "/Expressive/Playful", "/Sans/Humanist"],
+      classifications: [
+        "/Serif/Didone",
+        "/Expressive/Playful",
+        "/Sans/Humanist",
+      ],
     });
     expect(s.style).toBe("Serif.Didone_Sans.Humanist");
     expect(s.mood).toBe("Expressive.Playful");
