@@ -5,7 +5,10 @@
     "version": "1.0.0",
     "summary": "Read-only JSON catalog of open-source Google Fonts families.",
     "description": "FontColle serves its font catalog as static JSON files. Every family carries harvested font-binary data (variable axes, OpenType features, metrics, writing systems) plus Google's classification scores and subjective style tags. No authentication and no rate limit. `id` is the lowercased family name with spaces removed (e.g. \"Roboto Slab\" -> \"robotoslab\"). Start from /catalog-slim.json for filtering and ranking; fetch /catalog/{id}.json for a single family's full record.",
-    "license": { "name": "Data: per-family OFL/Apache/UFL", "url": "https://fontcolle.com/llms.txt" },
+    "license": {
+      "name": "Data: per-family OFL/Apache/UFL",
+      "url": "https://fontcolle.com/llms.txt"
+    },
     "contact": { "url": "https://fontcolle.com/" }
   },
   "servers": [{ "url": "https://fontcolle.com" }],
@@ -24,7 +27,10 @@
             "description": "Array of slim family records.",
             "content": {
               "application/json": {
-                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/FamilySummary" } }
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/FamilySummary" }
+                }
               }
             }
           }
@@ -41,7 +47,10 @@
             "description": "Array of full family records.",
             "content": {
               "application/json": {
-                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/FontRecord" } }
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/FontRecord" }
+                }
               }
             }
           }
@@ -65,7 +74,9 @@
           "200": {
             "description": "One full family record.",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/FontRecord" } }
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FontRecord" }
+              }
             }
           },
           "404": { "description": "No family with that id." }
@@ -107,18 +118,45 @@
         "description": "Slim projection of a family. Superset of the fields most queries filter and rank on.",
         "required": ["id", "name", "designer", "category", "subsets"],
         "properties": {
-          "id": { "type": "string", "description": "Lowercased family name with spaces removed; the /catalog/{id}.json key." },
+          "id": {
+            "type": "string",
+            "description": "Lowercased family name with spaces removed; the /catalog/{id}.json key."
+          },
           "name": { "type": "string" },
           "designer": { "type": "string" },
-          "class": { "type": "string", "description": "Coarse style class, e.g. Sans, Serif, Display." },
-          "category": { "type": "string", "description": "Google category, e.g. SANS_SERIF, SERIF, DISPLAY, HANDWRITING, MONOSPACE." },
-          "license": { "type": "string", "description": "OFL, Apache, or UFL." },
+          "class": {
+            "type": "string",
+            "description": "Coarse style class, e.g. Sans, Serif, Display."
+          },
+          "category": {
+            "type": "string",
+            "description": "Google category, e.g. SANS_SERIF, SERIF, DISPLAY, HANDWRITING, MONOSPACE."
+          },
+          "license": {
+            "type": "string",
+            "description": "OFL, Apache, or UFL."
+          },
           "isVariable": { "type": "boolean" },
-          "subsets": { "type": "array", "items": { "type": "string" }, "description": "Unicode subsets, e.g. latin, cyrillic, devanagari." },
+          "subsets": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Unicode subsets, e.g. latin, cyrillic, devanagari."
+          },
           "weights": { "type": "array", "items": { "type": "integer" } },
-          "axes": { "type": "array", "description": "Variable-font axes with ranges.", "items": { "type": "object" } },
-          "features": { "type": "array", "items": { "type": "string" }, "description": "OpenType feature tags." },
-          "tags": { "type": "object", "description": "Subjective style scores that make mood/feel queries answerable." },
+          "axes": {
+            "type": "array",
+            "description": "Variable-font axes with ranges.",
+            "items": { "type": "object" }
+          },
+          "features": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "OpenType feature tags."
+          },
+          "tags": {
+            "type": "object",
+            "description": "Subjective style scores that make mood/feel queries answerable."
+          },
           "popularityRank": { "type": ["integer", "null"] }
         }
       },

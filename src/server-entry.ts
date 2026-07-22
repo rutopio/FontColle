@@ -46,7 +46,9 @@ export default {
       const llms = env
         ? await env.fetch(new Request(new URL("/llms.txt", url)))
         : undefined;
-      const body = llms?.ok ? await llms.text() : "# FontColle\n\nSee /llms.txt";
+      const body = llms?.ok
+        ? await llms.text()
+        : "# FontColle\n\nSee /llms.txt";
       return new Response(body, {
         status: 200,
         headers: {

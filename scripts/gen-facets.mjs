@@ -16,7 +16,10 @@
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
+const ROOT = path.resolve(
+  path.dirname(new URL(import.meta.url).pathname),
+  ".."
+);
 
 // Per-record projection inside a slice: identity + the fields you still filter
 // or rank on after narrowing (tags drives mood ranking). Drops the metric detail
@@ -61,7 +64,9 @@ export async function genFacets() {
   const index = [];
 
   const writeSlice = async (dimension, value, records) => {
-    const safe = String(value).replace(/[^a-zA-Z0-9-]/g, "-").toLowerCase();
+    const safe = String(value)
+      .replace(/[^a-zA-Z0-9-]/g, "-")
+      .toLowerCase();
     const rel = `catalog/facets/${dimension}/${safe}.json`;
     const abs = path.join(ROOT, "public", rel);
     await mkdir(path.dirname(abs), { recursive: true });
@@ -105,8 +110,16 @@ export async function genFacets() {
   }
 
   // flags
-  await writeSlice("flag", "variable", slim.filter((f) => f.isVariable));
-  await writeSlice("flag", "monospace", slim.filter((f) => f.isMonospace));
+  await writeSlice(
+    "flag",
+    "variable",
+    slim.filter((f) => f.isVariable)
+  );
+  await writeSlice(
+    "flag",
+    "monospace",
+    slim.filter((f) => f.isMonospace)
+  );
   await writeSlice(
     "flag",
     "color",
