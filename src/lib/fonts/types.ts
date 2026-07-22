@@ -41,7 +41,10 @@ export interface FontRecord {
   // Writing-system / language coverage (todo: language-support task).
   languages: string[]; // supported lang ids, e.g. "en_Latn"
   scripts: string[]; // distinct scripts, e.g. "Latn", "Cyrl"
-  cjkCoverage: Record<string, number>; // lang id -> exemplar coverage ratio
+  // DETAIL-ONLY (see DETAIL_ONLY_FIELDS in scripts/gen-catalog.mjs). Present on
+  // records from public/catalog/<id>.json, absent from the shared catalog the
+  // list fetches, so these are optional and must be guarded before use.
+  cjkCoverage?: Record<string, number>; // lang id -> exemplar coverage ratio
   // Archival metadata (may be null for older/edge fonts).
   version: number | null;
   versionString: string | null;
@@ -67,20 +70,24 @@ export interface FontRecord {
   // (to_dataset.apply_published_signals), never a bare `lastModified`.
   lastModifiedApi: string | null;
   // Release timeline from google/fonts git history, ascending by date.
-  versionHistory: { version: string; date: string }[];
+  // DETAIL-ONLY, see cjkCoverage above.
+  versionHistory?: { version: string; date: string }[];
   specimen: string | null; // native-script sample text (null for Latin-only)
   // Google Fonts family "about" prose (HTML), from the metadata endpoint. Null
   // when Google has no description for the family.
-  about: string | null;
+  // DETAIL-ONLY, see cjkCoverage above.
+  about?: string | null;
   // Per-designer bios/avatars from the metadata endpoint. Empty when none.
-  designerProfiles: {
+  // DETAIL-ONLY, see cjkCoverage above.
+  designerProfiles?: {
     name: string | null;
     bio: string | null; // HTML
     imageUrl: string | null;
   }[];
   // OFL copyright header (per-family); null for Apache/UFL. The License tab
   // prepends it to the shared boilerplate for that license.
-  licenseHeader: string | null;
+  // DETAIL-ONLY, see cjkCoverage above.
+  licenseHeader?: string | null;
   // Google Fonts classification tags (google/fonts tags CSV, e.g.
   // "/Serif/Fat Face"), not exposed by the Developer API. Scores are 0-100.
   // Empty for families the CSV doesn't cover.

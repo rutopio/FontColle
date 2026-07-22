@@ -32,7 +32,7 @@ export function DesignerPanel({
   // Bios/avatars come keyed by designer name from the metadata endpoint; match
   // by trimmed name so each credit can show its profile.
   const profileByName = new Map(
-    font.designerProfiles
+    (font.designerProfiles ?? [])
       .filter((p) => p.name)
       .map((p) => [p.name?.trim() ?? "", p])
   );

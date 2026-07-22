@@ -62,6 +62,10 @@ export function Detail({
 }) {
   const { text, setText } = usePreview();
   const router = useRouter();
+  // Detail-only field: absent from the shared list catalog, always present on
+  // the per-font record this page loads. See DETAIL_ONLY_FIELDS in
+  // scripts/gen-catalog.mjs.
+  const versionHistory = font.versionHistory ?? [];
   // useCanGoBack() reads the browser history, which the server can't see: it's
   // false on the server (so the back control SSRs as a plain <a> Link) but may
   // be true right after hydration, and swapping <a> -> <button> mid-hydration
@@ -124,7 +128,7 @@ export function Detail({
     font.dateAdded && {
       label: "Added",
       value: formatDate(font.dateAdded),
-      badge: versionOnDate(font.versionHistory, font.dateAdded) ?? undefined,
+      badge: versionOnDate(versionHistory, font.dateAdded) ?? undefined,
     },
     // Two different dates, deliberately both shown: Google's publish date moves
     // on any release (a metadata pass bumps it library-wide), while the binary's
@@ -413,16 +417,14 @@ export function Detail({
             <Panel
               label="Version history"
               count={
-                font.versionHistory.length > 0
-                  ? font.versionHistory.length
-                  : undefined
+                versionHistory.length > 0 ? versionHistory.length : undefined
               }
               className="md:col-span-1"
             >
-              {font.versionHistory.length > 0 ? (
+              {versionHistory.length > 0 ? (
                 <Table>
                   <TableBody>
-                    {[...font.versionHistory].reverse().map((v) => (
+                    {[...versionHistory].reverse().map((v) => (
                       <TableRow key={v.version}>
                         <TableCell className="px-0 py-1.5 font-mono text-sm">
                           v{v.version}

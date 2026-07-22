@@ -1,11 +1,15 @@
 // Generates the static font data the site serves at build time, from the
 // authoritative src/data/fonts.json:
 //
-//   public/catalog.json          - every published FontRecord (home page fetches
-//                                   this and filters client-side).
-//   public/catalog/<id>.json     - one FontRecord per published family (the
-//                                   detail page's SSR loader fetches just the one
-//                                   it needs, so it never loads the whole catalog).
+//   public/catalog.json          - every published FontRecord minus the
+//                                   detail-only fields (home page fetches this
+//                                   and filters client-side). See
+//                                   DETAIL_ONLY_FIELDS below.
+//   public/catalog/<id>.json     - one COMPLETE FontRecord per published family
+//                                   (the detail page's SSR loader fetches just the
+//                                   one it needs, so it never loads the whole
+//                                   catalog). This is why the shared catalog can
+//                                   drop those fields without losing anything.
 //                                   Kept out of public/fonts/, which holds the
 //                                   site's own UI webfonts.
 //   public/designer-index.json   - {id, name, designer}[] for published families
@@ -47,8 +51,27 @@ export async function genCatalog() {
     .filter((f) => f?.isPublished ?? true)
     .sort((a, b) => a.name.localeCompare(b.name));
 
+  // Fields the list view never reads: they exist only for the detail page, which
+  // fetches its own complete public/catalog/<id>.json and so already has them.
+  // Shipping them in the shared catalog made every visitor download ~2.4 MB of
+  // per-family prose and profiles to render a grid of names — a fifth of the
+  // payload, on the critical path to first render. `languages` stays despite
+  // being the single fattest field: the sidebar's language facet filters on it.
+  const DETAIL_ONLY_FIELDS = [
+    "designerProfiles",
+    "about",
+    "licenseHeader",
+    "versionHistory",
+    "cjkCoverage",
+  ];
+  const forList = (f) => {
+    const out = { ...f };
+    for (const k of DETAIL_ONLY_FIELDS) delete out[k];
+    return out;
+  };
+
   // Minified (no whitespace) to keep the transfer small; the browser parses it.
-  const catalog = JSON.stringify(fonts);
+  const catalog = JSON.stringify(fonts.map(forList));
   // Plain path stays for backward-compat + fallback (see catalog.ts).
   await writeFile(path.join(ROOT, "public/catalog.json"), catalog, "utf8");
   console.log(
@@ -193,8 +216,10 @@ export async function genCatalog() {
     // first-page pending state renders empty. Blanked (not omitted) so records
     // still satisfy FontRecord. This keeps the loader's payload a few tens of KB,
     // honouring the Error 1102 constraint, while every field the cards touch
-    // stays intact.
-    .map((f) => ({ ...f, languages: [] }));
+    // stays intact. The detail-only fields go too, for the same reason they are
+    // stripped from the catalog above — and it matters more here, because this
+    // slice is serialized into the SSR HTML of every default `/` document.
+    .map((f) => ({ ...forList(f), languages: [] }));
   const firstJson = JSON.stringify(firstPage);
   await writeFile(
     path.join(ROOT, "public/catalog-first.json"),
