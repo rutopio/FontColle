@@ -46,7 +46,9 @@ export function PresetSection({
         canSort={false}
         sort="count"
         onToggleSort={() => {}}
-        info="Saved filter combinations, stored on this device only. Applying one replaces the current filters but keeps your sort order and favorites view."
+        // No `info`: the other panels explain where their data comes from, but
+        // presets are the user's own, and the save popover already states the
+        // device-local / keeps-your-sort caveat at the point it matters.
       />
 
       {presets.length === 0 ? (
