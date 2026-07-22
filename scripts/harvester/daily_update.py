@@ -173,8 +173,8 @@ def main():
         for rec in new_records:
             # Carry the google/fonts classification scores across the replace.
             # They come from the tags CSV (backfill_tags.py), not the harvest, so
-            # a fresh record has tags={} — and `class` is derived from them, so
-            # dropping the scores would silently demote e.g. Inconsolata from
+            # a fresh record has tags={} — and `category` is derived from them,
+            # so dropping the scores would silently demote e.g. Inconsolata from
             # Mono back to whatever the API category says. See
             # [[reharvest-drops-backfills]].
             prev = by_id.get(rec["id"])
