@@ -1,5 +1,12 @@
 import { BookmarkSimpleIcon, XIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import type { FilterSearch } from "@/lib/fonts/filter";
 import {
   type FilterPreset,
@@ -52,10 +59,23 @@ export function PresetSection({
       />
 
       {presets.length === 0 ? (
-        <p className="text-muted-foreground text-xs leading-relaxed">
-          Filter the catalog, then use “Save to Preset” above the results to
-          keep that combination here.
-        </p>
+        // Matches the results list's own empty state (icon tile, title,
+        // description), so an empty panel reads as a deliberate state rather
+        // than a section that failed to render. flex-1 is dropped: this sits in
+        // a stacked panel, not a filling column, so it should take only the
+        // height it needs.
+        <Empty className="flex-none gap-3 border border-input border-dashed px-4 py-8">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <BookmarkSimpleIcon />
+            </EmptyMedia>
+            <EmptyTitle>No presets yet</EmptyTitle>
+            <EmptyDescription className="text-xs">
+              Filter the catalog, then use “Save to Preset” above the results to
+              keep that combination here.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       ) : (
         <ul className="flex flex-col gap-1">
           {presets.map((preset) => (
