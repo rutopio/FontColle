@@ -7,15 +7,10 @@ import {
   RulerIcon,
   ShapesIcon,
   SmileyMeltingIcon,
-  TagIcon,
   TranslateIcon,
   UserIcon,
 } from "@phosphor-icons/react";
-import {
-  classificationGroupOf,
-  type FilterState,
-  FONT_TYPE_FACETS,
-} from "@/lib/fonts/filter";
+import { classificationGroupOf, type FilterState } from "@/lib/fonts/filter";
 
 // The filter panel used to stack every section in one long scroll. It's now
 // split into groups, one per icon-rail button: the rail switches which group
@@ -23,7 +18,6 @@ import {
 // the rail badge so a selection made in a hidden group is still visible.
 export type FilterGroupId =
   | "style"
-  | "tag"
   | "mood"
   | "language"
   | "color"
@@ -41,9 +35,9 @@ export interface FilterGroup {
 }
 
 // Rail order, top to bottom: Style, Variant, Language, Color, Feature,
-// Designer, Metric, Mood, More, Tag. Style leads because form (Serif / Sans /
+// Designer, Metric, Mood, More. Style leads because form (Serif / Sans /
 // Script) is the most common entry point into browsing; the broad,
-// browse-everything panels (Mood, Tag) sit at the bottom.
+// browse-everything panel (Mood) sits near the bottom.
 export const FILTER_GROUPS: FilterGroup[] = [
   {
     id: "style",
@@ -108,25 +102,13 @@ export const FILTER_GROUPS: FilterGroup[] = [
     icon: DotsThreeOutlineIcon,
     keys: ["license", "repoHosts", "activity"],
   },
-  // Natural-language trait tags: one flat list of plain-language pills
-  // (Ligatures, Monospace, Colorful, Noto, Latin, Static/Variable, …). The Tag
-  // panel owns the whole `tags` state; Font type is also shown as a radio in
-  // the Variant panel (group id "axes"), backed by the same state.
-  {
-    id: "tag",
-    label: "Tag",
-    icon: TagIcon,
-    keys: ["tags"],
-  },
 ];
 
 // The rail opens on Style, which is also the first button in the rail.
 export const DEFAULT_FILTER_GROUP: FilterGroupId = "style";
 
-// `tags` is shared by two panels: the Tag panel shows the whole list (so its
-// badge counts every selected tag), while the Variant panel (group id "axes")
-// shows only static/variable as a Font type radio (so its badge counts just
-// those). Split accordingly.
+// `tags` now has a single entry point: the Variant panel's Font type radio
+// (static/variable). Every other key counts its own length.
 function countKey(
   group: FilterGroup,
   key: keyof Omit<FilterState, "query">,
@@ -146,13 +128,7 @@ function countKey(
     const want = group.id === "mood" ? "mood" : "style";
     return filter.style.filter((t) => classificationGroupOf(t) === want).length;
   }
-  if (key !== "tags") return filter[key].length;
-  if (group.id === "axes") {
-    const isFontType = (v: string) => FONT_TYPE_FACETS.includes(v);
-    return filter.tags.filter(isFontType).length;
-  }
-  // Tag panel: every selected tag (font-type pills included).
-  return filter.tags.length;
+  return filter[key].length;
 }
 
 // How many values the group's own filter keys currently hold.

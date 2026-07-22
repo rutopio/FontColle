@@ -12,7 +12,6 @@ export type MatchMode = "any" | "all";
 // would be a no-op or would always empty the results.
 export type ModeKey =
   | "style"
-  | "tags"
   | "features"
   | "axes"
   | "scripts"
@@ -24,7 +23,6 @@ export type ModeKey =
 
 export const MODE_KEYS: ModeKey[] = [
   "style",
-  "tags",
   "features",
   "axes",
   "scripts",
@@ -41,7 +39,6 @@ export const MODE_KEYS: ModeKey[] = [
 // selecting Light + Bold asks for families shipping both cuts.
 export const SECTION_DEFAULT_MODE: Record<ModeKey, MatchMode> = {
   style: "any",
-  tags: "all",
   features: "all",
   axes: "all",
   scripts: "all",

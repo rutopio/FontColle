@@ -103,26 +103,19 @@ describe("applyFilters, class", () => {
   });
 });
 
-describe("applyFilters, tags (AND default, OR toggle)", () => {
-  const both = font({ name: "Both", facets: ["ligatures", "small-caps"] });
-  const one = font({ name: "One", facets: ["ligatures"] });
-  const fonts = [both, one];
-  it("AND-mode requires every selected tag", () => {
-    const out = applyFilters(
-      fonts,
-      filter({ tags: ["ligatures", "small-caps"] })
-    );
-    expect(names(out)).toEqual(["Both"]);
-  });
-  it("any-mode requires at least one selected tag", () => {
-    const out = applyFilters(
-      fonts,
-      filter({
-        tags: ["ligatures", "small-caps"],
-        matchModes: { tags: "any" },
-      })
-    );
-    expect(names(out)).toEqual(["Both", "One"]);
+// `tags` now backs only the Font type radio, so it carries at most one value.
+describe("applyFilters, tags (Font type radio)", () => {
+  const fonts = [
+    font({ name: "V", facets: ["variable", "ligatures"] }),
+    font({ name: "S", facets: ["static"] }),
+  ];
+  it("keeps only families carrying the selected font type", () => {
+    expect(names(applyFilters(fonts, filter({ tags: ["variable"] })))).toEqual([
+      "V",
+    ]);
+    expect(names(applyFilters(fonts, filter({ tags: ["static"] })))).toEqual([
+      "S",
+    ]);
   });
 });
 

@@ -14,7 +14,8 @@ import {
 export interface FilterState {
   query: string;
   classes: string[]; // primary class, OR within
-  tags: string[]; // Tag-panel facet tags, AND across
+  // Font type facet, radio-style: 0 or 1 of "static" | "variable".
+  tags: string[];
   features: string[]; // OpenType feature tags, AND across
   axes: string[]; // axis tags, AND across
   weights: string[]; // standard weight steps ("100".."900"), OR within
@@ -94,10 +95,9 @@ export const emptyFilter: FilterState = {
   matchModes: {},
 };
 
-// The two facet values that say whether a family is a variable font. They
-// live in `tags` like any other Tag-panel value, but the UI surfaces them as
-// their own radio pair (Axes > Font type) rather than as pills in Tag, so
-// buildFacetIndex keeps them out of the `tags` list it emits.
+// The two facet values that say whether a family is a variable font. They are
+// the only values `tags` holds, surfaced as the Variant panel's Font type
+// radio.
 export const FONT_TYPE_FACETS = ["static", "variable"];
 
 // URL search-param shape. Param names track the field's meaning (and, where a
@@ -107,7 +107,10 @@ export const FONT_TYPE_FACETS = ["static", "variable"];
 export interface FilterSearch {
   q?: string;
   category?: string; // primary class ("Serif", "Sans", …), the Category cards
-  tag?: string; // trait facet tags, "_"-joined
+  // Font type facet ("static" | "variable"). Named `tag` because the retired
+  // Tag panel wrote the whole facet list here; kept so links shared before its
+  // removal still decode (unknown facets simply match nothing).
+  tag?: string;
   feature?: string; // OpenType feature tags
   axis?: string; // variable-axis tags
   weight?: string;

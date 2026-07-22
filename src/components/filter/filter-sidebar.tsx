@@ -3,7 +3,6 @@ import {
   BookmarkSimpleIcon,
   SlidersHorizontalIcon,
   SmileyMeltingIcon,
-  TagIcon,
   TextAaIcon,
   TextItalicIcon,
 } from "@phosphor-icons/react";
@@ -25,7 +24,7 @@ import { CardGrid } from "./card-grid";
 import { CategoryCards } from "./category-cards";
 import { ClassificationSection } from "./classification-section";
 import { ColorFormatSection, ColorSection } from "./color-section";
-import { facetLabel, weightLabel, widthLabel } from "./constants";
+import { weightLabel, widthLabel } from "./constants";
 import { DesignerSection } from "./designer-section";
 import { FeatureSection } from "./feature-section";
 import { FontTypeSection } from "./font-type-section";
@@ -42,7 +41,6 @@ import {
 import { NotoSection } from "./noto-section";
 import { RadioPillSection } from "./radio-pill-section";
 import { RepositorySection } from "./repository-section";
-import { Section } from "./section";
 import { VariableAxesSection } from "./variable-axes-section";
 import { WritingSystemSection } from "./writing-system-section";
 
@@ -266,22 +264,6 @@ export function FilterSidebar({
                 }
                 mode={modeOf("style")}
                 onToggleMode={() => toggleMode("style")}
-              />
-            )}
-            {group === "tag" && (
-              // One flat list of natural-language trait pills, static/variable
-              // included. Font type also lives in Axes as a radio (same state).
-              <Section
-                title="Tag"
-                icon={TagIcon}
-                items={index.tags}
-                selected={filter.tags}
-                onToggle={(v) => toggle("tags", v)}
-                onReset={() => clearSection("tags", index.tags)}
-                label={facetLabel}
-                expandAll
-                mode={modeOf("tags")}
-                onToggleMode={() => toggleMode("tags")}
               />
             )}
             {group === "color" && (

@@ -21,7 +21,7 @@ import {
 const fullFilter: FilterState = {
   query: "noto sans",
   classes: ["Serif", "Sans"],
-  tags: ["ligatures", "small-caps"],
+  tags: ["variable"], // Font type radio, at most one value
   features: ["liga", "smcp"],
   axes: ["wght", "wdth"],
   weights: ["400", "700"],
@@ -55,7 +55,7 @@ const fullFilter: FilterState = {
     fileSize: [16384, 353980],
   },
   hasHinting: true,
-  matchModes: { tags: "any", style: "all" }, // both differ from default
+  matchModes: { features: "any", style: "all" }, // both differ from default
 };
 
 describe("searchToFilter(filterToSearch(f)) round-trip", () => {
@@ -121,11 +121,11 @@ describe("filterToSearch normalization", () => {
   });
 
   it("drops matchMode entries equal to the section default", () => {
-    // tags defaults to "all"; setting it explicitly to "all" is redundant and
-    // must not appear in the URL.
+    // features defaults to "all"; setting it explicitly to "all" is redundant
+    // and must not appear in the URL.
     const s = filterToSearch({
       ...emptyFilter,
-      matchModes: { tags: "all", style: "any" },
+      matchModes: { features: "all", style: "any" },
     });
     // style default is "any", so it's also dropped -> no mode param.
     expect(s.mode).toBeUndefined();
@@ -134,9 +134,9 @@ describe("filterToSearch normalization", () => {
   it("keeps only non-default matchMode entries", () => {
     const s = filterToSearch({
       ...emptyFilter,
-      matchModes: { tags: "any" }, // default is "all", so kept
+      matchModes: { features: "any" }, // default is "all", so kept
     });
-    expect(s.mode).toBe("tags:any");
+    expect(s.mode).toBe("features:any");
   });
 
   it("joins list params with underscore, designer/lang with comma", () => {
@@ -263,8 +263,10 @@ describe("searchToFilter reverse-direction edge cases", () => {
   });
 
   it("ignores unknown mode keys and invalid modes", () => {
-    const f = searchToFilter({ mode: "bogus:any,tags:sideways,tags:any" });
-    expect(f.matchModes).toEqual({ tags: "any" });
+    const f = searchToFilter({
+      mode: "bogus:any,features:sideways,features:any",
+    });
+    expect(f.matchModes).toEqual({ features: "any" });
   });
 
   it("reverse round-trips a search back to itself", () => {
@@ -278,18 +280,18 @@ describe("searchToFilter reverse-direction edge cases", () => {
       style: "Sans.Humanist",
       xheight: "0.45-0.55",
       hinting: "hinted",
-      mode: "tags:any",
+      mode: "features:any",
     };
     expect(filterToSearch(searchToFilter(canonical))).toEqual(canonical);
   });
 
   // FINDING (documented, not a change): mode:pairs whose key is valid but whose
   // value equals the section default are dropped on decode, so a hand-typed
-  // ?mode=tags:all yields an empty matchModes, which then re-encodes to no
+  // ?mode=features:all yields an empty matchModes, which then re-encodes to no
   // mode param. This is intentional (defaults stay implicit) but means the raw
   // search string is NOT byte-preserved for redundant modes.
   it("drops a redundant (default-valued) mode pair on decode", () => {
-    expect(searchToFilter({ mode: "tags:all" }).matchModes).toEqual({});
+    expect(searchToFilter({ mode: "features:all" }).matchModes).toEqual({});
   });
 });
 

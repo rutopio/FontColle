@@ -76,7 +76,10 @@ export function describeActiveFilters(f: FilterState): FilterChip[] {
   ) => chips.push({ id, section, value, key, rawValue });
 
   for (const v of f.classes) push(`class:${v}`, "Category", v, "classes", v);
-  for (const v of f.tags) push(`facet:${v}`, "Tag", facetLabel(v), "tags", v);
+  // `tags` now holds only the Font type radio (static/variable), so its chip
+  // reads as that section rather than the retired Tag panel.
+  for (const v of f.tags)
+    push(`facet:${v}`, "Font type", facetLabel(v), "tags", v);
   for (const v of f.style)
     push(
       `cls:${v}`,

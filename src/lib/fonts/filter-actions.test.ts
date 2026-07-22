@@ -55,24 +55,24 @@ describe("weight/width <-> variable-axis mutual exclusion still holds", () => {
 });
 
 describe("mode override is dropped once its section empties", () => {
-  it("clearSection drops a non-default tags mode", () => {
-    let f = { ...emptyFilter, tags: ["ligatures", "fractions"] };
-    f = toggleMatchMode(f, "tags"); // tags -> "any" (non-default)
-    expect(f.matchModes.tags).toBe("any");
-    f = clearSection(f, "tags", [
-      ["ligatures", 1],
-      ["fractions", 1],
+  it("clearSection drops a non-default features mode", () => {
+    let f = { ...emptyFilter, features: ["liga", "frac"] };
+    f = toggleMatchMode(f, "features"); // features -> "any" (non-default)
+    expect(f.matchModes.features).toBe("any");
+    f = clearSection(f, "features", [
+      ["liga", 1],
+      ["frac", 1],
     ]);
-    expect(f.tags).toEqual([]);
-    expect(f.matchModes.tags).toBeUndefined(); // no stale ?mode=tags:any
+    expect(f.features).toEqual([]);
+    expect(f.matchModes.features).toBeUndefined(); // no stale ?mode=features:any
   });
 
-  it("toggling the last tag off drops the mode too", () => {
-    let f = toggle(emptyFilter, "tags", "ligatures");
-    f = toggleMatchMode(f, "tags");
-    f = toggle(f, "tags", "ligatures"); // remove the only value
-    expect(f.tags).toEqual([]);
-    expect(f.matchModes.tags).toBeUndefined();
+  it("toggling the last feature off drops the mode too", () => {
+    let f = toggle(emptyFilter, "features", "liga");
+    f = toggleMatchMode(f, "features");
+    f = toggle(f, "features", "liga"); // remove the only value
+    expect(f.features).toEqual([]);
+    expect(f.matchModes.features).toBeUndefined();
   });
 
   it("clearing the axes section (via Static) drops a non-default axes mode", () => {
@@ -93,10 +93,10 @@ describe("mode override is dropped once its section empties", () => {
   });
 
   it("keeps the mode while the section still holds a value", () => {
-    let f = { ...emptyFilter, tags: ["ligatures", "fractions"] };
-    f = toggleMatchMode(f, "tags");
-    f = clearSection(f, "tags", [["ligatures", 1]]); // one value remains
-    expect(f.tags).toEqual(["fractions"]);
-    expect(f.matchModes.tags).toBe("any"); // still meaningful, kept
+    let f = { ...emptyFilter, features: ["liga", "frac"] };
+    f = toggleMatchMode(f, "features");
+    f = clearSection(f, "features", [["liga", 1]]); // one value remains
+    expect(f.features).toEqual(["frac"]);
+    expect(f.matchModes.features).toBe("any"); // still meaningful, kept
   });
 });

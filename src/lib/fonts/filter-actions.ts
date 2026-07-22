@@ -213,9 +213,9 @@ export function toggleMatchMode(
   return { ...filter, matchModes };
 }
 
-/** Clear only the values a given section shows. Several sections share one
- *  FilterState key (Tag and Font type both live in `tags`), so scope
- *  the reset to the items that section actually renders. */
+/** Clear only the values a given section shows. Sections can share one
+ *  FilterState key (Style and Mood both live in `style`), so scope the reset
+ *  to the items that section actually renders. */
 export function clearSection(
   filter: FilterState,
   key: ArrayKey,

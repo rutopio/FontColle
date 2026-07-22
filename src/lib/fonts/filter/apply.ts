@@ -197,10 +197,9 @@ export function applyFilters(
   // and orders in one step. applyFilters is the pure facet gate.
   return fonts.filter((font) => {
     if (f.classes.length && !f.classes.includes(font.class)) return false;
-    if (
-      f.tags.length &&
-      !combine("tags", f.tags, (x) => font.facets.includes(x))
-    )
+    // Font type (static/variable) is radio-style, so at most one value: a plain
+    // every() needs no combine mode.
+    if (f.tags.length && !f.tags.every((x) => font.facets.includes(x)))
       return false;
     if (
       f.features.length &&
