@@ -113,8 +113,37 @@ jobs:
             echo "changed=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Refresh classification tags and derived Category class
+        id: classify
+        run: |
+          # `tags` (the google/fonts classification scores) and the `class`
+          # derived from them are NOT produced by the harvest: to_record() only
+          # sees the webfonts API, whose `category` is coarser than the tag tree
+          # Google's own site browses by. Both steps must therefore re-run on
+          # every harvest, or a re-harvested family silently reverts (Inconsolata
+          # scores /Monospace 100 but its API category is SANS_SERIF, so it would
+          # drop from Mono back to Sans). See [[reharvest-drops-backfills]].
+          #
+          # Runs unconditionally, not behind supplement.outputs.changed: the tags
+          # CSV is updated upstream on its own cadence, so a repo-quiet day can
+          # still move a family between Category cards. Both scripts are
+          # idempotent and cost ~10s combined.
+          #
+          # Checksum around them so a tags-only day still deploys: without this
+          # the reclassified fonts.json would sit on the runner unpublished, and
+          # every later run would redo the same work forever.
+          before=$(shasum -a 256 src/data/fonts.json | cut -d' ' -f1)
+          python3 scripts/harvester/backfill_tags.py 2>&1 | tee -a update.log
+          python3 scripts/harvester/backfill_form_class.py 2>&1 | tee -a update.log
+          after=$(shasum -a 256 src/data/fonts.json | cut -d' ' -f1)
+          if [ "$before" != "$after" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Guard against catalog shrinkage
-        if: steps.supplement.outputs.changed == 'true'
+        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'
         env:
           # The guard imports scripts/lib/r2.mjs (for the manifest helpers),
           # which requires an account id at module load even when it makes no
@@ -131,7 +160,7 @@ jobs:
           node scripts/shrinkage-guard.mjs
 
       - name: Regenerate OG cards for newly harvested families
-        if: steps.supplement.outputs.changed == 'true'
+        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'
         run: |
           # Only newly added/updated families need a fresh card (rank shifts
           # don't change the image). Skip when none were harvested.
@@ -142,7 +171,7 @@ jobs:
           fi
 
       - name: Publish assets to R2
-        if: steps.supplement.outputs.changed == 'true'
+        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -155,7 +184,7 @@ jobs:
           node scripts/publish-assets.mjs --daily --og-ids=scripts/harvester/og_ids.txt
 
       - name: Commit updated manifest
-        if: steps.supplement.outputs.changed == 'true'
+        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"

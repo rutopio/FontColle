@@ -171,6 +171,15 @@ def main():
         harvested_ids = {r["id"] for r in new_records}
         by_id = {r["id"]: r for r in dataset}
         for rec in new_records:
+            # Carry the google/fonts classification scores across the replace.
+            # They come from the tags CSV (backfill_tags.py), not the harvest, so
+            # a fresh record has tags={} — and `class` is derived from them, so
+            # dropping the scores would silently demote e.g. Inconsolata from
+            # Mono back to whatever the API category says. See
+            # [[reharvest-drops-backfills]].
+            prev = by_id.get(rec["id"])
+            if prev and prev.get("tags") and not rec.get("tags"):
+                rec["tags"] = prev["tags"]
             by_id[rec["id"]] = rec  # replace or insert
         dataset = list(by_id.values())
 
