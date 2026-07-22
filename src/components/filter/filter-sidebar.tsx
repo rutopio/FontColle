@@ -22,6 +22,7 @@ import {
 } from "@/lib/fonts/filter";
 import * as actions from "@/lib/fonts/filter-actions";
 import { useScrollReset } from "@/lib/use-scroll-reset";
+import { cn } from "@/lib/utils";
 import { CardGrid } from "./card-grid";
 import { CategoryCards } from "./category-cards";
 import { ClassificationSection } from "./classification-section";
@@ -226,7 +227,14 @@ export function FilterSidebar({
         >
           <motion.div
             key={group}
-            className="flex flex-col gap-12 p-4"
+            className={cn(
+              "flex flex-col gap-12 p-4",
+              // Preset's empty state centres itself vertically, which needs a
+              // height to centre in. Only this group asks for it: every other
+              // panel is a tall scrolling list, and forcing a min-height there
+              // would stretch short panels for no reason.
+              group === "preset" && "min-h-full"
+            )}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 0 }}

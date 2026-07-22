@@ -42,7 +42,10 @@ export function PresetSection({
   const full = presets.length >= MAX_PRESETS;
 
   return (
-    <div className="flex flex-col gap-2">
+    // min-h-0 + flex-1 only matter when empty: the Empty block below claims the
+    // leftover height so it can centre in it. With presets listed, the list is
+    // content-height as usual and the flex-1 has nothing to stretch into.
+    <div className="flex min-h-0 flex-1 flex-col gap-2">
       <SectionHeader
         title="Preset"
         icon={BookmarkSimpleIcon}
@@ -61,10 +64,11 @@ export function PresetSection({
       {presets.length === 0 ? (
         // Matches the results list's own empty state (icon tile, title,
         // description), so an empty panel reads as a deliberate state rather
-        // than a section that failed to render. flex-1 is dropped: this sits in
-        // a stacked panel, not a filling column, so it should take only the
-        // height it needs.
-        <Empty className="flex-none gap-3 border border-input border-dashed px-4 py-8">
+        // than a section that failed to render. No border: the panel has no
+        // other framed block, so a box here would read as a card rather than as
+        // the panel's own resting state. Empty's flex-1 + justify-center then
+        // centre it in the height the wrapper above claimed.
+        <Empty className="gap-3 px-4">
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <BookmarkSimpleIcon />
