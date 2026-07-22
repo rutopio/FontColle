@@ -198,6 +198,11 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
     "grid"
   );
   const view: ViewMode = viewPref === "row" ? "row" : "grid";
+  // The view the grid currently shows. Like deferredFilter, it trails `view` by
+  // one fade so a grid<->row switch fades the list out, swaps layout while it's
+  // invisible, and fades back in — instead of the two layouts hard-cutting.
+  const [deferredView, setDeferredView] = useState(view);
+  const viewFading = view !== deferredView;
   const sort = (search.sort as SortKey) ?? DEFAULT_SORT;
   // Favorites-only view mode (rail heart toggle, ?fav=1). Narrows the result set
   // to hearted fonts; independent of the filter pills so it composes with them.
@@ -427,19 +432,21 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
           />
         )}
         {/* Opacity wrapper over the RESULTS only (list or empty state). A chip
-            change fades it to 0; its onAnimationComplete then commits the new
-            filter, so the results swap while invisible and fade back in.
-            Wrapping both branches (not just the list) keeps the commit firing
-            even when the result set is empty. Opacity only — no transform. */}
+            change OR a grid<->row switch fades it to 0; its onAnimationComplete
+            then commits the new filter / view, so the results swap while
+            invisible and fade back in. Wrapping both branches (not just the
+            list) keeps the commit firing even when the result set is empty.
+            Opacity only — no transform. */}
         <motion.div
           className="flex flex-1 flex-col"
-          animate={{ opacity: fading ? 0 : 1 }}
+          animate={{ opacity: fading || viewFading ? 0 : 1 }}
           transition={{ duration: MOTION_S.base, ease: EASE_OUT }}
           onAnimationComplete={() => {
             // Fires at the end of both directions; only the fade-OUT (still
-            // fading) should commit the live filter, flipping `fading` false and
-            // starting the fade back in.
+            // pending) should commit the live filter / view, flipping the
+            // pending flag false and starting the fade back in.
             if (fading) setDeferredFilter(filter);
+            if (viewFading) setDeferredView(view);
           }}
         >
           {results.length === 0 ? (
@@ -505,7 +512,7 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
               previewText={previewText}
               favorites={favorites}
               onToggleFavorite={toggle}
-              view={view}
+              view={deferredView}
               selection={deferredFilter}
               axisValues={axisValues}
               scrollRef={scrollRef}
