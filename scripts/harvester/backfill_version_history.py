@@ -23,7 +23,7 @@ already have a non-empty versionHistory are skipped unless --force.
 
 Usage:
     export $(grep GITHUB_TOKEN ../../.env)   # optional but recommended
-    python3 backfill_version_history.py [path/to/fonts.json] [--only NAME] [--force]
+    python3 backfill_version_history.py [path/to/fonts.json] [--only NAME] [--ids=a,b,c] [--force]
 """
 import json
 import os
@@ -170,6 +170,13 @@ def main():
     force = "--force" in argv
     if "--only" in argv:
         only = argv[argv.index("--only") + 1]
+    # --ids=a,b,c restricts to a set of family ids: the daily loop passes the
+    # newly harvested ones so a quiet day makes no git call. Distinct from
+    # --only (a single family NAME, dev/debug).
+    ids = None
+    for a in argv:
+        if a.startswith("--ids="):
+            ids = {s for s in a.split("=", 1)[1].split(",") if s}
     # Positional args are anything not a flag and not the --only value.
     skip = set()
     if only is not None:
@@ -188,6 +195,13 @@ def main():
     targets = []
     for r in records:
         if only and r.get("name") != only:
+            continue
+        if ids is not None:
+            # Explicit id set (daily loop): always reprocess these — they were
+            # just re-harvested, so a new release may have landed. Skip the
+            # resume-by-firstCommitDate shortcut for them.
+            if r.get("id") in ids and r.get("id"):
+                targets.append(r)
             continue
         if "firstCommitDate" in r and not force:
             continue

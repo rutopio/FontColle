@@ -125,17 +125,24 @@ jobs:
           # scores /Monospace 100 but its API category is SANS_SERIF, so it would
           # drop from Mono back to Sans). See [[reharvest-drops-backfills]].
           #
-          # Runs unconditionally, not behind supplement.outputs.changed: the tags
-          # CSV is updated upstream on its own cadence, so a repo-quiet day can
-          # still move a family between Category cards. Both scripts are
-          # idempotent and cost ~10s combined.
+          # contrast (google/fonts quant.csv) and displayName (the metadata batch
+          # endpoint) join the same window: each is a SINGLE upstream fetch then
+          # an in-memory join, not per-family, so running them whole-catalog every
+          # day is cheap and — like tags — catches an upstream refresh on a
+          # repo-quiet day AND fills the field for a newly harvested family
+          # (to_record leaves both null; they are not TTF-derived).
           #
-          # Checksum around them so a tags-only day still deploys: without this
-          # the reclassified fonts.json would sit on the runner unpublished, and
+          # Runs unconditionally, not behind supplement.outputs.changed: these
+          # sources update on their own cadence. All scripts are idempotent.
+          #
+          # Checksum around them so an upstream-only day still deploys: without
+          # this the refreshed fonts.json would sit on the runner unpublished, and
           # every later run would redo the same work forever.
           before=$(shasum -a 256 src/data/fonts.json | cut -d' ' -f1)
           python3 scripts/harvester/backfill_tags.py 2>&1 | tee -a update.log
           python3 scripts/harvester/backfill_form_category.py 2>&1 | tee -a update.log
+          python3 scripts/harvester/backfill_contrast.py 2>&1 | tee -a update.log
+          python3 scripts/harvester/backfill_display_names.py 2>&1 | tee -a update.log
           after=$(shasum -a 256 src/data/fonts.json | cut -d' ' -f1)
           if [ "$before" != "$after" ]; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
@@ -189,6 +196,29 @@ jobs:
           else
             echo "no families re-harvested; glyph coverage unchanged"
             echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Backfill repo-derived fields for newly harvested families
+        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'
+        env:
+          # version_history walks git history via the authenticated GitHub API
+          # (60 req/hr unauthenticated would stall). license fetches raw OFL.txt.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # licenseHeader (per-family OFL copyright) and versionHistory (release
+          # timeline from google/fonts git) are repo-derived, per-family fetches
+          # not carried by the harvest. Unlike contrast/displayName (one shared
+          # fetch, folded into classify above), these cost one request PER family,
+          # so they run ONLY over the newly harvested ids — a repo-quiet day makes
+          # no call. apiOnly families (no repo) simply resolve to null, which is
+          # correct for them. Scoped by --ids so the whole-catalog cost is never
+          # paid daily.
+          if [ -s scripts/harvester/og_ids.txt ]; then
+            ids=$(paste -sd, scripts/harvester/og_ids.txt)
+            python3 scripts/harvester/backfill_license.py --ids="$ids" 2>&1 | tee -a update.log
+            python3 scripts/harvester/backfill_version_history.py --ids="$ids" 2>&1 | tee -a update.log
+          else
+            echo "no families re-harvested; repo-derived fields unchanged"
           fi
 
       - name: Publish assets to R2

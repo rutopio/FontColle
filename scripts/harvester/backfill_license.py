@@ -18,7 +18,7 @@ duplicated license text on all ~2000 families.
 Independent backfill: a full reharvest drops licenseHeader, so re-run after one.
 
 Usage:
-    python3 backfill_license.py [path/to/fonts.json] [--limit N]
+    python3 backfill_license.py [path/to/fonts.json] [--limit N] [--ids=a,b,c]
 """
 import json
 import os
@@ -66,13 +66,24 @@ def main():
                 else int(sys.argv[sys.argv.index(a) + 1])
             )
 
+    ids = None
+    for a in sys.argv[1:]:
+        if a.startswith("--ids="):
+            ids = {s for s in a.split("=", 1)[1].split(",") if s}
+
     path = args[0] if args else os.path.join(
         os.path.dirname(__file__), "..", "..", "src", "data", "fonts.json"
     )
     path = os.path.abspath(path)
 
     records = json.load(open(path))
-    targets = records[:limit] if limit else records
+    # --ids restricts to a set of family ids (the daily loop passes the newly
+    # harvested ones, so a repo-quiet day makes no per-family license fetch);
+    # --limit takes the leading N (dev/debug). Absent both, the whole catalog.
+    if ids is not None:
+        targets = [r for r in records if r["id"] in ids]
+    else:
+        targets = records[:limit] if limit else records
 
     changed = 0
     for i, r in enumerate(targets):
