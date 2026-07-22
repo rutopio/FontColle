@@ -38,6 +38,11 @@
           "href": "https://fontcolle.com/designer-index.json",
           "type": "application/json",
           "title": "Families indexed by designer"
+        },
+        {
+          "href": "https://fontcolle.com/catalog/facets/index.json",
+          "type": "application/json",
+          "title": "Pre-sharded facet slices (fetch one small slice by class/subset/flag instead of the full catalog)"
         }
       ]
     }

@@ -53,6 +53,12 @@ await genSitemap();
 const { genCatalog } = await import("./gen-catalog.mjs");
 await genCatalog();
 
+// Emit public/catalog/facets/* (pre-sharded slices + index) from the slim
+// catalog genCatalog just wrote, so agents that read data into context can pull
+// one small slice instead of the 2 MB slim file. See gen-facets.mjs.
+const { genFacets } = await import("./gen-facets.mjs");
+await genFacets();
+
 const { createBuilder } = await import("vite");
 
 const builder = await createBuilder();

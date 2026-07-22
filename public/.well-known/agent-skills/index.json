@@ -6,7 +6,7 @@
       "type": "skill",
       "description": "Find and compare open-source Google Fonts families by style, OpenType features, variable axes, writing system, and subjective mood, using FontColle's static JSON catalog.",
       "url": "https://fontcolle.com/.well-known/agent-skills/find-fonts/SKILL.md",
-      "sha256": "b41bc9c9440ae64570a5212f2704cea02a0402b210cef50d8b7f68f7e5cb3fbf"
+      "sha256": "a873c44836f930ad8226df762869e4cb832ae28fcedd166836eee475de722a5f"
     }
   ]
 }
