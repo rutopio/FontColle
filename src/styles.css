@@ -121,7 +121,14 @@
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.4 0 0);
+  /* 0.37, not 0.40: at 0.40 this renders #787878, which is 4.42:1 on white —
+     just under the 4.5:1 WCAG AA floor for body text, so every muted label on
+     the site failed the contrast audit. The binding case is muted text on
+     --muted (#f5f5f5, e.g. the Grid/Row tab strip), where the lighter backdrop
+     needs roughly #707070 to clear AA; 0.37 covers both surfaces and still
+     reads as clearly secondary against --foreground. The dark theme's value is
+     already 7.7:1, so it is left alone. */
+  --muted-foreground: oklch(0.37 0 0);
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);

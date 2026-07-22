@@ -99,7 +99,11 @@ export function ActiveFilterChips({
             className="flex min-h-9 max-w-full flex-wrap items-center gap-x-1.5 gap-y-1 rounded-md border border-input px-2.5 py-2 text-left text-muted-foreground text-xs transition-colors hover:border-foreground hover:text-foreground md:min-h-8 md:py-1"
             aria-label={`Remove search: ${query}`}
           >
-            <span className="shrink-0 opacity-60">Search |</span>
+            {/* No opacity here: the chip is already text-muted-foreground and
+                the value beside it is text-foreground, so the hierarchy comes
+                from that pair. Dimming this further pushed it to 2.2:1, well
+                under the AA floor for text. */}
+            <span className="shrink-0">Search |</span>
             <span className="break-words text-foreground">{query}</span>
             <XIcon className="ml-auto size-3 shrink-0 opacity-60" />
           </motion.button>
@@ -124,12 +128,12 @@ export function ActiveFilterChips({
           >
             {/* shrink-0 keeps the section label whole on the first line; it
                 names the chip, so it should never be the part that wraps. */}
-            <span className="shrink-0 opacity-60">{group.section} |</span>
+            <span className="shrink-0">{group.section} |</span>
             {/* Values joined by the section's combine word; the joiner is muted
                 like the section label and flips with the OR/AND toggle. */}
             {group.values.map((v, i) => (
               <Fragment key={v.id}>
-                {i > 0 && <span className="opacity-60">{group.joiner}</span>}
+                {i > 0 && <span>{group.joiner}</span>}
                 <span className="break-words text-foreground">{v.value}</span>
               </Fragment>
             ))}

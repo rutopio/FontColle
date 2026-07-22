@@ -36,7 +36,12 @@ export function TabsList({
                 "relative z-0 flex w-fit items-center justify-center gap-x-0.5 text-muted-foreground",
                 "data-[orientation=vertical]:flex-col",
                 variant === "default"
-                    ? "rounded-lg bg-muted p-0.5 text-muted-foreground/72"
+                    // Full-strength muted, no /72 alpha: this list sits on
+                    // bg-muted, and fading the text against that lighter
+                    // backdrop dropped inactive tabs to 2.5:1. The active tab
+                    // is already distinguished by its raised white indicator
+                    // plus data-active:text-foreground.
+                    ? "rounded-lg bg-muted p-0.5"
                     : "data-[orientation=vertical]:px-1 data-[orientation=horizontal]:py-1 *:data-[slot=tabs-tab]:hover:bg-accent",
                 className,
             )}
