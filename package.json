@@ -2,6 +2,7 @@
   "name": "fontcolle",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@10.13.1",
   "engines": {
     "node": ">=24"
   },

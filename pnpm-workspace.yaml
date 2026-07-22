@@ -1,5 +1,13 @@
 packages: []
 
+# Wait a week after publish before a version is installable, so a compromised
+# release has time to be caught and yanked upstream.
+minimumReleaseAge: 10080
+
+# Fail the install on a Node older than package.json's engines field, so the
+# local/CI/.nvmrc versions cannot drift apart again.
+engineStrict: true
+
 # Packages allowed to run install scripts (pnpm 10 blocks them by default).
 # workerd is the Workers runtime behind `pnpm preview` / wrangler dev.
 onlyBuiltDependencies:

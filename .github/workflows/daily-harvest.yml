@@ -41,9 +41,10 @@ jobs:
         with:
           node-version: "24"
 
+      # No `version:` on purpose. action-setup falls back to package.json's
+      # `packageManager` field, so the runner's pnpm tracks the pinned version
+      # instead of floating on the latest 10.x.
       - uses: pnpm/action-setup@v6
-        with:
-          version: 10
 
       - uses: actions/setup-python@v6
         with:
