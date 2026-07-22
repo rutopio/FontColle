@@ -445,15 +445,9 @@ export function FilterSidebar({
             )}
             {group === "preset" && (
               <PresetSection
-                filter={filter}
-                // Encoded here rather than passed down: the same call produces
-                // both what a Save stores and what a stored preset is compared
-                // against, so the active-preset highlight can't drift from what
-                // saving would write.
+                // Encoded here rather than passed down, so the active-preset
+                // highlight is computed from the same call that a save writes.
                 currentSearch={currentSearch}
-                // The query counts: it round-trips through `q`, so a
-                // search-only filter is still worth saving.
-                hasFilters={Object.keys(currentSearch).length > 0}
                 onApply={onApplyPreset}
               />
             )}

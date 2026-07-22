@@ -1,8 +1,6 @@
-import { BookmarkSimpleIcon, CheckIcon, XIcon } from "@phosphor-icons/react";
-import { useState } from "react";
+import { BookmarkSimpleIcon, XIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import type { FilterSearch, FilterState } from "@/lib/fonts/filter";
+import type { FilterSearch } from "@/lib/fonts/filter";
 import {
   type FilterPreset,
   MAX_PRESETS,
@@ -10,27 +8,7 @@ import {
   usePresets,
 } from "@/lib/fonts/presets";
 import { cn } from "@/lib/utils";
-import { groupActiveFilters } from "./describe";
 import { SectionHeader } from "./section-header";
-
-// A default name for the filter about to be saved, built from the same section
-// groups the chip row shows: "Sans + Hant", "Serif + Latn +2". Reusing
-// groupActiveFilters means the suggestion always speaks the UI's own vocabulary,
-// and the user starts from something editable rather than an empty field.
-function suggestName(filter: FilterState): string {
-  const groups = groupActiveFilters(filter);
-  const query = filter.query.trim();
-  // Each group contributes its first value; a group with more says so once at
-  // the end, so the name stays short no matter how many pills are stacked.
-  const parts = groups.map((g) => g.values[0].value);
-  if (query) parts.unshift(query);
-  const extra =
-    groups.reduce((n, g) => n + g.values.length - 1, 0) +
-    Math.max(0, parts.length - 2);
-  const head = parts.slice(0, 2).join(" + ");
-  if (!head) return "Untitled";
-  return extra > 0 ? `${head} +${extra}` : head;
-}
 
 // How many conditions a saved preset holds, for its subtitle. Counts the search
 // params rather than re-deriving a FilterState: every key present in a stored
@@ -38,35 +16,23 @@ function suggestName(filter: FilterState): string {
 const conditionCount = (search: FilterSearch) =>
   Object.values(search).filter((v) => v !== undefined).length;
 
-// The Preset panel: save the current filter under a name, then re-apply it in
-// one click. Presets are device-local (localStorage), like favorites and the
-// view mode — a shared URL is still the way to hand a filter to someone else.
+// The Preset panel: lists saved filter combinations, applies one in a click,
+// and deletes them. Creating a preset happens elsewhere — the "Save to Preset"
+// popover at the end of the active-filter chip row is the single entry point,
+// so naming always happens next to the conditions being named. Presets are
+// device-local (localStorage), like favorites and the view mode; a shared URL
+// is still the way to hand a filter to someone else.
 export function PresetSection({
-  filter,
   currentSearch,
-  hasFilters,
   onApply,
 }: {
-  // Live filter, for the suggested name.
-  filter: FilterState;
   // The current filter encoded as search params, compared against each stored
   // preset to mark the active one.
   currentSearch: FilterSearch;
-  // False when nothing is filtered — there'd be nothing to save.
-  hasFilters: boolean;
   onApply: (search: FilterSearch) => void;
 }) {
-  const { presets, save, remove } = usePresets();
-  // The name field is only mounted while saving, so the suggestion is computed
-  // fresh from the filter as it stood when Save was clicked.
-  const [draft, setDraft] = useState<string | null>(null);
+  const { presets, remove } = usePresets();
   const full = presets.length >= MAX_PRESETS;
-
-  const commit = () => {
-    const name = (draft ?? "").trim();
-    if (name) save(name, currentSearch);
-    setDraft(null);
-  };
 
   return (
     <div className="flex flex-col gap-2">
@@ -83,14 +49,12 @@ export function PresetSection({
         info="Saved filter combinations, stored on this device only. Applying one replaces the current filters but keeps your sort order and favorites view."
       />
 
-      {presets.length === 0 && draft === null && (
+      {presets.length === 0 ? (
         <p className="text-muted-foreground text-xs leading-relaxed">
-          Set up a filter you use often, then save it here to bring it back in
-          one click.
+          Filter the catalog, then use “Save to Preset” above the results to
+          keep that combination here.
         </p>
-      )}
-
-      {presets.length > 0 && (
+      ) : (
         <ul className="flex flex-col gap-1">
           {presets.map((preset) => (
             <PresetRow
@@ -104,54 +68,7 @@ export function PresetSection({
         </ul>
       )}
 
-      {draft === null ? (
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full"
-          // Nothing filtered = nothing to save; a full list needs a delete first.
-          disabled={!hasFilters || full}
-          onClick={() => setDraft(suggestName(filter))}
-        >
-          <BookmarkSimpleIcon className="size-3.5" />
-          Save current filters
-        </Button>
-      ) : (
-        <div className="flex items-center gap-1">
-          {/* Autofocus is safe here: the field only exists after an explicit
-              Save click, and typing a name is the sole next step. */}
-          <Input
-            autoFocus
-            aria-label="Preset name"
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") commit();
-              if (e.key === "Escape") setDraft(null);
-            }}
-            className="flex-1"
-          />
-          <Button
-            variant="outline"
-            size="icon-sm"
-            aria-label="Save preset"
-            disabled={draft.trim().length === 0}
-            onClick={commit}
-          >
-            <CheckIcon className="size-3.5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Cancel"
-            onClick={() => setDraft(null)}
-          >
-            <XIcon className="size-3.5" />
-          </Button>
-        </div>
-      )}
-
-      {full && draft === null && (
+      {full && (
         <p className="text-muted-foreground text-xs">
           {MAX_PRESETS} presets saved, the maximum. Remove one to save another.
         </p>

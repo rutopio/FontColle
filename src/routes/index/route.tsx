@@ -505,6 +505,9 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
             filter={deferredFilter}
             onChange={commitFilter}
             align="left"
+            // Encoded from the SAME deferred filter the chips show, so what a
+            // save stores is exactly the conditions spelled out beside it.
+            currentSearch={filterToSearch(deferredFilter)}
           />
         )}
         {/* Opacity wrapper over the RESULTS only (list or empty state). A chip

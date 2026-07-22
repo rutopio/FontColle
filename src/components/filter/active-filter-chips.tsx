@@ -1,10 +1,11 @@
 import { XIcon } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from "motion/react";
 import { Fragment } from "react";
-import type { FilterState } from "@/lib/fonts/filter";
+import type { FilterSearch, FilterState } from "@/lib/fonts/filter";
 import { MOTION_S } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { groupActiveFilters } from "./describe";
+import { SavePresetPopover } from "./save-preset-popover";
 
 // Each chip fades in on add and out on remove; `layout="position"` slides the
 // survivors into the freed space so the row reflows smoothly.
@@ -30,11 +31,15 @@ export function ActiveFilterChips({
   filter,
   onChange,
   align = "center",
+  currentSearch,
 }: {
   filter: FilterState;
   onChange: (next: FilterState) => void;
   // "center" caps the width for the empty state; "left" fills the list header.
   align?: "center" | "left";
+  // Pass to offer "Save to Preset" as the row's last item. Omitted in the empty
+  // state, where a filter matching nothing isn't worth saving.
+  currentSearch?: FilterSearch;
 }) {
   const groups = groupActiveFilters(filter);
   // The text query is deliberately kept out of describeActiveFilters (it has its
@@ -135,6 +140,13 @@ export function ActiveFilterChips({
           </motion.button>
         ))}
       </AnimatePresence>
+      {/* Outside AnimatePresence: it is a persistent action, not a condition, so
+          it must not mount/unmount with the chips or take part in their
+          popLayout shuffle. Rendered only when something is actually filtered,
+          which is also the only time this row is visible in the list. */}
+      {currentSearch && filled && (
+        <SavePresetPopover filter={filter} currentSearch={currentSearch} />
+      )}
     </motion.div>
   );
 }
