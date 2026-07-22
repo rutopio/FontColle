@@ -363,6 +363,10 @@ export function Detail({
 
       {tab === "detail" && (
         <>
+          {/* METRICS, the derived style metrics FontColle filters on, with a
+              baseline/x-height/cap-height diagram. Full width. */}
+          <MetricsPanel font={font} />
+
           {/* SPECS + SUBSETS + WRITING SYSTEMS + VERSION HISTORY, one row, each
               a quarter-width column. */}
           <div className="grid gap-4 md:grid-cols-4">
@@ -428,10 +432,6 @@ export function Detail({
               )}
             </Panel>
           </div>
-
-          {/* METRICS, the derived style metrics FontColle filters on, with a
-              baseline/x-height/cap-height diagram. Full width. */}
-          <MetricsPanel font={font} />
 
           {/* LANGUAGES, full width. */}
           {font.languages.length > 0 && <LanguageSupport font={font} />}

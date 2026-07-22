@@ -84,7 +84,9 @@ export function searchByQuery(
   // With ranking info, `order` indexes into `info.idx`; without it (very short
   // needles that skip the info pass) `idxs` is already the match set.
   const ranked =
-    info && order ? order.map((o) => fonts[info.idx[o]]) : idxs.map((i) => fonts[i]);
+    info && order
+      ? order.map((o) => fonts[info.idx[o]])
+      : idxs.map((i) => fonts[i]);
   // Stable re-sort: literal name hits first, uFuzzy's relevance order within a
   // tier, and the shorter name wins a tie so "Noto Sans" precedes "Noto Sans TC".
   const lower = needle.toLowerCase();

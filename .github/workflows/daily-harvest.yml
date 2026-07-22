@@ -88,8 +88,33 @@ jobs:
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Supplement API-only families
+        id: supplement
+        env:
+          GOOGLE_FONTS_API_KEY: ${{ secrets.GOOGLE_FONTS_API_KEY }}
+        run: |
+          # daily_update.py only diffs the google/fonts repo tree, so the apiOnly
+          # families (Google Sans, Google Sans Flex, Edu Hand batch) served by the
+          # webfonts API but absent from the repo are never picked up there. This
+          # step re-harvests them from the API and merges into the same
+          # fonts.json, appending any changed ids to og_ids.txt. Idempotent: a
+          # no-op run reports supplement-changed=0. Runs AFTER daily_update (which
+          # writes fonts.json + og_ids.txt) and BEFORE the shrinkage guard (so the
+          # merged families are in the baseline the guard and publish see).
+          python3 scripts/harvester/harvest_api_supplement.py | tee -a update.log
+          # Combined change signal, the single gate the downstream steps read:
+          # true when EITHER the repo diff (update step) OR this supplement moved
+          # something. Repo-quiet days on which only an apiOnly family bumped must
+          # still deploy.
+          if [ "${{ steps.update.outputs.changed }}" = "true" ] \
+             || grep -qE "^supplement-changed=[1-9]" update.log; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Guard against catalog shrinkage
-        if: steps.update.outputs.changed == 'true'
+        if: steps.supplement.outputs.changed == 'true'
         env:
           # The guard imports scripts/lib/r2.mjs (for the manifest helpers),
           # which requires an account id at module load even when it makes no
@@ -106,7 +131,7 @@ jobs:
           node scripts/shrinkage-guard.mjs
 
       - name: Regenerate OG cards for newly harvested families
-        if: steps.update.outputs.changed == 'true'
+        if: steps.supplement.outputs.changed == 'true'
         run: |
           # Only newly added/updated families need a fresh card (rank shifts
           # don't change the image). Skip when none were harvested.
@@ -117,7 +142,7 @@ jobs:
           fi
 
       - name: Publish assets to R2
-        if: steps.update.outputs.changed == 'true'
+        if: steps.supplement.outputs.changed == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -130,7 +155,7 @@ jobs:
           node scripts/publish-assets.mjs --daily --og-ids=scripts/harvester/og_ids.txt
 
       - name: Commit updated manifest
-        if: steps.update.outputs.changed == 'true'
+        if: steps.supplement.outputs.changed == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"

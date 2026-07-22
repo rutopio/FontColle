@@ -39,10 +39,7 @@ export function DesignerPanel({
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
-      {/* LEFT, the family "about" prose. */}
-      <AboutPanel font={font} />
-
-      {/* RIGHT, one block per credited designer: bio + their other families. */}
+      {/* LEFT, one block per credited designer: bio + their other families. */}
       <Panel
         label={designers.length > 1 ? "Designers" : "Designer"}
         count={designers.length || undefined}
@@ -160,6 +157,9 @@ export function DesignerPanel({
           </p>
         )}
       </Panel>
+
+      {/* RIGHT, the family "about" prose. */}
+      <AboutPanel font={font} />
     </div>
   );
 }
