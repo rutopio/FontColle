@@ -39,6 +39,23 @@
 /catalog/*
   Cache-Control: public, max-age=3600
 
+# Agent-discovery documents (RFC 9727 / RFC 9264 / OpenAPI). Cloudflare assets
+# would otherwise serve the extension-less api-catalog file as octet-stream.
+/.well-known/api-catalog
+  Content-Type: application/linkset+json; charset=utf-8
+  Cache-Control: public, max-age=3600
+
+/openapi.json
+  Content-Type: application/openapi+json; charset=utf-8
+  Cache-Control: public, max-age=3600
+
+/.well-known/agent-skills/index.json
+  Cache-Control: public, max-age=3600
+
+/.well-known/agent-skills/find-fonts/SKILL.md
+  Content-Type: text/markdown; charset=utf-8
+  Cache-Control: public, max-age=3600
+
 /og/*
   Cache-Control: public, max-age=86400
 

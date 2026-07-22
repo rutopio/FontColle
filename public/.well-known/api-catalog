@@ -1,0 +1,45 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://fontcolle.com/",
+      "service-desc": [
+        {
+          "href": "https://fontcolle.com/openapi.json",
+          "type": "application/openapi+json",
+          "title": "FontColle Catalog API (OpenAPI 3.1)"
+        }
+      ],
+      "service-doc": [
+        {
+          "href": "https://fontcolle.com/llms.txt",
+          "type": "text/markdown",
+          "title": "Catalog guide: field tables, tag vocabulary, URL params"
+        }
+      ],
+      "describedby": [
+        {
+          "href": "https://fontcolle.com/llms.txt",
+          "type": "text/markdown",
+          "title": "Machine-readable description of FontColle"
+        }
+      ],
+      "item": [
+        {
+          "href": "https://fontcolle.com/catalog-slim.json",
+          "type": "application/json",
+          "title": "Every published family, slim projection (~2 MB)"
+        },
+        {
+          "href": "https://fontcolle.com/catalog.json",
+          "type": "application/json",
+          "title": "Every published family, full records (~13 MB)"
+        },
+        {
+          "href": "https://fontcolle.com/designer-index.json",
+          "type": "application/json",
+          "title": "Families indexed by designer"
+        }
+      ]
+    }
+  ]
+}

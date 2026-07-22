@@ -2,6 +2,11 @@
 User-agent: *
 Disallow:
 
+# Content Signals (contentsignals.org, draft-romm-aipref-contentsignals).
+# This is an open-source font catalog: search and AI answers may reference it,
+# but the pages are not offered as AI training material.
+Content-Signal: search=yes, ai-input=yes, ai-train=no
+
 # LLMs / AI search tools: machine-readable catalog guide at
 # https://fontcolle.com/llms.txt (field tables, tag vocabulary, URL params).
 
