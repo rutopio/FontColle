@@ -73,19 +73,29 @@ function putFontsVersion(date) {
   return entry;
 }
 
-function putSeedTarball(dir, key) {
-  const tarPath = path.join(SCRATCH, path.basename(key));
+// Tar `dir` and upload under a CONTENT-HASHED key (prefix/<sha>.tar.gz), not a
+// fixed one. A fixed key (glyphs/glyphs.tar.gz) is served through Cloudflare's
+// cache, so re-seeding new content under the same key left `r2 object get` — the
+// deploy's sync uses it — reading the STALE cached tarball: the reseeded Google
+// Sans / Edu Hand coverage never reached the built site, and its Glyphs panel
+// 404'd. A hash in the key changes it whenever content changes, so a fresh key
+// is always a cache miss and the new bytes are read. The manifest records the
+// exact key, so sync fetches the right one. (fonts already dodged this via its
+// dated key; glyphs/og did not.)
+function putSeedTarball(dir, prefix) {
+  const tarPath = path.join(SCRATCH, `${prefix}.tar.gz`);
   const count = makeTar(dir, tarPath);
+  const sha256 = sha256File(tarPath);
+  const key = `${prefix}/${sha256.slice(0, 16)}.tar.gz`;
   r2Put(key, tarPath);
-  const entry = { key, sha256: sha256File(tarPath), count };
   console.log(`[publish] uploaded ${key} (${count} files)`);
-  return entry;
+  return { key, sha256, count };
 }
 
 async function seed() {
   const fonts = putFontsVersion(today());
-  const glyphs = putSeedTarball(GLYPHS_DIR, "glyphs/glyphs.tar.gz");
-  const ogBase = putSeedTarball(OG_DIR, "og/og.tar.gz");
+  const glyphs = putSeedTarball(GLYPHS_DIR, "glyphs");
+  const ogBase = putSeedTarball(OG_DIR, "og");
   writeManifest({
     version: 1,
     fonts,
@@ -102,7 +112,7 @@ async function seed() {
 async function reseedGlyphs() {
   const manifest = readManifest();
   if (!manifest) throw new Error("no manifest; run --seed first");
-  const glyphs = putSeedTarball(GLYPHS_DIR, "glyphs/glyphs.tar.gz");
+  const glyphs = putSeedTarball(GLYPHS_DIR, "glyphs");
   writeManifest({ ...manifest, glyphs });
 }
 

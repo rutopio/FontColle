@@ -18,6 +18,19 @@ import path from "node:path";
 import { MANIFEST_PATH, ROOT, r2Get, sha256File } from "./lib/r2.mjs";
 import { extractTar } from "./lib/tar.mjs";
 
+// Verify a just-downloaded file against the sha256 the manifest recorded, so a
+// truncated download OR a stale copy served for a fixed key (glyphs/og tarballs
+// keep the same key and are overwritten in place, unlike the dated fonts
+// snapshot) fails loudly instead of silently shipping an old asset. This is why
+// a reseeded glyphs tarball could deploy with the previous file set: the sync
+// pulled the key with no integrity check and used whatever came back.
+function verify(file, expected, label) {
+  const got = sha256File(file);
+  if (got !== expected) {
+    throw new Error(`${label} sha256 mismatch: manifest ${expected} got ${got}`);
+  }
+}
+
 const FONTS_JSON = path.join(ROOT, "src/data/fonts.json");
 const GLYPHS_DIR = path.join(ROOT, "public/glyphs");
 const OG_DIR = path.join(ROOT, "public/og");
@@ -28,21 +41,19 @@ mkdirSync(SCRATCH, { recursive: true });
 
 // fonts.json, pull the manifest's current version and verify its hash.
 r2Get(manifest.fonts.key, FONTS_JSON);
-const got = sha256File(FONTS_JSON);
-if (got !== manifest.fonts.sha256) {
-  throw new Error(
-    `fonts.json sha256 mismatch: manifest ${manifest.fonts.sha256} got ${got}`
-  );
-}
+verify(FONTS_JSON, manifest.fonts.sha256, "fonts.json");
 console.log(`[sync] fonts.json <- ${manifest.fonts.key} (verified)`);
 
-// glyphs, extract the seed tarball.
+// glyphs, extract the seed tarball. Verify BEFORE extract so a stale/truncated
+// tarball fails here instead of shipping the wrong file set (fixed key, so a
+// reseed overwrites in place — the download must match the manifest sha).
 {
   const tar = path.join(SCRATCH, "glyphs.tar.gz");
   r2Get(manifest.glyphs.key, tar);
+  verify(tar, manifest.glyphs.sha256, "glyphs.tar.gz");
   extractTar(tar, GLYPHS_DIR);
   console.log(
-    `[sync] public/glyphs <- ${manifest.glyphs.key} (${manifest.glyphs.count} files)`
+    `[sync] public/glyphs <- ${manifest.glyphs.key} (${manifest.glyphs.count} files, verified)`
   );
 }
 
@@ -50,8 +61,9 @@ console.log(`[sync] fonts.json <- ${manifest.fonts.key} (verified)`);
 {
   const tar = path.join(SCRATCH, "og.tar.gz");
   r2Get(manifest.og.base.key, tar);
+  verify(tar, manifest.og.base.sha256, "og.tar.gz");
   extractTar(tar, OG_DIR);
-  console.log(`[sync] public/og <- ${manifest.og.base.key}`);
+  console.log(`[sync] public/og <- ${manifest.og.base.key} (verified)`);
   const deltas = manifest.og.deltas ?? [];
   for (const key of deltas) {
     const name = key.slice("og/".length);
