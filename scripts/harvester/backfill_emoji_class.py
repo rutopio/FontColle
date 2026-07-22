@@ -32,6 +32,12 @@ def is_emoji_font(rec):
 
 
 def is_slab_font(rec):
+    # Monospace wins over Slab: a slab-tagged typewriter face (Courier Prime,
+    # Cutive Mono) is first and foremost a mono face, and Mono is the more
+    # useful primary class to browse it under. Without this guard the Slab
+    # carve-out below would silently take those families off the Mono card.
+    if rec.get("class") == "Mono":
+        return False
     tags = rec.get("tags", {})
     return any(tags.get(t, 0) >= TAG_THRESHOLD for t in SLAB_TAGS)
 
@@ -43,8 +49,14 @@ def main():
     path = os.path.abspath(path)
 
     records = json.load(open(path))
-    emoji, slab = [], []
+    emoji, slab, restored = [], [], []
     for r in records:
+        # Repair records an earlier run moved to Slab before Mono took
+        # precedence: the harvested category still says MONOSPACE, so the
+        # original class is recoverable.
+        if r.get("class") == "Slab" and "MONO" in (r.get("category") or "").upper():
+            r["class"] = "Mono"
+            restored.append(r.get("name"))
         # Emoji takes precedence (an emoji font won't also be slab-tagged).
         if is_emoji_font(r):
             if r.get("class") != "Emoji":
@@ -61,6 +73,7 @@ def main():
     print(f"reclassified {len(emoji)} -> Emoji: {emoji}", file=sys.stderr)
     print(f"reclassified {len(slab)} -> Slab ({len(slab)} families)",
           file=sys.stderr)
+    print(f"restored {len(restored)} Mono from Slab: {restored}", file=sys.stderr)
 
 
 if __name__ == "__main__":
