@@ -23,6 +23,7 @@ import {
   DEFAULT_FILTER_GROUP,
   type FilterGroupId,
 } from "@/components/filter/groups";
+import { PresetToggle } from "@/components/filter/preset-toggle";
 import { Column, FilterLayout } from "@/components/filter-layout";
 import { FontCard } from "@/components/font-card";
 import { FontGrid, SkeletonGrid, type ViewMode } from "@/components/font-grid";
@@ -245,6 +246,20 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
       for (const tag of stale) delete out[tag];
       return out;
     });
+
+  // Apply a saved preset. Its stored value is already in search shape, so it
+  // goes straight to the URL rather than through commitFilter's FilterState
+  // round-trip. sort/fav ride along untouched: a preset is a set of filter
+  // conditions, not a view, so it must not change how results are ordered or
+  // whether the favorites view is on.
+  const applyPreset = (preset: FilterSearch) => {
+    pruneAxisValues(searchToFilter(preset).axes);
+    navigate({
+      search: { ...preset, sort: search.sort, fav: search.fav },
+      replace: true,
+    });
+  };
+
   // Which filter group the sidebar panel shows. Session-only UI state, seeded
   // from the context ref so returning from a font's detail page reopens the
   // panel you left (the route unmounts on that trip, so plain useState would
@@ -384,6 +399,11 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
   return (
     <FilterLayout
       rail={<FilterRail active={group} filter={filter} onSelect={setGroup} />}
+      // Preset sits in the sidebar footer with Favorite, not in the rail: both
+      // are device-local personal state, not facets of the catalog.
+      personal={
+        <PresetToggle active={group === "preset"} onSelect={setGroup} />
+      }
       sidebar={
         <FilterSidebar
           index={facetIndex}
@@ -392,6 +412,7 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
           group={group}
           axisValues={axisValues}
           onAxisValueChange={setAxisValue}
+          onApplyPreset={applyPreset}
         />
       }
     >
@@ -583,6 +604,7 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
         onGroupChange={setGroup}
         axisValues={axisValues}
         onAxisValueChange={setAxisValue}
+        onApplyPreset={applyPreset}
       />
     </FilterLayout>
   );

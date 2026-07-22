@@ -14,11 +14,15 @@ import { Sidebar, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
 // own panel (list filters / detail features), passed in as children.
 export function AppSidebar({
   rail,
+  personal,
   favoriteFontId,
   children,
   ...props
 }: React.ComponentProps<typeof Sidebar> & {
   rail?: React.ReactNode;
+  // Page-supplied control that belongs with Favorite in the personal group
+  // (the list page's Preset button). Sits directly above Favorite.
+  personal?: React.ReactNode;
   // When set (the detail page), the footer Favorite button hearts this font
   // instead of toggling the list's favorites-only view.
   favoriteFontId?: string;
@@ -63,11 +67,21 @@ export function AppSidebar({
         )}
         {/* mt-auto pins the toggles to the rail's bottom whether or not a rail
             fills the space above it. Same p-2 as the rail's ScrollArea so the
-            Favorite/Theme buttons line up with the rail buttons above. */}
-        <Separator className="" />
+            footer buttons line up with the rail buttons above.
 
+            Two tiers, split by the separator: above it the personal, per-device
+            things (Preset, Favorite — both localStorage, neither shareable via
+            URL); below it the app-level ones (theme, about). The separator sits
+            immediately above Dark, so the line reads as "your stuff ends here". */}
         <SidebarFooter className="mt-auto gap-1 p-2">
+          {personal}
           <FavoriteToggle fontId={favoriteFontId} />
+          {/* -mx-2 spans the rule past the footer's p-2 so it meets both edges,
+              like the header's border-b. The width utility needs the same
+              data-horizontal: variant the primitive uses, or its `w-full` wins
+              and the rule stops short of the padding. my-1 keeps it off both
+              neighbours. */}
+          <Separator className="-mx-2 my-1 data-horizontal:w-auto" />
           <ThemeToggle />
           <AboutLink />
         </SidebarFooter>

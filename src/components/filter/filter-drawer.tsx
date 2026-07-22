@@ -3,11 +3,11 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import type { FacetIndex } from "@/lib/fonts/filter/facets";
-import type { FilterState } from "@/lib/fonts/filter/state";
+import type { FilterSearch, FilterState } from "@/lib/fonts/filter/state";
 import { activeFilterCount } from "@/lib/fonts/filter/state";
-import { FilterRail } from "./filter-rail";
+import { FilterGroupButton, FilterRail } from "./filter-rail";
 import { FilterSidebar } from "./filter-sidebar";
-import type { FilterGroupId } from "./groups";
+import { type FilterGroupId, PRESET_GROUP } from "./groups";
 
 // Mobile-only (<768px) filter access. The desktop rail + panel collapse to an
 // unreachable Sheet on mobile (see app-sidebar), so this is the sole way to
@@ -23,6 +23,7 @@ export function FilterDrawer({
   onGroupChange,
   axisValues,
   onAxisValueChange,
+  onApplyPreset,
 }: {
   index: FacetIndex;
   filter: FilterState;
@@ -31,6 +32,7 @@ export function FilterDrawer({
   onGroupChange: (id: FilterGroupId) => void;
   axisValues: Record<string, number>;
   onAxisValueChange: (tag: string, pct: number) => void;
+  onApplyPreset: (search: FilterSearch) => void;
 }) {
   const [open, setOpen] = useState(false);
   const count = activeFilterCount(filter);
@@ -74,13 +76,23 @@ export function FilterDrawer({
           )}
         </div>
         {/* Horizontal group switcher, then the group's sections. The rail lives
-            in its own padded strip; FilterSidebar brings its own ScrollArea. */}
-        <div className="border-border border-b px-3 pt-2">
+            in its own padded strip; FilterSidebar brings its own ScrollArea.
+            Preset is appended here rather than rendered with Favorite as on
+            desktop: the drawer has no sidebar footer, so this strip is mobile's
+            only way into the panel, and leaving it out would strand presets. */}
+        <div className="flex border-border border-b px-3 pt-2">
           <FilterRail
             active={group}
             filter={filter}
             onSelect={onGroupChange}
             orientation="horizontal"
+          />
+          <FilterGroupButton
+            group={PRESET_GROUP}
+            active={group === PRESET_GROUP.id}
+            count={0}
+            onSelect={onGroupChange}
+            horizontal
           />
         </div>
         <div className="min-h-0 flex-1">
@@ -91,6 +103,7 @@ export function FilterDrawer({
             group={group}
             axisValues={axisValues}
             onAxisValueChange={onAxisValueChange}
+            onApplyPreset={onApplyPreset}
           />
         </div>
       </SheetContent>

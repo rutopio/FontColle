@@ -1,10 +1,74 @@
 import type { FilterState } from "@/lib/fonts/filter";
 import { cn } from "@/lib/utils";
-import { FILTER_GROUPS, type FilterGroupId, groupActiveCount } from "./groups";
+import {
+  FILTER_GROUPS,
+  type FilterGroup,
+  type FilterGroupId,
+  groupActiveCount,
+} from "./groups";
+
+// One group button. Exported so the sidebar footer can render the Preset group
+// (which lives outside FILTER_GROUPS) with pixel-identical chrome instead of a
+// near-copy that drifts.
+export function FilterGroupButton({
+  group,
+  active,
+  count,
+  onSelect,
+  horizontal,
+}: {
+  group: FilterGroup;
+  active: boolean;
+  // Badge value; 0 draws no badge.
+  count: number;
+  onSelect: (id: FilterGroupId) => void;
+  horizontal?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(group.id)}
+      aria-pressed={active}
+      aria-label={
+        count > 0
+          ? `${group.label} filters, ${count} selected`
+          : `${group.label} filters`
+      }
+      className={cn(
+        "group/rail-btn relative flex cursor-pointer flex-col items-center gap-1 rounded-md py-2 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-sidebar-ring",
+        horizontal ? "w-16 shrink-0 px-1" : "",
+        active
+          ? "bg-black/10 text-sidebar-accent-foreground dark:bg-white/12"
+          : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground"
+      )}
+    >
+      {/* Phosphor weight is a prop, not CSS, so hover-swaps the icon:
+          the base icon hides on hover and the bold twin shows. */}
+      <group.icon
+        className="size-5 group-hover/rail-btn:hidden"
+        weight={active ? "fill" : "regular"}
+      />
+      <group.icon
+        className="hidden size-5 group-hover/rail-btn:block"
+        weight="duotone"
+      />
+      <span className="text-[10px] leading-none">{group.label}</span>
+      {count > 0 && (
+        <span
+          aria-hidden="true"
+          className="absolute top-1 right-1 flex size-4 items-center justify-center rounded-full bg-primary font-mono text-[9px] text-primary-foreground leading-none"
+        >
+          {count}
+        </span>
+      )}
+    </button>
+  );
+}
 
 // The icon-rail switcher for the filter panel: one button per filter group,
 // badged with how many of that group's values are currently selected so a
-// selection stays visible while its group is hidden.
+// selection stays visible while its group is hidden. Preset is deliberately not
+// here — it renders in the sidebar footer (see PRESET_GROUP in ./groups).
 export function FilterRail({
   active,
   filter,
@@ -28,50 +92,16 @@ export function FilterRail({
           : "flex-col"
       )}
     >
-      {FILTER_GROUPS.map((group) => {
-        const on = group.id === active;
-        const count = groupActiveCount(group, filter);
-        return (
-          <button
-            key={group.id}
-            type="button"
-            onClick={() => onSelect(group.id)}
-            aria-pressed={on}
-            aria-label={
-              count > 0
-                ? `${group.label} filters, ${count} selected`
-                : `${group.label} filters`
-            }
-            className={cn(
-              "group/rail-btn relative flex cursor-pointer flex-col items-center gap-1 rounded-md py-2 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-sidebar-ring",
-              orientation === "horizontal" ? "w-16 shrink-0 px-1" : "",
-              on
-                ? "bg-black/10 text-sidebar-accent-foreground dark:bg-white/12"
-                : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground"
-            )}
-          >
-            {/* Phosphor weight is a prop, not CSS, so hover-swaps the icon:
-                the base icon hides on hover and the bold twin shows. */}
-            <group.icon
-              className="size-5 group-hover/rail-btn:hidden"
-              weight={on ? "fill" : "regular"}
-            />
-            <group.icon
-              className="hidden size-5 group-hover/rail-btn:block"
-              weight="duotone"
-            />
-            <span className="text-[10px] leading-none">{group.label}</span>
-            {count > 0 && (
-              <span
-                aria-hidden="true"
-                className="absolute top-1 right-1 flex size-4 items-center justify-center rounded-full bg-primary font-mono text-[9px] text-primary-foreground leading-none"
-              >
-                {count}
-              </span>
-            )}
-          </button>
-        );
-      })}
+      {FILTER_GROUPS.map((group) => (
+        <FilterGroupButton
+          key={group.id}
+          group={group}
+          active={group.id === active}
+          count={groupActiveCount(group, filter)}
+          onSelect={onSelect}
+          horizontal={orientation === "horizontal"}
+        />
+      ))}
     </nav>
   );
 }

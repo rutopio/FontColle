@@ -1,4 +1,5 @@
 import {
+  BookmarkSimpleIcon,
   CodeIcon,
   DotsThreeOutlineIcon,
   type Icon,
@@ -25,7 +26,8 @@ export type FilterGroupId =
   | "features"
   | "metrics"
   | "designer"
-  | "other";
+  | "other"
+  | "preset";
 
 export interface FilterGroup {
   id: FilterGroupId;
@@ -35,9 +37,12 @@ export interface FilterGroup {
 }
 
 // Rail order, top to bottom: Style, Variant, Language, Color, Feature,
-// Designer, Metric, Mood, More. Style leads because form (Serif / Sans /
-// Script) is the most common entry point into browsing; the broad,
-// browse-everything panel (Mood) sits near the bottom.
+// Designer, Metric, Mood, More — then Preset, which is NOT part of this
+// scrolling list. Style leads because form (Serif / Sans / Script) is the most
+// common entry point into browsing; the broad, browse-everything panel (Mood)
+// sits near the bottom. Preset renders in the sidebar footer instead (see
+// PRESET_GROUP and app-sidebar's footer), grouped with Favorite as the two
+// device-local personal things, above the separator.
 export const FILTER_GROUPS: FilterGroup[] = [
   {
     id: "style",
@@ -104,7 +109,21 @@ export const FILTER_GROUPS: FilterGroup[] = [
   },
 ];
 
-// The rail opens on Style, which is also the first button in the rail.
+// Saved filter combinations. Kept out of FILTER_GROUPS because it isn't a facet
+// of the catalog: it renders in the sidebar footer beside Favorite, the pair of
+// device-local personal things, rather than in the scrolling rail of filters.
+// It still switches the panel like any group, so it carries the same shape.
+// `keys: []` means groupActiveCount returns 0 and no badge is drawn — a number
+// there would read as "3 filters active in Preset".
+export const PRESET_GROUP: FilterGroup = {
+  id: "preset",
+  label: "Preset",
+  icon: BookmarkSimpleIcon,
+  keys: [],
+};
+
+// The rail opens on Style: the browsing entry point. Preset would be a dead
+// first impression with an empty list, and it no longer sits in the rail anyway.
 export const DEFAULT_FILTER_GROUP: FilterGroupId = "style";
 
 // `tags` now has a single entry point: the Variant panel's Font type radio

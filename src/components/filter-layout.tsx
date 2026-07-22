@@ -41,12 +41,15 @@ function MobileTopBar({ favoriteFontId }: { favoriteFontId?: string }) {
 // panel. The preview dock is mounted once in __root, so both pages share it.
 export function FilterLayout({
   rail,
+  personal,
   sidebar,
   children,
   panelOpen = true,
   favoriteFontId,
 }: {
   rail?: React.ReactNode;
+  // Footer control grouped with Favorite (the list page's Preset button).
+  personal?: React.ReactNode;
   sidebar: React.ReactNode;
   children: React.ReactNode;
   // When false, the two-level sidebar collapses to just its icon rail, so the
@@ -85,6 +88,7 @@ export function FilterLayout({
       >
         <AppSidebar
           rail={rail ? <RouteFade>{rail}</RouteFade> : undefined}
+          personal={personal}
           favoriteFontId={favoriteFontId}
         >
           <RouteFade className="flex size-full flex-col">{sidebar}</RouteFade>

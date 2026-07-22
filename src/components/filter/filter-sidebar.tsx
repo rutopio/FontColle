@@ -1,6 +1,6 @@
 import {
   ArrowsOutLineHorizontalIcon,
-  BookmarkSimpleIcon,
+  DiscoBallIcon,
   SlidersHorizontalIcon,
   SmileyMeltingIcon,
   TextAaIcon,
@@ -11,7 +11,9 @@ import { useEffect, useMemo, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   type FacetIndex,
+  type FilterSearch,
   type FilterState,
+  filterToSearch,
   ITALIC_LABELS,
   type MetricKey,
   type MetricRange,
@@ -39,6 +41,7 @@ import {
   UnitsPerEmSection,
 } from "./metrics-section";
 import { NotoSection } from "./noto-section";
+import { PresetSection } from "./preset-section";
 import { RadioPillSection } from "./radio-pill-section";
 import { RepositorySection } from "./repository-section";
 import { VariableAxesSection } from "./variable-axes-section";
@@ -54,6 +57,10 @@ interface Props {
   // forwarded to the preview grid to drive each font's own axis range live.
   axisValues: Record<string, number>;
   onAxisValueChange: (tag: string, pct: number) => void;
+  // Apply a saved preset: replaces the filter half of the URL search wholesale,
+  // leaving sort/fav alone. Separate from onChange because a preset is already
+  // stored in search shape, so it skips the FilterState round-trip.
+  onApplyPreset: (search: FilterSearch) => void;
 }
 
 export function FilterSidebar({
@@ -63,6 +70,7 @@ export function FilterSidebar({
   group,
   axisValues,
   onAxisValueChange,
+  onApplyPreset,
 }: Props) {
   // A section that just had its selection silently cleared by a mutually-
   // exclusive pick elsewhere (Weight/Width pill <-> wght/wdth axis). The bumped
@@ -166,6 +174,10 @@ export function FilterSidebar({
       hasHinting: filter.hasHinting === value ? undefined : value,
     });
 
+  // The current filter in URL-search shape, for the Preset panel: it is both
+  // what a Save stores and what stored presets are matched against.
+  const currentSearch = useMemo(() => filterToSearch(filter), [filter]);
+
   // Always open at the top; don't let router scroll restoration carry the
   // sidebar's position across list <-> detail navigation.
   const viewportRef = useScrollReset<HTMLDivElement>();
@@ -232,7 +244,7 @@ export function FilterSidebar({
                     that hosts their shared OR/AND toggle and reset. */}
                 <ClassificationSection
                   title="Style"
-                  icon={BookmarkSimpleIcon}
+                  icon={DiscoBallIcon}
                   groups={styleClassifications}
                   selected={filter.style}
                   onToggle={(v) => toggle("style", v)}
@@ -430,6 +442,20 @@ export function FilterSidebar({
                   vendorCasing={index.vendorCasing}
                 />
               </>
+            )}
+            {group === "preset" && (
+              <PresetSection
+                filter={filter}
+                // Encoded here rather than passed down: the same call produces
+                // both what a Save stores and what a stored preset is compared
+                // against, so the active-preset highlight can't drift from what
+                // saving would write.
+                currentSearch={currentSearch}
+                // The query counts: it round-trips through `q`, so a
+                // search-only filter is still worth saving.
+                hasFilters={Object.keys(currentSearch).length > 0}
+                onApply={onApplyPreset}
+              />
             )}
             {group === "other" && (
               <>
