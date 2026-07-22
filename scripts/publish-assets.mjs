@@ -94,6 +94,18 @@ async function seed() {
   });
 }
 
+// Re-tar and re-upload ONLY the glyphs base, rewriting just the manifest's
+// glyphs entry. glyph coverage has no daily delta channel (unlike OG), so a
+// family added after the last seed — the apiOnly supplement set (Google Sans,
+// Edu Hand) — ships a coverage file locally that never reaches R2, and its
+// Glyphs panel 404s live. Run this after a supplement adds families.
+async function reseedGlyphs() {
+  const manifest = readManifest();
+  if (!manifest) throw new Error("no manifest; run --seed first");
+  const glyphs = putSeedTarball(GLYPHS_DIR, "glyphs/glyphs.tar.gz");
+  writeManifest({ ...manifest, glyphs });
+}
+
 function readIds(file) {
   return readFileSync(file, "utf8")
     .split("\n")
@@ -141,7 +153,11 @@ if (args.includes("--seed")) {
   await seed();
 } else if (args.includes("--daily")) {
   await daily(ogIdsArg?.slice("--og-ids=".length));
+} else if (args.includes("--reseed-glyphs")) {
+  await reseedGlyphs();
 } else {
-  console.error("usage: publish-assets.mjs --seed | --daily [--og-ids=<file>]");
+  console.error(
+    "usage: publish-assets.mjs --seed | --daily [--og-ids=<file>] | --reseed-glyphs"
+  );
   process.exit(2);
 }
