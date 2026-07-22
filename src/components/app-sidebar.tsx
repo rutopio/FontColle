@@ -51,7 +51,9 @@ export function AppSidebar({
         <SidebarHeader className="h-16 justify-center border-border border-b p-2">
           <Link
             to="/"
-            aria-label="All fonts"
+            // Must contain the visible "FontColle" text: WCAG 2.5.3 (Label in
+            // Name) so voice-control users can say what they see.
+            aria-label="FontColle, all fonts"
             className="group/logo flex w-full flex-col items-center justify-center gap-1 rounded-lg text-primary"
           >
             <LogoIcon className="size-7 transition-[stroke-width] group-hover/logo:[stroke-width:2]" />

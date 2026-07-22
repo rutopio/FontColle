@@ -20,7 +20,8 @@ function MobileTopBar({ favoriteFontId }: { favoriteFontId?: string }) {
     <div className="flex h-12 shrink-0 items-center justify-between border-border border-b bg-background px-3 md:hidden">
       <Link
         to="/"
-        aria-label="All fonts"
+        // Contains the visible "FontColle" text, per WCAG 2.5.3 (Label in Name).
+        aria-label="FontColle, all fonts"
         className="flex items-center gap-1.5 text-primary"
       >
         <LogoIcon className="size-5" />

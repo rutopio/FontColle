@@ -113,7 +113,11 @@ function FavoriteViewLink({ bar }: { bar?: boolean }) {
         // Toggle: drop the param when leaving favorites, set it when entering.
         // Keep the rest of the search so an active sort/filter survives.
         search={(prev) => ({ ...prev, fav: fav ? undefined : "1" })}
-        aria-pressed={fav}
+        // This is an <a> (role="link"), not a button: role="link" does not allow
+        // aria-pressed, so a screen reader would drop the state and Lighthouse
+        // flags it. aria-current is the link equivalent, marking this as the
+        // view you're currently in.
+        aria-current={fav ? "page" : undefined}
         aria-label={fav ? "Show all fonts" : "Show favorite fonts"}
         className={
           bar ? cn(BAR_BTN, fav && "text-red-500") : cn(BTN, fav ? ON : OFF)

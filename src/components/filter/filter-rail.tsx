@@ -29,11 +29,12 @@ export function FilterGroupButton({
       type="button"
       onClick={() => onSelect(group.id)}
       aria-pressed={active}
-      aria-label={
-        count > 0
-          ? `${group.label} filters, ${count} selected`
-          : `${group.label} filters`
-      }
+      // No aria-label: an override has to repeat the visible text verbatim or it
+      // trips WCAG 2.5.3 (Label in Name), and the badge renders the count as
+      // visible text right after the label ("Language" + "1"), which no
+      // hand-written string matches cleanly. Letting the name come from the
+      // content keeps the two in lockstep; the sr-only span below supplies the
+      // wording the badge alone can't convey.
       className={cn(
         "group/rail-btn relative flex cursor-pointer flex-col items-center gap-1 rounded-md py-2 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-sidebar-ring",
         horizontal ? "w-16 shrink-0 px-1" : "",
@@ -53,6 +54,9 @@ export function FilterGroupButton({
         weight="duotone"
       />
       <span className="text-[10px] leading-none">{group.label}</span>
+      {/* Before the sr-only text, not after: the badge is absolutely positioned
+          so DOM order costs nothing visually, but it keeps the digit from
+          landing after "selected" when a screen reader reads the name. */}
       {count > 0 && (
         <span
           aria-hidden="true"
@@ -61,6 +65,9 @@ export function FilterGroupButton({
           {count}
         </span>
       )}
+      <span className="sr-only">
+        {count > 0 ? ` filters, ${count} selected` : " filters"}
+      </span>
     </button>
   );
 }
