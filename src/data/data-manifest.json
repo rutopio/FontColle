@@ -3,12 +3,12 @@
   "fonts": {
     "key": "fonts/20260722.json",
     "date": "20260722",
-    "sha256": "dcf7f46d8324b07198f663bab1aef4285b72b928919e33cbaabfd08e17186946",
-    "bytes": 21115175
+    "sha256": "f08c16e0ed58fb051a6b124f2941d8e7d32623c3223e2bd407587df759055abc",
+    "bytes": 21115045
   },
   "glyphs": {
-    "key": "glyphs/7455f1e34ef0f94c.tar.gz",
-    "sha256": "7455f1e34ef0f94c58ef60573cb1e32ac1e8f4cf5e9a1f7114f55f422b251991",
+    "key": "glyphs/bfad167ab18c1659.tar.gz",
+    "sha256": "bfad167ab18c165986a3aaf305ccfc6bfb5d8e7803a3bfb1174a2e292e6504a0",
     "count": 2028
   },
   "og": {
