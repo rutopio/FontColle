@@ -111,7 +111,7 @@ export const METRIC_SPECS: Record<MetricKey, MetricSpec> = {
 };
 
 /** Humanize a byte count for the fileSize readout (e.g. 3.5MB, 512KB). */
-export function humanBytes(bytes: number): string {
+function humanBytes(bytes: number): string {
   if (bytes >= 1024 * 1024) {
     const mb = bytes / (1024 * 1024);
     return `${mb >= 10 ? Math.round(mb) : mb.toFixed(1)}MB`;

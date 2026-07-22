@@ -21,7 +21,7 @@ export const DEFAULT_ON = new Set([
 // Human-readable names per the OpenType 1.9.1 registered feature list
 // (https://learn.microsoft.com/typography/opentype/spec/featurelist).
 // Unknown tags fall back to the raw tag so the list is always complete.
-export const FEATURE_NAMES: Record<string, string> = {
+const FEATURE_NAMES: Record<string, string> = {
   aalt: "Access All Alternates",
   abvf: "Above-base Forms",
   abvm: "Above-base Mark Positioning",

@@ -16,52 +16,6 @@ export type SortKey =
 
 export const DEFAULT_SORT: SortKey = "popularity";
 
-// Grouped options for the sort selector.
-export const SORT_OPTIONS: { group: string; items: [SortKey, string][] }[] = [
-  {
-    group: "Popularity",
-    items: [
-      ["popularity", "Most popular"],
-      ["trending", "Trending"],
-    ],
-  },
-  {
-    group: "Name",
-    items: [
-      ["name-asc", "A → Z"],
-      ["name-desc", "Z → A"],
-    ],
-  },
-  {
-    group: "Designer",
-    items: [
-      ["creator-asc", "A → Z"],
-      ["creator-desc", "Z → A"],
-    ],
-  },
-  {
-    group: "Date added",
-    items: [
-      ["date-newest", "Newest"],
-      ["date-oldest", "Oldest"],
-    ],
-  },
-  {
-    group: "Glyphs",
-    items: [
-      ["glyphs-most", "Most"],
-      ["glyphs-fewest", "Fewest"],
-    ],
-  },
-  {
-    group: "Axes",
-    items: [
-      ["axes-most", "Most"],
-      ["axes-fewest", "Fewest"],
-    ],
-  },
-];
-
 // The sort control is split into a group picker (left) and a direction toggle
 // (right). Each group maps its two directions to a concrete SortKey. `asc` is
 // the "SortAscending" direction (A→Z, oldest, fewest); `desc` its reverse.

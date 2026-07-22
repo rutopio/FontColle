@@ -19,9 +19,9 @@ export interface LanguageMeta {
 // languages.json; a rename on one side alone silently empties the bucket.
 // NO_LANGUAGE_REGION collects languages tied to no country, meaning constructed
 // ones like Volapük and extinct ones like Prussian, and trails at the end.
-export const NO_LANGUAGE_REGION = "Constructed & historical";
+const NO_LANGUAGE_REGION = "Constructed & historical";
 
-export const LANGUAGE_REGIONS = [
+const LANGUAGE_REGIONS = [
   "Africa",
   "Americas",
   "Asia",
@@ -52,14 +52,14 @@ export function vendorLabel(code: string): string {
   return vendors[code] ?? code;
 }
 
-export function languagePopulation(id: string): number {
+function languagePopulation(id: string): number {
   return languages[id]?.population ?? 0;
 }
 
 /** Every continent a language is spoken on. Widely spoken languages return
  *  several, so English lands under Africa, Americas, Asia, Europe and Oceania
  *  just as it does on Google Fonts. */
-export function languageRegions(id: string): string[] {
+function languageRegions(id: string): string[] {
   const r = languages[id]?.regions;
   return r && r.length > 0 ? r : [NO_LANGUAGE_REGION];
 }

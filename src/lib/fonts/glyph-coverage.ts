@@ -55,7 +55,7 @@ export function blocksWithCoverage(ranges: Range[]): CoveredBlock[] {
 
 // Query for a font's coverage ranges. Coverage files are immutable per font, so
 // they never go stale, cache them forever, so revisiting a font is a cache hit.
-export function glyphCoverageQueryOptions(fontId: string) {
+function glyphCoverageQueryOptions(fontId: string) {
   return queryOptions({
     queryKey: ["glyph-coverage", fontId],
     queryFn: async ({ signal }): Promise<Range[]> => {

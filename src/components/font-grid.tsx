@@ -45,8 +45,8 @@ export function columnsFor(width: number, view: ViewMode): number {
 
 // Card/line heights, shared with the loading skeleton so its placeholders match
 // the real cells.
-export const CARD_H = 288; // grid card height (h-72)
-export const LINE_H = 128; // row-mode line height (h-32)
+const CARD_H = 288; // grid card height (h-72)
+const LINE_H = 128; // row-mode line height (h-32)
 
 const GAP = 16; // Tailwind gap-4
 

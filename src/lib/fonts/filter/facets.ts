@@ -32,7 +32,7 @@ export function meetsTagThreshold(tag: string, score: number): boolean {
 }
 
 /** The membership threshold a classification tag path is judged at. */
-export function tagThreshold(tag: string): number {
+function tagThreshold(tag: string): number {
   return classificationGroupOf(tag) === "mood"
     ? MOOD_TAG_THRESHOLD
     : FORM_TAG_THRESHOLD;

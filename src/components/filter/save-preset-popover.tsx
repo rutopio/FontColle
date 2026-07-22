@@ -19,7 +19,7 @@ import { groupActiveFilters } from "./describe";
 // groups the chip row shows: "Sans + Hant", "Serif + Latn +2". Reusing
 // groupActiveFilters means the suggestion always speaks the UI's own vocabulary,
 // and the user starts from something editable rather than an empty field.
-export function suggestName(filter: FilterState): string {
+function suggestName(filter: FilterState): string {
   const groups = groupActiveFilters(filter);
   const query = filter.query.trim();
   // Each group contributes its first value; a group with more says so once at
