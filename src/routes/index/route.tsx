@@ -59,7 +59,7 @@ import {
 import { fetchFirstPage } from "@/lib/fonts/first-page";
 import { DEFAULT_SORT, type SortKey, sortFonts } from "@/lib/fonts/sort";
 import type { FontRecord } from "@/lib/fonts/types";
-import { MOTION_S } from "@/lib/motion";
+import { EASE_OUT, MOTION_S } from "@/lib/motion";
 import { usePreview } from "@/lib/preview/context";
 import { absoluteUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
 import { useListScrollRestore } from "@/lib/use-list-scroll-restore";
@@ -518,7 +518,7 @@ function Catalog({ fonts }: { fonts: FontRecord[] }) {
         <motion.div
           className="flex flex-1 flex-col"
           animate={{ opacity: fading ? 0 : 1 }}
-          transition={{ duration: MOTION_S.base, ease: "easeOut" }}
+          transition={{ duration: MOTION_S.base, ease: EASE_OUT }}
           onAnimationComplete={() => {
             // Fires at the end of both directions; only the fade-OUT (still
             // fading) should commit the live filter, flipping `fading` false and

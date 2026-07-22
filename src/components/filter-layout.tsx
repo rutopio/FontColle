@@ -8,6 +8,7 @@ import { LogoIcon } from "@/components/logo-icon";
 import { RouteFade } from "@/components/route-fade";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { EASE_OUT, MOTION_S } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./theme-toggle";
 
@@ -167,7 +168,7 @@ export function Column({
       animate={
         footerHidden ? { height: 0, y: "100%" } : { height: "4rem", y: "0%" }
       }
-      transition={{ duration: 0.2, ease: "easeOut" }}
+      transition={{ duration: MOTION_S.base, ease: EASE_OUT }}
       className={cn(
         "flex shrink-0 items-center gap-2 overflow-hidden bg-background px-4",
         footerHidden ? "border-t-0" : "border-border border-t"

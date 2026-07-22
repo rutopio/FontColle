@@ -4,6 +4,7 @@ import { Fragment, useId, useMemo, useState } from "react";
 import { Separator } from "@/components/ui/separator";
 import { groupLanguagesByRegion, languageLabel } from "@/lib/fonts/labels";
 import type { FontRecord } from "@/lib/fonts/types";
+import { EASE_OUT, MOTION_S } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { Panel } from "./panel";
 
@@ -75,7 +76,7 @@ function RegionAccordion({
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
+              transition={{ duration: MOTION_S.base, ease: EASE_OUT }}
               className="overflow-hidden"
             >
               <div className="grid grid-cols-4 gap-x-3 gap-y-1 pb-3 text-sm">

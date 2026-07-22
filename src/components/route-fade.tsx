@@ -1,7 +1,7 @@
 import { useRouterState } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import { type ReactNode, useEffect } from "react";
-import { MOTION_S } from "@/lib/motion";
+import { EASE_OUT, MOTION_S } from "@/lib/motion";
 
 // Fades one route-specific content block IN when the route changes, leaving the
 // surrounding frame untouched. Used three times inside FilterLayout, around the
@@ -58,7 +58,7 @@ export function RouteFade({
     <motion.div
       initial={changed ? { opacity: 0, y: distance } : false}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: MOTION_S.slow, ease: "easeOut" }}
+      transition={{ duration: MOTION_S.slow, ease: EASE_OUT }}
       className={className}
     >
       {children}

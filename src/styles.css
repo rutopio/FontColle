@@ -142,14 +142,31 @@
   --chart-5: oklch(0.269 0 0);
   --radius: 0.625rem;
 
-  /* One motion duration for the whole app, mirrored by MOTION_MS in
-     src/lib/motion.ts — change both together. The fast/base/slow names are kept
-     as aliases so existing var() references keep resolving; they all point at
-     --motion now. */
-  --motion: 60ms;
-  --motion-fast: var(--motion);
-  --motion-base: var(--motion);
-  --motion-slow: var(--motion);
+  /* The motion scale, mirrored by MOTION in src/lib/motion.ts — change both
+     together. Three steps, picked by how far the element travels and how often
+     it is seen: fast for tooltips/chips/button feedback, base for
+     trigger-anchored popovers and selects, slow for sheets, dialogs and route
+     changes. See the note in lib/motion.ts for why a single 60ms value was
+     wrong. */
+  --motion-fast: 120ms;
+  --motion-base: 180ms;
+  --motion-slow: 240ms;
+
+  /* Easing, mirrored by EASE_OUT in src/lib/motion.ts. The built-in keywords
+     are too gentle to read as deliberate, so both curves are custom.
+
+     --ease-snap drives everything that enters or exits: it moves most in the
+     first frames, which is exactly when the user is watching. Never pair UI
+     motion with an ease-in curve — it delays that same moment and reads as lag.
+
+     --ease-drawer is Ionic's sheet curve, for edge-anchored panels that travel
+     a long distance and need to settle rather than stop.
+
+     Named --ease-snap, not --ease-out: Tailwind already ships an --ease-out
+     token backing the bare `ease-out` utility, and redefining it would silently
+     re-curve every existing use of that class. */
+  --ease-snap: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
@@ -332,24 +349,30 @@
 }
 
 @utility animate-heart-pop {
-  animation: heart-pop var(--motion-slow) ease-out both;
+  animation: heart-pop var(--motion-slow) var(--ease-snap) both;
 }
 
-/* Copy confirmation pop: a quick scale up from small to full, no overshoot —
-   a "confirmed" beat, not the heart's celebratory bounce. Played once when the
-   copy icon swaps to the check/x (keyed on status), so the confirmation reads
-   as a response rather than a hard glyph swap. Disabled under reduced-motion. */
+/* Copy confirmation pop: a quick scale up to full, no overshoot — a "confirmed"
+   beat, not the heart's celebratory bounce. Played once when the copy icon
+   swaps to the check/x (keyed on status), so the confirmation reads as a
+   response rather than a hard glyph swap. Disabled under reduced-motion.
+
+   Starts at 0.85 with a partial fade rather than the 0.6 it began life at: the
+   icon is replacing another icon in the same box, so it should read as the
+   glyph resolving into place, not as a new object flying in from nothing. */
 @keyframes copy-pop {
   0% {
-    transform: scale(0.6);
+    transform: scale(0.85);
+    opacity: 0.6;
   }
   100% {
     transform: scale(1);
+    opacity: 1;
   }
 }
 
 @utility animate-copy-pop {
-  animation: copy-pop var(--motion-fast) ease-out both;
+  animation: copy-pop var(--motion-fast) var(--ease-snap) both;
 }
 
 /* Syntax token colours for the Use-tab CodeBlock (tokens from
@@ -459,19 +482,32 @@
   margin-inline: -0.35em;
   padding-inline: 0.35em;
   box-decoration-break: clone;
-  transition: background-color 150ms ease-out;
+  transition: background-color var(--motion-fast) var(--ease-snap);
 }
 
-/* Respect reduced-motion globally: near-instant transitions/animations for any
-   non-essential motion (card entrance, accordion expand, hover transitions),
-   without having to opt each component out. */
+/* Reduced motion means less movement, not no animation. This used to flatten
+   every duration to 0.01ms, which also killed the fades and colour changes that
+   carry meaning — a panel swapping contents became a hard cut, harder to follow
+   than the fade it replaced, which is the opposite of the request.
+
+   So: kill the travel, keep the fade. Transforms snap to their end state
+   instantly while opacity and colour still cross over at their normal pace, and
+   the transform-only keyframes (heart-pop, copy-pop) are dropped entirely since
+   there is nothing left of them once the movement goes.
+
+   Motion-driven components are handled separately by MotionConfig
+   reducedMotion="user" in __root, which zeroes transforms the same way. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    transition-property: opacity, color, background-color, border-color,
+      box-shadow, fill, stroke !important;
     scroll-behavior: auto !important;
+  }
+
+  .animate-heart-pop,
+  .animate-copy-pop {
+    animation: none !important;
   }
 }

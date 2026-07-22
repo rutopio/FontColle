@@ -6,14 +6,18 @@
 //
 // MotionConfig reducedMotion="user" (see __root) already neutralises the
 // transform for users who ask for less motion; the fade still runs.
-import { MOTION_S } from "@/lib/motion";
+import { EASE_OUT, MOTION_S } from "@/lib/motion";
 
 export const FAB_MOTION = {
-  initial: { opacity: 0, scale: 0.6 },
+  // 0.9, not the 0.6 this started at: a FAB is a solid 56px disc, and starting
+  // it at little over half size made it read as popping out of nowhere rather
+  // than arriving. Paired with opacity, a shallow scale is enough to sell the
+  // entrance while the button keeps its physical presence throughout.
+  initial: { opacity: 0, scale: 0.9 },
   animate: { opacity: 1, scale: 1 },
-  exit: { opacity: 0, scale: 0.6 },
+  exit: { opacity: 0, scale: 0.9 },
   whileTap: { scale: 0.95 },
-  transition: { duration: MOTION_S.base, ease: "easeOut" },
+  transition: { duration: MOTION_S.base, ease: EASE_OUT },
 } as const;
 
 // Resting bottom offset for a FAB in its stack slot (0 = lowest), measured with
@@ -37,4 +41,4 @@ export function fabLift(dockVisible: boolean) {
   return { y: dockVisible ? `-${DOCK}rem` : "0rem" };
 }
 
-export const FAB_SHIFT = { duration: MOTION_S.base, ease: "easeOut" } as const;
+export const FAB_SHIFT = { duration: MOTION_S.base, ease: EASE_OUT } as const;

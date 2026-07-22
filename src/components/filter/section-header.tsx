@@ -13,6 +13,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { MatchMode } from "@/lib/fonts/filter";
+import { EASE_OUT, MOTION_S } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 // Shared fade for header actions that swap in/out (Reset <-> Sort). Fast and
@@ -21,7 +22,7 @@ const FADE = {
   initial: { opacity: 0 },
   animate: { opacity: 1 },
   exit: { opacity: 0 },
-  transition: { duration: 0.15, ease: "easeOut" },
+  transition: { duration: MOTION_S.fast, ease: EASE_OUT },
 } as const;
 
 // Per-section pill ordering: by font count (default) or alphabetically.
@@ -188,7 +189,11 @@ export function SectionHeader({
         key={flashKey}
         initial={flashKey ? { color: "var(--color-amber-500)" } : false}
         animate={{ color: "var(--color-primary)" }}
-        transition={{ duration: 0.9, ease: "easeOut" }}
+        // 0.9s, deliberately outside the motion scale: this is a one-shot
+        // colour hint, not a UI transition. It has to outlast the glance that
+        // follows a sibling section clearing this one's selection, so the user
+        // still catches it after their eye arrives.
+        transition={{ duration: 0.9, ease: EASE_OUT }}
         // min-w-0 + truncate: the action slot on the right is shrink-0, and
         // once a section has a selection it carries both the Any/All toggle and
         // Reset. Without this the title is the only flexible item and wraps to a

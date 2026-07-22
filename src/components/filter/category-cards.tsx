@@ -1,5 +1,6 @@
 import { ShapesIcon, XIcon } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from "motion/react";
+import { EASE_OUT, MOTION_S } from "@/lib/motion";
 import { CardButton } from "./card-button";
 import { HeaderButton, InfoTip } from "./section-header";
 import { CategorySpecimen } from "./specimen-icon";
@@ -10,7 +11,7 @@ const FADE = {
   initial: { opacity: 0 },
   animate: { opacity: 1 },
   exit: { opacity: 0 },
-  transition: { duration: 0.15, ease: "easeOut" },
+  transition: { duration: MOTION_S.fast, ease: EASE_OUT },
 } as const;
 
 // One Category card. Most are primary classes, but a few are cross-cutting

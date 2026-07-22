@@ -21,6 +21,7 @@ import {
   matchMode,
 } from "@/lib/fonts/filter";
 import * as actions from "@/lib/fonts/filter-actions";
+import { EASE_OUT, MOTION_S } from "@/lib/motion";
 import { useScrollReset } from "@/lib/use-scroll-reset";
 import { cn } from "@/lib/utils";
 import { CardGrid } from "./card-grid";
@@ -238,7 +239,7 @@ export function FilterSidebar({
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 0 }}
-            transition={{ duration: 0.15, ease: "easeOut" }}
+            transition={{ duration: MOTION_S.fast, ease: EASE_OUT }}
           >
             {group === "style" && (
               <>

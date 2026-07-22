@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/tooltip";
 import { DEFAULT_ON, featureName } from "@/lib/fonts/features";
 import type { FontRecord } from "@/lib/fonts/types";
+import { EASE_OUT, MOTION_S } from "@/lib/motion";
 import { useScrollReset } from "@/lib/use-scroll-reset";
 
 // Preview font-size bounds, shared by the slider and the click-to-edit value so
@@ -187,7 +188,7 @@ export function DetailSidebar({
           className="flex flex-col gap-8 p-4"
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.15, ease: "easeOut" }}
+          transition={{ duration: MOTION_S.fast, ease: EASE_OUT }}
         >
           {/* gap-1.5 + the slider's my-2, matching the metric range sliders. */}
           {showSize && (

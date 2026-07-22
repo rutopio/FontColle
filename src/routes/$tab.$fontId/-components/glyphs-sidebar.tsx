@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { CoveredBlock } from "@/lib/fonts/glyph-coverage";
+import { EASE_OUT, MOTION_S } from "@/lib/motion";
 import { useScrollReset } from "@/lib/use-scroll-reset";
 import { cn } from "@/lib/utils";
 
@@ -48,7 +49,7 @@ export function GlyphsSidebar({
           className="flex flex-col gap-4 p-4"
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.15, ease: "easeOut" }}
+          transition={{ duration: MOTION_S.fast, ease: EASE_OUT }}
         >
           <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase">
             <SquaresFourIcon className="size-4" />

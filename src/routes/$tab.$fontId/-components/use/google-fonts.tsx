@@ -256,7 +256,7 @@ function AxisControl({
       </div>
       {/* base-ui exposes the panel's natural height as a CSS var; animate `height`
           between it and 0, clipping the overflow so the content slides open. */}
-      <CollapsibleContent className="h-[var(--collapsible-panel-height)] overflow-hidden transition-[height] duration-200 ease-out data-[ending-style]:h-0 data-[starting-style]:h-0">
+      <CollapsibleContent className="h-[var(--collapsible-panel-height)] overflow-hidden transition-[height] duration-[var(--motion-fast)] ease-[var(--ease-snap)] data-[ending-style]:h-0 data-[starting-style]:h-0">
         <div className="flex flex-col gap-2 pt-2">
           <div className="flex items-center gap-3">
             <Slider

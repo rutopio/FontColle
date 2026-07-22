@@ -51,7 +51,13 @@ export function TabsList({
             {children}
             <TabsPrimitive.Indicator
                 className={cn(
-                    "absolute bottom-0 left-0 h-(--active-tab-height) w-(--active-tab-width) translate-x-(--active-tab-left) -translate-y-(--active-tab-bottom) transition-[width,translate] duration-200 ease-in-out",
+                    // ease-in-out, not the app's ease-snap: the indicator is
+                    // travelling between two on-screen positions rather than
+                    // entering or leaving, so it should accelerate away and
+                    // decelerate in. Width is animated alongside translate
+                    // because the bar has no content to distort, which is what
+                    // would rule a layout property out elsewhere.
+                    "absolute bottom-0 left-0 h-(--active-tab-height) w-(--active-tab-width) translate-x-(--active-tab-left) -translate-y-(--active-tab-bottom) transition-[width,translate] duration-[var(--motion-base)] ease-in-out",
                     variant === "underline"
                         ? "z-10 bg-primary data-[orientation=horizontal]:h-0.5 data-[orientation=vertical]:w-0.5 data-[orientation=vertical]:-translate-x-px data-[orientation=horizontal]:translate-y-px"
                         : "-z-1 rounded-md bg-background shadow-sm/5 dark:bg-input",

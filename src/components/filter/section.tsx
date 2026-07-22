@@ -7,6 +7,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { MatchMode } from "@/lib/fonts/filter";
+import { EASE_OUT, MOTION_S } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { RARE_THRESHOLD } from "./constants";
 import { PillButton } from "./pill-button";
@@ -211,7 +212,7 @@ export function Pills({
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  transition={{ duration: MOTION_S.base, ease: EASE_OUT }}
                   className="overflow-hidden"
                 >
                   <div className={rowClass}>{rare.map(renderPill)}</div>

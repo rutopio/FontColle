@@ -2,7 +2,7 @@ import { XIcon } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from "motion/react";
 import { Fragment } from "react";
 import type { FilterSearch, FilterState } from "@/lib/fonts/filter";
-import { MOTION_S } from "@/lib/motion";
+import { EASE_OUT, MOTION_S } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { groupActiveFilters } from "./describe";
 import { SavePresetPopover } from "./save-preset-popover";
@@ -21,7 +21,7 @@ const CHIP_MOTION = {
   initial: { opacity: 0 },
   animate: { opacity: 1 },
   exit: { opacity: 0 },
-  transition: { duration: MOTION_S.fast, ease: "easeOut" },
+  transition: { duration: MOTION_S.fast, ease: EASE_OUT },
 } as const;
 
 // The active filter conditions, each a removable chip. Rendered both at the top
