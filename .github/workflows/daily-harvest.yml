@@ -171,6 +171,26 @@ jobs:
             echo "no families re-harvested; OG cards unchanged"
           fi
 
+      - name: Regenerate glyph coverage for newly harvested families
+        id: glyphs
+        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'
+        run: |
+          # public/glyphs/<id>.json (the cmap ranges the Glyphs panel renders) is
+          # a cache-reading backfill, NOT part of the harvest: daily_update and
+          # harvest_api_supplement seed each new family's primary TTF into
+          # ttf_cache precisely so this step can derive its coverage. Without it,
+          # a supplement family (Google Sans, Edu Hand) shipped a record but no
+          # coverage file, so its /glyphs/<id>.json 404'd live and the panel was
+          # empty. Only the harvested ids (og_ids.txt) need recomputing.
+          if [ -s scripts/harvester/og_ids.txt ]; then
+            python3 scripts/harvester/backfill_glyph_coverage.py \
+              $(tr '\n' ' ' < scripts/harvester/og_ids.txt) 2>&1 | tee -a update.log
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "no families re-harvested; glyph coverage unchanged"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Publish assets to R2
         if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'
         env:
@@ -183,6 +203,13 @@ jobs:
           # lifecycle rule on the fonts/ prefix, not by this step. This runs
           # AFTER the shrinkage guard (which read the old manifest baseline).
           node scripts/publish-assets.mjs --daily --og-ids=scripts/harvester/og_ids.txt
+          # glyph coverage has no per-object delta channel (unlike OG): the whole
+          # tarball is re-sealed when any family was harvested this run, so a new
+          # family's coverage actually reaches R2. Rewrites only the manifest's
+          # glyphs entry (fonts/og from the --daily call above are preserved).
+          if [ "${{ steps.glyphs.outputs.changed }}" = "true" ]; then
+            node scripts/publish-assets.mjs --reseed-glyphs
+          fi
 
       - name: Commit updated manifest
         if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'

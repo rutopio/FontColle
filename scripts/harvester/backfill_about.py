@@ -9,7 +9,7 @@ API. They live at:
     https://fonts.google.com/metadata/fonts/<Family+Name>
 
 The response is JSON guarded by an XSSI prefix `)]}'` on the first line. We take:
-  - description         -> about (HTML string | null)
+  - description (or `article` for brand fonts) -> about (HTML string | null)
   - designers[].{name,bio,imageUrl} -> designerProfiles (JSON array)
 
 Independent backfill: a full reharvest drops these two fields (they're not in the
@@ -55,6 +55,23 @@ def fetch_meta(name, retries=3):
     return None
 
 
+def about_html(meta):
+    """The family's about prose as an HTML string, or None.
+
+    Google moved brand / newer families' prose out of the flat `description`
+    field into `article` (a list of HTML fragments): Google Sans, Google Sans
+    Flex and the Edu Hand faces carry an empty `description` but a full
+    `article`, while classic families (Inter, Roboto) still use `description`
+    and have no `article`. Prefer `description`; fall back to the joined
+    `article` so both shapes fill the About panel."""
+    desc = (meta.get("description") or "").strip()
+    if desc:
+        return desc
+    article = meta.get("article") or []
+    joined = "\n".join(part for part in article if part).strip()
+    return joined or None
+
+
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     limit = None
@@ -80,7 +97,7 @@ def main():
             about = None
             profiles = []
         else:
-            about = meta.get("description") or None
+            about = about_html(meta)
             profiles = [
                 {
                     "name": d.get("name"),

@@ -70,7 +70,12 @@ def family_meta(family):
         print(f"WARN: metadata lookup failed for {family}: {e}", file=sys.stderr)
         return None, None, []
     lic = LICENSE_IDS.get((raw.get("license") or "").lower())
-    about = raw.get("description") or None
+    # Brand / newer families (Google Sans, Edu Hand) carry an empty
+    # `description` but a full `article` list; classic families use
+    # `description`. Prefer `description`, fall back to the joined `article`.
+    about = (raw.get("description") or "").strip() or None
+    if not about:
+        about = "\n".join(p for p in (raw.get("article") or []) if p).strip() or None
     profiles = [
         {
             "name": d.get("name"),
