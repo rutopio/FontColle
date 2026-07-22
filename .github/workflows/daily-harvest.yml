@@ -117,9 +117,9 @@ jobs:
       - name: Refresh classification tags and derived Category class
         id: classify
         run: |
-          # `tags` (the google/fonts classification scores) and the `class`
+          # `tags` (the google/fonts classification scores) and the `category`
           # derived from them are NOT produced by the harvest: to_record() only
-          # sees the webfonts API, whose `category` is coarser than the tag tree
+          # sees the webfonts API, whose `apiCategory` is coarser than the tag tree
           # Google's own site browses by. Both steps must therefore re-run on
           # every harvest, or a re-harvested family silently reverts (Inconsolata
           # scores /Monospace 100 but its API category is SANS_SERIF, so it would
@@ -135,7 +135,7 @@ jobs:
           # every later run would redo the same work forever.
           before=$(shasum -a 256 src/data/fonts.json | cut -d' ' -f1)
           python3 scripts/harvester/backfill_tags.py 2>&1 | tee -a update.log
-          python3 scripts/harvester/backfill_form_class.py 2>&1 | tee -a update.log
+          python3 scripts/harvester/backfill_form_category.py 2>&1 | tee -a update.log
           after=$(shasum -a 256 src/data/fonts.json | cut -d' ' -f1)
           if [ "$before" != "$after" ]; then
             echo "changed=true" >> "$GITHUB_OUTPUT"

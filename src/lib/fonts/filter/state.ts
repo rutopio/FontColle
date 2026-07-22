@@ -13,7 +13,7 @@ import {
 
 export interface FilterState {
   query: string;
-  classes: string[]; // primary class, OR within
+  categories: string[]; // primary category, OR within
   // Font type facet, radio-style: 0 or 1 of "static" | "variable".
   tags: string[];
   features: string[]; // OpenType feature tags, AND across
@@ -67,12 +67,12 @@ export interface FilterState {
 // the grid passes one object instead of six loose arrays.
 export type FilterSelection = Pick<
   FilterState,
-  "classes" | "tags" | "color" | "axes" | "weights" | "widths" | "italic"
+  "categories" | "tags" | "color" | "axes" | "weights" | "widths" | "italic"
 >;
 
 export const emptyFilter: FilterState = {
   query: "",
-  classes: [],
+  categories: [],
   tags: [],
   features: [],
   axes: [],
@@ -311,7 +311,7 @@ function encodeModes(modes: FilterState["matchModes"]): string | undefined {
 export function searchToFilter(s: FilterSearch): FilterState {
   return {
     query: s.q ?? "",
-    classes: splitUnderscore(s.category),
+    categories: splitUnderscore(s.category),
     tags: splitUnderscore(s.tag),
     features: splitUnderscore(s.feature),
     axes: splitUnderscore(s.axis),
@@ -347,7 +347,7 @@ export function searchToFilter(s: FilterSearch): FilterState {
 export function filterToSearch(f: FilterState): FilterSearch {
   const s: FilterSearch = {};
   if (f.query) s.q = f.query;
-  if (f.classes.length) s.category = joinUnderscore(f.classes);
+  if (f.categories.length) s.category = joinUnderscore(f.categories);
   if (f.tags.length) s.tag = joinUnderscore(f.tags);
   if (f.features.length) s.feature = joinUnderscore(f.features);
   if (f.axes.length) s.axis = joinUnderscore(f.axes);
@@ -385,7 +385,7 @@ export function filterToSearch(f: FilterState): FilterSearch {
  *  query). Drives the "Clear N filters" affordance. */
 export function activeFilterCount(f: FilterState): number {
   return (
-    f.classes.length +
+    f.categories.length +
     f.tags.length +
     f.features.length +
     f.axes.length +

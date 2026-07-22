@@ -25,7 +25,7 @@ function pruneEmptyModes(f: FilterState): FilterState {
 // The FilterState fields that hold a plain string[], i.e. the ones toggle/
 // clearSection operate on. Excludes `metrics` (object) and the boolean facets.
 type ArrayKey =
-  | "classes"
+  | "categories"
   | "tags"
   | "features"
   | "axes"

@@ -27,7 +27,7 @@ Run AFTER backfill_tags.py, which is what puts `tags` on each record.
 Idempotent.
 
 Usage:
-    python3 backfill_form_class.py [path/to/fonts.json]
+    python3 backfill_form_category.py [path/to/fonts.json]
 """
 import json
 import os
@@ -90,28 +90,28 @@ def main():
     moves = Counter()
     changed = 0
     for r in records:
-        if r.get("class") in CURATED:
+        if r.get("category") in CURATED:
             continue
         want = form_class(r)
         # No form tag: Google has not scored the letterform, so primary_class()'s
-        # reading of `category` stands.
+        # reading of the raw API category stands.
         if want is None:
             continue
-        if r.get("class") != want:
-            moves[f"{r.get('class')} -> {want}"] += 1
-            r["class"] = want
+        if r.get("category") != want:
+            moves[f"{r.get('category')} -> {want}"] += 1
+            r["category"] = want
             changed += 1
 
     with open(path, "w") as fh:
         json.dump(records, fh, indent=2, ensure_ascii=False)
 
-    counts = Counter(r["class"] for r in records if r.get("isPublished"))
+    counts = Counter(r["category"] for r in records if r.get("isPublished"))
     print(f"reclassified {changed} records", file=sys.stderr)
     for move, n in moves.most_common():
         print(f"  {move}: {n}", file=sys.stderr)
-    print("published class counts:", file=sys.stderr)
-    for cls, n in counts.most_common():
-        print(f"  {cls}: {n}", file=sys.stderr)
+    print("published category counts:", file=sys.stderr)
+    for cat, n in counts.most_common():
+        print(f"  {cat}: {n}", file=sys.stderr)
 
 
 if __name__ == "__main__":

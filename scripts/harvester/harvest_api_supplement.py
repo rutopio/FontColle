@@ -181,7 +181,7 @@ def main():
         r.setdefault("licenseHeader", None)
     print(f"\n=== {len(finals)} records transformed ===", file=sys.stderr)
     for r in finals:
-        print(f"  {r['id']:28} class={r.get('class'):8} "
+        print(f"  {r['id']:28} category={r.get('category'):8} "
               f"weights={r.get('weights')} axes={[a.get('tag') for a in (r.get('axes') or [])]} "
               f"upm={r.get('unitsPerEm')} glyphs={r.get('glyphCount')} "
               f"vendor={r.get('vendorId')} subsets={len(r.get('subsets') or [])}", file=sys.stderr)

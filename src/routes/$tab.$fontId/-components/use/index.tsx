@@ -26,7 +26,7 @@ export function UsePanel({
   axisState: Record<string, number>;
   italic: boolean;
 }) {
-  const cssFamily = `"${font.name}", ${fallbackFor(font.class)}`;
+  const cssFamily = `"${font.name}", ${fallbackFor(font.category)}`;
 
   return (
     <Tabs defaultValue="google">

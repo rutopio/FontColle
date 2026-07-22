@@ -153,7 +153,7 @@ export async function genCatalog() {
     id: f.id,
     name: f.name,
     designer: f.designer ?? null,
-    class: f.class,
+    category: f.category,
     license: f.license,
     isVariable: f.isVariable,
     isMonospace: f.isMonospace,

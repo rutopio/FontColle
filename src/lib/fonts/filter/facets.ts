@@ -307,7 +307,7 @@ export function foldVendor(vendorId: string | null): string | null {
 
 /** Build the set of selectable values with counts, from the full dataset. */
 export function buildFacetIndex(fonts: FontRecord[]) {
-  const classes = new Map<string, number>();
+  const categories = new Map<string, number>();
   const facets = new Map<string, number>();
   const features = new Map<string, number>();
   const axes = new Map<string, number>();
@@ -338,7 +338,7 @@ export function buildFacetIndex(fonts: FontRecord[]) {
   for (const font of fonts) {
     if (font.hasHinting === true) hintedCount++;
     else unhintedCount++;
-    bump(classes, font.class);
+    bump(categories, font.category);
     for (const x of font.facets) bump(facets, x);
     for (const x of font.features) bump(features, x);
     for (const a of font.axes) bump(axes, a.tag);
@@ -373,7 +373,7 @@ export function buildFacetIndex(fonts: FontRecord[]) {
   const byStep = (m: Map<string, number>) =>
     [...m.entries()].sort((a, b) => Number(a[0]) - Number(b[0]));
   return {
-    classes: sorted(classes),
+    categories: sorted(categories),
     features: sorted(features),
     axes: sorted(axes),
     weights: byStep(weights),

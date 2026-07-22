@@ -84,7 +84,7 @@ const classificationsBySection = (fonts) => {
 // and the full filter vocabulary: without them an agent sees only axes and
 // features and never discovers the `tags` scores.
 function buildLlmsTxt(siteUrl, fonts) {
-  const classes = vocab(fonts, (f) => f.class);
+  const categories = vocab(fonts, (f) => f.category);
   const licenses = vocab(fonts, (f) => f.license);
   const scripts = vocab(fonts, (f) => f.scripts);
   const features = vocab(fonts, (f) => f.features);
@@ -128,7 +128,7 @@ The \`tags\` object is what makes subjective queries answerable. Worked example,
 \`\`\`js
 const fonts = await (await fetch("${siteUrl}/catalog-slim.json")).json();
 fonts
-  .filter(f => f.isVariable && f.class === "Sans")
+  .filter(f => f.isVariable && f.category === "Sans")
   .map(f => ({ f, score: (f.tags["/Expressive/Happy"] ?? 0) + (f.tags["/Expressive/Playful"] ?? 0) }))
   .sort((a, b) => b.score - a.score)
   .slice(0, 10);
@@ -143,7 +143,7 @@ Then link the user to \`${siteUrl}/instances/<Family_Name>\` for each result, an
 | \`id\` | string | Catalog slug, lowercased, spaces removed |
 | \`name\` | string | Family name as Google publishes it |
 | \`designer\` | string \\| null | May list several designers, comma-separated |
-| \`class\` | string | ${code(classes)} |
+| \`category\` | string | ${code(categories)} |
 | \`license\` | string | ${licenses.map((l) => `\`${l}\``).join(" \\| ")} |
 | \`isVariable\` | boolean | True when the family ships a variable font |
 | \`isMonospace\` | boolean | From the post table's \`isFixedPitch\` |
@@ -188,7 +188,7 @@ The site's own filter UI exposes exactly these, and all are computable from the 
 | Dimension | Values | Combine |
 |---|---|---|
 | Text query | matches family name and designer | — |
-| Class | ${code(classes)} | OR |
+| Category | ${code(categories)} | OR |
 | Facet | the \`facets\` list above | AND |
 | OpenType feature | any of ${features.length} tags (${code(["liga", "smcp", "ss01", "zero"])}, …) | AND |
 | Variable axis | ${code(REGISTERED_AXES)} + ${customAxes.length} custom | AND |

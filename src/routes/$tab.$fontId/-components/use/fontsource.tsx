@@ -52,7 +52,7 @@ export function FontsourceMethod({ font }: { font: FontRecord }) {
     : `@fontsource/${slug}`;
   // Variable Fontsource packages name the family "<Name> Variable"; static ones
   // keep the plain family name.
-  const cssFamily = `"${font.name}${isVariable ? " Variable" : ""}", ${fallbackFor(font.class)}`;
+  const cssFamily = `"${font.name}${isVariable ? " Variable" : ""}", ${fallbackFor(font.category)}`;
   // Real script subsets the family ships (drop the synthetic "menu" entry), for
   // the Advanced Subsets picker. Fall back to latin when none are recorded.
   const subsets = font.subsets.filter((s) => s !== "menu");

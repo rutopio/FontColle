@@ -13,8 +13,8 @@ function font(over: Partial<FontRecord> = {}): FontRecord {
     name: "Test",
     displayName: null,
     designer: null,
-    class: "Sans",
-    category: null,
+    category: "Sans",
+    apiCategory: null,
     license: null,
     isVariable: false,
     subsets: [],
@@ -94,13 +94,13 @@ describe("applyFilters, text query", () => {
   });
 });
 
-describe("applyFilters, class", () => {
+describe("applyFilters, category", () => {
   const fonts = [
-    font({ name: "S", class: "Sans" }),
-    font({ name: "R", class: "Serif" }),
+    font({ name: "S", category: "Sans" }),
+    font({ name: "R", category: "Serif" }),
   ];
-  it("includes the matching class, excludes others", () => {
-    expect(names(applyFilters(fonts, filter({ classes: ["Sans"] })))).toEqual([
+  it("includes the matching category, excludes others", () => {
+    expect(names(applyFilters(fonts, filter({ categories: ["Sans"] })))).toEqual([
       "S",
     ]);
   });

@@ -48,7 +48,7 @@ export const FILTER_GROUPS: FilterGroup[] = [
     id: "style",
     label: "Style",
     icon: ShapesIcon,
-    keys: ["classes", "style"],
+    keys: ["categories", "style"],
   },
   // Weight/Width and the wght/wdth variable axes are mutually exclusive, one
   // clears the other, so they have to share a panel. Also owns Font type (the

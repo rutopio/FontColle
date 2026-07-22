@@ -24,7 +24,7 @@ export function BunnyMethod({ font }: { font: FontRecord }) {
   const slug = fontsourceSlug(font.name);
   const weights = weightList(font.weights);
   const hasItalic = font.instances.some((i) => i.italic);
-  const cssFamily = `"${font.name}", ${fallbackFor(font.class)}`;
+  const cssFamily = `"${font.name}", ${fallbackFor(font.category)}`;
 
   const [weight, setWeight] = useState(
     weights.includes(400) ? 400 : weights[0]

@@ -20,7 +20,7 @@ import {
 // the scheme, not something these fields ever hold in practice.
 const fullFilter: FilterState = {
   query: "noto sans",
-  classes: ["Serif", "Sans"],
+  categories: ["Serif", "Sans"],
   tags: ["variable"], // Font type radio, at most one value
   features: ["liga", "smcp"],
   axes: ["wght", "wdth"],
@@ -75,7 +75,7 @@ describe("searchToFilter(filterToSearch(f)) round-trip", () => {
   it("preserves a facet-arrays-only state", () => {
     const f: FilterState = {
       ...emptyFilter,
-      classes: ["Sans"],
+      categories: ["Sans"],
       scripts: ["Latn", "Grek"],
       colorFormats: ["COLR"],
     };
@@ -192,7 +192,7 @@ describe("searchToFilter reverse-direction edge cases", () => {
 
   it("accepts either comma or underscore as the list separator", () => {
     // splitUnderscore honours both, so a hand-typed comma URL still parses.
-    expect(searchToFilter({ category: "Serif,Sans" }).classes).toEqual([
+    expect(searchToFilter({ category: "Serif,Sans" }).categories).toEqual([
       "Serif",
       "Sans",
     ]);

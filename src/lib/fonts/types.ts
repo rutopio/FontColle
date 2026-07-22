@@ -19,8 +19,11 @@ export interface FontRecord {
   // "Playwrite BE VLG" -> "Playwrite België Vlaanderen"); null when identical.
   displayName: string | null;
   designer: string | null;
-  class: string;
-  category: string | null;
+  // Primary letterform category shown in the UI ("Sans", "Serif", "Mono", …),
+  // derived from Google's classification scores. `apiCategory` is the coarser
+  // raw value the webfonts API reports ("SANS_SERIF"), kept only as a fallback.
+  category: string;
+  apiCategory: string | null;
   license: string | null;
   isVariable: boolean;
   subsets: string[];

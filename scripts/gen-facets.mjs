@@ -7,7 +7,7 @@
 //
 // Sharding dimensions are deliberately limited to the ones that (a) meaningfully
 // cut the result set and (b) don't combinatorially explode:
-//   - class            (8 values: Sans, Serif, Display, Script, Slab, Mono, ...)
+//   - category         (8 values: Sans, Serif, Display, Script, Slab, Mono, ...)
 //   - non-Latin subset (writing-system support; Latin is ~everything, skipped)
 //   - flags            (variable, monospace, color) — small, high-value slices
 // A facets/index.json lists every slice with its count and href so the agent
@@ -29,7 +29,7 @@ const project = (f) => ({
   id: f.id,
   name: f.name,
   designer: f.designer ?? null,
-  class: f.class,
+  category: f.category,
   license: f.license,
   isVariable: f.isVariable,
   isMonospace: f.isMonospace,
@@ -88,13 +88,13 @@ export async function genFacets() {
     arr.push(f);
   };
 
-  // class
-  const byClass = new Map();
+  // category
+  const byCategory = new Map();
   for (const f of slim) {
-    if (f.class) push(byClass, f.class, f);
+    if (f.category) push(byCategory, f.category, f);
   }
-  for (const [value, records] of byClass) {
-    await writeSlice("class", value, records);
+  for (const [value, records] of byCategory) {
+    await writeSlice("category", value, records);
   }
 
   // non-Latin subsets

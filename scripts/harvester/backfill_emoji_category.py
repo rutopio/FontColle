@@ -16,7 +16,7 @@ Backfill only (edits src/data/fonts.json); harvest.py's classifier is left
 unchanged. Idempotent.
 
 Usage:
-    python3 backfill_emoji_class.py [path/to/fonts.json]
+    python3 backfill_emoji_category.py [path/to/fonts.json]
 """
 import json
 import os
@@ -34,9 +34,9 @@ def is_emoji_font(rec):
 def is_slab_font(rec):
     # Monospace wins over Slab: a slab-tagged typewriter face (Courier Prime,
     # Cutive Mono) is first and foremost a mono face, and Mono is the more
-    # useful primary class to browse it under. Without this guard the Slab
+    # useful primary category to browse it under. Without this guard the Slab
     # carve-out below would silently take those families off the Mono card.
-    if rec.get("class") == "Mono":
+    if rec.get("category") == "Mono":
         return False
     tags = rec.get("tags", {})
     return any(tags.get(t, 0) >= TAG_THRESHOLD for t in SLAB_TAGS)
@@ -52,19 +52,19 @@ def main():
     emoji, slab, restored = [], [], []
     for r in records:
         # Repair records an earlier run moved to Slab before Mono took
-        # precedence: the harvested category still says MONOSPACE, so the
-        # original class is recoverable.
-        if r.get("class") == "Slab" and "MONO" in (r.get("category") or "").upper():
-            r["class"] = "Mono"
+        # precedence: the raw API category still says MONOSPACE, so the
+        # original category is recoverable.
+        if r.get("category") == "Slab" and "MONO" in (r.get("apiCategory") or "").upper():
+            r["category"] = "Mono"
             restored.append(r.get("name"))
         # Emoji takes precedence (an emoji font won't also be slab-tagged).
         if is_emoji_font(r):
-            if r.get("class") != "Emoji":
-                r["class"] = "Emoji"
+            if r.get("category") != "Emoji":
+                r["category"] = "Emoji"
                 emoji.append(r.get("name"))
         elif is_slab_font(r):
-            if r.get("class") != "Slab":
-                r["class"] = "Slab"
+            if r.get("category") != "Slab":
+                r["category"] = "Slab"
                 slab.append(r.get("name"))
 
     with open(path, "w") as fh:

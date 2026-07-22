@@ -41,7 +41,9 @@ function detailDescription(font: FontRecord): string {
   // "Mono", "Script"…); `category` is the raw GF enum ("SANS_SERIF"), so it's
   // only a fallback, lowercased/despaced to read as prose. "a"/"an" per vowel.
   const rawKind =
-    font.class?.trim() || font.category?.replace(/_/g, " ").toLowerCase() || "";
+    font.category?.trim() ||
+    font.apiCategory?.replace(/_/g, " ").toLowerCase() ||
+    "";
   const kind = rawKind.toLowerCase();
   const article = /^[aeiou]/.test(kind) ? "an" : "a";
   const lead = kind ? `${name}, ${article} ${kind} font` : name;

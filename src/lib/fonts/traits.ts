@@ -16,7 +16,10 @@ export function fontTraits(
   selection: FilterSelection
 ): Trait[] {
   const traits: Trait[] = [
-    { label: font.class, active: selection.classes.includes(font.class) },
+    {
+      label: font.category,
+      active: selection.categories.includes(font.category),
+    },
     {
       label: font.isVariable ? "Variable" : "Static",
       // A selected variable axis is inherently a "variable" filter, so it also

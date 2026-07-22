@@ -112,12 +112,12 @@ export function FilterSidebar({
   const selectFontType = (value: string) =>
     onChange(actions.selectFontType(filter, value));
 
-  // Category cards are the primary classes, each mutually exclusive (Slab and
-  // Emoji are their own classes now). Fixed display order; Slab/Emoji slot in
-  // before the odd-one-out Graphics. Italic is a separate section below, not a
-  // Category card.
-  const classCount = (v: string) =>
-    index.classes.find(([c]) => c === v)?.[1] ?? 0;
+  // Category cards are the primary categories, each mutually exclusive (Slab
+  // and Emoji are their own categories now). Fixed display order; Slab/Emoji
+  // slot in before the odd-one-out Graphics. Italic is a separate section
+  // below, not a Category card.
+  const categoryCount = (v: string) =>
+    index.categories.find(([c]) => c === v)?.[1] ?? 0;
   const categoryCards = [
     "Sans",
     "Serif",
@@ -130,11 +130,11 @@ export function FilterSidebar({
   ]
     .map((v) => ({
       value: v,
-      count: classCount(v),
-      selected: filter.classes.includes(v),
+      count: categoryCount(v),
+      selected: filter.categories.includes(v),
     }))
     .filter((c) => c.count > 0 || c.selected);
-  const toggleCategory = (value: string) => toggle("classes", value);
+  const toggleCategory = (value: string) => toggle("categories", value);
   const selectItalic = (value: string) =>
     onChange(actions.selectItalic(filter, value));
   // OR/AND toggle for a multi-select section, plus the current mode to show.
@@ -246,7 +246,7 @@ export function FilterSidebar({
                 <CategoryCards
                   cards={categoryCards}
                   onToggle={toggleCategory}
-                  onReset={() => clearSection("classes", index.classes)}
+                  onReset={() => clearSection("categories", index.categories)}
                 />
                 {/* Serif/Sans/Slab/Script share the one `style` key,
                     so they render as sub-lists under a single "Style" header
