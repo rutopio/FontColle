@@ -10,9 +10,33 @@ import { familyWeightSet, familyWidthSet } from "./weights";
 /** The selectable filter values with family counts, keyed by section. */
 export type FacetIndex = ReturnType<typeof buildFacetIndex>;
 
-// A font belongs to a classification tag when its score reaches this. Shared
-// with applyFilters so counts and results agree.
-export const TAG_MEMBERSHIP_THRESHOLD = 50;
+// A font belongs to a classification tag when its score reaches the threshold
+// for that tag's group. Shared with applyFilters so counts and results agree.
+//
+// Form (Sans / Serif / Slab / Script) counts at any positive score, matching
+// what Google Fonts' own browse lists. Letterform is an observation: a face
+// scoring /Serif/Didone 20 really does have Didone traits, just less
+// pronounced, and hiding it makes the section disagree with Google for no gain.
+//
+// Mood (Expressive / Theme / Seasonal) keeps a majority threshold. Those are
+// subjective ratings on a continuum, and Google scores nearly every family on
+// nearly every trait — Roboto carries /Expressive/Vintage 10. At 1 the pills
+// would each match most of the catalog and stop discriminating.
+export const FORM_TAG_THRESHOLD = 1;
+export const MOOD_TAG_THRESHOLD = 50;
+
+/** Whether a family carries a classification tag, at the threshold its group
+ *  uses. `score` is the family's rating for that tag path (0 when absent). */
+export function meetsTagThreshold(tag: string, score: number): boolean {
+  return score >= tagThreshold(tag);
+}
+
+/** The membership threshold a classification tag path is judged at. */
+export function tagThreshold(tag: string): number {
+  return classificationGroupOf(tag) === "mood"
+    ? MOOD_TAG_THRESHOLD
+    : FORM_TAG_THRESHOLD;
+}
 
 // The classification sections, in display order, each an ordered list of its
 // sub-tag paths. Sub-tag order is by family count descending, from the current
@@ -179,22 +203,40 @@ export const ACTIVITY_LABELS: Record<string, string> = {
   dormant: "Dormant (3y+)",
 };
 
-/** The activity bucket a family falls into, from how many months ago it last
- *  updated. Uses lastModified (the served version's date) when present, else
- *  the git first-commit date as a floor. Every published family has one of
- *  these dates, so it always maps to exactly one bucket. The ranges are
- *  disjoint (≤6m / 6-12m / 1-3y / 3y+) to keep the radio partition valid.
- *  Shared by the index and applyFilters. */
+/** The activity bucket a family falls into, from how many months ago the font
+ *  binary was last compiled (head.modified). Falls back to the git first-commit
+ *  date for the few fonts that ship an unset stamp. The ranges are disjoint
+ *  (≤6m / 6-12m / 1-3y / 3y+) so the four buckets partition the catalog.
+ *  Shared by the index and applyFilters.
+ *
+ *  Deliberately NOT lastModifiedApi. That is the date Google publishes for the
+ *  version it serves, and it moves on any release — a library-wide metadata
+ *  pass in Sept 2025 stamped 1492 of 1942 families within three weeks, which
+ *  would report all but 2 of them as actively maintained. Abril Fatface reads
+ *  2025-09-16 there while its binary is untouched since 2011 at version 1.001.
+ *  head.modified only advances when the outlines are rebuilt, which is what
+ *  "is this still maintained" actually asks. */
 export function fontActivity(font: FontRecord): string {
-  const date = font.lastModified ?? font.firstCommitDate;
-  if (!date) return "dormant";
-  const then = Date.parse(date);
-  if (Number.isNaN(then)) return "dormant";
-  const months = (Date.now() - then) / (1000 * 60 * 60 * 24 * 30.44);
+  const months = monthsSince(font);
+  if (months === null) return "dormant";
   if (months <= 6) return "latest";
   if (months <= 12) return "active";
   if (months <= 36) return "recent";
   return "dormant";
+}
+
+/** Months since the font binary was last compiled, or null when undatable.
+ *  A non-positive head.modified is an unset stamp (it decodes to 1904/1970),
+ *  not a real date, so it defers to the repo's first commit. */
+function monthsSince(font: FontRecord): number | null {
+  const stamp =
+    font.modifiedMs && font.modifiedMs > 0
+      ? font.modifiedMs
+      : font.firstCommitDate
+        ? Date.parse(font.firstCommitDate)
+        : Number.NaN;
+  if (!Number.isFinite(stamp)) return null;
+  return (Date.now() - stamp) / (1000 * 60 * 60 * 24 * 30.44);
 }
 
 /** The host bucket a family's repository_url falls into. Every family maps to
@@ -307,7 +349,7 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     bump(color, isColorFont(font) ? "color" : "monochrome");
     for (const t of font.colorTables) bump(colorFormats, t);
     for (const [path, score] of Object.entries(font.tags))
-      if (score >= TAG_MEMBERSHIP_THRESHOLD) bump(classifications, path);
+      if (meetsTagThreshold(path, score)) bump(classifications, path);
     for (const d of designerTokens(font)) bump(designers, d);
     const vnd = foldVendor(font.vendorId);
     if (vnd) {

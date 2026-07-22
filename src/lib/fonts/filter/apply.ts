@@ -12,8 +12,8 @@ import {
   designerTokens,
   foldVendor,
   fontActivity,
+  meetsTagThreshold,
   repoHost,
-  TAG_MEMBERSHIP_THRESHOLD,
 } from "./facets";
 import { instanceInRange } from "./instances";
 import { MODE_KEYS, type ModeKey, matchMode } from "./match-mode";
@@ -250,15 +250,11 @@ export function applyFilters(
       )
     )
       return false;
-    // Style: OR by default (carry any selected tag scoring >= 50),
-    // AND when toggled.
+    // Style: OR by default (carry any selected tag at its group's threshold),
+    // AND when toggled. Form tags count at any score, Mood tags at 50+.
     if (
       f.style.length &&
-      !combine(
-        "style",
-        f.style,
-        (t) => (font.tags[t] ?? 0) >= TAG_MEMBERSHIP_THRESHOLD
-      )
+      !combine("style", f.style, (t) => meetsTagThreshold(t, font.tags[t] ?? 0))
     )
       return false;
     // Designers: OR by default (family lists at least one selected designer),

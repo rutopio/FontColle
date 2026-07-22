@@ -1,7 +1,7 @@
 import { ShapesIcon, XIcon } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from "motion/react";
 import { CardButton } from "./card-button";
-import { HeaderButton } from "./section-header";
+import { HeaderButton, InfoTip } from "./section-header";
 import { CategorySpecimen } from "./specimen-icon";
 
 // Same cross-fade the SectionHeader Reset uses, so Category's Reset animates on
@@ -42,6 +42,11 @@ export function CategoryCards({
         <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase">
           <ShapesIcon className="size-4" />
           Category
+          <InfoTip title="Category">
+            {
+              "One primary class per family, so the cards partition the catalog. Derived from Google Fonts’ letterform classifications by taking each family’s highest-scoring one, with Mono winning ties over Sans or Serif. Families Google has not classified fall back to the category its API reports."
+            }
+          </InfoTip>
         </h2>
         {/* Reserve the slot's height up front with an invisible Reset, then
             cross-fade the live one in on first selection so nothing shifts. */}

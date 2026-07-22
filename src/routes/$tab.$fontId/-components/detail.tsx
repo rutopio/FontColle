@@ -126,10 +126,19 @@ export function Detail({
       value: formatDate(font.dateAdded),
       badge: versionOnDate(font.versionHistory, font.dateAdded) ?? undefined,
     },
-    font.lastModified && {
-      label: "Last updated",
-      value: formatDate(font.lastModified),
+    // Two different dates, deliberately both shown: Google's publish date moves
+    // on any release (a metadata pass bumps it library-wide), while the binary's
+    // head.modified only moves when the outlines are rebuilt. The Maintenance
+    // filter buckets on the latter.
+    font.lastModifiedApi && {
+      label: "Published",
+      value: formatDate(font.lastModifiedApi),
     },
+    font.modifiedMs != null &&
+      font.modifiedMs > 0 && {
+        label: "Font built",
+        value: formatDate(new Date(font.modifiedMs).toISOString().slice(0, 10)),
+      },
     font.license && { label: "License", value: font.license },
   ].filter(Boolean) as SpecRow[];
 

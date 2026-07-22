@@ -51,9 +51,9 @@ CLASS_OF = {
 # Classes assigned by name whitelist rather than by tags; left as-is.
 CURATED = {"Graphics", "Emoji"}
 
-# A tag counts towards its group at any positive score. Google's own site lists
-# a family under every group it scores at all, so matching that means no
-# threshold here (unlike TAG_MEMBERSHIP_THRESHOLD, which gates the *pills*).
+# A tag counts towards its group at any positive score, matching what Google's
+# own site lists and the FORM_TAG_THRESHOLD the Style pills now use. (Mood pills
+# keep a 50 threshold, but no Mood tag ever decides a Category class.)
 MIN_SCORE = 1
 
 

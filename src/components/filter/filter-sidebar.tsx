@@ -242,6 +242,7 @@ export function FilterSidebar({
                       styleClassifications.flatMap((s) => s.items)
                     )
                   }
+                  info="Letterform classifications published by Google Fonts, from the google/fonts tags data. A family can carry several, so these combine rather than partition — unlike the Category cards above, where each family sits in exactly one."
                   mode={modeOf("style")}
                   onToggleMode={() => toggleMode("style")}
                 />
@@ -252,7 +253,7 @@ export function FilterSidebar({
               <ClassificationSection
                 title="Mood"
                 icon={SmileyMeltingIcon}
-                info="The following data comes from Google Fonts."
+                info="Subjective trait ratings published by Google Fonts, scored 0–100 per family. A pill lists the families scoring 50 or above, so it reads as “this is a vintage face” rather than “this has a trace of vintage” — Google rates nearly every family on nearly every trait."
                 groups={moodClassifications}
                 selected={filter.style}
                 onToggle={(v) => toggle("style", v)}

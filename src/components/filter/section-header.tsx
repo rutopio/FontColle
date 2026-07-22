@@ -27,6 +27,37 @@ const FADE = {
 // Per-section pill ordering: by font count (default) or alphabetically.
 export type SortMode = "count" | "alpha";
 
+// The "where does this data come from" note behind a section title: an info
+// icon that reveals `children` on hover/focus. Renders nothing without a note,
+// so a section opts in just by passing one. Lives here (rather than inline in
+// SectionHeader) because Category draws its own header and needs the same
+// affordance.
+export function InfoTip({
+  title,
+  children,
+}: {
+  // Names the section in the trigger's accessible label ("About Category").
+  title: string;
+  children?: React.ReactNode;
+}) {
+  if (!children) return null;
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        type="button"
+        aria-label={`About ${title}`}
+        className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <InfoIcon className="size-3.5" />
+      </TooltipTrigger>
+      {/* normal-case: section titles are uppercased, the note must not be. */}
+      <TooltipContent className="max-w-xs normal-case">
+        {children}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
 // Shared small button used in section headers: a compact, monospaced action.
 export function HeaderButton({
   onClick,
@@ -167,20 +198,7 @@ export function SectionHeader({
       >
         <Icon className="size-4 shrink-0" />
         <span className="truncate">{title}</span>
-        {info ? (
-          <Tooltip>
-            <TooltipTrigger
-              type="button"
-              aria-label={`About ${title}`}
-              className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <InfoIcon className="size-3.5" />
-            </TooltipTrigger>
-            <TooltipContent className="max-w-xs normal-case">
-              {info}
-            </TooltipContent>
-          </Tooltip>
-        ) : null}
+        <InfoTip title={title}>{info}</InfoTip>
       </motion.h2>
       <div className="flex shrink-0 items-center gap-0.5">
         {/* OR/AND toggle, left of the reset/sort slot. Only for sections that

@@ -30,6 +30,7 @@ export function MaintenanceSection({
         canSort={false}
         sort="count"
         onToggleSort={() => {}}
+        info="From the modified stamp in the font's own head table, so it tracks when the file was last built rather than when it was last published."
       />
       <div className="grid grid-cols-2 gap-1.5">
         {items.map(([value, count]) => (

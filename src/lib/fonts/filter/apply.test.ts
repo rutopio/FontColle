@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { FontRecord } from "@/lib/fonts/types";
 import { applyFilters, searchByQuery, suggestFamilies } from "./apply";
+import { fontActivity } from "./facets";
 import { emptyFilter, type FilterState } from "./state";
 
 // A minimal FontRecord factory: every field the matcher reads gets a sane
@@ -33,6 +34,8 @@ function font(over: Partial<FontRecord> = {}): FontRecord {
     versionString: null,
     dateAdded: null,
     firstCommitDate: null,
+    createdMs: null,
+    modifiedMs: null,
     weightClass: null,
     widthClass: null,
     weights: [],
@@ -41,7 +44,7 @@ function font(over: Partial<FontRecord> = {}): FontRecord {
     primaryScript: null,
     popularityRank: null,
     trendingRank: null,
-    lastModified: null,
+    lastModifiedApi: null,
     versionHistory: [],
     specimen: null,
     about: null,
@@ -241,23 +244,40 @@ describe("applyFilters, color and color formats", () => {
   });
 });
 
-describe("applyFilters, style (OR default, threshold 50)", () => {
+// Form tags (Sans/Serif/Slab/Script) count at any score, matching what Google
+// Fonts lists; Mood tags (Expressive/Theme/Seasonal) need 50+. See
+// FORM_TAG_THRESHOLD / MOOD_TAG_THRESHOLD.
+describe("applyFilters, style (OR default, per-group threshold)", () => {
   const fonts = [
     font({ name: "Didone", tags: { "/Serif/Didone": 80 } }),
-    font({ name: "Weak", tags: { "/Serif/Didone": 40 } }), // below threshold
+    font({ name: "Faint", tags: { "/Serif/Didone": 20 } }),
     font({ name: "Sans", tags: { "/Sans/Humanist": 90 } }),
   ];
-  it("includes only fonts scoring >=50 for a selected tag", () => {
+  it("includes a form tag at any positive score", () => {
     expect(
       names(applyFilters(fonts, filter({ style: ["/Serif/Didone"] })))
-    ).toEqual(["Didone"]);
+    ).toEqual(["Didone", "Faint"]);
+  });
+  it("excludes a form tag the family does not carry at all", () => {
+    expect(
+      names(applyFilters(fonts, filter({ style: ["/Slab/Clarendon"] })))
+    ).toEqual([]);
+  });
+  it("requires 50+ for a mood tag", () => {
+    const moody = [
+      font({ name: "Strong", tags: { "/Expressive/Vintage": 70 } }),
+      font({ name: "Trace", tags: { "/Expressive/Vintage": 10 } }),
+    ];
+    expect(
+      names(applyFilters(moody, filter({ style: ["/Expressive/Vintage"] })))
+    ).toEqual(["Strong"]);
   });
   it("OR by default across selected tags", () => {
     const out = applyFilters(
       fonts,
       filter({ style: ["/Serif/Didone", "/Sans/Humanist"] })
     );
-    expect(names(out)).toEqual(["Didone", "Sans"]);
+    expect(names(out)).toEqual(["Didone", "Faint", "Sans"]);
   });
 });
 
@@ -466,5 +486,39 @@ describe("suggestFamilies", () => {
   });
   it("returns empty when nothing is close enough", () => {
     expect(suggestFamilies("xylophone", fonts)).toEqual([]);
+  });
+});
+
+// Buckets on head.modified (when the binary was compiled), NOT on the Google
+// publish date — see fontActivity for why.
+describe("fontActivity", () => {
+  const monthsAgo = (n: number) => Date.now() - n * 30.44 * 24 * 60 * 60 * 1000;
+
+  it("buckets by how long ago the font was compiled", () => {
+    expect(fontActivity(font({ modifiedMs: monthsAgo(1) }))).toBe("latest");
+    expect(fontActivity(font({ modifiedMs: monthsAgo(9) }))).toBe("active");
+    expect(fontActivity(font({ modifiedMs: monthsAgo(24) }))).toBe("recent");
+    expect(fontActivity(font({ modifiedMs: monthsAgo(60) }))).toBe("dormant");
+  });
+
+  it("ignores the Google publish date", () => {
+    // The Sept 2025 metadata pass shape: freshly published, ancient binary.
+    const f = font({
+      modifiedMs: monthsAgo(120),
+      lastModifiedApi: new Date().toISOString().slice(0, 10),
+    });
+    expect(fontActivity(f)).toBe("dormant");
+  });
+
+  it("falls back to the first commit when head.modified is unset", () => {
+    // Amiri / Amiri Quran ship modifiedMs 0, which decodes to the epoch.
+    const f = font({ modifiedMs: 0, firstCommitDate: "2024-01-15" });
+    expect(fontActivity(f)).toBe("recent");
+  });
+
+  it("is dormant when nothing dates the family", () => {
+    expect(
+      fontActivity(font({ modifiedMs: null, firstCommitDate: null }))
+    ).toBe("dormant");
   });
 });

@@ -47,6 +47,12 @@ export interface FontRecord {
   versionString: string | null;
   dateAdded: string | null;
   firstCommitDate: string | null; // repo debut from git history, "yyyy-MM-dd"
+  // head table created/modified stamps, epoch ms: when the font binary itself
+  // was last compiled. Unlike lastModifiedApi (a Google publish event, which a
+  // library-wide metadata pass bumps for every family at once), this only moves
+  // when the outlines do. 0 for the handful of fonts that ship an unset stamp.
+  createdMs: number | null;
+  modifiedMs: number | null;
   weightClass: number | null;
   widthClass: number | null;
   weights: number[];
@@ -56,7 +62,10 @@ export interface FontRecord {
   // Signals from the Google Fonts Developer API (null when not published).
   popularityRank: number | null; // 1 = most popular
   trendingRank: number | null; // 1 = fastest-growing usage
-  lastModified: string | null; // API "yyyy-MM-dd"
+  // Date Google Fonts reports for the version it currently serves,
+  // "yyyy-MM-dd". Named for its source: the harvester writes this key
+  // (to_dataset.apply_published_signals), never a bare `lastModified`.
+  lastModifiedApi: string | null;
   // Release timeline from google/fonts git history, ascending by date.
   versionHistory: { version: string; date: string }[];
   specimen: string | null; // native-script sample text (null for Latin-only)
