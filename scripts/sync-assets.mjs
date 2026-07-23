@@ -1,5 +1,6 @@
-// Pulls the data assets that live in R2 (per src/data/data-manifest.json) back
-// into place so a build or local dev has them:
+// Pulls the data assets that live in R2 (per the manifest, itself now at the R2
+// key manifest/latest.json rather than in git) back into place so a build or
+// local dev has them:
 //
 //   src/data/fonts.json   <- fonts/<YYYYMMDD>.json (the snapshot the manifest
 //                            points at)
@@ -13,9 +14,9 @@
 //
 // No new npm deps: node built-ins + wrangler (via lib/r2.mjs) + system tar.
 
-import { mkdirSync, readFileSync } from "node:fs";
+import { mkdirSync } from "node:fs";
 import path from "node:path";
-import { MANIFEST_PATH, ROOT, r2Get, sha256File } from "./lib/r2.mjs";
+import { ROOT, r2Get, r2GetManifest, sha256File } from "./lib/r2.mjs";
 import { extractTar } from "./lib/tar.mjs";
 
 // Verify a just-downloaded file against the sha256 the manifest recorded, so a
@@ -27,7 +28,9 @@ import { extractTar } from "./lib/tar.mjs";
 function verify(file, expected, label) {
   const got = sha256File(file);
   if (got !== expected) {
-    throw new Error(`${label} sha256 mismatch: manifest ${expected} got ${got}`);
+    throw new Error(
+      `${label} sha256 mismatch: manifest ${expected} got ${got}`
+    );
   }
 }
 
@@ -36,7 +39,9 @@ const GLYPHS_DIR = path.join(ROOT, "public/glyphs");
 const OG_DIR = path.join(ROOT, "public/og");
 const SCRATCH = path.join(ROOT, ".r2-tmp");
 
-const manifest = JSON.parse(readFileSync(MANIFEST_PATH, "utf8"));
+// The manifest lives in R2 (not git) so the daily harvest commits nothing; pull
+// the current pointer straight from there before resolving the snapshot keys.
+const manifest = r2GetManifest();
 mkdirSync(SCRATCH, { recursive: true });
 
 // fonts.json, pull the manifest's current version and verify its hash.

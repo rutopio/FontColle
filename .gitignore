@@ -37,12 +37,15 @@ scripts/harvester/og_ids.txt
 /.claude
 skills-lock.json
 
-# Data assets moved out of git into R2 (see scripts/sync-assets.mjs +
-# src/data/data-manifest.json). Pulled locally via `pnpm pull:data`; the daily
-# CI rewrites fonts.json and og. The git-versioned manifest is the source of
-# truth for which R2 versions the site ships.
+# Data assets moved out of git into R2 (see scripts/sync-assets.mjs). Pulled
+# locally via `pnpm pull:data`; the daily CI rewrites them in R2. The manifest
+# (manifest/latest.json in R2) is the source of truth for which R2 versions the
+# site ships — it left git too so a data-only harvest makes no commit; the local
+# copy below is just a pull:data scratch artifact.
 /src/data/fonts.json
+/src/data/data-manifest.json
 /public/glyphs/
 /public/og/
-# Scratch dir for R2 up/downloads (tarballs, fonts version).
+# Scratch dir for R2 up/downloads (tarballs, fonts version) + manifest temp.
 /.r2-tmp/
+/.r2-manifest.json

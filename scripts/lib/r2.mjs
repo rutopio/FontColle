@@ -7,11 +7,22 @@
 
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 export const ROOT = path.resolve(import.meta.dirname, "..", "..");
 export const BUCKET = "fontcolle-assets";
+
+// The manifest (the pointer at which fonts/glyphs/og snapshot the build should
+// pull) lives in R2 now, NOT git — so a daily harvest updates it with zero
+// commits and triggers the deploy via a Cloudflare Deploy Hook instead. A single
+// fixed key is the build's well-known entry point; unlike the big blobs (which
+// use content-hash keys to dodge Cloudflare's edge cache), the manifest is read
+// through wrangler's `--remote` R2 API, not the cached public bucket URL, so a
+// fixed key is safe here. MANIFEST_PATH is only a LOCAL scratch/dev copy now
+// (pnpm pull:data writes it; shrinkage-guard's --manifest fixture uses it); it
+// is no longer git-versioned.
+export const MANIFEST_KEY = "manifest/latest.json";
 export const MANIFEST_PATH = path.join(ROOT, "src/data/data-manifest.json");
 
 // wrangler resolves the account from CLOUDFLARE_ACCOUNT_ID. Required, with no
@@ -63,6 +74,31 @@ export function r2Get(key, destPath) {
     "--file",
     destPath,
   ]);
+}
+
+// Read the manifest from R2 and return it parsed. This is the build's single
+// source of truth for which snapshot to pull, so it must never read a stale
+// copy: wrangler's `--remote r2 object get` hits the R2 API directly (not the
+// edge-cached public bucket URL), so the fixed MANIFEST_KEY returns current
+// bytes. Logs the fonts key it resolved so a stale read is visible in CI.
+export function r2GetManifest() {
+  const tmp = path.join(ROOT, ".r2-manifest.json");
+  r2Get(MANIFEST_KEY, tmp);
+  const manifest = JSON.parse(readFileSync(tmp, "utf8"));
+  rmSync(tmp, { force: true });
+  console.log(`[r2] manifest ${MANIFEST_KEY} -> fonts ${manifest.fonts?.key}`);
+  return manifest;
+}
+
+// Upload the manifest object to R2 under the fixed pointer key. Serialized the
+// same way the old git file was (2-space, trailing newline) so a diff against a
+// pulled copy is clean.
+export function r2PutManifest(manifest) {
+  const tmp = path.join(ROOT, ".r2-manifest.json");
+  writeFileSync(tmp, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
+  r2Put(MANIFEST_KEY, tmp);
+  rmSync(tmp, { force: true });
+  console.log(`[r2] wrote manifest ${MANIFEST_KEY}`);
 }
 
 export function sha256File(filePath) {
