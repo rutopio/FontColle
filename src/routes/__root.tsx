@@ -13,6 +13,7 @@ import { MotionConfig } from "motion/react";
 import { AboutDialog } from "@/components/about-dialog";
 import { ErrorState } from "@/components/error-state";
 import { NotFound } from "@/components/not-found";
+import { ScreenSize } from "@/components/screen-size";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AboutProvider } from "@/lib/about/context";
@@ -163,6 +164,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               toast() from anywhere and render here. */}
           <Toaster position="top-center" />
         </MotionConfig>
+        {/* Dev-only breakpoint badge. It guards on PROD itself, so it is not
+            wrapped in the DEV block below — keeping it outside means it is not
+            tied to the devtools' mount. */}
+        <ScreenSize />
         {import.meta.env.DEV && (
           <TanStackDevtools
             config={{
