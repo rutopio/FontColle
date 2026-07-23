@@ -2,9 +2,10 @@ name: Daily incremental harvest
 
 # Detects Google Fonts families that were added / updated / removed since the
 # last run, re-harvests only that subset, refreshes catalog signals for all
-# families, regenerates OG cards for changed families, commits the dataset, and
-# deploys. The site serves a static catalog built from src/data/fonts.json at
-# deploy time (no database). See tasks/todo.md for the design rationale.
+# families, regenerates OG cards for changed families, publishes the dataset AND
+# the manifest pointer to R2, then triggers a Cloudflare Deploy Hook. A data-only
+# day makes NO git commit. The site serves a static catalog built from
+# src/data/fonts.json at deploy time (no database). See tasks/todo.md.
 
 on:
   schedule:
@@ -16,14 +17,19 @@ concurrency:
   group: daily-harvest
   cancel-in-progress: false
 
-# PREREQUISITE: the CLOUDFLARE_API_TOKEN secret must have R2 read+write on the
-# ChingRu account before this version of the workflow can run. fonts.json / og /
-# glyphs now live in the fontcolle-assets R2 bucket (git holds only
-# src/data/data-manifest.json). The Publish and Deploy steps call
-# `wrangler r2 object put/get`; without R2 permission they fail.
+# PREREQUISITES:
+#  - CLOUDFLARE_API_TOKEN: R2 read+write on the ChingRu account. fonts.json / og
+#    / glyphs AND the manifest (manifest/latest.json) all live in the
+#    fontcolle-assets R2 bucket now; git holds no data at all. The Pull/Publish
+#    steps call `wrangler r2 object put/get`; without R2 permission they fail.
+#  - CLOUDFLARE_DEPLOY_HOOK_URL: a Cloudflare Deploy Hook for the fontcolle
+#    Worker. The "Trigger Cloudflare deploy" step POSTs it to redeploy, since no
+#    git push happens on a data-only day to drive the Git integration.
 
+# Read-only: this workflow no longer commits (the manifest moved to R2). The
+# "Warn if build-time source data drifted" step only reads the working tree.
 permissions:
-  contents: write # commit the updated dataset / seed / OG images
+  contents: read
 
 jobs:
   harvest:
@@ -32,9 +38,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          # fonts.json left git, so the daily commit is now just the tiny
-          # data-manifest.json diff, a shallow clone is enough. The commit step
-          # unshallows on demand before rebasing if a manual push landed mid-run.
+          # The harvest commits nothing (manifest lives in R2), so a shallow clone
+          # is enough — we only need the working tree to run the scripts and to
+          # diff-check scripts.json/languages.json for the drift warning.
           fetch-depth: 1
 
       - uses: actions/setup-node@v6
@@ -81,7 +87,18 @@ jobs:
           # unauthenticated hits the 60 req/hr limit and SystemExits.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          python3 scripts/harvester/daily_update.py | tee update.log
+          # On the 1st of the month (UTC), reconcile the WHOLE catalog instead of
+          # the lastModified diff: an upstream that changed content without
+          # bumping lastModified, or a family the name-based published join
+          # dropped, is otherwise never re-fetched. The other ~30 days stay
+          # incremental. A full run is heavier (re-harvests every family) but
+          # runs once a month.
+          if [ "$(date -u +%d)" = "01" ]; then
+            echo "monthly full reconcile"
+            python3 scripts/harvester/daily_update.py --full | tee update.log
+          else
+            python3 scripts/harvester/daily_update.py | tee update.log
+          fi
           # Expose whether anything changed so later steps can skip.
           if grep -q "^no changes$" update.log; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
@@ -241,41 +258,43 @@ jobs:
             node scripts/publish-assets.mjs --reseed-glyphs
           fi
 
-      - name: Commit updated manifest
+      # No commit step anymore. The manifest lives in R2 (manifest/latest.json),
+      # rewritten by the Publish step above, so a data-only harvest produces ZERO
+      # git commits — killing the daily "chore: daily incremental font catalog
+      # update" noise. Deploy is triggered explicitly below via a Cloudflare
+      # Deploy Hook instead of by a git push.
+
+      - name: Warn if build-time source data drifted
         if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          # fonts.json and public/og now live in R2; git versions only the tiny
-          # data-manifest.json (which R2 versions the site ships) plus the small
-          # scripts.json / languages.json. The static catalog the site serves is a
-          # build artifact, the Deploy step's `pnpm build` regenerates it.
-          git add src/data/data-manifest.json src/data/scripts.json \
-            src/data/languages.json
-          if git diff --cached --quiet; then
-            echo "nothing staged; skipping commit"
+          # scripts.json / languages.json are build-time imports compiled into the
+          # bundle (src/lib/fonts/labels.ts), NOT pulled from R2 at runtime, so
+          # they stay git-versioned. They change very rarely. A harvest is not
+          # allowed to auto-commit them (that reintroduced the daily commit); if
+          # one drifts, surface it so a human ships it in a normal commit. The
+          # deploy below still goes out with the R2 data update regardless.
+          if ! git diff --quiet -- src/data/scripts.json src/data/languages.json; then
+            echo "::warning::scripts.json/languages.json changed this run but are not auto-committed. Review and commit them manually:"
+            git --no-pager diff --stat -- src/data/scripts.json src/data/languages.json
           else
-            git commit -m "chore: daily incremental font catalog update"
-            # A manual push to master during the run makes the shallow push
-            # non-fast-forward. Unshallow (fetch-depth 1 has no history to rebase
-            # onto), then rebase onto the latest master and retry a few times.
-            for attempt in 1 2 3; do
-              if git push; then
-                break
-              fi
-              echo "push rejected (attempt $attempt); unshallowing + rebasing onto origin/master"
-              git fetch --unshallow origin || git fetch origin
-              git pull --rebase origin master
-            done
+            echo "build-time source data unchanged"
           fi
 
-      # No deploy step here on purpose. The manifest commit pushed above is what
-      # ships the new dataset: Cloudflare's Git integration picks up the push and
-      # builds + deploys from it (its build re-syncs the R2 assets per the new
-      # manifest). This workflow used to also run `pnpm build && wrangler deploy`,
-      # but wrangler.jsonc has no `routes` and workers_dev/preview_urls are both
-      # false, so fontcolle.com is served via a dashboard Custom Domain that the
-      # Git integration's deployment owns. The result was two deployments ~40s
-      # apart, the second always superseding the first. Deploy lives in exactly
-      # one place now; if the Git integration is ever turned off, this workflow
-      # needs its deploy step back.
+      - name: Trigger Cloudflare deploy
+        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'
+        env:
+          CLOUDFLARE_DEPLOY_HOOK_URL: ${{ secrets.CLOUDFLARE_DEPLOY_HOOK_URL }}
+        run: |
+          # The R2 data (fonts snapshot, OG deltas, glyphs, and the manifest
+          # pointer) is now current, but nothing pushed to git, so Cloudflare's
+          # Git integration won't build. Fire the Deploy Hook to run a fresh
+          # build+deploy, which re-syncs the R2 assets per the new manifest. This
+          # is the sole deploy path for a data-only day. (A real source change —
+          # scripts.json etc., committed by a human — still deploys via the Git
+          # integration on push, same as any code change.)
+          if [ -z "$CLOUDFLARE_DEPLOY_HOOK_URL" ]; then
+            echo "::error::CLOUDFLARE_DEPLOY_HOOK_URL secret is not set; cannot deploy the R2 update"
+            exit 1
+          fi
+          curl -fsS -X POST "$CLOUDFLARE_DEPLOY_HOOK_URL" | tee deploy-hook.log
+          echo "deploy hook fired"

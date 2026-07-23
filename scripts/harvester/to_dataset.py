@@ -308,6 +308,7 @@ def apply_published_signals(records, published):
         return
 
     pub_count = 0
+    unmatched = []
     for r in records:
         sig = published.get(r["name"].lower())
         r["isPublished"] = sig is not None
@@ -321,7 +322,24 @@ def apply_published_signals(records, published):
         r["isOpenSource"] = sig.get("isOpenSource") if sig else None
         if sig is not None:
             pub_count += 1
+        else:
+            unmatched.append(r["id"])
     print(f"published whitelist: {pub_count}/{len(records)} families marked as published")
+    # Surface the families that matched NO published entry (join is on
+    # name.lower()). Most are correct — Google merges/retires families faster
+    # than the google/fonts repo drops the directory, so a repo dir with no API
+    # entry SHOULD read isPublished=False (e.g. "Big Shoulders Display", which
+    # Google folded into "Big Shoulders"). Printing them makes a genuine rename
+    # miss reviewable instead of silent; measured 2026-07-24 that slug
+    # normalisation recovers essentially none of these, so a looser join is not
+    # worth the false-positive risk — visibility is the fix.
+    if unmatched:
+        print(
+            f"published join: {len(unmatched)} families matched no API entry "
+            f"(expected for merged/retired families; review if a rename): "
+            f"{', '.join(sorted(unmatched))}",
+            file=sys.stderr,
+        )
 
 
 if __name__ == "__main__":

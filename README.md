@@ -24,7 +24,7 @@ Host on ![Cloudflare Workers](https://img.shields.io/badge/Cloudflare_Workers-F3
 
 </div>
 
-File-based routing on Cloudflare Workers, with a **static JSON catalog** built from `src/data/fonts.json` and served as CDN-cached assets, with no database (see [Data pipeline](#data-pipeline)). A **Python harvester** (`scripts/harvester`) builds the dataset from the [Google Fonts](https://fonts.google.com) catalog and [`gflanguages`](https://github.com/googlefonts/lang).
+File-based routing on Cloudflare Workers, with a **static JSON catalog** built from `src/data/fonts.json` and served as CDN-cached assets, with no database (see [docs/data-pipeline.md](docs/data-pipeline.md)). A **Python harvester** (`scripts/harvester`) builds the dataset from the [Google Fonts](https://fonts.google.com) catalog and [`gflanguages`](https://github.com/googlefonts/lang).
 
 ## Development
 
@@ -34,7 +34,7 @@ pnpm pull:data    # fetch the data assets from R2 (first clone only)
 pnpm dev          # vite dev server on :3000
 ```
 
-`pnpm pull:data` needs a `CLOUDFLARE_API_TOKEN` with R2 read on the `fontcolle-assets` bucket, which only the maintainers have: see [Data pipeline](#data-pipeline). **Outside contributors skip it** — `pnpm build` falls back to a committed 24-family sample, so `pnpm build && pnpm dev` runs with no Cloudflare account or API key. Details, and how to harvest more families, in [Running without R2 access](#running-without-r2-access).
+`pnpm pull:data` needs a `CLOUDFLARE_API_TOKEN` with R2 read on the `fontcolle-assets` bucket, which only the maintainers have: see [docs/data-pipeline.md](docs/data-pipeline.md). **Outside contributors skip it** — `pnpm build` falls back to a committed 24-family sample, so `pnpm build && pnpm dev` runs with no Cloudflare account or API key. Details, and how to harvest more families, in [Running without R2 access](docs/data-pipeline.md#running-without-r2-access).
 
 `pnpm check` runs Biome (with `--write`) then `tsc --noEmit`; run it before committing. `pnpm build` produces the Workers bundle in `dist/`.
 
@@ -50,90 +50,12 @@ The font data is read-only, identical for every visitor, and refreshed once a da
 
 ## Data pipeline
 
-### Where the data lives
+The dataset (harvest → R2 storage → build → deploy) is documented separately:
 
-`fonts.json` (~21 MB), `public/glyphs/` and `public/og/` are too big for git, so they live in the `fontcolle-assets` R2 bucket. Git versions only `src/data/data-manifest.json`, the small, hash-verified pointer to which R2 versions the site ships.
+- **[docs/data-pipeline.md](docs/data-pipeline.md)** — where the data lives, running without R2 access, building the dataset, bootstrapping from scratch, and the daily incremental CI update.
+- **[src/data/README.md](src/data/README.md)** — provenance of each data file and each `fonts.json` field.
 
-| Command                       | What it does                                            |
-| ----------------------------- | ------------------------------------------------------- |
-| `pnpm pull:data`              | R2 → local (`scripts/sync-assets.mjs`), verifies sha256 |
-| `pnpm publish:assets --daily` | local → R2, bumps the manifest (CI runs this)           |
-
-`pnpm build` calls `sync-assets.mjs` automatically when any of those paths are missing, so a fresh clone (including Cloudflare Workers Builds) self-heals. Trees that already have the files skip the pull.
-
-### Running without R2 access
-
-The R2 bucket is maintainer-only, so `pnpm pull:data` will not work on a fork. **You do not need it to work on the UI.** A 24-family sample dataset ships in git (`src/data/fonts.sample.json`), and `pnpm build` falls back to it automatically when the R2 pull fails, so a fresh clone runs with zero data setup:
-
-```bash
-pnpm install
-pnpm build && pnpm dev   # first build seeds the sample catalog; dev after that
-```
-
-That is enough to exercise the layout, filters, detail page and most components against real records. Glyph-coverage data and OG images still live in R2, so the few pages that use them degrade rather than fail.
-
-Want more families? The harvester reads straight from the public [google/fonts](https://github.com/google/fonts) repo, so you can build your own dataset of any size — no Cloudflare account or API key required:
-
-```bash
-cd scripts/harvester
-printf 'roboto\nlato\ninter\n' | python3 harvest.py -   # -> stress_output.json
-python3 to_dataset.py stress_output.json ../../src/data/fonts.json
-cd ../..
-pnpm dev
-```
-
-This overwrites `src/data/fonts.json` (gitignored) with your harvested set, taking precedence over the sample. Run it from `scripts/harvester/`: `harvest.py` writes `stress_output.json` to the working directory, and only that path is gitignored.
-
-Two things worth knowing before you run it:
-
-- The input is the family's **directory name** in google/fonts (lowercase: `roboto`, not `Roboto`), optionally `license<TAB>dir` when it is not under `ofl/`. A wrong name is a bare `HTTP Error 404`.
-- Pass families on **stdin with `-`**. As positional args only the first is a family; the second is parsed as the worker count (`harvest.py <family> [workers]`).
-
-`to_dataset.py` needs no Google Fonts API key: without `published.json` it marks every family published and skips ranking, which is fine for local work. `pnpm dev`/`pnpm build` then slices whatever `fonts.json` holds, so a 3-family catalog runs the real site.
-
-Glyph coverage data and OG images stay in R2 and are not rebuilt by the above; the pages that use them degrade rather than fail. Do not commit the resulting `src/data/fonts.json` — it is gitignored, and the manifest is the only thing that should change in git.
-
-Each publish uploads `fonts.json` as a dated snapshot, `fonts/<YYYYMMDD>.json`, and points the manifest at it; days the catalog does not change produce no snapshot. An R2 lifecycle rule (`expire-fonts-versions`, prefix `fonts/`) expires them after 30 days, so rollback reaches back a month: revert the manifest commit to ship an earlier snapshot. `glyphs/` and `og/` are long-lived base objects and are not covered by the rule.
-
-### Building the dataset
-
-The dataset under `src/data` (`fonts.json`, `languages.json`, `scripts.json`) is generated by the harvester and is the single source of truth:
-
-```bash
-python3 scripts/harvester/harvest.py          # fetch + parse font files
-python3 scripts/harvester/to_dataset.py ...   # -> src/data/*.json
-pnpm build                                    # -> the static catalog below
-```
-
-At build time `scripts/gen-catalog.mjs` slices `fonts.json` into the static assets the site serves (all gitignored, regenerated on every build):
-
-| File                         | Who reads it                                                     |
-| ---------------------------- | ---------------------------------------------------------------- |
-| `public/catalog.json`        | Home page: fetched once on the client, filtered in-browser       |
-| `public/catalog/<id>.json`   | Detail page: its SSR loader reads only the one family it renders |
-| `public/designer-index.json` | Detail page's About tab: other families by the same designer     |
-
-The detail page reads its per-font file through the Workers `ASSETS` binding on the server and a plain `fetch` on the client, so SSR (and its meta tags) work without pulling in the whole catalog.
-
-`langcov.py` derives language/script coverage and region groupings from `gflanguages`.
-
-### Daily incremental update (CI)
-
-`.github/workflows/daily-harvest.yml` runs at 00:00 UTC (and on demand). Instead of re-harvesting everything, it detects only what changed and updates that subset:
-
-```bash
-python3 scripts/harvester/fetch_published.py   # refresh Developer API signals
-                                               # (developers.google.com/fonts/docs/developer_api)
-python3 scripts/harvester/daily_update.py      # harvest new/updated families,
-                                               # merge, refresh whole-catalog
-                                               # signals -> og_ids.txt
-```
-
-New families come from the [google/fonts](https://github.com/google/fonts) GitHub tree; updated ones from a newer `lastModified`; removed ones are flipped to `isPublished=false`. The workflow then re-renders OG cards for `og_ids.txt`, publishes the new `fonts.json` and changed OG images to R2, and commits the bumped `data-manifest.json`. A no-change day is a no-op.
-
-That commit is what ships the update: Cloudflare's Git integration builds and deploys from the push, and its `pnpm build` re-syncs the R2 assets per the new manifest to regenerate the static catalog. The workflow itself does not deploy. `wrangler.jsonc` declares no `routes` and sets `workers_dev`/`preview_urls` to false, so fontcolle.com is served by a dashboard Custom Domain that the Git integration's deployment owns; a `wrangler deploy` here would only upload a version for that deployment to supersede moments later. If the Git integration is ever turned off, this workflow needs a deploy step again.
-
-The workflow needs these repository secrets: `GOOGLE_FONTS_API_KEY`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`. The token must carry R2 read+write on `fontcolle-assets`: the pull and publish steps fail without it.
+The short version: `fonts.json` (~21 MB) and the manifest pointer live in R2, not git; the daily workflow harvests only what changed, publishes to R2, and fires a Cloudflare Deploy Hook — a data-only day makes zero commits. Forks with no R2 access build against a committed 24-family sample.
 
 ## Open Graph images
 

@@ -20,7 +20,8 @@
     "gen:specimens": "node scripts/gen-specimen-svgs.mjs",
     "gen:og": "node scripts/gen-og-images.mjs",
     "pull:data": "node scripts/sync-assets.mjs",
-    "publish:assets": "node scripts/publish-assets.mjs"
+    "publish:assets": "node scripts/publish-assets.mjs",
+    "seed:data": "node scripts/seed-from-scratch.mjs"
   },
   "dependencies": {
     "@base-ui/react": "1.6.0",

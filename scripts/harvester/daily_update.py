@@ -135,6 +135,13 @@ def harvest_subset(changed):
 
 
 def main():
+    # --full forces a whole-catalog re-harvest (every family, ignoring the
+    # lastModified diff), used monthly to reconcile silent misses: an upstream
+    # that changed content without bumping lastModified, or a family the
+    # name-based published join dropped, is otherwise never re-fetched. The
+    # incremental default is what runs the other ~30 days.
+    full = "--full" in sys.argv[1:]
+
     dataset = load_json(DATASET)
     if not os.path.exists(PUBLISHED):
         raise SystemExit(
@@ -150,7 +157,11 @@ def main():
     before = {r["id"]: json.dumps(r, sort_keys=True) for r in dataset}
 
     all_families = list_all_families()
-    changed = compute_changed(dataset, published, all_families)
+    # --full: treat every family as changed (whole-catalog reconcile). Otherwise
+    # diff lastModified for the incremental subset.
+    changed = dict(all_families) if full else compute_changed(dataset, published, all_families)
+    if full:
+        print(f"--full: reconciling all {len(changed)} families")
     now_dirs = set(all_families)
     # apiOnly families (Google Sans, Edu Hand batch — see harvest_api_supplement.py)
     # live in the webfonts API but NOT the repo tree, so they're absent from
