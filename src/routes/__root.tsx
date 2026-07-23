@@ -20,6 +20,7 @@ import { AboutProvider } from "@/lib/about/context";
 import { FilterProvider } from "@/lib/filter/context";
 import { PreviewProvider } from "@/lib/preview/context";
 import { absoluteUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
+import { useWebMcp } from "@/lib/webmcp/register";
 import appCss from "@/styles.css?url";
 
 // Applies the saved theme before first paint so an SSR'd light shell doesn't
@@ -133,6 +134,16 @@ function RootError({ reset }: ErrorComponentProps) {
   );
 }
 
+// Registers the site's WebMCP tools (search/open a font) with the browser so an
+// in-browser AI agent can drive the real UI. Renders nothing, and is a no-op
+// unless navigator.modelContext exists — see lib/webmcp/register. Kept as its
+// own component because RootDocument also renders during SSR, where hooks that
+// touch navigator must not run.
+function WebMcpTools() {
+  useWebMcp();
+  return null;
+}
+
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
@@ -156,6 +167,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                   {/* Mounted here so it overlays whichever page is underneath,
                       leaving that page's icon rail exactly as it was. */}
                   <AboutDialog />
+                  <WebMcpTools />
                 </AboutProvider>
               </PreviewProvider>
             </FilterProvider>
