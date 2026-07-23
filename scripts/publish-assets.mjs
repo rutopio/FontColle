@@ -102,8 +102,9 @@ function putFontsVersion(date) {
 // Sans / Edu Hand coverage never reached the built site, and its Glyphs panel
 // 404'd. A hash in the key changes it whenever content changes, so a fresh key
 // is always a cache miss and the new bytes are read. The manifest records the
-// exact key, so sync fetches the right one. (fonts already dodged this via its
-// dated key; glyphs/og did not.)
+// exact key, so sync fetches the right one. (All three asset kinds — fonts,
+// glyphs, og — are content-hashed now; fonts used a dated key until it hit the
+// same-day overwrite drift and moved to a content hash too, see putFontsVersion.)
 function putSeedTarball(dir, prefix) {
   const tarPath = path.join(SCRATCH, `${prefix}.tar.gz`);
   const count = makeTar(dir, tarPath);

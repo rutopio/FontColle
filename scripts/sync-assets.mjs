@@ -2,9 +2,9 @@
 // key manifest/latest.json rather than in git) back into place so a build or
 // local dev has them:
 //
-//   src/data/fonts.json   <- fonts/<YYYYMMDD>.json (the snapshot the manifest
-//                            points at)
-//   public/glyphs/*.json  <- glyphs/glyphs.tar.gz (extracted)
+//   src/data/fonts.json   <- fonts/<sha16>.json (the snapshot the manifest
+//                            points at; content-hashed key)
+//   public/glyphs/*.json  <- glyphs/<sha16>.tar.gz (extracted)
 //   public/og/*.png       <- og/og.tar.gz (extracted) + og/<id>.png deltas
 //
 // Runs before `pnpm build` in CI (Deploy step) and via `pnpm pull:data` after a

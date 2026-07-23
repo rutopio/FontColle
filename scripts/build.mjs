@@ -8,10 +8,11 @@
 process.env.NODE_ENV ??= "production";
 
 // The full data assets (src/data/fonts.json, public/glyphs, public/og) live in
-// R2, not git (see src/data/data-manifest.json). A build from a fresh clone,
-// notably Cloudflare Workers Builds, which clones the repo on every push,
-// must pull them first. Local trees that already have the files skip this;
-// `pnpm pull:data` refreshes explicitly.
+// R2, not git — as does the manifest that points at them (manifest/latest.json;
+// see docs/data-pipeline.md). A build from a fresh clone, notably Cloudflare
+// Workers Builds, which clones the repo on every push, must pull them first.
+// Local trees that already have the files skip this; `pnpm pull:data` refreshes
+// explicitly.
 //
 // A fork without R2 credentials (a UI/UX contributor) can't pull. When the sync
 // fails, fall back to the committed 24-record sample (src/data/fonts.sample.json)
