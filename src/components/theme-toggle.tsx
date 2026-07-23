@@ -1,5 +1,7 @@
 import { MoonIcon, SunIcon } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
+import { RAIL_BAR_BTN, RAIL_BTN, RAIL_BTN_OFF } from "@/components/rail-button";
+import { cn } from "@/lib/utils";
 
 // Light/dark toggle for the icon rail's footer, styled to match the rail's
 // filter buttons (icon over a small label). Theme is just the `dark` class on
@@ -43,9 +45,7 @@ export function ThemeToggle({
         onClick={toggle}
         aria-label={`Switch to ${target.toLowerCase()} theme`}
         className={
-          bar
-            ? "group/rail-btn flex size-11 cursor-pointer items-center justify-center rounded-md text-muted-foreground outline-none transition-colors hover:bg-sidebar-accent/50 hover:text-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring"
-            : "group/rail-btn relative flex cursor-pointer flex-col items-center gap-1 rounded-md py-2 text-muted-foreground outline-none transition-colors hover:bg-sidebar-accent/50 hover:text-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+          bar ? cn(RAIL_BAR_BTN, RAIL_BTN_OFF) : cn(RAIL_BTN, RAIL_BTN_OFF)
         }
       >
         {/* Sun and Moon both stay mounted and stacked; `isDark` cross-fades

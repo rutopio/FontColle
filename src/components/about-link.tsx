@@ -1,5 +1,7 @@
 import { InfoIcon } from "@phosphor-icons/react";
+import { RAIL_BAR_BTN, RAIL_BTN, RAIL_BTN_OFF } from "@/components/rail-button";
 import { useAbout } from "@/lib/about/context";
+import { cn } from "@/lib/utils";
 
 // Opens the About dialog (components/about-dialog) from the icon rail's footer,
 // styled to match the rail's other footer controls: icon over a small label on
@@ -25,8 +27,12 @@ export function AboutLink({
         aria-expanded={open}
         className={
           bar
-            ? "group/rail-btn flex size-11 cursor-pointer items-center justify-center rounded-md text-muted-foreground outline-none transition-colors hover:bg-sidebar-accent/50 hover:text-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring aria-expanded:text-foreground"
-            : "group/rail-btn relative flex cursor-pointer flex-col items-center gap-1 rounded-md py-2 text-muted-foreground outline-none transition-colors hover:bg-sidebar-accent/50 hover:text-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring aria-expanded:bg-black/10 aria-expanded:text-foreground dark:aria-expanded:bg-white/12"
+            ? cn(RAIL_BAR_BTN, RAIL_BTN_OFF, "aria-expanded:text-foreground")
+            : cn(
+                RAIL_BTN,
+                RAIL_BTN_OFF,
+                "aria-expanded:bg-black/10 aria-expanded:text-foreground dark:aria-expanded:bg-white/12"
+              )
         }
       >
         {/* Phosphor weight is a prop, not CSS, so hover-swaps the icon:

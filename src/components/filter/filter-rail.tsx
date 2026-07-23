@@ -1,3 +1,4 @@
+import { RAIL_BTN } from "@/components/rail-button";
 import type { FilterState } from "@/lib/fonts/filter";
 import { cn } from "@/lib/utils";
 import {
@@ -36,7 +37,7 @@ export function FilterGroupButton({
       // content keeps the two in lockstep; the sr-only span below supplies the
       // wording the badge alone can't convey.
       className={cn(
-        "group/rail-btn relative flex cursor-pointer flex-col items-center gap-1 rounded-md py-2 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-inset",
+        cn(RAIL_BTN, "focus-visible:ring-inset"),
         horizontal ? "w-16 shrink-0 px-1" : "",
         active
           ? "bg-black/10 text-sidebar-accent-foreground dark:bg-white/12"

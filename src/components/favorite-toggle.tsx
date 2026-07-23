@@ -1,14 +1,13 @@
 import { HeartIcon } from "@phosphor-icons/react";
 import { Link, useRouterState } from "@tanstack/react-router";
+import {
+  RAIL_BAR_BTN,
+  RAIL_BTN,
+  RAIL_BTN_OFF,
+  RAIL_BTN_ON,
+} from "@/components/rail-button";
 import { useFavorites } from "@/lib/fonts/favorites";
 import { cn } from "@/lib/utils";
-
-// Shared rail-button chrome, so the two modes look identical.
-const BTN =
-  "group/rail-btn relative flex cursor-pointer flex-col items-center gap-1 rounded-md py-2 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-sidebar-ring";
-const ON = "bg-black/10 text-sidebar-accent-foreground dark:bg-white/12";
-const OFF =
-  "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground";
 
 // The heart, with a hover-swapped duotone twin (Phosphor weight is a prop, not
 // CSS). `active` fills it; the duotone twin shows on hover. `red` tints the
@@ -31,9 +30,16 @@ function HeartLabel({
   return (
     <>
       <HeartIcon
+        // Keyed on the favorited state so hearting remounts the icon and
+        // replays the pop, matching the card/row heart in font-actions. Only
+        // the `red` (detail-page) mode pops: there the heart IS the state, so
+        // it earns the beat. The list-page link uses the heart as a view
+        // switch, where a celebration would be claiming something happened to
+        // a font that did not.
+        key={red && active ? "on" : "off"}
         className={cn(
           "size-5 group-hover/rail-btn:hidden",
-          red && active && "text-red-500"
+          red && active && "animate-heart-pop text-red-500"
         )}
         weight={active ? "fill" : "regular"}
       />
@@ -48,10 +54,6 @@ function HeartLabel({
     </>
   );
 }
-
-// Compact icon-button chrome for the mobile top bar (no tile, no label).
-const BAR_BTN =
-  "group/rail-btn flex size-11 cursor-pointer items-center justify-center rounded-md text-muted-foreground outline-none transition-colors hover:bg-sidebar-accent/50 hover:text-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring";
 
 // The rail-footer Favorite control. Its meaning depends on the page:
 //  - List page (no `fontId`): a link that toggles the favorites-only view
@@ -88,7 +90,7 @@ function FavoriteMark({ fontId, bar }: { fontId: string; bar?: boolean }) {
         aria-label={on ? "Remove from favorites" : "Add to favorites"}
         // Neutral chrome always (no ON background): this is a toggle, so the
         // favorited state is carried by the red filled heart, not a highlight.
-        className={bar ? BAR_BTN : cn(BTN, OFF)}
+        className={cn(bar ? RAIL_BAR_BTN : RAIL_BTN, RAIL_BTN_OFF)}
       >
         <HeartLabel active={on} bar={bar} label="Add" red />
       </button>
@@ -120,7 +122,9 @@ function FavoriteViewLink({ bar }: { bar?: boolean }) {
         aria-current={fav ? "page" : undefined}
         aria-label={fav ? "Show all fonts" : "Show favorite fonts"}
         className={
-          bar ? cn(BAR_BTN, fav && "text-red-500") : cn(BTN, fav ? ON : OFF)
+          bar
+            ? cn(RAIL_BAR_BTN, RAIL_BTN_OFF, fav && "text-red-500")
+            : cn(RAIL_BTN, fav ? RAIL_BTN_ON : RAIL_BTN_OFF)
         }
       >
         <HeartLabel active={fav} bar={bar} label="Favorite" />
