@@ -37,6 +37,12 @@ const CRAWLER_UA =
 // onto `/` and follows the link there instead of walking more permutations.
 const FILTERED_CRAWLER_HTML = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>FontColle</title><link rel="canonical" href="https://fontcolle.com/"><meta name="robots" content="noindex,follow"></head><body><p>Filtered views of the FontColle catalog are rendered in the browser. <a href="/">Browse the full catalog</a>.</p></body></html>`;
 
+// How long an SSR'd bare `/` stays in the edge cache. The document is rebuilt
+// from src/data on every deploy and the daily harvest fires a deploy hook, so a
+// stale entry can only ever be minutes old, never a stale catalog: the cache is
+// per-colo and empty again after each deploy's cold start.
+const HOME_CACHE_SECONDS = 600;
+
 // Mirror the CSP / security headers from public/_headers. Kept as a single map
 // so the two lists stay easy to compare.
 const SECURITY_HEADERS: Record<string, string> = {
@@ -100,6 +106,27 @@ export default {
       });
     }
 
+    // The bare `/` SSRs the same bytes for every visitor: the first-page slice
+    // comes from a build-time asset, favorites hydrate to [] client-side, and
+    // preview text starts empty. Verified against production — two responses
+    // differ only in TanStack Router's `u:<ms>` loader-freshness timestamp,
+    // which is advisory (the client refetches the full catalog either way).
+    // So render it once per colo and serve the rest from the edge cache, which
+    // is the actual fix for repeat load: a cache hit costs no React render at
+    // all, rather than a render with a larger CPU budget.
+    //
+    // ONLY the bare `/` qualifies. Any query string makes the document
+    // visitor-specific, and detail pages already cost far less per request.
+    const isCacheableHome =
+      request.method === "GET" && url.pathname === "/" && url.search === "";
+    // `caches.default` is the Workers runtime's per-colo cache. It is absent
+    // from the DOM CacheStorage type the app compiles against, hence the cast.
+    const cache = (caches as unknown as { default: Cache }).default;
+    if (isCacheableHome) {
+      const hit = await cache.match(request);
+      if (hit) return hit;
+    }
+
     const res = await serverEntry.fetch(...args);
 
     // Only decorate HTML documents; assets are handled by _headers. Response
@@ -112,6 +139,22 @@ export default {
       next.headers.set(key, value);
     }
     next.headers.set("Link", LINK_HEADER);
+
+    // Store a clone and return the original: cache.put() consumes the body it
+    // is given, and a streamed SSR body can only be read once. waitUntil keeps
+    // the write off the response's critical path. Only 200s are cached, so an
+    // SSR error is never pinned at the edge.
+    if (isCacheableHome && next.status === 200) {
+      next.headers.set(
+        "Cache-Control",
+        `public, max-age=${HOME_CACHE_SECONDS}`
+      );
+      // The Workers module format calls fetch(request, env, ctx); the handler's
+      // declared tuple stops at 2, so read the ExecutionContext off the rest.
+      const ctx = (args as unknown[])[2] as ExecutionContext | undefined;
+      const write = cache.put(request, next.clone());
+      if (ctx?.waitUntil) ctx.waitUntil(write);
+    }
     return next;
   },
 };
