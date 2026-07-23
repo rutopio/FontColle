@@ -34,7 +34,6 @@ export function ThemeToggle({
 
   // Label names the theme the click switches TO, mirroring the rail's naming.
   const target = isDark ? "Light" : "Dark";
-  const Icon = isDark ? SunIcon : MoonIcon;
   const bar = variant === "bar";
 
   return (
@@ -49,15 +48,45 @@ export function ThemeToggle({
             : "group/rail-btn relative flex cursor-pointer flex-col items-center gap-1 rounded-md py-2 text-muted-foreground outline-none transition-colors hover:bg-sidebar-accent/50 hover:text-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring"
         }
       >
-        {/* Phosphor weight is a prop, not CSS, so hover-swaps the icon:
-            the base icon hides on hover and the duotone twin shows. */}
-        <Icon className="size-5 group-hover/rail-btn:hidden" />
-        <Icon
-          className="hidden size-5 group-hover/rail-btn:block"
-          weight="duotone"
-        />
+        {/* Sun and Moon both stay mounted and stacked; `isDark` cross-fades
+            between them (opacity + scale + blur) so the theme switch reads as a
+            transition, not a hard swap. reduced-motion collapses the transform
+            to a plain opacity fade (see styles.css). The base/duotone pair keeps
+            the same hover-weight swap the rail buttons use. */}
+        <span className="relative grid size-5 place-items-center">
+          <IconFace icon={SunIcon} shown={isDark} />
+          <IconFace icon={MoonIcon} shown={!isDark} />
+        </span>
         {!bar && <span className="text-[10px] leading-none">{target}</span>}
       </button>
     </nav>
+  );
+}
+
+// One theme icon stacked in the shared grid cell. `shown` drives an opacity +
+// scale + blur cross-fade on the theme switch; the base weight hides on hover
+// and the duotone twin shows, matching the filter rail's hover treatment.
+function IconFace({
+  icon: Icon,
+  shown,
+}: {
+  icon: typeof SunIcon;
+  shown: boolean;
+}) {
+  return (
+    <span
+      className={`col-start-1 row-start-1 transition-[opacity,scale,filter] duration-[var(--motion-base)] ease-[var(--ease-snap)] ${
+        shown
+          ? "scale-100 opacity-100 blur-0"
+          : "pointer-events-none scale-50 opacity-0 blur-[4px]"
+      }`}
+      aria-hidden={!shown}
+    >
+      <Icon className="size-5 group-hover/rail-btn:hidden" />
+      <Icon
+        className="hidden size-5 group-hover/rail-btn:block"
+        weight="duotone"
+      />
+    </span>
   );
 }

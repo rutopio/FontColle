@@ -57,7 +57,7 @@ export function AppSidebar({
             className="group/logo flex w-full flex-col items-center justify-center gap-1 rounded-lg text-primary"
           >
             <LogoIcon className="size-7 transition-[stroke-width] group-hover/logo:[stroke-width:2]" />
-            <span className="font-mono text-[9px] transition-all group-hover/logo:font-bold">
+            <span className="font-mono text-[9px] group-hover/logo:font-bold">
               FontColle
             </span>
           </Link>
