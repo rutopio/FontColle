@@ -2,6 +2,14 @@
 User-agent: *
 Disallow:
 
+# Filter params on `/` are transient views of one catalog, not distinct pages
+# (the route's canonical already points every filtered view at the bare `/`).
+# They are also an effectively infinite URL space: a crawler walking
+# ?designer= / ?avgwidth= / ?fav= combinations generates unbounded requests for
+# pages whose SSR body is only a loading skeleton. Every detail page and the
+# bare `/` stay crawlable; only the permutations are off-limits.
+Disallow: /?
+
 # Content Signals (contentsignals.org, draft-romm-aipref-contentsignals).
 # This is an open-source font catalog: search and AI answers may reference it,
 # but the pages are not offered as AI training material.

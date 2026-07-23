@@ -18,6 +18,25 @@ const LINK_HEADER = [
   '</openapi.json>; rel="service-desc"; type="application/openapi+json"',
 ].join(", ");
 
+// Crawlers that walk filter permutations of `/`. The catalog's filter params
+// (?designer=, ?avgwidth=, ?fav=, …) are an effectively infinite URL space, and
+// each one costs a full React SSR of the app shell for a page whose body is
+// nothing but a loading skeleton (the real list is fetched client-side, so the
+// SSR output carries no content a crawler can use). Production log for
+// 2026-07-23 21:00-22:05 UTC: 1964 of 2000 requests were GPTBot walking those
+// permutations, and every exceededCpu event in the window was one of them.
+// Matching on UA only, so a human on a filtered URL still gets the normal SSR.
+const CRAWLER_UA =
+  /bot|crawler|spider|GPTBot|ClaudeBot|Bytespider|facebookexternalhit|slurp/i;
+
+// Minimal HTML for a crawler hitting a filtered `/`. Deliberately NOT the app
+// shell: no stylesheet or module preloads (their filenames are build hashes we
+// can't resolve from the Worker), because this response is never hydrated. It
+// carries a canonical pointing at the bare `/` — the same canonical the real
+// route emits for any filtered view — so the crawler consolidates these URLs
+// onto `/` and follows the link there instead of walking more permutations.
+const FILTERED_CRAWLER_HTML = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>FontColle</title><link rel="canonical" href="https://fontcolle.com/"><meta name="robots" content="noindex,follow"></head><body><p>Filtered views of the FontColle catalog are rendered in the browser. <a href="/">Browse the full catalog</a>.</p></body></html>`;
+
 // Mirror the CSP / security headers from public/_headers. Kept as a single map
 // so the two lists stay easy to compare.
 const SECURITY_HEADERS: Record<string, string> = {
@@ -55,6 +74,28 @@ export default {
           "Content-Type": "text/markdown; charset=utf-8",
           Link: LINK_HEADER,
           "X-Content-Type-Options": "nosniff",
+        },
+      });
+    }
+
+    // Crawler walking a filtered `/`: skip the React SSR entirely (see
+    // CRAWLER_UA). Only `/` with a query string matches — the bare `/` still
+    // SSRs its real first-page slice, and every detail page is untouched.
+    const url = new URL(request.url);
+    if (
+      url.pathname === "/" &&
+      url.search !== "" &&
+      CRAWLER_UA.test(request.headers?.get?.("user-agent") ?? "")
+    ) {
+      return new Response(FILTERED_CRAWLER_HTML, {
+        status: 200,
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          // Let the edge absorb repeat hits so a crawler walking thousands of
+          // permutations stops reaching the Worker at all.
+          "Cache-Control": "public, max-age=3600",
+          "X-Robots-Tag": "noindex, follow",
+          ...SECURITY_HEADERS,
         },
       });
     }
