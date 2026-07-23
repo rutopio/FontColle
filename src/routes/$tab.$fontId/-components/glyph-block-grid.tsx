@@ -159,21 +159,34 @@ export function BlockGrid({
     return Number(el.dataset.cp);
   };
 
+  // Cached popover box. Measuring inside showAt meant every mousemove wrote
+  // (textContent, display) and then read offsetWidth/offsetHeight, and a read
+  // after a write forces a synchronous reflow — one per pointer move, across a
+  // grid that can hold 15k cells. The box does not actually change size: the
+  // glyph sits in a fixed size-56 square and the label is always U+XXXX (hex()
+  // pads to 4 and the grid is BMP-only), so one measurement serves every cell.
+  // Re-measured only when the popover goes from hidden to shown, which is also
+  // the one moment a stale value could matter (font swap, zoom).
+  const popBox = useRef<{ w: number; h: number } | null>(null);
+
   const showAt = (cp: number, x: number, y: number) => {
     const pop = popRef.current;
     if (!pop) return;
     if (popGlyphRef.current)
       popGlyphRef.current.textContent = String.fromCodePoint(cp);
     if (popLabelRef.current) popLabelRef.current.textContent = `U+${hex(cp)}`;
-    // Show first so it has measurable dimensions, then flip toward whichever
-    // side has room: below/right of the cursor by default, but above/left
-    // when the popover would overflow the viewport edge (e.g. hovering a cell
-    // near the bottom after scrolling down). 16px gap from the cursor, 8px
-    // min margin from the edge.
-    pop.style.display = "flex";
+    // Flip toward whichever side has room: below/right of the cursor by
+    // default, but above/left when the popover would overflow the viewport edge
+    // (e.g. hovering a cell near the bottom after scrolling down). 16px gap
+    // from the cursor, 8px min margin from the edge.
     const CURSOR_GAP = 16;
     const MARGIN = 8;
-    const { offsetWidth: w, offsetHeight: h } = pop;
+    if (pop.style.display === "none") {
+      pop.style.display = "flex";
+      // The only read, and only on the hidden -> shown edge.
+      popBox.current = { w: pop.offsetWidth, h: pop.offsetHeight };
+    }
+    const { w, h } = popBox.current ?? { w: 0, h: 0 };
     const left =
       x + CURSOR_GAP + w + MARGIN > window.innerWidth
         ? x - CURSOR_GAP - w
@@ -182,8 +195,10 @@ export function BlockGrid({
       y + CURSOR_GAP + h + MARGIN > window.innerHeight
         ? y - CURSOR_GAP - h
         : y + CURSOR_GAP;
-    pop.style.left = `${Math.max(MARGIN, left)}px`;
-    pop.style.top = `${Math.max(MARGIN, top)}px`;
+    // translate3d, not left/top: left/top are layout properties, so following
+    // the cursor through them re-ran layout on every move. A transform is
+    // compositor-only, and the element is already position:fixed at 0,0.
+    pop.style.transform = `translate3d(${Math.max(MARGIN, left)}px, ${Math.max(MARGIN, top)}px, 0)`;
   };
   const hide = () => {
     if (popRef.current) popRef.current.style.display = "none";
@@ -535,7 +550,9 @@ export function BlockGrid({
       <div
         ref={popRef}
         style={{ display: "none" }}
-        className="pointer-events-none fixed z-50 flex-col items-center gap-1 rounded-lg border bg-popover p-3 shadow-lg"
+        // Anchored at the viewport origin; showAt positions it with a
+        // translate3d, so top-0 left-0 is the transform's reference point.
+        className="pointer-events-none fixed top-0 left-0 z-50 flex-col items-center gap-1 rounded-lg border bg-popover p-3 shadow-lg"
       >
         <div
           ref={popGlyphRef}

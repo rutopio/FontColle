@@ -100,7 +100,12 @@ function DrawerContent({
             // --drawer-swipe-strength, so a hard flick settles faster than a
             // slow drag. That is the gesture's velocity carrying into the
             // animation rather than being discarded at the seam.
-            "data-swiping:select-none data-swiping:duration-0",
+            //
+            // will-change only while data-swiping is present: promoting the
+            // sheet to its own layer avoids a hitch on the first drag frame,
+            // and dropping it the moment the gesture ends keeps a full-width,
+            // 85dvh layer from sitting in GPU memory for the whole session.
+            "data-swiping:will-change-transform data-swiping:select-none data-swiping:duration-0",
             "data-ending-style:[transform:translateY(100%)] data-starting-style:[transform:translateY(100%)]",
             "data-ending-style:duration-[calc(var(--drawer-swipe-strength,1)*var(--motion-slow))]",
             className
