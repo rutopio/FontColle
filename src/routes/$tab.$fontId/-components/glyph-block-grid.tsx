@@ -8,26 +8,30 @@ import {
   useRef,
   useState,
 } from "react";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useGlyphCompact } from "@/hooks/use-mobile";
 import { hasCodepoint } from "@/lib/fonts/glyph-coverage";
 import type { UnicodeBlock } from "@/lib/fonts/unicode-blocks";
 import { cn } from "@/lib/utils";
 
 // The active-block glyph chart used by GlyphsPanel (see glyphs.tsx). Lays one
-// Unicode block out as a 16-column code chart on desktop (one column per low hex
-// nibble, rows aligned on the U+xxx0 boundary) and a packed 5-column glyph
-// browser on mobile. Big blocks (CJK Unified Ideographs is 15k+ cells) are
+// Unicode block out as a 16-column code chart at lg and up (one column per low
+// hex nibble, rows aligned on the U+xxx0 boundary) and a packed 5-column glyph
+// browser below that. Big blocks (CJK Unified Ideographs is 15k+ cells) are
 // ROW-VIRTUALIZED so only visible rows are in the DOM; the hover magnifier is
 // driven imperatively via event delegation + a ref, so the grid never
 // re-renders while you hover.
 
 export type Range = [number, number];
 
-// Row stride for a code chart: 16 cells, indexed by the low hex nibble. On a
-// phone 16 square cells leave each one too small to read, so the row drops to
-// 5 and the hex address column/header go away, the grid stops being a
-// canonical code chart there and is simply a glyph browser, with each cell's
-// codepoint still available via its title, aria-label, and the magnifier.
+// Row stride for a code chart: 16 cells, indexed by the low hex nibble. Below
+// lg, 16 square cells leave each one too small to read, so the row drops to 5
+// and the hex address column/header go away — the grid stops being a canonical
+// code chart there and is simply a glyph browser, with each cell's codepoint
+// still available via its title, aria-label, and the magnifier.
+//
+// The cutoff is lg, not md: at md the detail sidebar has just come back and
+// taken ~24.5rem, so that is where a 16-wide chart is squeezed hardest, not
+// where it becomes affordable. See useGlyphCompact.
 export const COLS_DESKTOP = 16;
 export const COLS_MOBILE = 5;
 // Width (px) of the leading row-label column (the U+xxx0 prefix). Fixed so the
@@ -74,19 +78,19 @@ export function BlockGrid({
   // the panel can copy the character and flash confirmation.
   onCopy: (cp: number) => void;
 }) {
-  const compact = useIsMobile();
+  const compact = useGlyphCompact();
   const COLS = compact ? COLS_MOBILE : COLS_DESKTOP;
-  // The leading address column is desktop-only; on mobile its width goes to the
-  // cells. The track is dropped entirely (not zeroed) to match the label cell
-  // no longer being rendered, so the cells stay aligned with the header.
+  // The leading address column exists only in the wide layout; compact gives its
+  // width to the cells. The track is dropped entirely (not zeroed) to match the
+  // label cell no longer being rendered, so cells stay aligned with the header.
   const labelW = compact ? 0 : LABEL_W;
   const gridCols = labelW
     ? `${labelW}px repeat(${COLS}, minmax(0, 1fr))`
     : `repeat(${COLS}, minmax(0, 1fr))`;
 
-  // Desktop keeps the canonical code chart: every codepoint in the block gets a
-  // cell (absent ones drawn muted) so rows align on the U+xxx0 boundary. Mobile
-  // has already given up the address apparatus, and on a phone a sparse block
+  // Wide keeps the canonical code chart: every codepoint in the block gets a
+  // cell (absent ones drawn muted) so rows align on the U+xxx0 boundary. Compact
+  // has already given up the address apparatus, and at 5 columns a sparse block
   // is mostly empty slots, so it packs only the present codepoints instead. The
   // grid is then indexed by position in this list rather than by address, which
   // is why every layout/navigation derivation below branches on `compact`.
@@ -119,10 +123,10 @@ export function BlockGrid({
     if (!el) return;
     const measure = () => {
       if (scrollRef.current) setScrollMargin(el.offsetTop);
-      // The flexible columns share the width left after the label column (0 on
-      // mobile, where it isn't rendered) and the gaps between tracks; a cell is
-      // that width / COLS, and the row is that tall (square). Halving COLS on
-      // mobile and dropping the label column both grow the cell.
+      // The flexible columns share the width left after the label column (0 in
+      // compact, where it isn't rendered) and the gaps between tracks; a cell is
+      // that width / COLS, and the row is that tall (square). Dropping to 5
+      // columns and losing the label column both grow the cell.
       const gaps = labelW ? COLS + 1 : COLS - 1;
       const w = el.clientWidth - labelW - gaps * GAP;
       if (w > 0) setCellSize(w / COLS);

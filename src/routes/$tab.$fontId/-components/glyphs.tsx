@@ -2,7 +2,7 @@ import type { CSSProperties, RefObject } from "react";
 import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useGlyphCompact } from "@/hooks/use-mobile";
 import type { FontRecord } from "@/lib/fonts/types";
 import { BMP_BLOCKS } from "@/lib/fonts/unicode-blocks";
 import {
@@ -97,11 +97,12 @@ export function GlyphsPanel({
 }
 
 // Loading placeholder for the glyph chart: the same column count and square
-// cells as BlockGrid (leading address column + header on desktop), so the real
-// grid swaps in without a layout shift. role=status + aria-busy announce the
+// cells as BlockGrid (leading address column + header in the wide layout), so
+// the real grid swaps in without a layout shift. Both read useGlyphCompact, so
+// they cannot disagree about which layout is current. role=status + aria-busy announce the
 // pending state; the individual cells are decorative.
 function GlyphGridSkeleton() {
-  const COLS = useIsMobile() ? COLS_MOBILE : COLS_DESKTOP;
+  const COLS = useGlyphCompact() ? COLS_MOBILE : COLS_DESKTOP;
   const labelW = COLS === COLS_DESKTOP ? LABEL_W : 0;
   const gridCols = labelW
     ? `${labelW}px repeat(${COLS}, minmax(0, 1fr))`
