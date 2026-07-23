@@ -17,10 +17,17 @@ export function FontActions({
   font,
   isFavorite,
   onToggleFavorite,
+  reserveRepoSlot = false,
 }: {
   font: FontRecord;
   isFavorite: boolean;
   onToggleFavorite: (id: string) => void;
+  // Keep the repo button's footprint when the family has no repo. Rows share
+  // one continuous right edge down the list, so a dropped button pulls that
+  // row's heart and Google icon rightward and breaks the column. Cards don't
+  // need it: each card's cluster aligns to its own edge, and there is no
+  // shared column to fall out of.
+  reserveRepoSlot?: boolean;
 }) {
   return (
     <div className="flex shrink-0 items-center gap-4">
@@ -94,6 +101,14 @@ export function FontActions({
           </TooltipTrigger>
           <TooltipContent>View source repository</TooltipContent>
         </Tooltip>
+      )}
+      {/* Placeholder for a family with no repo. size-5 matches the icon the
+          real button renders; the button's -m-2 p-2 cancels out, so its
+          footprint in this flex row is exactly the icon's box. aria-hidden and
+          empty: it reserves space without announcing a control that isn't
+          there. */}
+      {!font.repositoryUrl && reserveRepoSlot && (
+        <span aria-hidden className="size-5 shrink-0" />
       )}
     </div>
   );

@@ -61,12 +61,20 @@ export function SearchInput({
         }}
         placeholder="Search family or designer"
         aria-label="Search fonts by family or designer"
-        className={cn("h-9 pl-8", !draft && "pr-8")}
+        // pr-8 only reserves room for the "/" badge, so it tracks the badge's
+        // own md gate: below md there is no badge and the query gets the full
+        // width back.
+        className={cn("h-9 pl-8", !draft && "md:pr-8")}
       />
       {/* Advertises the "/"-to-focus shortcut. Hidden once the field has text,
-          where it would crowd the query and the native clear button. */}
+          where it would crowd the query and the native clear button, and below
+          md, which is the phone layout (same 768px cutoff as useIsMobile and
+          the sidebar): there is no physical keyboard to press "/" on, so the
+          hint is dead weight taking room from a narrow field. */}
       {!draft && (
-        <Kbd className="absolute top-1/2 right-2.5 -translate-y-1/2">/</Kbd>
+        <Kbd className="absolute top-1/2 right-2.5 -translate-y-1/2 hidden md:inline-flex">
+          /
+        </Kbd>
       )}
     </div>
   );

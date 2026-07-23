@@ -69,17 +69,23 @@ export const FontRow = memo(function FontRow({
                 {font.designer}
               </span>
             )}
-            {/* Footer badges (shrink-0); hidden on narrow rows where there's no room. */}
+            {/* Footer badges (shrink-0); hidden on narrow rows where there's
+                no room. Gated at md, not sm, so they disappear on the same step
+                as the sidebar (ui/sidebar is md:block) and as useIsMobile's
+                768px cutoff. */}
             <FontTraits
               font={font}
               selection={selection}
-              badgeClassName="hidden shrink-0 sm:inline-flex"
+              badgeClassName="hidden shrink-0 md:inline-flex"
             />
           </div>
           <FontActions
             font={font}
             isFavorite={isFavorite}
             onToggleFavorite={onToggleFavorite}
+            // Rows stack into a shared right edge, so a missing repo button
+            // would slide this row's other icons out of the column.
+            reserveRepoSlot
           />
         </div>
         {/* Designer on its own second row on narrow screens only. */}

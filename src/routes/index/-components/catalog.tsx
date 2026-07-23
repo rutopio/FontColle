@@ -354,7 +354,10 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
                   className="h-9 text-destructive"
                 >
                   Reset
-                  <Kbd>Esc</Kbd>
+                  {/* Same md gate as the search field's "/" badge: the phone
+                      layout has no physical keyboard, so the shortcut hint is
+                      noise on a button that is already tight for space. */}
+                  <Kbd className="hidden md:inline-flex">Esc</Kbd>
                 </Button>
               )}
             </div>
