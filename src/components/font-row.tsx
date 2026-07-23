@@ -48,7 +48,14 @@ export const FontRow = memo(function FontRow({
     <Link
       to="/$tab/$fontId"
       params={{ tab: "instances", fontId: fontSlug(font.id) }}
-      className="flex h-32 flex-col justify-center gap-4 overflow-hidden transition-colors hover:bg-muted focus-visible:bg-muted/80 focus-visible:outline-none"
+      // Press feedback is a background step, not the scale FontCard uses: the
+      // row is full-bleed and sits directly on its separator, so scaling it
+      // would peel it off both viewport edges and the divider. active: goes one
+      // step past hover via foreground/10 rather than a second surface token,
+      // because --muted and --accent are the same value; a foreground tint
+      // darkens in light mode and lightens in dark, correct in both. Touch has
+      // no hover, so this is its only pre-navigation feedback.
+      className="flex h-32 flex-col justify-center gap-4 overflow-hidden transition-colors duration-[var(--motion-fast)] ease-[var(--ease-snap)] hover:bg-muted focus-visible:bg-muted/80 focus-visible:outline-none active:bg-foreground/10"
     >
       {/* Narrow (mobile): [name + actions] row over a designer row, stacked.
           Wide: name, designer and traits all inline, actions on the right. */}

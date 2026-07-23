@@ -45,7 +45,11 @@ export const FontCard = memo(function FontCard({
     <Link
       to="/$tab/$fontId"
       params={{ tab: "instances", fontId: fontSlug(font.id) }}
-      className="flex h-72 flex-col gap-4 overflow-hidden rounded-lg border bg-card p-5 transition-colors hover:bg-muted focus-visible:border-foreground focus-visible:outline-none"
+      // active:scale gives the press instant feedback on touch, where there is
+      // no hover state to confirm the tap before the route change lands. The
+      // scale is gentler than a button's 0.97: a 288px-tall card travels the
+      // same optical distance at a much smaller ratio.
+      className="flex h-72 flex-col gap-4 overflow-hidden rounded-lg border bg-card p-5 transition-[color,background-color,transform] duration-[var(--motion-fast)] ease-[var(--ease-snap)] hover:bg-muted focus-visible:border-foreground focus-visible:outline-none active:scale-[0.99]"
     >
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between gap-3">

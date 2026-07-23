@@ -1,7 +1,12 @@
 import { FunnelIcon } from "@phosphor-icons/react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHandle,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import type { FacetIndex } from "@/lib/fonts/filter/facets";
 import type { FilterSearch, FilterState } from "@/lib/fonts/filter/state";
 import { activeFilterCount } from "@/lib/fonts/filter/state";
@@ -15,6 +20,11 @@ import { type FilterGroupId, PRESET_GROUP } from "./groups";
 // controls, a horizontal FilterRail group switcher over the FilterSidebar. All
 // filter state is shared (FilterProvider is at the root), so changes reflect
 // live and the drawer needs no Apply button. Hidden on desktop via md:hidden.
+//
+// Built on ui/drawer (Base UI Drawer), not ui/sheet: this panel covers 85% of
+// the screen, and a sheet that large has to be dismissable by dragging it down
+// — reaching a corner X on a phone is the wrong ask. Single height, no
+// intermediate snap point.
 export function FilterDrawer({
   index,
   filter,
@@ -38,10 +48,10 @@ export function FilterDrawer({
   const count = activeFilterCount(filter);
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      {/* FAB: sits above the preview-dock footer (bottom-20) and below the Sheet
-          overlay (z-40 vs the overlay's z-50). safe-area padding clears the iOS
-          home indicator. */}
+    <Drawer open={open} onOpenChange={setOpen} swipeDirection="down">
+      {/* FAB: sits above the preview-dock footer (bottom-20) and below the
+          drawer backdrop (z-40 vs the backdrop's z-50). safe-area padding
+          clears the iOS home indicator. */}
       <button
         type="button"
         onClick={() => setOpen(true)}
@@ -61,14 +71,15 @@ export function FilterDrawer({
         )}
       </button>
 
-      <SheetContent
-        side="bottom"
-        className="h-[85dvh]! gap-0 overflow-hidden p-0"
-      >
-        {/* SheetTitle also satisfies the dialog's required accessible name. */}
+      {/* max-h overrides the component default so 85dvh is the real height:
+          the popup frame stays fixed and only FilterSidebar's ScrollArea
+          scrolls, which is what keeps the drag and the scroll from fighting. */}
+      <DrawerContent className="h-[85dvh] max-h-[85dvh] gap-0 p-0">
+        <DrawerHandle />
+        {/* DrawerTitle also satisfies the dialog's required accessible name. */}
         <div className="flex items-center gap-2 border-border border-b px-4 py-3">
           <FunnelIcon className="size-4 text-primary" weight="fill" />
-          <SheetTitle>Filters</SheetTitle>
+          <DrawerTitle>Filters</DrawerTitle>
           {count > 0 && (
             <span className="text-muted-foreground text-xs">
               {count} active
@@ -106,7 +117,7 @@ export function FilterDrawer({
             onApplyPreset={onApplyPreset}
           />
         </div>
-      </SheetContent>
-    </Sheet>
+      </DrawerContent>
+    </Drawer>
   );
 }
