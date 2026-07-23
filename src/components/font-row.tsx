@@ -69,14 +69,18 @@ export const FontRow = memo(function FontRow({
                 {font.designer}
               </span>
             )}
-            {/* Footer badges (shrink-0); hidden on narrow rows where there's
-                no room. Gated at md, not sm, so they disappear on the same step
-                as the sidebar (ui/sidebar is md:block) and as useIsMobile's
-                768px cutoff. */}
+            {/* Footer badges (shrink-0); hidden until lg. md is the worst case
+                for this row, not a safe one: the sidebar returns at md and
+                takes ~24.5rem, so the row is at its narrowest exactly when it
+                would also be carrying name + designer + badges + three action
+                icons. Only the name truncates, so the chips win the space and
+                the family name -- the thing being scanned -- loses it. They
+                come back at lg, where the row is wide enough to hold all of it
+                without squeezing the name. */}
             <FontTraits
               font={font}
               selection={selection}
-              badgeClassName="hidden shrink-0 md:inline-flex"
+              badgeClassName="hidden shrink-0 lg:inline-flex"
             />
           </div>
           <FontActions
