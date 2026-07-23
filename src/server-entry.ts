@@ -7,6 +7,7 @@
 // arg to it and, for text/html responses, add the security headers. Cache-
 // Control rules are intentionally NOT set here, those belong to static assets.
 import serverEntry from "@tanstack/react-start/server-entry";
+import { mcpEndpoint } from "@/mcp/server";
 
 // Link headers advertised on every HTML document so agents can discover the
 // site's machine-readable resources (RFC 8288). All targets are real, served
@@ -59,6 +60,13 @@ export default {
     ...args: Parameters<typeof serverEntry.fetch>
   ): Promise<Response> {
     const request = args[0] as Request;
+    const assets = (args[1] as { ASSETS?: { fetch: typeof fetch } })?.ASSETS;
+
+    // Remote MCP server (POST /mcp). Checked before anything else: MCP clients
+    // send their own Accept headers and must never fall through to the HTML SSR
+    // renderer. Returns undefined for every other path.
+    const mcp = await mcpEndpoint(request, assets);
+    if (mcp) return mcp;
 
     // Agent content negotiation: a request that explicitly prefers markdown and
     // does not accept HTML gets the site's machine-readable description instead
@@ -66,10 +74,9 @@ export default {
     // requests). Browsers send `text/html` in Accept, so they never match.
     const accept = request.headers?.get?.("accept") ?? "";
     if (accept.includes("text/markdown") && !accept.includes("text/html")) {
-      const env = (args[1] as { ASSETS?: { fetch: typeof fetch } })?.ASSETS;
       const url = new URL(request.url);
-      const llms = env
-        ? await env.fetch(new Request(new URL("/llms.txt", url)))
+      const llms = assets
+        ? await assets.fetch(new Request(new URL("/llms.txt", url)))
         : undefined;
       const body = llms?.ok
         ? await llms.text()

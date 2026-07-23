@@ -1,0 +1,31 @@
+{
+  "serverInfo": {
+    "name": "fontcolle",
+    "version": "1.0.0",
+    "title": "FontColle Catalog",
+    "description": "Search and inspect open-source Google Fonts families by style category, OpenType features, variable axes, writing system, and weight."
+  },
+  "transport": {
+    "type": "streamable-http",
+    "endpoint": "https://fontcolle.com/mcp"
+  },
+  "capabilities": ["tools"],
+  "tools": [
+    {
+      "name": "search_fonts",
+      "description": "Search the catalog by category, OpenType features, variable axes, writing system, and weight."
+    },
+    {
+      "name": "get_font",
+      "description": "Full record for one family: metrics, features, axes, named instances, license, repository."
+    },
+    {
+      "name": "list_categories",
+      "description": "Style categories with family counts."
+    }
+  ],
+  "authentication": {
+    "type": "none"
+  },
+  "documentation": "https://fontcolle.com/llms.txt"
+}
