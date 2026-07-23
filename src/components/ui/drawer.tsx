@@ -55,8 +55,14 @@ function DrawerBackdrop({
 }
 
 // The grab affordance. Nothing is wired to it: the whole popup is draggable,
-// and the handle's job is to say so. aria-hidden because the Close button is
-// the accessible way out; a keyboard user never drags.
+// and the handle's job is to say so — same call shadcn's Drawer makes, which
+// ships no X either and lets the handle advertise the gesture.
+//
+// aria-hidden because it is decoration, not a control: it has no press target
+// of its own, so exposing it would announce something a keyboard user cannot
+// action. Their exits are Escape and the backdrop, both from the Dialog
+// primitive underneath. A caller that wants a visible button composes
+// DrawerClose itself.
 function DrawerHandle({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -93,7 +99,15 @@ function DrawerContent({
             // The popup does not move itself: this binds it to the pointer.
             // --drawer-swipe-movement-y is the live 1:1 drag offset, so the
             // sheet stays glued to the finger for the whole gesture.
-            "[transform:translateY(var(--drawer-swipe-movement-y))]",
+            //
+            // The 0px fallback is load-bearing, not defensive. Base UI only
+            // registers this var's initialValue behind a
+            // `'registerProperty' in CSS` guard (drawer/popup/DrawerPopup.mjs),
+            // so where that guard fails the var is unset, translateY() is
+            // invalid, and the WHOLE transform declaration is dropped at
+            // computed-value time — taking the sheet's baseline position with
+            // it. The other two vars in this file already carry fallbacks.
+            "[transform:translateY(var(--drawer-swipe-movement-y,0px))]",
             "transition-transform duration-[var(--motion-slow)] ease-[var(--ease-drawer)]",
             // duration-0 while dragging (a transition would lag the finger),
             // and on release the primitive scales the exit by

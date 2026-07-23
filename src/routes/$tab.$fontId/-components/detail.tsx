@@ -502,7 +502,12 @@ function ColumnList({ items }: { items: string[] }) {
           key={item}
           // Row spacing is a per-item margin, not gap-y: the parent is a
           // multi-column container, where gap only sets the column gutter.
-          className="mb-2 flex min-w-0 items-center gap-1.5 text-muted-foreground before:size-1 before:shrink-0 before:rounded-full before:bg-current before:content-['']"
+          //
+          // No colour set, so these read at the default foreground like the
+          // Specs values next to them. Subsets and writing systems are the
+          // panel's content, not a caption about it. The bullet is bg-current,
+          // so it follows the text rather than needing its own token.
+          className="mb-2 flex min-w-0 items-center gap-1.5 before:size-1 before:shrink-0 before:rounded-full before:bg-current before:content-['']"
         >
           <span className="truncate">{item}</span>
         </li>

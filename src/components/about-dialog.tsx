@@ -58,7 +58,16 @@ function AboutBody({
   return (
     <>
       <div className="flex flex-col gap-4 text-center text-muted-foreground text-sm leading-relaxed">
-        <Description className="text-balance">{SITE_DESCRIPTION}</Description>
+        {/* text-foreground has to sit here, not on the wrapper: Dialog/Sheet
+            Description hardcode text-muted-foreground on the element itself,
+            and an element's own class always beats one inherited from an
+            ancestor. cn()'s tailwind-merge drops the muted token only when the
+            override arrives on this component. The tagline is the headline
+            sentence, so it reads at full strength while the notes below it
+            stay muted. */}
+        <Description className="text-balance text-foreground">
+          {SITE_DESCRIPTION}
+        </Description>
         <p className="text-balance">
           The fonts keep their own licenses, mostly the SIL Open Font License;
           each family's terms are on its License tab.
