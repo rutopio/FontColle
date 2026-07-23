@@ -115,6 +115,18 @@ export function Tester({
         block.append($createTextNode(line));
         root.append(block);
       }
+      // Land the caret in the first block, so the toolbar and the Instance
+      // chips have a target on arrival. Without this syncFromSelection bails
+      // at its !$isRangeSelection guard and setActiveKeys([]) leaves every
+      // control reading empty until the user thinks to click a line — the
+      // size slider, the block-type group and the chips all look inert on a
+      // tab whose whole purpose is editing.
+      //
+      // selectStart(), not editor.focus(): this only places the selection.
+      // Focusing on mount would scroll the editor into view and raise the
+      // software keyboard on mobile the moment the tab opens, which is a
+      // different and unwanted behaviour.
+      root.getFirstChild()?.selectStart();
     },
   };
 
