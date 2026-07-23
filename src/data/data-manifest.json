@@ -1,14 +1,14 @@
 {
   "version": 1,
   "fonts": {
-    "key": "fonts/20260722.json",
-    "date": "20260722",
-    "sha256": "f08c16e0ed58fb051a6b124f2941d8e7d32623c3223e2bd407587df759055abc",
-    "bytes": 21115045
+    "key": "fonts/20260723.json",
+    "date": "20260723",
+    "sha256": "9ab3e62e572bd83823e0b4e23f96828aa3f1c5e44f71ed6b49de08a2cde23836",
+    "bytes": 21114768
   },
   "glyphs": {
-    "key": "glyphs/bfad167ab18c1659.tar.gz",
-    "sha256": "bfad167ab18c165986a3aaf305ccfc6bfb5d8e7803a3bfb1174a2e292e6504a0",
+    "key": "glyphs/724f768f19c22a33.tar.gz",
+    "sha256": "724f768f19c22a33a65dbd2ede0b92d52cac5efeb56c42ea0bab98903a32a13a",
     "count": 2028
   },
   "og": {
@@ -18,6 +18,8 @@
       "count": 1935
     },
     "deltas": [
+      "og/chironheihk.png",
+      "og/chironsunghk.png",
       "og/edunswactcursive.png",
       "og/edunswacthandpre.png",
       "og/eduqldhand.png",
