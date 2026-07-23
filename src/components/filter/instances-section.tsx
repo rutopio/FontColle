@@ -124,7 +124,7 @@ export function InstancesSection({
               "flex min-h-9 items-center justify-center rounded border py-0.5 text-center font-mono text-[11px] transition-colors md:min-h-8",
               active === b.id
                 ? "border-primary bg-muted font-semibold text-foreground"
-                : "text-muted-foreground hover:bg-muted hover:text-primary"
+                : "text-foreground hover:bg-muted"
             )}
           >
             {b.label}
@@ -138,7 +138,7 @@ export function InstancesSection({
             "flex min-h-9 items-center justify-center rounded border py-0.5 text-center text-[11px] transition-colors md:min-h-8",
             value == null
               ? "border-primary bg-muted font-semibold text-foreground"
-              : "text-muted-foreground hover:border-foreground hover:text-foreground"
+              : "text-foreground hover:bg-muted"
           )}
         >
           All

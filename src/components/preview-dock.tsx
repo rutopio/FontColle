@@ -85,7 +85,7 @@ export function PreviewBar({ onScrollTop }: { onScrollTop?: () => void }) {
     <div className="flex flex-1 items-center gap-2">
       <PreviewField />
       {onScrollTop && (
-        <div className="group -mr-4 flex h-16 shrink-0 cursor-pointer items-center justify-center border-border border-l px-3 transition-colors hover:bg-secondary">
+        <div className="group -mr-4 flex h-16 shrink-0 cursor-pointer items-center justify-center border-border border-l px-3 transition-colors hover:bg-muted">
           <button
             type="button"
             onClick={onScrollTop}

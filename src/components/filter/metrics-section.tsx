@@ -195,7 +195,7 @@ function MetricRangeRow({
                       "flex min-h-9 items-center justify-center rounded border py-0.5 text-center text-[11px] transition-colors md:min-h-8",
                       active
                         ? "border-primary bg-muted font-semibold text-foreground"
-                        : "text-muted-foreground hover:bg-muted hover:text-primary"
+                        : "text-foreground hover:bg-muted"
                     )}
                   >
                     Q{i + 1}
@@ -217,7 +217,7 @@ function MetricRangeRow({
             "rounded border py-0.5 text-center text-[11px] transition-colors",
             value == null
               ? "border-primary bg-muted font-semibold text-foreground"
-              : "text-muted-foreground hover:border-foreground hover:text-foreground"
+              : "text-foreground hover:bg-muted"
           )}
         >
           All

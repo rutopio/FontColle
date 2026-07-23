@@ -51,11 +51,13 @@ export function PillButton({
         selected
           ? "border-primary bg-muted font-semibold text-foreground"
           : "text-muted-foreground",
-        !disabled && !selected && "hover:bg-muted hover:text-primary",
+        !disabled && !selected && "hover:bg-muted",
         className
       )}
     >
-      <span className={cn("truncate", mono && "font-mono")}>{label}</span>
+      <span className={cn("truncate text-foreground", mono && "font-mono")}>
+        {label}
+      </span>
       <span className="font-mono opacity-60">{count}</span>
     </button>
   );

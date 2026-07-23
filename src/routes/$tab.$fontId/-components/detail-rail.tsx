@@ -109,13 +109,13 @@ export function DetailTabBar({
             replace
             aria-current={on ? "page" : undefined}
             className={cn(
-              "flex shrink-0 items-center gap-1.5 rounded-md px-3 py-1.5 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-sidebar-ring",
+              "flex shrink-0 items-center gap-1.5 rounded-md px-3 py-1.5 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-inset",
               on
                 ? "bg-black/10 font-medium text-foreground dark:bg-white/12"
                 : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground"
             )}
           >
-            <tab.icon className="size-4" weight={on ? "fill" : "regular"} />
+            <tab.icon className="size-4" weight="regular" />
             <span className="font-heading">{tab.label}</span>
           </Link>
         );
@@ -143,7 +143,7 @@ export function DetailRail({
             aria-pressed={on}
             aria-label={`${tab.label} view`}
             className={cn(
-              "group/rail-btn relative flex cursor-pointer flex-col items-center gap-1 rounded-md py-2 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-sidebar-ring",
+              "group/rail-btn relative flex cursor-pointer flex-col items-center gap-1 rounded-md py-2 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-inset",
               on
                 ? "bg-black/10 text-sidebar-accent-foreground dark:bg-white/12"
                 : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground"
@@ -153,7 +153,7 @@ export function DetailRail({
                 the base icon hides on hover and the bold twin shows. */}
             <tab.icon
               className="size-5 group-hover/rail-btn:hidden"
-              weight={on ? "fill" : "regular"}
+              weight="regular"
             />
             <tab.icon
               className="hidden size-5 group-hover/rail-btn:block"

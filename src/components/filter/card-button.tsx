@@ -26,14 +26,12 @@ export function CardButton({
       aria-pressed={selected}
       className={cn(
         "relative flex cursor-pointer flex-col items-center gap-2 rounded-md border p-2 text-center shadow-xs outline-none transition-[color,box-shadow,border-color,background-color,transform] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 active:scale-[0.98]",
-        selected
-          ? "border-primary bg-muted"
-          : "hover:bg-muted hover:text-primary",
+        selected ? "border-primary bg-muted" : "hover:bg-muted",
         className
       )}
     >
       {children}
-      <span className="w-full truncate font-medium text-muted-foreground text-xs leading-none">
+      <span className="w-full truncate font-medium text-foreground text-xs leading-none">
         {label}
       </span>
       <span className="font-mono text-muted-foreground text-xs leading-none">

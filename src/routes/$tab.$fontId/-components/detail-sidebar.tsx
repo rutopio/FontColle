@@ -110,7 +110,7 @@ function rangeFillStyle(
 function featureToggleClass(on: boolean) {
   return [
     "flex items-center justify-between gap-2.5 rounded-md border px-2.5 py-2 transition-[color,background-color,border-color,transform] hover:border-foreground active:scale-[0.97]",
-    on ? "border-foreground bg-muted" : "border-border",
+    on ? "border-primary bg-muted" : "border-input",
   ].join(" ");
 }
 
