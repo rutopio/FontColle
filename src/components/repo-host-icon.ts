@@ -20,3 +20,22 @@ export function repoHostIcon(url: string | null): Icon {
       return GithubLogoIcon;
   }
 }
+
+// The repo's releases page, or null when the host has none. "<repo>/releases"
+// is a GitHub path convention, not a universal one: GitLab namespaces it under
+// "/-/releases" (the bare path redirects to a sign-in page), and SourceHut has
+// no releases page at all. Callers render the Download link only when this
+// returns a URL, so a family on a host without releases drops the link rather
+// than pointing at a 403.
+export function releasesUrl(url: string | null): string | null {
+  if (!url) return null;
+  const base = url.replace(/\/$/, "");
+  switch (repoHost(url)) {
+    case "gitlab":
+      return `${base}/-/releases`;
+    case "sourcehut":
+      return null;
+    default:
+      return `${base}/releases`;
+  }
+}

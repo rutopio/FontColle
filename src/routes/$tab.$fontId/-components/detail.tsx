@@ -8,7 +8,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Column } from "@/components/filter-layout";
 import { FontTraits } from "@/components/font-traits";
 import { PreviewBar } from "@/components/preview-dock";
-import { repoHostIcon } from "@/components/repo-host-icon";
+import { releasesUrl, repoHostIcon } from "@/components/repo-host-icon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
@@ -66,6 +66,8 @@ export function Detail({
   // the per-font record this page loads. See DETAIL_ONLY_FIELDS in
   // scripts/gen-catalog.mjs.
   const versionHistory = font.versionHistory ?? [];
+  // Null when the family has no repo, or its host has no releases page.
+  const releasesHref = releasesUrl(font.repositoryUrl);
   // useCanGoBack() reads the browser history, which the server can't see: it's
   // false on the server (so the back control SSRs as a plain <a> Link) but may
   // be true right after hydration, and swapping <a> -> <button> mid-hydration
@@ -268,7 +270,7 @@ export function Detail({
                 <GoogleLogoIcon />
                 Google Fonts
               </Button>
-              {font.repositoryUrl && (
+              {releasesHref && (
                 <Button
                   variant="outline"
                   nativeButton={false}
@@ -276,7 +278,7 @@ export function Detail({
                   render={
                     // biome-ignore lint/a11y/useAnchorContent: Button injects its children into this anchor via the render prop (aria-label also set); the static rule can't see through it.
                     <a
-                      href={`${font.repositoryUrl.replace(/\/$/, "")}/releases`}
+                      href={releasesHref}
                       target="_blank"
                       rel="noreferrer"
                       aria-label={`Download ${font.name} from its repository releases`}

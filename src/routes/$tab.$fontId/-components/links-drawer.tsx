@@ -6,7 +6,7 @@ import {
 } from "@phosphor-icons/react";
 import { motion } from "motion/react";
 import { useState } from "react";
-import { repoHostIcon } from "@/components/repo-host-icon";
+import { releasesUrl, repoHostIcon } from "@/components/repo-host-icon";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import type { FontRecord } from "@/lib/fonts/types";
 import { FAB_MOTION, FAB_SHIFT, fabBottom, fabLift } from "./fab-motion";
@@ -29,6 +29,7 @@ export function LinksDrawer({
 }) {
   const [open, setOpen] = useState(false);
   const RepoIcon = repoHostIcon(font.repositoryUrl);
+  const releasesHref = releasesUrl(font.repositoryUrl);
   const googleHref = `https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`;
 
   return (
@@ -56,8 +57,9 @@ export function LinksDrawer({
         </div>
         {/* Big tappable cards side by side, mirroring the Weight/Width filter
             grids (CardButton): icon above label, equal widths. flex-1 rather
-            than a fixed 3-column grid so a family with no repo gets one
-            full-width card instead of two empty tracks. */}
+            than a fixed 3-column grid so a family with no repo (or one on a
+            host with no releases page) gets wider cards instead of empty
+            tracks. */}
         <div
           className="flex gap-3 p-4"
           style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom))" }}
@@ -69,9 +71,9 @@ export function LinksDrawer({
             aria-label={`View ${font.name} on Google Fonts`}
             onNavigate={() => setOpen(false)}
           />
-          {font.repositoryUrl && (
+          {releasesHref && (
             <LinkCard
-              href={`${font.repositoryUrl.replace(/\/$/, "")}/releases`}
+              href={releasesHref}
               icon={DownloadSimpleIcon}
               label="Download"
               aria-label={`Download ${font.name} from its repository releases`}
