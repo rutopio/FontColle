@@ -237,6 +237,17 @@ function DetailPage() {
   const [highlightCp, setHighlightCp] = useState<number | null>(null);
   const [searchMiss, setSearchMiss] = useState(false);
 
+  // "Briefly" has to be enforced, not just intended: the highlight renders as
+  // an infinite animate-pulse, and clearing it only on manual block selection
+  // left it pulsing forever after a search. Auto-playing motion that runs past
+  // five seconds with no way to stop it fails WCAG 2.2.2, so retire it here.
+  // Long enough to survive the scroll-into-view and still be found by eye.
+  useEffect(() => {
+    if (highlightCp == null) return;
+    const id = setTimeout(() => setHighlightCp(null), 3000);
+    return () => clearTimeout(id);
+  }, [highlightCp]);
+
   // Resolve a glyph-search query (a character or "U+XXXX") to a covered block +
   // codepoint. Miss = not a BMP codepoint, or the font doesn't cover it.
   // Returns whether it landed, so the mobile drawer closes only on a hit and a

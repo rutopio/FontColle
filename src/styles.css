@@ -513,4 +513,17 @@
   .animate-copy-pop {
     animation: none !important;
   }
+
+  /* Tailwind's animate-spin is a 360deg rotation on an infinite loop, which the
+     transition-property filter above cannot touch (it is an animation, not a
+     transition). Rotation is exactly the kind of motion the setting is asking
+     us to drop, so hold the spinner still: it stays visible and still marks
+     "busy", it just no longer turns. Kept as a rule rather than removing the
+     class, so a spinner added later is covered by default.
+
+     animate-pulse is deliberately NOT listed: it animates opacity only, which
+     implies no self-motion and is the fade this block exists to preserve. */
+  .animate-spin {
+    animation: none !important;
+  }
 }
