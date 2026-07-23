@@ -1,6 +1,7 @@
-import { MagnifyingGlassIcon, SquaresFourIcon } from "@phosphor-icons/react";
+import { SquaresFourIcon } from "@phosphor-icons/react";
 import { motion } from "motion/react";
 import { useState } from "react";
+import { SearchBox } from "@/components/filter/search-box";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { CoveredBlock } from "@/lib/fonts/glyph-coverage";
 import { EASE_OUT, MOTION_S } from "@/lib/motion";
@@ -65,21 +66,18 @@ export function GlyphsSidebar({
               if (onSearch(query)) onDismiss?.();
             }}
           >
-            <div className="relative">
-              <MagnifyingGlassIcon className="pointer-events-none absolute top-1/2 left-2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-              <input
-                type="search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Character or U+XXXX"
-                aria-label="Search glyphs by character or codepoint"
-                aria-invalid={searchMiss || undefined}
-                className={cn(
-                  "h-8 w-full rounded-md border bg-transparent pr-2 pl-7 text-xs outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
-                  searchMiss && "border-red-500"
-                )}
-              />
-            </div>
+            <SearchBox
+              size="sm"
+              value={query}
+              onChange={setQuery}
+              placeholder="Character or U+XXXX"
+              label="Search glyphs by character or codepoint"
+              aria-invalid={searchMiss || undefined}
+              inputClassName={cn(
+                "focus:border-input focus-visible:ring-2 focus-visible:ring-sidebar-ring",
+                searchMiss && "border-red-500"
+              )}
+            />
             {searchMiss && (
               <p className="mt-1 text-[10px] text-red-500">
                 This font doesn't cover that character.

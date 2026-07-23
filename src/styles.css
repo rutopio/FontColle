@@ -257,7 +257,12 @@
      inherits the family rather than carrying the class, so two thirds of it
      silently lost its tracking. */
   html {
-    @apply font-sans tracking-wide;
+    @apply font-sans tracking-wide antialiased;
+    /* Missing weights/styles fail visibly instead of rendering a browser-faked
+       bold or italic. This is doubly right for a font browser: a previewed
+       family that lacks a cut should show its real fallback, never a synthetic
+       one that misrepresents the typeface. */
+    font-synthesis: none;
   }
   /* iOS Chrome computes dvh/svh/lvh as outerHeight (including the collapsed
      toolbar band) and also inflates a plain height:100% body past the real
