@@ -47,7 +47,7 @@ export function FilterDrawer({
         onClick={() => setOpen(true)}
         aria-label={count > 0 ? `Filters, ${count} active` : "Filters"}
         style={{ bottom: "calc(5rem + env(safe-area-inset-bottom))" }}
-        className="fixed right-4 z-40 flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg outline-none transition-transform focus-visible:ring-2 focus-visible:ring-sidebar-ring active:scale-95 md:hidden"
+        className="fixed right-4 z-40 flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg outline-none transition-transform focus-visible:ring-2 focus-visible:ring-sidebar-ring active:scale-[0.96] md:hidden"
       >
         <FunnelIcon className="size-6" weight="fill" />
         {count > 0 && (

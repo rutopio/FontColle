@@ -51,7 +51,7 @@ function HeartLabel({
 
 // Compact icon-button chrome for the mobile top bar (no tile, no label).
 const BAR_BTN =
-  "group/rail-btn flex size-9 cursor-pointer items-center justify-center rounded-md text-muted-foreground outline-none transition-colors hover:bg-sidebar-accent/50 hover:text-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring";
+  "group/rail-btn flex size-11 cursor-pointer items-center justify-center rounded-md text-muted-foreground outline-none transition-colors hover:bg-sidebar-accent/50 hover:text-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring";
 
 // The rail-footer Favorite control. Its meaning depends on the page:
 //  - List page (no `fontId`): a link that toggles the favorites-only view

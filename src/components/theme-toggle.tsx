@@ -44,7 +44,7 @@ export function ThemeToggle({
         aria-label={`Switch to ${target.toLowerCase()} theme`}
         className={
           bar
-            ? "group/rail-btn flex size-9 cursor-pointer items-center justify-center rounded-md text-muted-foreground outline-none transition-colors hover:bg-sidebar-accent/50 hover:text-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+            ? "group/rail-btn flex size-11 cursor-pointer items-center justify-center rounded-md text-muted-foreground outline-none transition-colors hover:bg-sidebar-accent/50 hover:text-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring"
             : "group/rail-btn relative flex cursor-pointer flex-col items-center gap-1 rounded-md py-2 text-muted-foreground outline-none transition-colors hover:bg-sidebar-accent/50 hover:text-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring"
         }
       >

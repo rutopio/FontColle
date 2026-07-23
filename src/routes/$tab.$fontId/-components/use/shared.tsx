@@ -11,7 +11,7 @@ export type AxisPick = { mode: "full" | "one"; value: number };
 // in the Panel header, so this is just the blurb.
 export function MethodIntro({ blurb }: { blurb: string }) {
   return (
-    <p className="mb-4 text-muted-foreground text-xs leading-relaxed">
+    <p className="mb-4 text-pretty text-muted-foreground text-xs leading-relaxed">
       {blurb}
     </p>
   );
