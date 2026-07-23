@@ -134,9 +134,25 @@ export function usePresets() {
     write(getSnapshot().filter((p) => p.id !== id));
   }, []);
 
+  // Put a removed preset back where it was, for the undo on the delete toast.
+  // Presets live only in this device's localStorage, so a mis-click is
+  // otherwise unrecoverable — the user would have to rebuild the filter from
+  // memory and re-save it.
+  //
+  // Re-inserts by index and keeps the original id, rather than going through
+  // save(): save() appends and mints a new id, which would move the row and
+  // break the identity the active-preset comparison relies on. No MAX_PRESETS
+  // guard needed — this only ever restores a slot the same list just freed.
+  const restore = useCallback((preset: FilterPreset, index: number) => {
+    const next = getSnapshot().slice();
+    if (next.some((p) => p.id === preset.id)) return;
+    next.splice(Math.min(index, next.length), 0, preset);
+    write(next);
+  }, []);
+
   const rename = useCallback((id: string, name: string) => {
     write(getSnapshot().map((p) => (p.id === id ? { ...p, name } : p)));
   }, []);
 
-  return { presets, save, remove, rename };
+  return { presets, save, remove, restore, rename };
 }

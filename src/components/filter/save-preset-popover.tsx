@@ -1,5 +1,6 @@
 import { BookmarkSimpleIcon } from "@phosphor-icons/react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -65,6 +66,11 @@ export function SavePresetPopover({
     if (!trimmed || full) return;
     save(trimmed, currentSearch);
     setOpen(false);
+    // The popover closes on save, and the new preset lands in the Preset panel,
+    // which is a different rail group and usually not on screen. Without this
+    // the only feedback for a successful save is the naming form disappearing,
+    // which reads the same as cancelling.
+    toast.success("Preset saved", { description: trimmed });
   };
 
   return (

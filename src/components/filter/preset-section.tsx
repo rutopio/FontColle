@@ -1,4 +1,5 @@
 import { BookmarkSimpleIcon, XIcon } from "@phosphor-icons/react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -38,8 +39,20 @@ export function PresetSection({
   currentSearch: FilterSearch;
   onApply: (search: FilterSearch) => void;
 }) {
-  const { presets, remove } = usePresets();
+  const { presets, remove, restore } = usePresets();
   const full = presets.length >= MAX_PRESETS;
+
+  // Delete confirms with an undo rather than a confirmation dialog first: the
+  // row's X is one click and presets exist only in this device's localStorage,
+  // so a mis-click is otherwise unrecoverable. The index is captured before the
+  // write so restore() can put the row back where it was.
+  const onRemove = (preset: FilterPreset, index: number) => {
+    remove(preset.id);
+    toast.success("Preset deleted", {
+      description: preset.name,
+      action: { label: "Undo", onClick: () => restore(preset, index) },
+    });
+  };
 
   return (
     // min-h-0 + flex-1 only matter when empty: the Empty block below claims the
@@ -82,13 +95,13 @@ export function PresetSection({
         </Empty>
       ) : (
         <ul className="flex flex-col gap-1">
-          {presets.map((preset) => (
+          {presets.map((preset, index) => (
             <PresetRow
               key={preset.id}
               preset={preset}
               active={sameSearch(preset.search, currentSearch)}
               onApply={() => onApply(preset.search)}
-              onRemove={() => remove(preset.id)}
+              onRemove={() => onRemove(preset, index)}
             />
           ))}
         </ul>
