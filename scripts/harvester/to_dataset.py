@@ -255,14 +255,21 @@ def apply_specimens(records):
         subset: langcov.specimen_for_lang(lang)
         for subset, lang in langcov.SUBSET_TO_SPECIMEN_LANG.items()
     }
+    # Tier counterparts, keyed identically so `specimenTiers` tracks `specimen`.
+    tiers_by_script = langcov.tiers_by_script()
+    tiers_by_lang = {
+        subset: langcov.tiers_for_lang(lang)
+        for subset, lang in langcov.SUBSET_TO_SPECIMEN_LANG.items()
+    }
     filled = 0
     for r in records:
         subsets = r.get("subsets") or []
         # Graphics faces with a Google-matched sample string take it verbatim
         # (an empty string is a deliberate blank preview, so check membership,
-        # not truthiness).
+        # not truthiness). No linguistic tiers for these.
         if r.get("name") in GRAPHICS_SPECIMENS:
             r["specimen"] = GRAPHICS_SPECIMENS[r["name"]]
+            r["specimenTiers"] = None
             filled += 1
             continue
         # Emoji fonts (only non-menu subset is "emoji") preview as emoji, like
@@ -270,6 +277,7 @@ def apply_specimens(records):
         non_menu = [s for s in subsets if s != "menu"]
         if non_menu == ["emoji"]:
             r["specimen"] = langcov.EMOJI_SAMPLE
+            r["specimenTiers"] = None
             filled += 1
             continue
         # CJK next: the script alone is ambiguous (Hant = Traditional Chinese,
@@ -279,6 +287,10 @@ def apply_specimens(records):
             (by_lang[s] for s in subsets if by_lang.get(s)),
             None,
         )
+        tiers = next(
+            (tiers_by_lang[s] for s in subsets if tiers_by_lang.get(s)),
+            None,
+        )
         # Otherwise, only non-Latin-primary fonts get a native sample. A missing/
         # Latin primary_script means a Latin font (it may still cover Cyrillic/
         # Greek), which should keep the English default, otherwise a Latin face
@@ -286,7 +298,13 @@ def apply_specimens(records):
         if text is None:
             script = r.get("primaryScript")
             text = by_script.get(script) if script and script != "Latn" else None
+        if tiers is None:
+            script = r.get("primaryScript")
+            tiers = (
+                tiers_by_script.get(script) if script and script != "Latn" else None
+            )
         r["specimen"] = text
+        r["specimenTiers"] = tiers
         if text:
             filled += 1
     print(f"specimens: {filled}/{len(records)} fonts given a native-script sample")

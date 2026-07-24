@@ -211,6 +211,56 @@ def specimen_for_lang(lang_id):
     return _sample_string(lang.sample_text) or None
 
 
+def _sample_tiers(st):
+    """The three heading passages Google Fonts opens its specimen page with,
+    from a gflanguages sample_text: `styles` (h1, the short preamble line),
+    `specimen_21` (h2) and `specimen_16` (h3). The smaller the type size, the
+    more text the tier carries, so h3 is the longest. Missing fields fall back to
+    the single sample string so a language that only carries `styles` still
+    yields usable (repeated) tiers. Returns [] when the whole sample_text is
+    empty; duplicate tiers are left for the frontend to dedupe."""
+    if not st:
+        return []
+    single = _sample_string(st)
+    tiers = [
+        (st.styles or "").strip() or single,
+        (st.specimen_21 or "").strip() or single,
+        (st.specimen_16 or "").strip() or single,
+    ]
+    return tiers if any(tiers) else []
+
+
+@lru_cache(maxsize=1)
+def tiers_by_script():
+    """script code -> the three specimen tiers, keyed the same way as
+    `specimen_by_script`: the highest-population language per script that
+    carries a gflanguages sample_text. Latin omitted (Latin fonts keep the
+    frontend's English UDHR tiers)."""
+    best = {}  # script -> (population, tiers)
+    for _lid, lang in _languages().items():
+        script = lang.script
+        if not script or script == "Latn":
+            continue
+        tiers = _sample_tiers(lang.sample_text)
+        if not tiers:
+            continue
+        pop = lang.population or 0
+        cur = best.get(script)
+        if cur is None or pop > cur[0]:
+            best[script] = (pop, tiers)
+    return {script: tiers for script, (_pop, tiers) in best.items()}
+
+
+def tiers_for_lang(lang_id):
+    """A single language's three specimen tiers, or None. The tier counterpart
+    of `specimen_for_lang`, keyed off the font's CJK subset (Hant is ambiguous;
+    HK -> Cantonese, TC -> zh_Hant, SC -> zh_Hans)."""
+    lang = _languages().get(lang_id)
+    if not lang:
+        return None
+    return _sample_tiers(lang.sample_text) or None
+
+
 def coverage(cmap_codepoints, subsets):
     """Return (languages, scripts, cjk_coverage) for one family.
 

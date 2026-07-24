@@ -76,6 +76,10 @@ export interface FontRecord {
   // DETAIL-ONLY, see cjkCoverage above.
   versionHistory?: { version: string; date: string }[];
   specimen: string | null; // native-script sample text (null for Latin-only)
+  // Three native-script specimen passages (h1/h2/h3) for the Tester's opening
+  // document, from gflanguages specimen_48/_36/_32. Null for Latin/emoji/blank
+  // fonts, which fall back to the frontend's Latin UDHR tiers or a single line.
+  specimenTiers?: string[] | null;
   // Google Fonts family "about" prose (HTML), from the metadata endpoint. Null
   // when Google has no description for the family.
   // DETAIL-ONLY, see cjkCoverage above.

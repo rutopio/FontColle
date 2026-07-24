@@ -31,22 +31,40 @@ def main():
         subset: langcov.specimen_for_lang(lang)
         for subset, lang in langcov.SUBSET_TO_SPECIMEN_LANG.items()
     }
+    # Tier counterparts, keyed identically so `specimenTiers` tracks `specimen`.
+    tiers_by_script = langcov.tiers_by_script()
+    tiers_by_lang = {
+        subset: langcov.tiers_for_lang(lang)
+        for subset, lang in langcov.SUBSET_TO_SPECIMEN_LANG.items()
+    }
 
     records = json.load(open(path))
     changed = 0
     for r in records:
         subsets = r.get("subsets") or []
         non_menu = [s for s in subsets if s != "menu"]
+        script = r.get("primaryScript")
         if non_menu == ["emoji"]:
+            # Emoji fonts preview as the emoji string; no linguistic tiers.
             text = langcov.EMOJI_SAMPLE
+            tiers = None
         else:
             text = next((by_lang[s] for s in subsets if by_lang.get(s)), None)
+            tiers = next(
+                (tiers_by_lang[s] for s in subsets if tiers_by_lang.get(s)), None
+            )
             if text is None:
-                script = r.get("primaryScript")
                 text = by_script.get(script) if script and script != "Latn" else None
+            if tiers is None:
+                tiers = (
+                    tiers_by_script.get(script)
+                    if script and script != "Latn"
+                    else None
+                )
         if r.get("specimen") != text:
             changed += 1
         r["specimen"] = text
+        r["specimenTiers"] = tiers
 
     with open(path, "w") as fh:
         json.dump(records, fh, indent=2, ensure_ascii=False)
