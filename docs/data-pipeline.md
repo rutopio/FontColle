@@ -134,7 +134,7 @@ After the seed, `scripts.json` / `languages.json` are the only changed git-track
 
 ## Daily incremental update (CI)
 
-`.github/workflows/daily-harvest.yml` runs at 00:00 UTC (and on demand). Instead of re-harvesting everything, it detects only what changed and updates that subset:
+`.github/workflows/daily-harvest.yml` runs at 12:00 UTC (and on demand) — off the 00:00-UTC midnight peak, where GitHub's scheduler routinely delayed it by ~3h. Instead of re-harvesting everything, it detects only what changed and updates that subset:
 
 ```bash
 python3 scripts/harvester/fetch_published.py   # refresh Developer API signals
@@ -149,3 +149,9 @@ New families come from the [google/fonts](https://github.com/google/fonts) GitHu
 Since nothing is pushed, the deploy is triggered explicitly: the workflow POSTs a Cloudflare **Deploy Hook** (`CLOUDFLARE_DEPLOY_HOOK_URL`), which runs a fresh build+deploy whose `pnpm build` re-syncs the R2 assets per the new manifest to regenerate the static catalog. This is the sole deploy path for a data-only day. A real source change (code, or the rarely-changing `scripts.json`/`languages.json`, which stay git-versioned as build-time imports and are **not** auto-committed by the harvest) still deploys the usual way — Cloudflare's Git integration builds from the push. fontcolle.com is served by a dashboard Custom Domain that owns that deployment; `wrangler.jsonc` declares no `routes` and sets `workers_dev`/`preview_urls` to false.
 
 The workflow needs these repository secrets: `GOOGLE_FONTS_API_KEY`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_DEPLOY_HOOK_URL`. The token must carry R2 read+write on `fontcolle-assets`: the pull and publish steps fail without it.
+
+## Monthly full reconcile (CI)
+
+`.github/workflows/full-harvest.yml` runs on the 1st of each month at 00:00 UTC (and on demand) and re-harvests EVERY family (`daily_update.py --full`, ignoring the `lastModified` diff). The daily job covers only the 2nd–31st, so the two never run on the same day; they share the `harvest` concurrency group so an ad-hoc manual full run can't race a daily one either.
+
+Why a full pass exists: the incremental diff never re-fetches an upstream that changed content without bumping `lastModified`, or a family the name-based published join dropped. It also lets a harvest-affecting code change (a new `fonts.json` field, a fixed derivation) reach every family at once — the manual trigger ships exactly that without waiting for the 1st. Otherwise it mirrors the daily job: publishes the dataset + manifest to R2, fires the Deploy Hook, makes **no git commit**; it needs the same secrets and a longer timeout.

@@ -1,0 +1,205 @@
+name: Full harvest
+
+# A whole-catalog re-harvest (daily_update.py --full: re-fetch EVERY family,
+# ignoring the lastModified diff). Runs on the 1st of each month — the monthly
+# reconcile that used to live inside daily-harvest.yml behind a `date +%d = 01`
+# check — and on demand. The daily job now covers only the 2nd–31st, so the two
+# never run on the same day.
+#
+# Why a full reconcile: an upstream that changed content without bumping
+# lastModified, or a family the name-based published join dropped, is otherwise
+# never re-fetched by the incremental diff. It also applies a harvest-affecting
+# code change (a new fonts.json field, a fixed derivation) to every family — so
+# the manual trigger is here for shipping exactly that without waiting for the 1st.
+#
+# Like the daily job it publishes the dataset + manifest to R2 and fires the
+# Cloudflare Deploy Hook; it makes NO git commit. See daily-harvest.yml for the
+# per-step rationale — this file mirrors it, differing only in schedule (monthly)
+# and that the harvest is ALWAYS --full.
+
+on:
+  schedule:
+    - cron: "0 0 1 * *" # the 1st of each month at 00:00 UTC
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Why run a full re-harvest (shown in the run log)"
+        required: false
+        default: "manual full re-harvest"
+
+# Shares the daily job's concurrency group, not a separate one: the two are
+# scheduled onto different days so they never overlap by cron, and sharing the
+# group guarantees an ad-hoc manual full run can't race a daily run either.
+concurrency:
+  group: harvest
+  cancel-in-progress: false
+
+# PREREQUISITES (identical to daily-harvest.yml):
+#  - CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID: R2 read+write.
+#  - GOOGLE_FONTS_API_KEY: the webfonts + metadata endpoints.
+#  - CLOUDFLARE_DEPLOY_HOOK_URL: redeploy after the R2 update (no git push).
+
+permissions:
+  contents: read
+
+jobs:
+  harvest:
+    runs-on: ubuntu-latest
+    # A full reconcile re-harvests every family, so it needs more headroom than
+    # the daily incremental's 60 minutes.
+    timeout-minutes: 120
+    steps:
+      - name: Log run reason
+        # inputs.reason is empty on the scheduled (cron) run, which has no inputs.
+        run: |
+          echo "Full re-harvest — ${{ inputs.reason || format('scheduled monthly ({0})', github.event_name) }}"
+
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pnpm install --frozen-lockfile
+          pip install -r scripts/harvester/requirements.txt
+
+      - name: Pull data assets from R2
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: node scripts/sync-assets.mjs
+
+      - name: Refresh published signals
+        env:
+          GOOGLE_FONTS_API_KEY: ${{ secrets.GOOGLE_FONTS_API_KEY }}
+        run: python3 scripts/harvester/fetch_published.py
+
+      - name: Full catalog reconcile
+        id: update
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Always --full: re-harvest EVERY family, unlike the daily job which
+          # only does this on the 1st. This is the whole point of the manual run.
+          python3 scripts/harvester/daily_update.py --full | tee update.log
+          if grep -q "^no changes$" update.log; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Supplement API-only families
+        id: supplement
+        env:
+          GOOGLE_FONTS_API_KEY: ${{ secrets.GOOGLE_FONTS_API_KEY }}
+        run: |
+          python3 scripts/harvester/harvest_api_supplement.py | tee -a update.log
+          if [ "${{ steps.update.outputs.changed }}" = "true" ] \
+             || grep -qE "^supplement-changed=[1-9]" update.log; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Refresh classification tags and derived Category class
+        id: classify
+        run: |
+          before=$(shasum -a 256 src/data/fonts.json | cut -d' ' -f1)
+          python3 scripts/harvester/backfill_tags.py 2>&1 | tee -a update.log
+          python3 scripts/harvester/backfill_form_category.py 2>&1 | tee -a update.log
+          python3 scripts/harvester/backfill_contrast.py 2>&1 | tee -a update.log
+          python3 scripts/harvester/backfill_display_names.py 2>&1 | tee -a update.log
+          after=$(shasum -a 256 src/data/fonts.json | cut -d' ' -f1)
+          if [ "$before" != "$after" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Guard against catalog shrinkage
+        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: node scripts/shrinkage-guard.mjs
+
+      - name: Regenerate OG cards for newly harvested families
+        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'
+        run: |
+          if [ -s scripts/harvester/og_ids.txt ]; then
+            node scripts/gen-og-images.mjs --ids=scripts/harvester/og_ids.txt
+          else
+            echo "no families re-harvested; OG cards unchanged"
+          fi
+
+      - name: Regenerate glyph coverage for newly harvested families
+        id: glyphs
+        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'
+        run: |
+          if [ -s scripts/harvester/og_ids.txt ]; then
+            python3 scripts/harvester/backfill_glyph_coverage.py \
+              $(tr '\n' ' ' < scripts/harvester/og_ids.txt) 2>&1 | tee -a update.log
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "no families re-harvested; glyph coverage unchanged"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Backfill repo-derived fields for newly harvested families
+        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -s scripts/harvester/og_ids.txt ]; then
+            ids=$(paste -sd, scripts/harvester/og_ids.txt)
+            python3 scripts/harvester/backfill_license.py --ids="$ids" 2>&1 | tee -a update.log
+            python3 scripts/harvester/backfill_version_history.py --ids="$ids" 2>&1 | tee -a update.log
+          else
+            echo "no families re-harvested; repo-derived fields unchanged"
+          fi
+
+      - name: Publish assets to R2
+        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # A full reconcile re-harvests every family, so og_ids.txt lists the
+          # whole catalog: the OG delta channel effectively re-uploads all cards,
+          # and the glyph tarball is re-sealed. Same publish path as the daily job.
+          node scripts/publish-assets.mjs --daily --og-ids=scripts/harvester/og_ids.txt
+          if [ "${{ steps.glyphs.outputs.changed }}" = "true" ]; then
+            node scripts/publish-assets.mjs --reseed-glyphs
+          fi
+
+      - name: Warn if build-time source data drifted
+        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'
+        run: |
+          if ! git diff --quiet -- src/data/scripts.json src/data/languages.json; then
+            echo "::warning::scripts.json/languages.json changed this run but are not auto-committed. Review and commit them manually:"
+            git --no-pager diff --stat -- src/data/scripts.json src/data/languages.json
+          else
+            echo "build-time source data unchanged"
+          fi
+
+      - name: Trigger Cloudflare deploy
+        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'
+        env:
+          CLOUDFLARE_DEPLOY_HOOK_URL: ${{ secrets.CLOUDFLARE_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$CLOUDFLARE_DEPLOY_HOOK_URL" ]; then
+            echo "::error::CLOUDFLARE_DEPLOY_HOOK_URL secret is not set; cannot deploy the R2 update"
+            exit 1
+          fi
+          curl -fsS -X POST "$CLOUDFLARE_DEPLOY_HOOK_URL" | tee deploy-hook.log
+          echo "deploy hook fired"

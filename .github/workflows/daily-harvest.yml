@@ -9,12 +9,17 @@ name: Daily incremental harvest
 
 on:
   schedule:
-    - cron: "0 0 * * *" # daily at 00:00 UTC
+    # 2nd–31st at 12:00 UTC. Avoids the 00:00-UTC midnight peak, where GitHub's
+    # scheduler routinely delayed this run by ~3h. The 1st belongs to
+    # full-harvest.yml (the monthly whole-catalog reconcile), so daily skips it
+    # and the two never collide.
+    - cron: "0 12 2-31 * *"
   workflow_dispatch: # allow manual runs
 
-# Prevent overlapping runs (a slow harvest must not race the next day's).
+# Shared with full-harvest.yml so a scheduled daily and an ad-hoc manual full run
+# can never overlap (a slow harvest must not race another).
 concurrency:
-  group: daily-harvest
+  group: harvest
   cancel-in-progress: false
 
 # PREREQUISITES:
@@ -87,18 +92,11 @@ jobs:
           # unauthenticated hits the 60 req/hr limit and SystemExits.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # On the 1st of the month (UTC), reconcile the WHOLE catalog instead of
-          # the lastModified diff: an upstream that changed content without
-          # bumping lastModified, or a family the name-based published join
-          # dropped, is otherwise never re-fetched. The other ~30 days stay
-          # incremental. A full run is heavier (re-harvests every family) but
-          # runs once a month.
-          if [ "$(date -u +%d)" = "01" ]; then
-            echo "monthly full reconcile"
-            python3 scripts/harvester/daily_update.py --full | tee update.log
-          else
-            python3 scripts/harvester/daily_update.py | tee update.log
-          fi
+          # Incremental (lastModified diff) only. The monthly WHOLE-catalog
+          # reconcile that used to live here behind a `date +%d = 01` check moved
+          # to full-harvest.yml, which owns the 1st of the month; this job's cron
+          # runs the 2nd–31st, so the two never collide.
+          python3 scripts/harvester/daily_update.py | tee update.log
           # Expose whether anything changed so later steps can skip.
           if grep -q "^no changes$" update.log; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
