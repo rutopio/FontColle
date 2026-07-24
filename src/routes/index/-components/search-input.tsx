@@ -72,7 +72,7 @@ export function SearchInput({
           the sidebar): there is no physical keyboard to press "/" on, so the
           hint is dead weight taking room from a narrow field. */}
       {!draft && (
-        <Kbd className="absolute top-1/2 right-2.5 -translate-y-1/2 hidden md:inline-flex">
+        <Kbd className="absolute top-1/2 right-2.5 hidden -translate-y-1/2 md:inline-flex">
           /
         </Kbd>
       )}

@@ -17,9 +17,13 @@ import path from "node:path";
 // (no such xattr exists there), so it is safe on both platforms.
 export function makeTar(dir, outPath) {
   mkdirSync(path.dirname(outPath), { recursive: true });
-  const res = spawnSync("tar", ["--no-xattrs", "-czf", outPath, "-C", dir, "."], {
-    stdio: "inherit",
-  });
+  const res = spawnSync(
+    "tar",
+    ["--no-xattrs", "-czf", outPath, "-C", dir, "."],
+    {
+      stdio: "inherit",
+    }
+  );
   if (res.status !== 0) throw new Error(`tar create failed for ${dir}`);
   return readdirSync(dir).filter((f) => !f.startsWith(".")).length;
 }
@@ -32,8 +36,12 @@ export function makeTar(dir, outPath) {
 // and braces alongside the create-side flag; accepted by both bsdtar and GNU.
 export function extractTar(tarPath, destDir) {
   mkdirSync(destDir, { recursive: true });
-  const res = spawnSync("tar", ["--no-xattrs", "-xzf", tarPath, "-C", destDir], {
-    stdio: "inherit",
-  });
+  const res = spawnSync(
+    "tar",
+    ["--no-xattrs", "-xzf", tarPath, "-C", destDir],
+    {
+      stdio: "inherit",
+    }
+  );
   if (res.status !== 0) throw new Error(`tar extract failed for ${tarPath}`);
 }

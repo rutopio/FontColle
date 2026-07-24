@@ -100,9 +100,9 @@ describe("applyFilters, category", () => {
     font({ name: "R", category: "Serif" }),
   ];
   it("includes the matching category, excludes others", () => {
-    expect(names(applyFilters(fonts, filter({ categories: ["Sans"] })))).toEqual([
-      "S",
-    ]);
+    expect(
+      names(applyFilters(fonts, filter({ categories: ["Sans"] })))
+    ).toEqual(["S"]);
   });
 });
 
