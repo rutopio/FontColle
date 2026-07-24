@@ -20,6 +20,7 @@ Host on ![Cloudflare Workers](https://img.shields.io/badge/Cloudflare_Workers-F3
 
 
 [![Daily incremental harvest](https://github.com/rutopio/FontColle/actions/workflows/daily-harvest.yml/badge.svg)](https://github.com/rutopio/FontColle/actions/workflows/daily-harvest.yml)
+[![Full harvest](https://github.com/rutopio/FontColle/actions/workflows/full-harvest.yml/badge.svg)](https://github.com/rutopio/FontColle/actions/workflows/full-harvest.yml)
 
 
 </div>
