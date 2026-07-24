@@ -49,13 +49,14 @@ import {
   searchToFilter,
   suggestFamilies,
 } from "@/lib/fonts/filter";
+import { fontSlug } from "@/lib/fonts/slug";
 import { DEFAULT_SORT, type SortKey, sortFonts } from "@/lib/fonts/sort";
 import type { FontRecord } from "@/lib/fonts/types";
 import { EASE_OUT, MOTION_S } from "@/lib/motion";
 import { usePreview } from "@/lib/preview/context";
 import { useListScrollRestore } from "@/lib/use-list-scroll-restore";
 import { useLocalStorageState } from "@/lib/use-local-storage-state";
-import { SearchInput } from "./search-input";
+import { SearchInput, type SearchSuggestion } from "./search-input";
 import { SortControl } from "./sort-control";
 
 const Route = getRouteApi("/");
@@ -305,6 +306,31 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
   // filters, only a search, or both) without a misleading "filter" wording.
   const hasQuery = filter.query.trim().length > 0;
 
+  // Open a font's detail page. Backs both the search box's Enter (top match) and
+  // clicks on an autocomplete row.
+  const openFont = useCallback(
+    (id: string) => {
+      navigate({
+        to: "/$tab/$fontId",
+        params: { tab: "instances", fontId: fontSlug(id) },
+      });
+    },
+    [navigate]
+  );
+
+  // Live autocomplete list under the search box: the top fuzzy matches for the
+  // CURRENT (undeferred) query, ranked by the same searchByQuery the grid uses,
+  // so the drop-down mirrors the results below. Runs against the full catalog by
+  // name — a jump-to affordance, independent of the active facet filters. Empty
+  // (and so the panel hidden) when the query is blank.
+  const searchSuggestions = useMemo<SearchSuggestion[]>(() => {
+    const q = filter.query.trim();
+    if (!q) return [];
+    return searchByQuery(fonts, q)
+      .slice(0, 8)
+      .map((f) => ({ id: f.id, name: f.name }));
+  }, [fonts, filter.query]);
+
   // Typo-tolerant fallback for the pure-substring search: when a query returns
   // nothing, suggest the closest family name ("Did you mean Inter?"). Only run
   // the edit-distance scan on the empty state, and skip it when the suggestion
@@ -346,6 +372,8 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
                 inputRef={searchRef}
                 query={filter.query}
                 onQueryChange={(query) => commitFilter({ ...filter, query })}
+                suggestions={searchSuggestions}
+                onPick={openFont}
               />
               {(activeCount > 0 || hasQuery) && (
                 <Button
