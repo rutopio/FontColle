@@ -56,7 +56,7 @@ function ResetButton({
       aria-label={label}
       disabled={!active}
       aria-hidden={!active}
-      className={`flex items-center gap-1 rounded-md px-2 py-1 font-mono text-muted-foreground text-xs transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted/50 ${
+      className={`flex items-center gap-1 rounded-md px-2 py-1 font-mono text-xs transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted/50 ${
         active ? "" : "invisible"
       }`}
     >

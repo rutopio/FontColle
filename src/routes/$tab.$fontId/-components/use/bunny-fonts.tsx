@@ -46,7 +46,7 @@ export function BunnyMethod({ font }: { font: FontRecord }) {
       {font.isVariable && (
         // Bunny serves static instances only, so a variable family's axes aren't
         // available here, say so rather than silently offering just weights.
-        <p className="mb-3 rounded-md bg-muted/50 px-2.5 py-1.5 text-muted-foreground text-xs">
+        <p className="mb-3 rounded-md bg-muted/50 px-2.5 py-1.5 text-xs">
           Bunny serves static weights only, this variable family's axes aren't
           available here. Use the Google Fonts method above for the full axes.
         </p>
@@ -86,14 +86,14 @@ export function BunnyMethod({ font }: { font: FontRecord }) {
             </TabsList>
             <TabsPanel value="link">
               <CodeBlock code={linkTags} lang="html" />
-              <p className="mt-1.5 text-muted-foreground text-xs">
+              <p className="mt-1.5 text-xs">
                 Paste inside your document{" "}
                 <code className="font-mono">&lt;head&gt;</code>.
               </p>
             </TabsPanel>
             <TabsPanel value="import">
               <CodeBlock code={importRule} lang="css" />
-              <p className="mt-1.5 text-muted-foreground text-xs">
+              <p className="mt-1.5 text-xs">
                 Place at the very top of a CSS file, before other rules.
               </p>
             </TabsPanel>

@@ -95,7 +95,7 @@ export function FontsourceMethod({ font }: { font: FontRecord }) {
             ))}
             <TabsPanel value="cdn">
               <CodeBlock code={jsdelivrLink(pkg, isVariable)} lang="html" />
-              <p className="mt-1.5 text-muted-foreground text-xs">
+              <p className="mt-1.5 text-xs">
                 A no-build <code className="font-mono">&lt;link&gt;</code> off
                 jsDelivr, skip steps 2-3 and apply the CSS below.
               </p>
@@ -322,7 +322,7 @@ function AdvancedFontFace({
 
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-muted-foreground text-xs leading-relaxed">
+      <p className="text-xs leading-relaxed">
         For full control over your <code className="font-mono">@font-face</code>{" "}
         rules. Works with Vite-based bundlers that rewrite asset URLs.
       </p>
@@ -380,7 +380,7 @@ function AdvancedFontFace({
       )}
 
       <CodeBlock code={css} lang="css" />
-      <p className="text-muted-foreground text-xs leading-relaxed">
+      <p className="text-xs leading-relaxed">
         Add the package's <code className="font-mono">unicode-range</code> for
         this subset to complete the rule, see the file on Fontsource.
       </p>

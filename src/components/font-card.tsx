@@ -35,7 +35,7 @@ export const FontCard = memo(function FontCard({
 }: Props) {
   // Weight/width/axis picks from the sidebar drive the live preview; the
   // font-loading effect and preview style are shared with FontRow.
-  const { fontLoaded, previewStyle } = useFontFacePreview(
+  const { fontLoaded, previewStyle, previewRef } = useFontFacePreview(
     font,
     selection,
     axisValues
@@ -43,6 +43,7 @@ export const FontCard = memo(function FontCard({
 
   return (
     <Link
+      ref={previewRef}
       to="/$tab/$fontId"
       params={{ tab: "instances", fontId: fontSlug(font.id) }}
       // active:scale gives the press instant feedback on touch, where there is
@@ -61,9 +62,7 @@ export const FontCard = memo(function FontCard({
           />
         </div>
         {font.designer && (
-          <p className="line-clamp-2 text-muted-foreground text-xs">
-            {font.designer}
-          </p>
+          <p className="line-clamp-2 text-xs">{font.designer}</p>
         )}
       </div>
 

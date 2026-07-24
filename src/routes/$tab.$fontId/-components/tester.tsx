@@ -402,7 +402,7 @@ function TesterInner({
         {/* Slider and Select render their own controls (not native
             input/select), so these are plain <div>s with an aria-label on the
             control, not <label>s. */}
-        <div className="flex items-center gap-2 text-muted-foreground text-xs">
+        <div className="flex items-center gap-2 text-xs">
           <span>Style</span>
           <Select
             value={block}
@@ -423,7 +423,7 @@ function TesterInner({
           </Select>
         </div>
 
-        <div className="flex items-center gap-2 text-muted-foreground text-xs">
+        <div className="flex items-center gap-2 text-xs">
           <span>Size</span>
           <Slider
             aria-label="Font size"
@@ -453,7 +453,7 @@ function TesterInner({
             scope as Style. The two end buttons are labelled by the block's own
             direction, so an RTL paragraph reads "Align right" on the button
             that keeps its text at the start of the line. */}
-        <div className="flex items-center gap-2 text-muted-foreground text-xs">
+        <div className="flex items-center gap-2 text-xs">
           <span>Align</span>
           <ButtonGroup>
             {ALIGNMENTS.map(({ id, icon: Icon, label }) => {
@@ -487,7 +487,7 @@ function TesterInner({
           again clears it, so a block can go back to the document default. */}
       {instances.length > 0 && (
         <div className="mb-4 flex flex-wrap items-center gap-2">
-          <span className="text-muted-foreground text-xs">Instance</span>
+          <span className="text-xs">Instance</span>
           {instances.map((inst) => {
             const style = instanceStyle(inst.coords, inst.italic);
             const active = style === blockStyle;

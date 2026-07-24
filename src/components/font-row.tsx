@@ -38,7 +38,7 @@ export const FontRow = memo(function FontRow({
   // Same weight/width/axis derivation as FontCard, so the row previews the
   // sidebar's picks identically; the font-loading effect and preview style are
   // shared with FontCard.
-  const { fontLoaded, previewStyle } = useFontFacePreview(
+  const { fontLoaded, previewStyle, previewRef } = useFontFacePreview(
     font,
     selection,
     axisValues
@@ -46,6 +46,7 @@ export const FontRow = memo(function FontRow({
 
   return (
     <Link
+      ref={previewRef}
       to="/$tab/$fontId"
       params={{ tab: "instances", fontId: fontSlug(font.id) }}
       // Press feedback is a background step, not the scale FontCard uses: the
@@ -65,7 +66,7 @@ export const FontRow = memo(function FontRow({
             <h3 className="truncate sm:shrink-0">{font.name}</h3>
             {/* Designer inline next to the name on wide rows only. */}
             {font.designer && (
-              <span className="hidden truncate text-muted-foreground text-xs sm:inline">
+              <span className="hidden truncate text-xs sm:inline">
                 {font.designer}
               </span>
             )}
@@ -94,9 +95,7 @@ export const FontRow = memo(function FontRow({
         </div>
         {/* Designer on its own second row on narrow screens only. */}
         {font.designer && (
-          <span className="truncate text-muted-foreground text-xs sm:hidden">
-            {font.designer}
-          </span>
+          <span className="truncate text-xs sm:hidden">{font.designer}</span>
         )}
       </div>
 

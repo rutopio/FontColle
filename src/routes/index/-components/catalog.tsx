@@ -55,8 +55,8 @@ import { EASE_OUT, MOTION_S } from "@/lib/motion";
 import { usePreview } from "@/lib/preview/context";
 import { useListScrollRestore } from "@/lib/use-list-scroll-restore";
 import { useLocalStorageState } from "@/lib/use-local-storage-state";
-import { SortControl } from "./sort-control";
 import { SearchInput } from "./search-input";
+import { SortControl } from "./sort-control";
 
 const Route = getRouteApi("/");
 
@@ -363,10 +363,7 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
             </div>
 
             <div className="ml-auto flex items-center gap-2 max-md:ml-0 max-md:w-full max-md:justify-between md:shrink-0 md:gap-3">
-              <span
-                className="flex-1 text-muted-foreground text-sm"
-                aria-live="polite"
-              >
+              <span className="flex-1 text-sm" aria-live="polite">
                 {/* Mono on the number only: it changes on every filter tick,
                     and tabular digits keep the label beside it from shifting.
                     The word stays proportional so the line still reads as

@@ -10,11 +10,7 @@ export type AxisPick = { mode: "full" | "one"; value: number };
 // A sentence on the method's trade-off, above its steps. The method's name lives
 // in the Panel header, so this is just the blurb.
 export function MethodIntro({ blurb }: { blurb: string }) {
-  return (
-    <p className="mb-4 text-pretty text-muted-foreground text-xs leading-relaxed">
-      {blurb}
-    </p>
-  );
+  return <p className="mb-4 text-pretty text-xs leading-relaxed">{blurb}</p>;
 }
 
 export function Steps({ children }: { children: React.ReactNode }) {

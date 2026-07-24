@@ -41,7 +41,7 @@ export function FilterGroupButton({
         horizontal ? "w-16 shrink-0 px-1" : "",
         active
           ? "bg-black/10 text-sidebar-accent-foreground dark:bg-white/12"
-          : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground"
+          : "hover:bg-sidebar-accent/50 hover:text-foreground"
       )}
     >
       {/* Phosphor weight is a prop, not CSS, so hover-swaps the icon:

@@ -25,11 +25,11 @@ export function LicensePanel({ font }: { font: FontRecord }) {
       }
     >
       {text ? (
-        <pre className="overflow-auto whitespace-pre-wrap font-mono text-muted-foreground text-xs leading-relaxed">
+        <pre className="overflow-auto whitespace-pre-wrap font-mono text-xs leading-relaxed">
           {text}
         </pre>
       ) : (
-        <p className="py-2 text-muted-foreground text-sm">
+        <p className="py-2 text-sm">
           No license text available for this family.
         </p>
       )}

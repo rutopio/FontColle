@@ -176,14 +176,14 @@ export function GoogleFontsMethod({
             </TabsList>
             <TabsPanel value="link">
               <CodeBlock code={linkTags} lang="html" />
-              <p className="mt-1.5 text-muted-foreground text-xs">
+              <p className="mt-1.5 text-xs">
                 Paste inside your document{" "}
                 <code className="font-mono">&lt;head&gt;</code>.
               </p>
             </TabsPanel>
             <TabsPanel value="import">
               <CodeBlock code={importRule} lang="css" />
-              <p className="mt-1.5 text-muted-foreground text-xs">
+              <p className="mt-1.5 text-xs">
                 Place at the very top of a CSS file, before other rules.
               </p>
             </TabsPanel>

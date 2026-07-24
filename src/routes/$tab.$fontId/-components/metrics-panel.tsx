@@ -265,7 +265,7 @@ export function MetricsPanel({ font }: { font: FontRecord }) {
             key={key}
             className="flex items-baseline justify-between gap-2 border-border/60 border-b py-1.5"
           >
-            <dt className="flex items-center gap-1 text-muted-foreground text-sm">
+            <dt className="flex items-center gap-1 text-sm">
               {spec.label}
               <Tooltip>
                 <TooltipTrigger

@@ -108,7 +108,7 @@ export function GlyphsSidebar({
                       "flex min-h-11 items-center justify-between gap-2 rounded px-2 py-1 text-left text-xs transition-colors md:min-h-8",
                       on
                         ? "bg-black/10 font-medium text-foreground dark:bg-white/12"
-                        : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground"
+                        : "hover:bg-sidebar-accent/50 hover:text-foreground"
                     )}
                   >
                     <span className="truncate">{block.name}</span>

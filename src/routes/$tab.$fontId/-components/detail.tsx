@@ -237,9 +237,7 @@ export function Detail({
                 {font.name}
               </h1>
               {font.designer && (
-                <p className="truncate text-muted-foreground text-xs">
-                  {font.designer}
-                </p>
+                <p className="truncate text-xs">{font.designer}</p>
               )}
             </div>
           </div>

@@ -22,9 +22,9 @@ export const RAIL_BTN = `${RAIL_BTN_BASE} relative flex flex-col items-center ga
 // Compact mobile top-bar icon button: no tile, no caption.
 export const RAIL_BAR_BTN = `${RAIL_BTN_BASE} flex size-11 items-center justify-center`;
 
-// The neutral (unselected) colours most rail buttons share.
-export const RAIL_BTN_OFF =
-  "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground";
+// The neutral (unselected) colours most rail buttons share. No resting text
+// colour: the icon/label inherit the default foreground, matching FilterRail.
+export const RAIL_BTN_OFF = "hover:bg-sidebar-accent/50 hover:text-foreground";
 
 // The selected/active tile background.
 export const RAIL_BTN_ON =

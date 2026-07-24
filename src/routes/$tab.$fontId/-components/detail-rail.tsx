@@ -113,7 +113,7 @@ export function DetailTabBar({
               "flex shrink-0 items-center gap-1.5 rounded-md px-3 py-1.5 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-inset",
               on
                 ? "bg-black/10 font-medium text-foreground dark:bg-white/12"
-                : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground"
+                : "hover:bg-sidebar-accent/50 hover:text-foreground"
             )}
           >
             <tab.icon className="size-4" weight="regular" />
@@ -147,7 +147,7 @@ export function DetailRail({
               cn(RAIL_BTN, "focus-visible:ring-inset"),
               on
                 ? "bg-black/10 text-sidebar-accent-foreground dark:bg-white/12"
-                : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground"
+                : "hover:bg-sidebar-accent/50 hover:text-foreground"
             )}
           >
             {/* Phosphor weight is a prop, not CSS, so hover-swaps the icon:

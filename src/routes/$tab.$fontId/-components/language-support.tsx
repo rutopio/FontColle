@@ -81,7 +81,7 @@ function RegionAccordion({
             >
               <div className="grid grid-cols-4 gap-x-3 gap-y-1 pb-3 text-sm">
                 {ids.map((id) => (
-                  <span key={id} className="truncate text-muted-foreground">
+                  <span key={id} className="truncate">
                     {languageLabel(id)}
                   </span>
                 ))}

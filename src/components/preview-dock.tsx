@@ -65,7 +65,7 @@ function PreviewField() {
             setText("");
           }}
           aria-label="Clear preview text"
-          className="shrink-0 rounded-full text-muted-foreground"
+          className="shrink-0 rounded-full"
         >
           <XIcon className="size-4" />
         </Button>
@@ -90,7 +90,7 @@ export function PreviewBar({ onScrollTop }: { onScrollTop?: () => void }) {
             type="button"
             onClick={onScrollTop}
             aria-label="Scroll to top"
-            className="flex cursor-pointer flex-col items-center gap-1 rounded-md px-2 py-2 text-muted-foreground outline-none transition-colors focus-visible:ring-2 focus-visible:ring-sidebar-ring group-hover:text-foreground"
+            className="flex cursor-pointer flex-col items-center gap-1 rounded-md px-2 py-2 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-sidebar-ring group-hover:text-foreground"
           >
             {/* Phosphor weight is a prop, not CSS, so hover-swaps the icon:
                 the base icon hides on hover and the bold twin shows. */}

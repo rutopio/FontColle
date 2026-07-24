@@ -47,7 +47,7 @@ export function SortControl({
   if (relevance) {
     return (
       <div
-        className="flex h-8 items-center rounded-lg border border-input px-3 text-muted-foreground text-sm dark:bg-input/30"
+        className="flex h-8 items-center rounded-lg border border-input px-3 text-sm dark:bg-input/30"
         title="Sorted by search relevance"
       >
         Relevance
@@ -113,7 +113,7 @@ export function SortControl({
         }}
         aria-label={`Sort direction: ${dirLabel}`}
         title={dirLabel}
-        className="flex h-full items-center px-2.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-40 dark:hover:bg-input/50"
+        className="flex h-full items-center px-2.5 transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-40 dark:hover:bg-input/50"
       >
         {asc ? (
           <SortAscendingIcon className="size-4" />
