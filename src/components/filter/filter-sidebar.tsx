@@ -481,7 +481,15 @@ export function FilterSidebar({
               // Preset's empty state centres itself vertically, which needs a
               // height to centre in. The filter list is a tall scrolling stack,
               // where a min-height would stretch nothing to any purpose.
-              showingPreset ? "min-h-full gap-12" : "gap-14"
+              showingPreset
+                ? "min-h-full gap-12"
+                : // One rule per rail group (Style, Variant, Language, ...), not
+                  // between the sections inside them — those stay on plain
+                  // spacing, so the line reads as the boundary the rail names.
+                  // Centred in the space rather than sat on top of the group
+                  // below: half the old gap-14 as margin above it, half as
+                  // padding below, keeping the 56px the groups already had.
+                  "[&>section+section]:mt-7 [&>section+section]:border-border [&>section+section]:border-t [&>section+section]:pt-7"
             )}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
