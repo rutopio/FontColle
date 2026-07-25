@@ -48,7 +48,11 @@ export function SegmentedPills({
                 : "text-muted-foreground hover:bg-muted/50 hover:text-primary"
             )}
           >
-            <span className="truncate">{labels[value] ?? value}</span>
+            {/* text-foreground like PillButton's label: the button's muted
+                colour is for the count beside it, not the name. */}
+            <span className="truncate text-foreground">
+              {labels[value] ?? value}
+            </span>
             <span className="font-mono opacity-60">{count}</span>
           </button>
         );
