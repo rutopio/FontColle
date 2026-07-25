@@ -1,11 +1,8 @@
 import { FilterGroupButton } from "./filter-rail";
 import { type FilterGroupId, PRESET_GROUP } from "./groups";
 
-// The rail-footer Preset control. It switches the side panel to the Preset
-// group exactly like a rail button, but renders down in the footer next to
-// Favorite: presets and favorites are the two device-local personal things
-// (both localStorage, neither shareable via URL), so they sit together above
-// the separator that divides them from the app-level toggles (theme, about).
+// The Preset control. It switches the side panel to the Preset group exactly
+// like a rail button.
 //
 // Rendered only on the list page: the detail route has no filter panel to
 // switch to. Carries no badge — a preset is a shortcut to a set of conditions,

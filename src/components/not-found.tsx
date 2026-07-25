@@ -27,7 +27,9 @@ export function NotFound({
   description?: string[];
 }) {
   return (
-    <main className="flex min-h-full w-full flex-col items-center justify-center p-6">
+    // bg-background: this renders outside the shell, straight onto body, which
+    // carries the sidebar tint that frames the centred app.
+    <main className="flex min-h-full w-full flex-col items-center justify-center bg-background p-6">
       <Empty>
         <EmptyHeader>
           <BrandMark />

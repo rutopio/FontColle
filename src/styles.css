@@ -239,8 +239,12 @@
   * {
     @apply border-border outline-ring/50;
   }
+  /* Sidebar tint, not the page background: the shell is centred in a max-width
+     container, and body is only visible around it — the 2rem gutters and, past
+     1536px, the margins either side. Every surface inside the shell paints its
+     own opaque background, so this reads purely as the frame the app sits in. */
   body {
-    @apply bg-background text-foreground;
+    @apply bg-sidebar text-foreground;
   }
   button:not(:disabled),
   [role="button"]:not(:disabled) {
@@ -286,17 +290,19 @@
   }
 }
 
+/* Caps and centres the whole app shell (see filter-layout). Desktop only: below
+   md the shell is the mobile layout (Sheet sidebar, top bar) and stays
+   full-bleed, so both the gutters and the max-width start at 768px. Margin auto
+   is a no-op at width:100%, so it can sit outside the query. */
 @utility container {
   width: 100%;
   margin-left: auto;
   margin-right: auto;
 
-  @media (min-width: 640px) {
-    max-width: 640px;
-  }
-
   @media (min-width: 768px) {
     max-width: 768px;
+    padding-left: 2rem;
+    padding-right: 2rem;
   }
 
   @media (min-width: 1024px) {

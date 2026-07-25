@@ -34,10 +34,30 @@ export function AppSidebar({
       {...props}
     >
       {/* First sidebar: the icon rail. shrink-0 keeps its width fixed when the
-          parent collapses (the panel closing must not squeeze the rail). */}
+          parent collapses (the panel closing must not squeeze the rail).
+
+          Boxed like the two panels beside it: same margin, radius, border and
+          white background, replacing the border-r it used to close itself with.
+
+          Height is the difference from those two. They fill the shell; this one
+          is only as tall as its buttons, so h-auto overrides the primitive's
+          h-full and self-start stops the flex row stretching it back. max-h
+          keeps it inside the shell on a short viewport — where the ScrollArea
+          below takes over and scrolls — and subtracts its own 2-unit margins,
+          which a plain max-h-full would overshoot by exactly that much.
+
+          mr-0, like the inset's ml-0: the panel to the right already carries an
+          8px left margin, and two margins between neighbours would set the rail
+          twice as far from the panel as the panel is from the content box.
+
+          Width is --sidebar-width-icon minus its own left margin, so box plus
+          margin comes to exactly the width the shell reserves for the rail when
+          the panel is collapsed away. Deriving it the other way (icon width plus
+          a bit) overflowed that reserved width and the box lost its right edge
+          to the shell's overflow-hidden. */}
       <Sidebar
         collapsible="none"
-        className="w-[calc(var(--sidebar-width-icon)+1px)]! shrink-0 border-r"
+        className="my-2 mr-0 ml-2 h-auto max-h-[calc(100%-1rem)] w-[calc(var(--sidebar-width-icon)-0.5rem)]! shrink-0 self-start overflow-hidden rounded-xl border border-border bg-background"
       >
         {/* The wordmark is a plain link, not a SidebarMenuButton, it is
             just the home icon and doesn't need the button's icon-collapse
@@ -67,15 +87,12 @@ export function AppSidebar({
             <div className="pb-2">{rail}</div>
           </ScrollArea>
         )}
-        {/* mt-auto pins the toggles to the rail's bottom whether or not a rail
-            fills the space above it. Same p-2 as the rail's ScrollArea so the
-            footer buttons line up with the rail buttons above.
-
-            Two tiers, split by the separator: above it the personal, per-device
-            things (Preset, Favorite — both localStorage, neither shareable via
-            URL); below it the app-level ones (theme, about). The separator sits
-            immediately above Dark, so the line reads as "your stuff ends here". */}
-        <SidebarFooter className="mt-auto gap-1 p-2">
+        {/* These four now live in the panel's footer strip (below). They stay
+            here as the fallback for when the panel is collapsed away — the
+            detail page's read-only views do that — since otherwise Theme and
+            About would have nowhere to be. Only ever one of the two is in the
+            tree: `hidden` drops this copy from the a11y tree as well. */}
+        <SidebarFooter className="mt-auto gap-1 p-2 group-data-[state=expanded]:hidden">
           {personal}
           <FavoriteToggle fontId={favoriteFontId} />
           {/* -mx-2 spans the rule past the footer's p-2 so it meets both edges,
@@ -99,11 +116,42 @@ export function AppSidebar({
           from its 318px share to 365px inside a 391px sidebar and the panel
           spilled out. With min-w-0 it keeps its share and the content wraps or
           truncates inside instead. */}
+      {/* Boxed to mirror the main content area (see filter-layout's
+          SidebarInset): same margin, radius, border and background, so the two
+          read as a matched pair either side of the rail. No md: prefixes needed
+          — this panel is already desktop-only, mobile reaches the filters
+          through FilterDrawer instead. overflow-hidden clips the panel's own
+          ScrollArea to the rounded corners, so the list scrolls inside the box.
+
+          h-auto overrides the primitive's h-full, which is load-bearing here:
+          100% height plus a 2-unit margin is 16px taller than the space it sits
+          in, and the overflow it caused was clipped off the bottom — taking the
+          box's bottom border with it. As a stretched flex item it now measures
+          itself from what is left after the margins. */}
       <Sidebar
         collapsible="none"
-        className="hidden min-w-0 flex-1 bg-background md:flex"
+        className="m-2 hidden h-auto min-w-0 flex-1 overflow-hidden rounded-xl border border-border bg-background md:flex"
       >
         {children}
+        {/* Footer strip, mirroring the main area's preview field: a fixed row
+            pinned to the bottom of the box with a rule above it, while only the
+            body above scrolls. Left to right: Preset, Favorite, Theme, About —
+            the two device-local personal things first, then the two app-level
+            toggles, the same order the rail's stacked footer used.
+
+            The "rail" variant, not "bar": these carry their captions like the
+            preview field's Top button does, icon stacked over a 10px label. */}
+        {/* h-16 to the pixel, not padding around the buttons: the main area's
+            preview field is a fixed 4rem (see Column's footer), and letting
+            this one be sized by its contents instead made it ~3px deeper — the
+            captioned buttons come to 50px, and p-2 around them overshot. The
+            buttons centre in the fixed height. */}
+        <div className="flex h-16 shrink-0 items-center gap-1 border-border border-t px-2 *:flex-1">
+          {personal}
+          <FavoriteToggle fontId={favoriteFontId} />
+          <ThemeToggle />
+          <AboutLink />
+        </div>
       </Sidebar>
     </Sidebar>
   );

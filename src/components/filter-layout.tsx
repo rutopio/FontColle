@@ -77,37 +77,69 @@ export function FilterLayout({
       >
         Skip to content
       </a>
-      <SidebarProvider
-        open={panelOpen}
-        style={
-          {
-            // A wider icon rail: it carries labelled group buttons, not just the
-            // home link. Plus room for the side panel at its original 20rem.
-            "--sidebar-width-icon": "4.5rem",
-            "--sidebar-width": "24.5rem",
-          } as React.CSSProperties
-        }
-      >
-        <AppSidebar
-          rail={rail ? <RouteFade>{rail}</RouteFade> : undefined}
-          personal={personal}
-          favoriteFontId={favoriteFontId}
+      {/* The whole shell (rail, panel and inset alike) lives inside the
+          container: centred, capped at 1536px, with 2rem gutters. `relative` on
+          the provider gives the sidebar, which is absolutely positioned rather
+          than viewport-fixed, a padding-box to anchor to, so it starts on the
+          container's content edge instead of the screen's. */}
+      <div className="container h-full">
+        <SidebarProvider
+          className="relative"
+          open={panelOpen}
+          style={
+            {
+              // A wider icon rail: it carries labelled group buttons, not just the
+              // home link. Plus room for the side panel at its original 20rem.
+              // 5rem rather than the 4.5rem the buttons themselves need: the
+              // rail is a bordered box with an 8px margin now, and this is the
+              // width the shell reserves for the pair. The box takes 4.5rem of
+              // it (see AppSidebar), which leaves the icon column exactly as
+              // wide as it was before it was boxed.
+              "--sidebar-width-icon": "5rem",
+              "--sidebar-width": "25rem",
+            } as React.CSSProperties
+          }
         >
-          <RouteFade className="flex size-full flex-col">{sidebar}</RouteFade>
-        </AppSidebar>
-        {/* min-w-0 lets the inset shrink to the space left by the fixed-width
+          <AppSidebar
+            rail={rail ? <RouteFade>{rail}</RouteFade> : undefined}
+            personal={personal}
+            favoriteFontId={favoriteFontId}
+          >
+            {/* flex-1 + min-h-0, not size-full: the panel box now also holds a
+                footer strip, so the content has to take the height left over
+                rather than all of it, and be allowed to shrink so its own
+                ScrollArea is what scrolls. */}
+            <RouteFade className="flex min-h-0 w-full flex-1 flex-col">
+              {sidebar}
+            </RouteFade>
+          </AppSidebar>
+          {/* min-w-0 lets the inset shrink to the space left by the fixed-width
           sidebar instead of forcing 100vw (w-full) and pushing itself past the
           viewport, otherwise wide content (e.g. a heavy display font's
           specimen) makes the whole page overflow horizontally. */}
-        <SidebarInset className="min-w-0">
-          {/* Mobile-only chrome, outside RouteFade so it stays put like the
+          {/* Boxed like shadcn's sidebar-08 (variant="inset"), but applied here
+              rather than by switching variant, which would also re-pad both
+              levels of the sidebar. The margin lets body's sidebar tint read as
+              a gutter around the box; overflow-hidden clips the header and
+              footer borders to the rounded corners. Desktop only: below md the
+              inset is the whole screen and a floating box would just waste it.
+              As a flex item, flex-basis:0 (flex-1) sets the width, so the
+              margin eats into the free space instead of overflowing w-full. */}
+          {/* ml-0 for the same reason sidebar-08's inset uses it: the filter
+              panel beside it already carries an 8px right margin, so a left
+              margin here would double the gap between the two boxes. When the
+              panel is collapsed away (the detail page's Detail view) there is
+              nothing left to supply it, so take it back. */}
+          <SidebarInset className="min-w-0 md:my-2 md:mr-2 md:ml-0 md:overflow-hidden md:rounded-xl md:border md:border-border md:peer-data-[state=collapsed]:ml-2">
+            {/* Mobile-only chrome, outside RouteFade so it stays put like the
               desktop rail (which never fades). Desktop hides it via md:hidden. */}
-          <MobileTopBar favoriteFontId={favoriteFontId} />
-          <RouteFade distance={16} className="flex min-h-0 flex-1 flex-col">
-            {children}
-          </RouteFade>
-        </SidebarInset>
-      </SidebarProvider>
+            <MobileTopBar favoriteFontId={favoriteFontId} />
+            <RouteFade distance={16} className="flex min-h-0 flex-1 flex-col">
+              {children}
+            </RouteFade>
+          </SidebarInset>
+        </SidebarProvider>
+      </div>
     </>
   );
 }
@@ -187,7 +219,9 @@ export function Column({
         // min-h-full so a short body (e.g. an Empty state) fills the scroll
         // viewport, letting a flex-1 child center in the remaining space instead
         // of sitting up top. Taller content just grows past it as before.
-        "mx-auto flex min-h-full w-full max-w-(--breakpoint-2xl) flex-col gap-4 p-4 md:gap-6 md:p-6",
+        // No max-width of its own: the shell's container already caps the page
+        // at 1536px, so a second cap here would never bind.
+        "mx-auto flex min-h-full w-full flex-col gap-4 p-4 md:gap-6 md:p-6",
         // A solid footer bar sits below the scroll area, so content needs no
         // extra clearance. Without one, the floating preview dock overlaps the
         // last rows, so keep the tall bottom padding to clear it.
