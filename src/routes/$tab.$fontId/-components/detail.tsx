@@ -22,9 +22,8 @@ import { fontSlug } from "@/lib/fonts/slug";
 import { specimenFor, specimenLinesFor } from "@/lib/fonts/specimen";
 import type { FontRecord } from "@/lib/fonts/types";
 import { usePreview } from "@/lib/preview/context";
-import { useSectionScrollspy } from "@/lib/use-section-scrollspy";
 import { DesignerPanel } from "./designer-panel";
-import { type DetailTab, DetailTabBar, TAB_IDS, TABS } from "./detail-rail";
+import { type DetailTab, DetailTabBar } from "./detail-rail";
 import { GlyphsPanel } from "./glyphs";
 import { InstanceRow } from "./instance-row";
 import { LanguageSupport } from "./language-support";
@@ -39,7 +38,6 @@ import { UsePanel } from "./use";
 export function Detail({
   font,
   tab,
-  onActiveTabChange,
   siblingsByDesigner,
   size,
   axisState,
@@ -51,13 +49,7 @@ export function Detail({
   glyphHighlightCp,
 }: {
   font: FontRecord;
-  // The rail's current tab. Also the scroll target: a value the spy did not
-  // report is treated as a jump request (a rail click, or a deep link landing
-  // on /glyphs/{id} and needing to scroll there).
   tab: DetailTab;
-  // Reports the section that scrolling brought to the top, so the rail can
-  // follow the scroll and the URL can track it.
-  onActiveTabChange: (tab: DetailTab) => void;
   siblingsByDesigner: Record<string, DesignerSibling[]>;
   size: number;
   axisState: Record<string, number>;
@@ -95,19 +87,6 @@ export function Detail({
   // row-virtualizer scrolls in the same container the rest of the page does
   // (matching how the list's FontGrid scrolls in its Column).
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  // Every tab is stacked in this one scroll, so the rail no longer swaps the
-  // column's contents — it highlights whichever section the scroll has reached,
-  // and jumps to one when clicked. See use-section-scrollspy for how a jump is
-  // told apart from the spy's own report.
-  const { registerSection } = useSectionScrollspy({
-    viewportRef: scrollRef,
-    ids: TAB_IDS,
-    active: tab,
-    onActiveChange: onActiveTabChange,
-    enabled: true,
-  });
-
   const hasItalic = useMemo(
     () => font.instances.some((i) => i.italic),
     [font.instances]
@@ -331,45 +310,20 @@ export function Detail({
         </>
       }
       footer={<PreviewBar />}
-      // The preview sentence field drives the instance rows, so it's up while
-      // Instances is the section in view. The Tester seeds its document from the
-      // sentence once, on mount, then owns it: a live field there would look
-      // like it edits the document when it no longer does.
+      // The preview sentence field drives the instance rows, so it's up on
+      // Instances only. The Tester seeds its document from the sentence once,
+      // on mount, then owns it: a live field there would look like it edits
+      // the document when it no longer does.
       footerHidden={tab !== "sample"}
     >
-      {/* NAMED INSTANCES, one instance per row: its label + coords on the first
-      line, an editable preview of it on the second. Editing any row's text
-      updates the shared preview, so every row (and the tester) changes.
-      Unwrapped, and styled like the list's FontRow: the section heading already
-      names the view, so a titled card around it would just be a second frame. */}
-      <TabSection id="sample" register={registerSection}>
-        {font.instances.length > 0 && (
-          // One flush stack, not a gapped list: each row carries its own bottom
-          // border, so the Column body's gap-4 would break them apart.
-          <div className="flex flex-col">
-            {font.instances.map((inst) => (
-              <InstanceRow
-                key={`row:${inst.italic ? "i" : "u"}:${inst.name}`}
-                inst={inst}
-                specimen={specimen}
-                fontName={font.name}
-                fontLoaded={fontLoaded}
-                size={size}
-                featureSettings={featureSettings}
-                varyingAxisTags={varyingAxisTags}
-                onEditText={setText}
-              />
-            ))}
-          </div>
-        )}
-      </TabSection>
-
       {/* PLAYGROUND, a rich-text editor (not the shared preview string): mix
           Heading 1/2/3 and Normal text in one document, with per-level size +
           line-height, like the Google Fonts specimen. Its instance chips work
           at the same scope the Style dropdown does, on the block the caret is
-          in, so one paragraph can be Bold while the next stays Light. */}
-      <TabSection id="tester" register={registerSection}>
+          in, so one paragraph can be Bold while the next stays Light.
+          Unwrapped, like the Instances rows: the tab already names the view,
+          so a titled card around it would just be a second frame. */}
+      {tab === "tester" && (
         <Tester
           fontStyle={testerFontStyle}
           seedLines={seedLines}
@@ -377,9 +331,34 @@ export function Detail({
           fontName={font.name}
           fontLoaded={fontLoaded}
         />
-      </TabSection>
+      )}
 
-      <TabSection id="glyphs" register={registerSection}>
+      {/* NAMED INSTANCES, one instance per row: its label + coords on the first
+      line, an editable preview of it on the second. Editing any row's text
+      updates the shared preview, so every row (and the tester) changes.
+      Unwrapped, and styled like the list's FontRow: the tab already names the
+      view, so a titled card around it would just be a second frame. */}
+      {tab === "sample" && font.instances.length > 0 && (
+        // One flush stack, not a gapped list: each row carries its own bottom
+        // border, so the Column body's gap-4 would break them apart.
+        <div className="flex flex-col">
+          {font.instances.map((inst) => (
+            <InstanceRow
+              key={`row:${inst.italic ? "i" : "u"}:${inst.name}`}
+              inst={inst}
+              specimen={specimen}
+              fontName={font.name}
+              fontLoaded={fontLoaded}
+              size={size}
+              featureSettings={featureSettings}
+              varyingAxisTags={varyingAxisTags}
+              onEditText={setText}
+            />
+          ))}
+        </div>
+      )}
+
+      {tab === "glyphs" && (
         <GlyphsPanel
           font={font}
           fontLoaded={fontLoaded}
@@ -389,92 +368,92 @@ export function Detail({
           scrollRef={scrollRef}
           highlightCp={glyphHighlightCp}
         />
-      </TabSection>
+      )}
 
-      <TabSection id="detail" register={registerSection}>
-        {/* METRICS, the derived style metrics FontColle filters on, with a
+      {tab === "use" && (
+        <UsePanel font={font} axisState={axisState} italic={italic} />
+      )}
+
+      {tab === "detail" && (
+        <>
+          {/* METRICS, the derived style metrics FontColle filters on, with a
               baseline/x-height/cap-height diagram. Full width. */}
-        <MetricsPanel font={font} />
+          <MetricsPanel font={font} />
 
-        {/* SPECS + SUBSETS + WRITING SYSTEMS + VERSION HISTORY, one row, each
+          {/* SPECS + SUBSETS + WRITING SYSTEMS + VERSION HISTORY, one row, each
               a quarter-width column. */}
-        <div className="grid gap-4 md:grid-cols-4">
-          <Panel label="Specs" className="md:col-span-1">
-            <SpecTable rows={specRows} />
-          </Panel>
-          <Panel
-            label="Subsets"
-            // "menu" is a synthetic subset (the family name glyphs), not a
-            // real script subset, so exclude it from the list and the count.
-            count={subsets.length || undefined}
-            // flex-col + a flex-1 body give ColumnList a real height to fill:
-            // the panel is already stretched to the row's tallest card, but
-            // without this chain that height stops at the section.
-            className="flex flex-col md:col-span-1"
-            bodyClassName="flex-1"
-          >
-            <ColumnList items={subsets} />
-          </Panel>
-          {font.scripts.length > 0 && (
+          <div className="grid gap-4 md:grid-cols-4">
+            <Panel label="Specs" className="md:col-span-1">
+              <SpecTable rows={specRows} />
+            </Panel>
             <Panel
-              label="Writing systems"
-              count={font.scripts.length}
+              label="Subsets"
+              // "menu" is a synthetic subset (the family name glyphs), not a
+              // real script subset, so exclude it from the list and the count.
+              count={subsets.length || undefined}
+              // flex-col + a flex-1 body give ColumnList a real height to fill:
+              // the panel is already stretched to the row's tallest card, but
+              // without this chain that height stops at the section.
               className="flex flex-col md:col-span-1"
               bodyClassName="flex-1"
             >
-              <ColumnList items={font.scripts.map(scriptLabel)} />
+              <ColumnList items={subsets} />
             </Panel>
-          )}
+            {font.scripts.length > 0 && (
+              <Panel
+                label="Writing systems"
+                count={font.scripts.length}
+                className="flex flex-col md:col-span-1"
+                bodyClassName="flex-1"
+              >
+                <ColumnList items={font.scripts.map(scriptLabel)} />
+              </Panel>
+            )}
 
-          {/* VERSION HISTORY, release timeline from google/fonts git history,
+            {/* VERSION HISTORY, release timeline from google/fonts git history,
                 newest first. The panel always shows: when nothing could be
                 extracted it says so rather than vanishing, so the grid layout
                 doesn't shift between fonts. */}
-          <Panel
-            label="Version history"
-            count={
-              versionHistory.length > 0 ? versionHistory.length : undefined
-            }
-            className="md:col-span-1"
-          >
-            {versionHistory.length > 0 ? (
-              <Table>
-                <TableBody>
-                  {[...versionHistory].reverse().map((v) => (
-                    <TableRow key={v.version}>
-                      <TableCell className="px-0 py-1.5 font-mono text-sm">
-                        v{v.version}
-                      </TableCell>
-                      <TableCell className="px-0 py-1.5 text-right font-mono text-muted-foreground text-sm">
-                        {formatDate(v.date)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            ) : (
-              <p className="text-muted-foreground text-sm">
-                No version history.
-              </p>
-            )}
-          </Panel>
-        </div>
+            <Panel
+              label="Version history"
+              count={
+                versionHistory.length > 0 ? versionHistory.length : undefined
+              }
+              className="md:col-span-1"
+            >
+              {versionHistory.length > 0 ? (
+                <Table>
+                  <TableBody>
+                    {[...versionHistory].reverse().map((v) => (
+                      <TableRow key={v.version}>
+                        <TableCell className="px-0 py-1.5 font-mono text-sm">
+                          v{v.version}
+                        </TableCell>
+                        <TableCell className="px-0 py-1.5 text-right font-mono text-muted-foreground text-sm">
+                          {formatDate(v.date)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <p className="text-muted-foreground text-sm">
+                  No version history.
+                </p>
+              )}
+            </Panel>
+          </div>
 
-        {/* LANGUAGES, full width. */}
-        {font.languages.length > 0 && <LanguageSupport font={font} />}
-      </TabSection>
+          {/* LANGUAGES, full width. */}
+          {font.languages.length > 0 && <LanguageSupport font={font} />}
+        </>
+      )}
 
-      <TabSection id="use" register={registerSection}>
-        <UsePanel font={font} axisState={axisState} italic={italic} />
-      </TabSection>
-
-      <TabSection id="designer" register={registerSection}>
+      {tab === "designer" && (
         <DesignerPanel font={font} siblingsByDesigner={siblingsByDesigner} />
-      </TabSection>
+      )}
 
-      <TabSection id="license" register={registerSection}>
-        <LicensePanel font={font} />
-      </TabSection>
+      {tab === "license" && <LicensePanel font={font} />}
 
       {/* Mobile-only FAB + drawer for the header's outbound links, which are
           hidden below md. Fixed-position, so it renders as a page overlay
@@ -484,39 +463,6 @@ export function Detail({
           footerHidden above). */}
       <LinksDrawer font={font} dockVisible={tab === "sample"} />
     </Column>
-  );
-}
-
-// One tab's content as a section of the single long scroll, registered with the
-// spy so the rail can follow it and jump to it.
-//
-// The label is sr-only: the rail already names the section you are in, and the
-// tabs read as distinct blocks of content on their own. It stays in the tree
-// because it is this section's accessible name — without it the page would
-// carry seven unlabelled regions, and a screen-reader user has no rail
-// highlight to fall back on.
-function TabSection({
-  id,
-  register,
-  children,
-}: {
-  id: DetailTab;
-  register: (id: DetailTab, el: HTMLElement | null) => void;
-  children: React.ReactNode;
-}) {
-  const label = TABS.find((t) => t.id === id)?.label ?? id;
-  return (
-    <section
-      ref={(el) => {
-        register(id, el);
-      }}
-      aria-label={label}
-      // Matches the Column body's own gap, so a section's internal blocks sit
-      // as far apart as they did when it was the only thing on the page.
-      className="flex flex-col gap-4 md:gap-6"
-    >
-      {children}
-    </section>
   );
 }
 

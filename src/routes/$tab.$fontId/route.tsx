@@ -198,14 +198,6 @@ function DetailPage() {
       params: { tab: slugFromTab(id), fontId: fontSlug(font.id) },
       replace: true,
     });
-  // What the column's scroll-spy reports. Every tab is stacked in one scroll
-  // now, so scrolling past a section makes it the current tab and the URL
-  // follows — still on `replace`, or a single read through the page would push
-  // seven history entries and bury the list behind them. Guarded on a real
-  // change so the spy's first measurement doesn't re-navigate to where we are.
-  const setActiveTab = (id: DetailTab) => {
-    if (id !== tab) selectTab(id);
-  };
 
   // Escape returns to the catalog, the page this one is always entered from.
   // Skipped while typing (the specimen and the glyph search are editable) and
@@ -332,12 +324,7 @@ function DetailPage() {
         onResetFeatures={resetFeatures}
       />
     );
-  // Always rendered, unlike before, when the read-only tabs collapsed the panel
-  // away. With every tab in one scroll that collapse would fire mid-scroll and
-  // the column would jump a panel's width open and shut as you read. The
-  // controls stay relevant throughout: they drive the Instances and Tester
-  // previews further up the same page.
-  const sidebarPanel = renderSidebarPanel();
+  const sidebarPanel = hasControls ? renderSidebarPanel() : null;
 
   // Structured data for the family, so search engines can surface designer and
   // license. Rendered here rather than through head() because that path emits
@@ -357,6 +344,10 @@ function DetailPage() {
 
   return (
     <FilterLayout
+      // Read-only spec views (Detail/Designer/License) collapse the panel to
+      // just the icon rail; Sample needs the tester controls and Glyphs needs
+      // the block list, so both keep the sidebar open.
+      panelOpen={hasControls}
       // The footer Favorite button hearts this font (vs. the list's fav view).
       favoriteFontId={font.id}
       rail={<DetailRail active={tab} onSelect={selectTab} />}
@@ -372,7 +363,6 @@ function DetailPage() {
       <Detail
         font={font}
         tab={tab}
-        onActiveTabChange={setActiveTab}
         siblingsByDesigner={siblingsByDesigner}
         size={size}
         axisState={axisState}

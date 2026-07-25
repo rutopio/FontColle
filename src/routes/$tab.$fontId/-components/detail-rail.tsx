@@ -76,10 +76,6 @@ export const TABS = [
 
 export type TabSlug = (typeof TABS)[number]["slug"];
 
-// Rail order as plain ids, for the column's scroll-spy: it walks the sections
-// in render order to find which one the scroll has reached.
-export const TAB_IDS: DetailTab[] = TABS.map((t) => t.id);
-
 const BY_SLUG = new Map(TABS.map((t) => [t.slug, t.id]));
 const BY_ID = new Map(TABS.map((t) => [t.id, t.slug]));
 
