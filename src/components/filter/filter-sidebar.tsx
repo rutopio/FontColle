@@ -23,6 +23,7 @@ import {
 import * as actions from "@/lib/fonts/filter-actions";
 import { EASE_OUT, MOTION_S } from "@/lib/motion";
 import { useScrollReset } from "@/lib/use-scroll-reset";
+import { useSectionScrollspy } from "@/lib/use-section-scrollspy";
 import { cn } from "@/lib/utils";
 import { CardGrid } from "./card-grid";
 import { CategoryCards } from "./category-cards";
@@ -46,7 +47,6 @@ import { NotoSection } from "./noto-section";
 import { PresetSection } from "./preset-section";
 import { RadioPillSection } from "./radio-pill-section";
 import { RepositorySection } from "./repository-section";
-import { useFilterScrollspy } from "./use-filter-scrollspy";
 import { VariableAxesSection } from "./variable-axes-section";
 import { WritingSystemSection } from "./writing-system-section";
 
@@ -195,7 +195,7 @@ export function FilterSidebar({
   // reached, and jumps to one when clicked. Preset is the exception: it isn't a
   // facet of the catalog, so it still replaces the panel wholesale.
   const showingPreset = group === "preset";
-  const { registerSection } = useFilterScrollspy({
+  const { registerSection } = useSectionScrollspy({
     viewportRef,
     ids: FILTER_GROUP_IDS,
     active: group,
