@@ -6,7 +6,7 @@ import { LogoIcon } from "@/components/logo-icon";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Sidebar, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
+import { Sidebar, SidebarFooter } from "@/components/ui/sidebar";
 
 // sidebar-09 layout: a parent icon-collapsible sidebar holding two child
 // sidebars side by side. First child is the icon rail (the home link, plus
@@ -55,20 +55,20 @@ export function AppSidebar({
           the panel is collapsed away. Deriving it the other way (icon width plus
           a bit) overflowed that reserved width and the box lost its right edge
           to the shell's overflow-hidden. */}
-      <Sidebar
-        collapsible="none"
-        className="my-2 mr-0 ml-2 h-auto max-h-[calc(100%-1rem)] w-[calc(var(--sidebar-width-icon)-0.5rem)]! shrink-0 self-start overflow-hidden rounded-xl border border-border bg-background"
-      >
+      <div className="my-2 mr-0 ml-2 flex max-h-[calc(100%-1rem)] w-[calc(var(--sidebar-width-icon)-0.5rem)] shrink-0 flex-col gap-2 self-start">
         {/* The wordmark is a plain link, not a SidebarMenuButton, it is
             just the home icon and doesn't need the button's icon-collapse
-            styling. px-1.5 matches the rail nav below so it lines up with and
-            spans the same width as the group buttons. aspect-square keeps it a
-            square tile. */}
-        {/* h-16 + border-b mirrors the Column header (filter-layout) exactly:
-            both are 64px tall with the divider drawn *inside* that box, so the
-            rail's line and the header's line land on the same pixel. Using a
-            Separator here instead would sit outside the box and hang 1px low. */}
-        <SidebarHeader className="h-16 justify-center border-border border-b p-2">
+            styling.
+
+            Its own box, separate from the group buttons below and set the same
+            8px apart as every other box in the shell. It used to share a box
+            with them, divided by a border-b.
+
+            aspect-square rather than a height: the box is as tall as the rail
+            column is wide, and follows --sidebar-width-icon if that is ever
+            retuned. Note this makes it 72px, so it no longer matches the
+            Column header's 64px the way the old h-16 did. */}
+        <div className="flex aspect-square shrink-0 flex-col justify-center rounded-xl border border-border bg-background p-2">
           <Link
             to="/"
             // Must contain the visible "FontColle" text: WCAG 2.5.3 (Label in
@@ -81,30 +81,35 @@ export function AppSidebar({
               FontColle
             </span>
           </Link>
-        </SidebarHeader>
-        {rail && (
-          <ScrollArea className="min-h-0 flex-1 p-2">
-            <div className="pb-2">{rail}</div>
-          </ScrollArea>
-        )}
-        {/* These four now live in the panel's footer strip (below). They stay
-            here as the fallback for when the panel is collapsed away — the
-            detail page's read-only views do that — since otherwise Theme and
-            About would have nowhere to be. Only ever one of the two is in the
-            tree: `hidden` drops this copy from the a11y tree as well. */}
-        <SidebarFooter className="mt-auto gap-1 p-2 group-data-[state=expanded]:hidden">
-          {personal}
-          <FavoriteToggle fontId={favoriteFontId} />
-          {/* -mx-2 spans the rule past the footer's p-2 so it meets both edges,
-              like the header's border-b. The width utility needs the same
-              data-horizontal: variant the primitive uses, or its `w-full` wins
-              and the rule stops short of the padding. my-1 keeps it off both
-              neighbours. */}
-          <Separator className="-mx-2 my-1 data-horizontal:w-auto" />
-          <ThemeToggle />
-          <AboutLink />
-        </SidebarFooter>
-      </Sidebar>
+        </div>
+
+        {/* Second box: the page's rail buttons, plus the collapsed-state
+            fallback controls. min-h-0 lets it give way to the wrapper's max-h
+            on a short viewport, where the ScrollArea inside takes over. */}
+        <div className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-background">
+          {rail && (
+            <ScrollArea className="min-h-0 flex-1 p-2">
+              <div className="pb-2">{rail}</div>
+            </ScrollArea>
+          )}
+          {/* These four now live in the panel's footer strip (below). They stay
+              here as the fallback for when the panel is collapsed away — the
+              detail page's read-only views do that — since otherwise Theme and
+              About would have nowhere to be. Only ever one of the two is in the
+              tree: `hidden` drops this copy from the a11y tree as well. */}
+          <SidebarFooter className="mt-auto gap-1 p-2 group-data-[state=expanded]:hidden">
+            {personal}
+            <FavoriteToggle fontId={favoriteFontId} />
+            {/* -mx-2 spans the rule past the footer's p-2 so it meets both
+                edges. The width utility needs the same data-horizontal: variant
+                the primitive uses, or its `w-full` wins and the rule stops short
+                of the padding. my-1 keeps it off both neighbours. */}
+            <Separator className="-mx-2 my-1 data-horizontal:w-auto" />
+            <ThemeToggle />
+            <AboutLink />
+          </SidebarFooter>
+        </div>
+      </div>
 
       {/* Second sidebar: the page's own panel, filling the remaining width. The
           panel provides its own ScrollArea for scrolling, the Sidebar's
