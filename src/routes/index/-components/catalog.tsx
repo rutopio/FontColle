@@ -357,6 +357,10 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
           filter={filter}
           onChange={commitFilter}
           group={group}
+          // The panel stacks every group in one scroll, so scrolling is what
+          // decides which group is current; the rail follows it. Clicking the
+          // rail still sets `group`, which the panel reads as a jump request.
+          onActiveGroupChange={setGroup}
           axisValues={axisValues}
           onAxisValueChange={setAxisValue}
           onApplyPreset={applyPreset}

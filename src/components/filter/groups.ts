@@ -109,6 +109,10 @@ export const FILTER_GROUPS: FilterGroup[] = [
   },
 ];
 
+// Rail order as plain ids, for the panel's scroll-spy: it walks the sections in
+// render order to find which one the scroll has reached.
+export const FILTER_GROUP_IDS: FilterGroupId[] = FILTER_GROUPS.map((g) => g.id);
+
 // Saved filter combinations. Kept out of FILTER_GROUPS because it isn't a facet
 // of the catalog: it renders in the sidebar footer beside Favorite, the pair of
 // device-local personal things, rather than in the scrolling rail of filters.

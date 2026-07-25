@@ -112,6 +112,9 @@ export function FilterDrawer({
             filter={filter}
             onChange={onChange}
             group={group}
+            // Same as desktop: the strip above highlights whichever group the
+            // drawer's scroll has reached, and jumps when tapped.
+            onActiveGroupChange={onGroupChange}
             axisValues={axisValues}
             onAxisValueChange={onAxisValueChange}
             onApplyPreset={onApplyPreset}
