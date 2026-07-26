@@ -33,66 +33,59 @@ export function AppSidebar({
       className="overflow-hidden *:data-[sidebar=sidebar]:flex-row"
       {...props}
     >
-      {/* First sidebar: the icon rail. shrink-0 keeps its width fixed when the
+      {/* The icon rail: a column of two, the wordmark bare at its head and the
+          page's buttons in a box below. shrink-0 keeps its width fixed when the
           parent collapses (the panel closing must not squeeze the rail).
 
-          Boxed like the two panels beside it: same margin, radius, border and
-          white background, replacing the border-r it used to close itself with.
-
-          Height is the difference from those two. They fill the shell; this one
-          is only as tall as its buttons, so h-auto overrides the primitive's
-          h-full and self-start stops the flex row stretching it back. max-h
-          keeps it inside the shell on a short viewport — where the ScrollArea
-          below takes over and scrolls — and subtracts its own 2-unit margins,
-          which a plain max-h-full would overshoot by exactly that much.
+          Only as tall as those two, so self-start stops the flex row stretching
+          it to fill the shell. max-h keeps it inside on a short viewport, where
+          the buttons box gives way and its ScrollArea takes over; it subtracts
+          the column's own 2-unit margins, which a plain max-h-full would
+          overshoot by exactly that much.
 
           mr-0, like the inset's ml-0: the panel to the right already carries an
           8px left margin, and two margins between neighbours would set the rail
           twice as far from the panel as the panel is from the content box.
 
-          Width is --sidebar-width-icon minus its own left margin, so box plus
+          Width is --sidebar-width-icon minus its own left margin, so column plus
           margin comes to exactly the width the shell reserves for the rail when
           the panel is collapsed away. Deriving it the other way (icon width plus
           a bit) overflowed that reserved width and the box lost its right edge
           to the shell's overflow-hidden. */}
       <div className="my-2 mr-0 ml-2 flex max-h-[calc(100%-1rem)] w-[calc(var(--sidebar-width-icon)-0.5rem)] shrink-0 flex-col gap-2 self-start">
-        {/* The wordmark is a plain link, not a SidebarMenuButton, it is
-            just the home icon and doesn't need the button's icon-collapse
-            styling.
+        {/* The wordmark, at the head of the rail. h-16 matches the Column
+            header beside it, so the two top out on the same line.
 
-            Its own box, separate from the group buttons below and set the same
-            8px apart as every other box in the shell. It used to share a box
-            with them, divided by a border-b.
+            No border and no background: it sits directly on the shell's tint,
+            the one thing in the column that is not a box. Hover still tints it,
+            so it does not read as inert — but as a wash over the frame rather
+            than a panel of its own.
 
-            aspect-square rather than a height: the box is as tall as the rail
-            column is wide, and follows --sidebar-width-icon if that is ever
-            retuned. Note this makes it 72px, so it no longer matches the
-            Column header's 64px the way the old h-16 did. */}
-        <div className="flex aspect-square shrink-0 flex-col justify-center rounded-xl border border-border bg-background p-2">
-          <Link
-            to="/"
-            // Must contain the visible "FontColle" text: WCAG 2.5.3 (Label in
-            // Name) so voice-control users can say what they see.
-            aria-label="FontColle, all fonts"
-            className="group/logo flex w-full flex-col items-center justify-center gap-1 rounded-lg text-primary"
-          >
-            <LogoIcon className="size-7 transition-[stroke-width] group-hover/logo:[stroke-width:2]" />
-            <span className="font-mono text-[9px] group-hover/logo:font-bold">
-              FontColle
-            </span>
-          </Link>
-        </div>
+            It links home, the default action for a wordmark. About is not here:
+            it has its own InfoIcon button in the footers below. */}
+        <Link
+          to="/"
+          // Must contain the visible "FontColle" text: WCAG 2.5.3 (Label in
+          // Name) so voice-control users can say what they see.
+          aria-label="FontColle, all fonts"
+          className="group/logo flex h-16 shrink-0 flex-col items-center justify-center gap-1 rounded-xl p-2 text-primary outline-none transition-colors hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-sidebar-ring dark:hover:bg-white/6"
+        >
+          <LogoIcon className="size-7 transition-[stroke-width] group-hover/logo:[stroke-width:2]" />
+          <span className="font-mono text-[9px] group-hover/logo:font-bold">
+            FontColle
+          </span>
+        </Link>
 
-        {/* Second box: the page's rail buttons, plus the collapsed-state
-            fallback controls. min-h-0 lets it give way to the wrapper's max-h
-            on a short viewport, where the ScrollArea inside takes over. */}
+        {/* The page's rail buttons, plus the collapsed-state fallback controls.
+            min-h-0 lets it give way on a short viewport, where the ScrollArea
+            inside takes over. */}
         <div className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-background">
           {rail && (
             <ScrollArea className="min-h-0 flex-1 p-2">
               <div className="pb-2">{rail}</div>
             </ScrollArea>
           )}
-          {/* These four now live in the panel's footer strip (below). They stay
+          {/* These four live in the panel's footer strip (below). They stay
               here as the fallback for when the panel is collapsed away — the
               detail page's read-only views do that — since otherwise Theme and
               About would have nowhere to be. Only ever one of the two is in the
@@ -152,7 +145,15 @@ export function AppSidebar({
             captioned buttons come to 50px, and p-2 around them overshot. The
             buttons centre in the fixed height. */}
         <div className="flex h-16 shrink-0 items-center gap-1 border-border border-t px-2 *:flex-1">
-          {personal}
+          {/* The strip is always four columns wide. `personal` is the list
+              page's Preset button; the detail page passes none, and with
+              *:flex-1 the remaining three would spread out to fill the row and
+              land nowhere near where they sit on the list page. An empty div
+              holds the first column so Favorite, Theme and About keep the same
+              three positions on both pages, and the eye sees them stay put
+              across a navigation instead of sliding. aria-hidden: it is a
+              spacer, with nothing to announce. */}
+          {personal ?? <div aria-hidden />}
           <FavoriteToggle fontId={favoriteFontId} />
           <ThemeToggle />
           <AboutLink />
