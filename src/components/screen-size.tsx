@@ -14,7 +14,10 @@
 //
 // pointer-events-none so it can never swallow a click meant for either.
 //
-// Breakpoints are Tailwind v4's defaults; this project sets no custom screens.
+// Breakpoints are Tailwind v4's defaults plus --breakpoint-3xl (120rem/1920px),
+// which styles.css adds so the container keeps widening past 2xl. Keep this list
+// in sync with that theme block — a missing step makes the badge under-report,
+// showing the step below it across two screens.
 // Note useIsMobile() keys off 768px, which is `md` — the badge reading `sm` or
 // narrower means that hook reports mobile.
 export function ScreenSize() {
@@ -26,14 +29,15 @@ export function ScreenSize() {
     <output
       aria-hidden
       style={{ bottom: "calc(4.5rem + env(safe-area-inset-bottom))" }}
-      className="pointer-events-none fixed right-22 z-50 flex size-8 items-center justify-center rounded-full bg-gray-800 font-mono text-white text-xs md:right-4"
+      className="pointer-events-none fixed right-22 z-50 flex h-8 min-w-8 items-center justify-center rounded-full bg-gray-800 px-2 font-mono text-white text-xs md:right-4"
     >
       <span className="block sm:hidden">xs</span>
       <span className="hidden sm:block md:hidden">sm</span>
       <span className="hidden md:block lg:hidden">md</span>
       <span className="hidden lg:block xl:hidden">lg</span>
       <span className="hidden xl:block 2xl:hidden">xl</span>
-      <span className="hidden 2xl:block">2xl</span>
+      <span className="hidden 2xl:block 3xl:hidden">2xl</span>
+      <span className="hidden 3xl:block">3xl</span>
     </output>
   );
 }

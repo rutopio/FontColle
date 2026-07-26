@@ -66,6 +66,11 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* One step past Tailwind's built-in scale, which stops at 2xl/96rem. Lets the
+     app shell keep widening on 1920px displays instead of capping at 1536px and
+     leaving 384px of dead margin either side; see the container utility below. */
+  --breakpoint-3xl: 120rem;
+
   --font-heading: "Host Grotesk Variable", var(--font-sans);
   --font-sans: "Albert Sans Variable", sans-serif;
   --font-mono: "Paper Mono", ui-monospace, monospace;
@@ -241,7 +246,7 @@
   }
   /* Sidebar tint, not the page background: the shell is centred in a max-width
      container, and body is only visible around it — the 2rem gutters and, past
-     1536px, the margins either side. Every surface inside the shell paints its
+     1920px, the margins either side. Every surface inside the shell paints its
      own opaque background, so this reads purely as the frame the app sits in. */
   body {
     @apply bg-sidebar text-foreground;
@@ -290,31 +295,34 @@
   }
 }
 
-/* Caps and centres the whole app shell (see filter-layout). Desktop only: below
-   md the shell is the mobile layout (Sheet sidebar, top bar) and stays
-   full-bleed, so both the gutters and the max-width start at 768px. Margin auto
-   is a no-op at width:100%, so it can sit outside the query. */
+/* Caps and centres the whole app shell (see filter-layout).
+
+   The shell is fluid up to 3xl and only capped past it. Tailwind's stock
+   container steps its max-width down to the breakpoint below on every screen,
+   which wastes a laptop's width — at 1500px it would sit at 1280 and leave
+   220px of dead margin. Here the width is simply the viewport until 1920px,
+   where the cap stops lines from growing past what is comfortable to scan.
+
+   The 2rem gutters still start at md: below that the shell is the mobile layout
+   (Sheet sidebar, top bar) and goes edge to edge. Margin auto is a no-op at
+   width:100%, so it only bites past the cap and can sit outside the query.
+
+   max-width:none on the intervening steps is not redundant: shadcn/tailwind.css
+   ships its own .container with the stock sm..2xl ladder, and with nothing here
+   to overrule it those caps would apply. */
 @utility container {
   width: 100%;
   margin-left: auto;
   margin-right: auto;
+  max-width: none;
 
-  @media (min-width: 768px) {
-    max-width: 768px;
+  @variant md {
     padding-left: 2rem;
     padding-right: 2rem;
   }
 
-  @media (min-width: 1024px) {
-    max-width: 1024px;
-  }
-
-  @media (min-width: 1280px) {
-    max-width: 1280px;
-  }
-
-  @media (min-width: 1536px) {
-    max-width: 1536px;
+  @variant 3xl {
+    max-width: var(--breakpoint-3xl);
   }
 }
 
