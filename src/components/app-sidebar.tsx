@@ -1,12 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import type * as React from "react";
 import { AboutLink } from "@/components/about-link";
-import { FavoriteToggle } from "@/components/favorite-toggle";
 import { LogoIcon } from "@/components/logo-icon";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sidebar, SidebarFooter } from "@/components/ui/sidebar";
-import { cn } from "@/lib/utils";
+import { Sidebar } from "@/components/ui/sidebar";
 
 // sidebar-09 layout: a parent icon-collapsible sidebar holding two child
 // sidebars side by side. First child is the icon rail (the home link, plus
@@ -14,14 +12,10 @@ import { cn } from "@/lib/utils";
 // own panel (list filters / detail features), passed in as children.
 export function AppSidebar({
   rail,
-  favoriteFontId,
   children,
   ...props
 }: React.ComponentProps<typeof Sidebar> & {
   rail?: React.ReactNode;
-  // When set (the detail page), the Favorite button hearts this font instead of
-  // toggling the list's favorites-only view.
-  favoriteFontId?: string;
 }) {
   return (
     <Sidebar
@@ -81,39 +75,20 @@ export function AppSidebar({
               </span>
             </Link>
 
-            {/* The page's rail buttons, plus the detail page's Favorite as the
-            fallback for when the panel is collapsed away (its read-only views
-            do that), since otherwise that control would have nowhere to be.
-            Only ever one of the two copies is in the tree: `hidden` drops this
-            one from the a11y tree as well.
+            {/* The page's rail buttons. No scroll of its own: the column around
+            it scrolls, so this box is just as tall as its contents.
 
-            No scroll of its own: the column around it scrolls, so this box is
-            just as tall as its contents.
-
-            While the list's catalog loads there is no `rail` yet, and on the
-            list page there is no Favorite here either — the box had nothing in
-            it, collapsed to zero height, and its two borders stacked into a
-            stray rule under the wordmark. So with no rail, hide the box in
-            exactly the state that empties it; the rail's arrival (or a
-            collapsed panel on the detail page) shows it again. */}
-            <div
-              className={cn(
-                "flex flex-col overflow-hidden rounded-xl border border-border bg-background",
-                !rail && "group-data-[state=expanded]:hidden"
-              )}
-            >
-              {rail && <div className="p-2">{rail}</div>}
-              {favoriteFontId && (
-                <SidebarFooter
-                  className={cn(
-                    "gap-1 p-2 group-data-[state=expanded]:hidden",
-                    rail && "pt-0"
-                  )}
-                >
-                  <FavoriteToggle fontId={favoriteFontId} />
-                </SidebarFooter>
-              )}
-            </div>
+            Nothing else lives here now. Favorite used to sit below as the
+            fallback for a collapsed panel, on both pages; each page's own
+            header carries it instead, and those are on screen whatever the
+            panel is doing. Rendered only when there is a rail, so the empty box
+            does not stack its two borders into a stray rule under the
+            wordmark. */}
+            {rail && (
+              <div className="flex flex-col overflow-hidden rounded-xl border border-border bg-background p-2">
+                {rail}
+              </div>
+            )}
           </div>
         </ScrollArea>
 
@@ -156,31 +131,12 @@ export function AppSidebar({
         collapsible="none"
         className="m-2 hidden h-auto min-w-0 flex-1 overflow-hidden rounded-xl border border-border bg-background md:flex"
       >
-        {/* Header strip, mirroring the list column's header (filter-layout's
-            headerEl): a fixed row pinned to the top of the box with a rule
-            below it, while only the body underneath scrolls.
-
-            Detail page only, and down to one control. This row once held
-            Preset, Favorite, Theme and About; each turned out to belong with
-            what it acts on — Preset at the head of the filter rail, the list
-            page's Favorite in the list column's own header, and Theme/About in
-            their own box at the foot of the rail, since they are the same on
-            every page. What is left is the detail page's Favorite, which hearts
-            the font you are looking at. With nothing to show on the list page
-            the strip is dropped there, rather than ruling off an empty row.
-
-            The "rail" variant, not "bar": it carries its caption like the
-            preview field's Top button does, icon stacked over a 10px label. */}
-        {/* h-16 to the pixel, not padding around the button: the list header
-            beside it is a fixed 4rem, and letting this one be sized by its
-            contents instead made it ~3px deeper — the captioned button comes to
-            50px, and p-2 around it overshot. The button centres in the fixed
-            height. */}
-        {favoriteFontId && (
-          <div className="flex h-16 shrink-0 items-center gap-1 border-border border-b px-2 *:flex-1">
-            <FavoriteToggle fontId={favoriteFontId} />
-          </div>
-        )}
+        {/* No header strip any more. It once held Preset, Favorite, Theme and
+            About; each turned out to belong with what it acts on — Preset at
+            the head of the filter rail, Theme and About in their own box at the
+            foot of it (they are the same on every page), and Favorite in each
+            page's own column header, where it sits level with that page's
+            controls and stays put whatever the panel is doing. */}
         {children}
       </Sidebar>
     </Sidebar>

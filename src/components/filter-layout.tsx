@@ -103,14 +103,11 @@ export function FilterLayout({
             } as React.CSSProperties
           }
         >
-          <AppSidebar
-            rail={rail ? <RouteFade>{rail}</RouteFade> : undefined}
-            favoriteFontId={favoriteFontId}
-          >
-            {/* flex-1 + min-h-0, not size-full: the panel box now also holds a
-                header strip, so the content has to take the height left over
-                rather than all of it, and be allowed to shrink so its own
-                ScrollArea is what scrolls. */}
+          <AppSidebar rail={rail ? <RouteFade>{rail}</RouteFade> : undefined}>
+            {/* flex-1 + min-h-0, not size-full: the panel is the only thing in
+                the box now, but it still has to be allowed to shrink below its
+                content's height, or its own ScrollArea has nothing to scroll
+                within and the overflow is clipped instead. */}
             <RouteFade className="flex min-h-0 w-full flex-1 flex-col">
               {sidebar}
             </RouteFade>

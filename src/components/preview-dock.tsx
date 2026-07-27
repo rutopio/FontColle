@@ -1,8 +1,10 @@
 import { ArrowUpIcon, XIcon } from "@phosphor-icons/react";
 import { useRef, useState } from "react";
+import { RAIL_HEADER_BTN, RAIL_HEADER_CELL } from "@/components/rail-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { usePreview } from "@/lib/preview/context";
+import { cn } from "@/lib/utils";
 
 // The shared preview-text field: type here to preview the string across every
 // font. The Column footer bar supplies the chrome, so the field itself is
@@ -84,19 +86,28 @@ export function PreviewBar({ onScrollTop }: { onScrollTop?: () => void }) {
   return (
     <div className="flex flex-1 items-center gap-2">
       <PreviewField />
+      {/* The same end-of-column cell the list and detail headers put Favorite
+          and Add in (see RAIL_HEADER_CELL), so all three read as one control
+          repeated at the corners of the page rather than three near-misses.
+          cursor-pointer on the cell: the whole of it is the hit area, not just
+          the button inside. */}
       {onScrollTop && (
-        <div className="group -mr-4 flex h-16 shrink-0 cursor-pointer items-center justify-center border-border border-l px-3 transition-colors hover:bg-muted">
+        <div className={cn(RAIL_HEADER_CELL, "cursor-pointer")}>
           <button
             type="button"
             onClick={onScrollTop}
             aria-label="Scroll to top"
-            className="flex cursor-pointer flex-col items-center gap-1 rounded-md px-2 py-2 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-sidebar-ring group-hover:text-foreground"
+            className={cn(
+              RAIL_HEADER_BTN,
+              "group-hover/rail-btn:text-foreground"
+            )}
           >
             {/* Phosphor weight is a prop, not CSS, so hover-swaps the icon:
-                the base icon hides on hover and the bold twin shows. */}
-            <ArrowUpIcon className="size-5 group-hover:hidden" />
+                the base icon hides on hover and the bold twin shows. The group
+                is the cell's, so the swap fires anywhere in it. */}
+            <ArrowUpIcon className="size-5 group-hover/rail-btn:hidden" />
             <ArrowUpIcon
-              className="hidden size-5 group-hover:block"
+              className="hidden size-5 group-hover/rail-btn:block"
               weight="bold"
             />
             <span className="text-[10px] leading-none">Top</span>

@@ -27,6 +27,7 @@ import { PresetToggle } from "@/components/filter/preset-toggle";
 import { Column, FilterLayout } from "@/components/filter-layout";
 import { FontGrid, type ViewMode } from "@/components/font-grid";
 import { PreviewBar } from "@/components/preview-dock";
+import { RAIL_HEADER_CELL_MD } from "@/components/rail-button";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -445,23 +446,10 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
               {/* Favorite closes the header's row of controls. It belongs with
                   them, not in the sidebar strip it used to sit in: like sort
                   and the view tabs it changes what this list shows (?fav=1),
-                  so it reads as the last of the list's own controls.
-
-                  Built as the mirror of the preview field's Top button at the
-                  foot of the same column (see PreviewBar): a full-height cell
-                  ruled off from the row and flush to the column's edge, with
-                  the caption under the icon. -mr-4 cancels the header's px-4 so
-                  the cell meets that edge; h-16 fills the header's fixed
-                  height. Desktop only — on mobile the header wraps to two rows
-                  and there is no fixed height to fill, so it sits inline.
-
-                  The cell carries the hover tint, so the whole of it lights up
-                  rather than just the button's own box — again like Top. It is
-                  named group/rail-btn because that is the group the heart's
-                  hover-swapped duotone twin watches (see rail-button.ts), which
-                  keeps the icon swapping with the tint even when the pointer is
-                  in the cell but not yet on the button. */}
-              <div className="group/rail-btn flex shrink-0 items-center transition-colors md:-mr-4 md:h-16 md:border-border md:border-l md:px-1 md:hover:bg-muted">
+                  so it reads as the last of the list's own controls. Built as
+                  the mirror of the preview field's Top button at the foot of
+                  the same column (see PreviewBar and RAIL_HEADER_CELL). */}
+              <div className={RAIL_HEADER_CELL_MD}>
                 <FavoriteToggle variant="header" />
               </div>
             </div>

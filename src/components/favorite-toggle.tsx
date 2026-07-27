@@ -56,7 +56,7 @@ function HeartLabel({
   );
 }
 
-// The rail-footer Favorite control. Its meaning depends on the page:
+// The Favorite control. Its meaning depends on the page:
 //  - List page (no `fontId`): a link that toggles the favorites-only view
 //    (`?fav=1`), "show my hearted fonts".
 //  - Detail page (`fontId` given): a toggle that hearts/un-hearts THIS font,
@@ -69,7 +69,8 @@ export function FavoriteToggle({
   fontId?: string;
   // "rail" is the desktop icon-over-label tile; "bar" is the compact mobile
   // top-bar icon button; "header" is the same captioned tile as "rail", set in
-  // the list column's header beside the Top button it mirrors.
+  // a column header's end cell — the list page's Favorite and the detail
+  // page's Add both use it, mirroring the preview field's Top button.
   variant?: "rail" | "bar" | "header";
 }) {
   const chrome =
@@ -85,19 +86,30 @@ export function FavoriteToggle({
   // hover tint belongs to the cell around it (like the Top button it sits
   // beside), so a background here would fight that rather than read as state.
   const red = variant !== "rail";
+  // The header variant sits in a cell that owns the hover tint (and the group
+  // the icon swap watches), so it must not carry a hover of its own to stack
+  // on top of it. Every other variant hovers itself.
+  const hover = variant === "header" ? undefined : RAIL_BTN_OFF;
   if (fontId)
-    return <FavoriteMark fontId={fontId} bare={bare} chrome={chrome} />;
-  return <FavoriteViewLink bare={bare} red={red} chrome={chrome} />;
+    return (
+      <FavoriteMark fontId={fontId} bare={bare} hover={hover} chrome={chrome} />
+    );
+  return (
+    <FavoriteViewLink bare={bare} red={red} hover={hover} chrome={chrome} />
+  );
 }
 
 // Detail-page mode: heart this specific font.
 function FavoriteMark({
   fontId,
   bare,
+  hover,
   chrome,
 }: {
   fontId: string;
   bare?: boolean;
+  // The hover chrome, or undefined where the cell around it owns that.
+  hover?: string;
   chrome: string;
 }) {
   const { favorites, toggle } = useFavorites();
@@ -114,7 +126,7 @@ function FavoriteMark({
         aria-label={on ? "Remove from favorites" : "Add to favorites"}
         // Neutral chrome always (no ON background): this is a toggle, so the
         // favorited state is carried by the red filled heart, not a highlight.
-        className={cn(chrome, RAIL_BTN_OFF)}
+        className={cn(chrome, hover)}
       >
         <HeartLabel active={on} bar={bare} label="Add" red />
       </button>
@@ -126,11 +138,14 @@ function FavoriteMark({
 function FavoriteViewLink({
   bare,
   red,
+  hover,
   chrome,
 }: {
   bare?: boolean;
   // Show the active view with a red filled heart instead of a tile background.
   red?: boolean;
+  // The hover chrome, or undefined where the cell around it owns that.
+  hover?: string;
   chrome: string;
 }) {
   // Route-agnostic search read: this sits in the global AppSidebar, shown on
@@ -154,14 +169,13 @@ function FavoriteViewLink({
         // view you're currently in.
         aria-current={fav ? "page" : undefined}
         aria-label={fav ? "Show all fonts" : "Show favorite fonts"}
-        // The rail tile shows the active view with a background; the others say
-        // it in red instead. Of those, the mobile bar still owns its hover
-        // tint, while the header button leaves that to the cell around it, so
-        // the whole cell lights up the way the Top button beside it does.
+        // The rail tile shows the active view with a background, which carries
+        // its own hover; the others say it in red and take `hover` separately,
+        // which is unset for the header variant because the cell around it
+        // lights up instead, the way the Top button beside it does.
         className={cn(
           chrome,
-          red ? fav && "text-red-500" : fav ? RAIL_BTN_ON : RAIL_BTN_OFF,
-          red && bare && RAIL_BTN_OFF
+          red ? cn(fav && "text-red-500", hover) : fav ? RAIL_BTN_ON : hover
         )}
       >
         {/* No `red` here despite the red text above: that flag also fires the

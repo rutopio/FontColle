@@ -5,9 +5,11 @@ import {
 } from "@phosphor-icons/react";
 import { Link, useCanGoBack, useRouter } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { FavoriteToggle } from "@/components/favorite-toggle";
 import { Column } from "@/components/filter-layout";
 import { FontTraits } from "@/components/font-traits";
 import { PreviewBar } from "@/components/preview-dock";
+import { RAIL_HEADER_CELL_MD } from "@/components/rail-button";
 import { releasesUrl, repoHostIcon } from "@/components/repo-host-icon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,6 +24,7 @@ import { fontSlug } from "@/lib/fonts/slug";
 import { specimenFor, specimenLinesFor } from "@/lib/fonts/specimen";
 import type { FontRecord } from "@/lib/fonts/types";
 import { usePreview } from "@/lib/preview/context";
+import { cn } from "@/lib/utils";
 import { DesignerPanel } from "./designer-panel";
 import { type DetailTab, DetailTabBar } from "./detail-rail";
 import { GlyphsPanel } from "./glyphs";
@@ -198,7 +201,6 @@ export function Detail({
 
   return (
     <Column
-      headerClassName="justify-between"
       scrollViewportRef={scrollRef}
       subheader={<DetailTabBar active={tab} fontId={fontSlug(font.id)} />}
       header={
@@ -241,7 +243,13 @@ export function Detail({
               )}
             </div>
           </div>
-          <div className="flex w-full flex-wrap items-center gap-2 md:w-auto md:shrink-0 md:flex-nowrap">
+          {/* md:ml-auto, rather than leaving this to the header's
+              justify-between: with the Add cell added after it there are three
+              blocks in the row, and justify-between would spread all three,
+              stranding this one in the middle. The auto margin puts the slack
+              on this block's left instead, so it and the cell after it stay
+              together at the end of the row. */}
+          <div className="flex w-full flex-wrap items-center gap-2 md:ml-auto md:w-auto md:shrink-0 md:flex-nowrap">
             {/* Trait badges, same order as the list card/row (class, Variable/
                 Static, color, feature count), plus the family's license. */}
             <div className="flex flex-wrap items-center gap-2 md:flex-nowrap">
@@ -306,6 +314,19 @@ export function Detail({
                 </Button>
               )}
             </div>
+          </div>
+
+          {/* Add closes the header, where the list page's Favorite closes its
+              own (see RAIL_HEADER_CELL): same control, same place either side
+              of a navigation — only the meaning differs, hearting this font
+              rather than switching to the hearted view.
+
+              hidden md:flex on top of the cell's own desktop-only styling: on
+              mobile this is reached through LinksDrawer's FAB, like the three
+              link buttons above, so it drops out of the row entirely rather
+              than sitting in it unstyled. */}
+          <div className={cn(RAIL_HEADER_CELL_MD, "hidden md:flex")}>
+            <FavoriteToggle fontId={font.id} variant="header" />
           </div>
         </>
       }
