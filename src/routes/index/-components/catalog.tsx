@@ -453,8 +453,15 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
                   the caption under the icon. -mr-4 cancels the header's px-4 so
                   the cell meets that edge; h-16 fills the header's fixed
                   height. Desktop only — on mobile the header wraps to two rows
-                  and there is no fixed height to fill, so it sits inline. */}
-              <div className="flex shrink-0 items-center md:-mr-4 md:h-16 md:border-border md:border-l md:px-1">
+                  and there is no fixed height to fill, so it sits inline.
+
+                  The cell carries the hover tint, so the whole of it lights up
+                  rather than just the button's own box — again like Top. It is
+                  named group/rail-btn because that is the group the heart's
+                  hover-swapped duotone twin watches (see rail-button.ts), which
+                  keeps the icon swapping with the tint even when the pointer is
+                  in the cell but not yet on the button. */}
+              <div className="group/rail-btn flex shrink-0 items-center transition-colors md:-mr-4 md:h-16 md:border-border md:border-l md:px-1 md:hover:bg-muted">
                 <FavoriteToggle variant="header" />
               </div>
             </div>

@@ -80,9 +80,14 @@ export function FavoriteToggle({
         : RAIL_HEADER_BTN;
   // Only the mobile bar drops the caption; it has no room for one.
   const bare = variant === "bar";
+  // Which variants say "on" with a red filled heart rather than a tile
+  // background: the two that have no tile of their own to fill. The header's
+  // hover tint belongs to the cell around it (like the Top button it sits
+  // beside), so a background here would fight that rather than read as state.
+  const red = variant !== "rail";
   if (fontId)
     return <FavoriteMark fontId={fontId} bare={bare} chrome={chrome} />;
-  return <FavoriteViewLink bare={bare} chrome={chrome} />;
+  return <FavoriteViewLink bare={bare} red={red} chrome={chrome} />;
 }
 
 // Detail-page mode: heart this specific font.
@@ -120,9 +125,12 @@ function FavoriteMark({
 // List-page mode: toggle the favorites-only view.
 function FavoriteViewLink({
   bare,
+  red,
   chrome,
 }: {
   bare?: boolean;
+  // Show the active view with a red filled heart instead of a tile background.
+  red?: boolean;
   chrome: string;
 }) {
   // Route-agnostic search read: this sits in the global AppSidebar, shown on
@@ -146,14 +154,20 @@ function FavoriteViewLink({
         // view you're currently in.
         aria-current={fav ? "page" : undefined}
         aria-label={fav ? "Show all fonts" : "Show favorite fonts"}
-        // The tile variant shows the active view with a background; the
-        // icon-only variants have no tile to fill, so they say it in red.
-        className={
-          bare
-            ? cn(chrome, RAIL_BTN_OFF, fav && "text-red-500")
-            : cn(chrome, fav ? RAIL_BTN_ON : RAIL_BTN_OFF)
-        }
+        // The rail tile shows the active view with a background; the others say
+        // it in red instead. Of those, the mobile bar still owns its hover
+        // tint, while the header button leaves that to the cell around it, so
+        // the whole cell lights up the way the Top button beside it does.
+        className={cn(
+          chrome,
+          red ? fav && "text-red-500" : fav ? RAIL_BTN_ON : RAIL_BTN_OFF,
+          red && bare && RAIL_BTN_OFF
+        )}
       >
+        {/* No `red` here despite the red text above: that flag also fires the
+            heart-pop, which belongs to hearting a font, not to switching which
+            view you are looking at. The colour comes from the className, which
+            the icons inherit. */}
         <HeartLabel active={fav} bar={bare} label="Favorite" />
       </Link>
     </nav>

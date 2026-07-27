@@ -13,19 +13,32 @@
 // `transform` is listed explicitly in transition-[...]: `transition-colors`
 // alone does not cover it, and the scale would snap instead of easing.
 
-const RAIL_BTN_BASE =
-  "group/rail-btn cursor-pointer rounded-md outline-none transition-[color,background-color,transform] duration-[var(--motion-fast)] ease-[var(--ease-snap)] focus-visible:ring-2 focus-visible:ring-sidebar-ring active:scale-[0.96]";
+// Everything but the group name, which most variants declare on the button
+// itself but the header one inherits from the cell around it.
+const RAIL_BTN_CHROME =
+  "cursor-pointer rounded-md outline-none transition-[color,background-color,transform] duration-[var(--motion-fast)] ease-[var(--ease-snap)] focus-visible:ring-2 focus-visible:ring-sidebar-ring active:scale-[0.96]";
+
+// The hover-swapped icons inside these buttons (Phosphor weight is a prop, not
+// CSS, so the twin is shown/hidden rather than restyled) watch this group.
+const RAIL_BTN_BASE = `group/rail-btn ${RAIL_BTN_CHROME}`;
+
+// The tile shared by the desktop rail and the column header: icon over caption.
+const RAIL_TILE = "relative flex flex-col items-center gap-1 py-2";
 
 // Desktop tile: icon stacked over a caption.
-export const RAIL_BTN = `${RAIL_BTN_BASE} relative flex flex-col items-center gap-1 py-2`;
+export const RAIL_BTN = `${RAIL_BTN_BASE} ${RAIL_TILE}`;
 
 // Compact mobile top-bar icon button: no tile, no caption.
 export const RAIL_BAR_BTN = `${RAIL_BTN_BASE} flex size-11 items-center justify-center`;
 
-// Column-header button: the same icon-over-caption tile as RAIL_BTN, but with
-// its own horizontal padding, since it sits in a full-height divider cell at the
-// end of a header row rather than in a rail's fixed-width column.
-export const RAIL_HEADER_BTN = `${RAIL_BTN} px-2`;
+// Column-header button: the same tile as RAIL_BTN, but built to sit inside a
+// full-height divider cell at the end of a header row (the preview field's Top
+// button is the model). The cell owns both the hover tint — which covers the
+// whole cell, not just the button's box — and the group/rail-btn name the icon
+// swap watches, so that swap fires with the tint even when the pointer is in
+// the cell but not on the button. Hence no group of its own here: a second,
+// inner one of the same name would shadow the cell's for everything inside.
+export const RAIL_HEADER_BTN = `${RAIL_BTN_CHROME} ${RAIL_TILE} px-2`;
 
 // The neutral (unselected) colours most rail buttons share. No resting text
 // colour: the icon/label inherit the default foreground, matching FilterRail.
