@@ -5,24 +5,19 @@ import { FontsourceMethod } from "./fontsource";
 import { GoogleFontsMethod } from "./google-fonts";
 import { fallbackFor } from "./shared";
 
-// The Use tab: three ways to put this family on a page, selected one at a time
-// via a tab switcher (rather than all three side by side).
-//   1. Google Fonts API, a hosted <link> (like the GF embed panel).
-//   2. Fontsource, self-hosted npm/CDN package (like fontsource.org's install page).
-//   3. Bunny Fonts, a GDPR-friendly, privacy-first Google Fonts drop-in.
-// Every snippet is derived from the family's real weights/variability, so it
-// matches what this specific font actually ships. Each method keeps its own
-// Panel header (the tab labels are short names), and switching methods unmounts
-// the inactive ones, a method's internal picks reset when revisited, which is
-// fine since switching methods usually means changing approach.
+// Three ways to put this family on a page: the hosted Google Fonts API,
+// self-hosted Fontsource, or Bunny Fonts as a GDPR-friendly drop-in. Every
+// snippet is derived from the family's real weights and axes.
+//
+// Switching methods unmounts the inactive ones, so a method's picks reset when
+// revisited — fine, since switching usually means changing approach.
 export function UsePanel({
   font,
   axisState,
   italic,
 }: {
   font: FontRecord;
-  // Live axis values + italic from the Specimen sidebar, so the Google Fonts
-  // method can offer a "Match current preview" shortcut.
+  // Powers the Google Fonts method's "Match current preview" shortcut.
   axisState: Record<string, number>;
   italic: boolean;
 }) {

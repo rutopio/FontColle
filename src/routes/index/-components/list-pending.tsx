@@ -7,12 +7,10 @@ import { emptyFilter } from "@/lib/fonts/filter";
 import type { FontRecord } from "@/lib/fonts/types";
 import { usePreview } from "@/lib/preview/context";
 
-// Placeholder for the list header while the catalog loads. The wrapper classes
-// mirror Catalog's real header exactly (search row, then the count/sort/view
-// row), because the Column header is flex-wrap: on mobile the real header wraps
-// to two rows, so a one-row skeleton would let the header grow the moment the
-// catalog resolved and push the whole list down. Each block stands in for the
-// control at that position, at its real height (h-9 search, h-8 sort and tabs).
+// The wrapper classes mirror Catalog's real header exactly, because the Column
+// header is flex-wrap: on mobile the real one wraps to two rows, so a one-row
+// skeleton would grow the header the moment the catalog resolved and push the
+// whole list down.
 const HEADER_SKELETON = (
   <>
     <div className="flex items-center gap-2 max-md:w-full">
@@ -31,10 +29,7 @@ const HEADER_SKELETON = (
   </>
 );
 
-// Shown while the catalog loader runs (a slow catalog.json fetch). Reuses the app shell,
-// rail + empty sidebar + Column header/footer, with a skeleton grid body, so a
-// slow load reads as the page filling in rather than a blank or spinner. The
-// controls are inert placeholders (no data yet); the real App swaps in on load.
+// The controls are inert placeholders until the real App swaps in.
 export function ListPending() {
   return (
     <FilterLayout sidebar={<div className="size-full" />}>
@@ -45,33 +40,19 @@ export function ListPending() {
   );
 }
 
-// Pending state for the DEFAULT `/` view: renders the loader's first-page slice
-// as real, non-virtualized FontCards (real <Link> /instances/ anchors), so a
-// crawler or non-JS fetch of `/` sees ~24 actual fonts in the SSR HTML instead
-// of an empty shell. Below the real cards sits a skeleton grid, so the panel
-// reads as "filling in" until the full catalog resolves and Catalog takes over.
+// Real, non-virtualized FontCards, so a crawler or non-JS fetch of `/` sees
+// ~24 actual fonts in the SSR HTML instead of an empty shell.
 //
-// The wrapper classes mirror the virtualized grid's row container (grid gap-4
-// pb-4, md:2 lg:3 columns) so nothing jumps on the swap. Favorites hydrate to []
-// (useFavorites is SSR-safe), preview text is "" (falls back to each font's
-// specimen), and the selection is the empty filter, the exact props Catalog
-// passes on a default first render, so server and first-client trees agree.
+// The wrapper classes mirror the virtualized grid's row container so nothing
+// jumps on the swap, and the props below are exactly what Catalog passes on a
+// default first render, so the server and first-client trees agree.
 export function FirstPagePending({ firstPage }: { firstPage: FontRecord[] }) {
   const { text: previewText } = usePreview();
-  // Column count must match FontGrid exactly or the layout reflows the moment
-  // Catalog takes over. FontGrid measures its CONTAINER (columnsFor), not the
-  // viewport, because the filter panel narrows the list well below the viewport
-  // breakpoint — at 1440px the list is ~1000px and wants 2 columns, at 1920px
-  // it is ~1480px and wants 3.
-  //
-  // Hence container queries rather than JS: measuring in an effect leaves the
-  // first paint showing a guessed count, and any hardcoded guess is wrong at
-  // some width (2 reflowed to 3 at 1920px, 3 reflowed to 2 at 1440px). CSS
-  // resolves against the real container on the first paint, with no window
-  // where the two grids disagree. The breakpoints mirror columnsFor's.
+  // The column count must match FontGrid exactly or the layout reflows when
+  // Catalog takes over, and FontGrid measures its CONTAINER, not the viewport.
+  // Container queries rather than JS: measuring in an effect would leave the
+  // first paint showing a guess. Breakpoints mirror columnsFor's.
 
-  // No loader slice (build without catalog-first.json, or a fetch failure):
-  // fall back to the plain skeleton, unchanged from before this feature.
   if (firstPage.length === 0) return <ListPending />;
 
   return (
@@ -115,10 +96,8 @@ export function FirstPagePending({ firstPage }: { firstPage: FontRecord[] }) {
   );
 }
 
-// Stable, module-level props for the first-page cards: an empty selection (no
-// active filter), no axis sliders, and a no-op favorite toggle (favorites are
-// still hydrating). Module-level so they're referentially stable and FontCard's
-// memo bails out cleanly.
+// Module-level so they stay referentially stable and FontCard's memo bails out.
+// The favorite toggle is a no-op: favorites are still hydrating.
 const NOOP = () => {};
 const EMPTY_AXES: Record<string, number> = {};
 const FIRST_PAGE_SELECTION = {

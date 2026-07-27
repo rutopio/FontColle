@@ -28,31 +28,25 @@ import { PillButton } from "./pill-button";
 import { Section } from "./section";
 import { SectionHeader } from "./section-header";
 
-// The units-per-em values shown as pills by default; every other value in the
-// catalog collapses behind the "N more" expander. Fixed list, not top-N by
-// count, so these four are always the visible ones.
+// A fixed list, not top-N by count, so these four are always the visible ones.
 const UPM_DEFAULT = new Set(["1000", "2048", "1024", "2000"]);
 
-// Metrics tab: six derived-value range sliders plus two boolean pills. Each
-// slider is inactive when both thumbs rest on the domain edges (it filters
-// nothing then), and stores only active ranges in the filter/URL. Snap (upm)
-// and log (fileSize) scales are mapped to/from the slider's track here so the
-// stored value is always the real metric value.
+// A slider with both thumbs on the domain edges filters nothing and is not
+// stored. The snap (upm) and log (fileSize) scales are mapped to and from the
+// track here, so the stored value is always the real metric value.
 
-// Round a value to the metric's step so the editable readout shows a clean
-// number (0.46, not 0.4640000001) and the field round-trips losslessly.
+// So the editable readout shows a clean number and round-trips losslessly.
 function roundTo(v: number, step: number): number {
   const inv = 1 / step;
   return Math.round(v * inv) / inv;
 }
 
-// Slider-track coordinates for a metric. Linear metrics map straight through;
-// fileSize works in log10(bytes); upm is an index into its sorted values.
+// Linear metrics map straight through; fileSize works in log10(bytes); upm is
+// an index into its sorted values.
 interface TrackMap {
   min: number;
   max: number;
   step: number;
-  // metric value -> track position and back.
   toTrack: (v: number) => number;
   fromTrack: (t: number) => number;
 }
@@ -84,7 +78,6 @@ function MetricRangeRow({
   onChange,
 }: {
   spec: MetricSpec;
-  // The current stored range, or undefined when the slider is at full extent.
   value: MetricRange | undefined;
   onChange: (next: MetricRange | undefined) => void;
 }) {
@@ -93,7 +86,6 @@ function MetricRangeRow({
   const [lo, hi] = value ?? [spec.min, spec.max];
   const trackValue: [number, number] = [map.toTrack(lo), map.toTrack(hi)];
 
-  // Clamp a range into the domain, then store it (or clear it when inactive).
   const commit = (nlo: number, nhi: number) => {
     const range: MetricRange = [
       Math.max(spec.min, Math.min(nlo, spec.max)),
@@ -107,13 +99,11 @@ function MetricRangeRow({
     commit(map.fromTrack(arr[0]), map.fromTrack(arr[1]));
   };
 
-  // A quartile pill jumps the slider to that quartile's range; clicking the
-  // one already selected clears it back to full extent.
+  // Clicking the already-selected quartile clears back to full extent.
   const pickQuartile = (q: MetricRange) => {
     if (value && rangesEqual(value, q)) onChange(undefined);
     else commit(q[0], q[1]);
   };
-  // fileSize's readout stays a humanized text (KB/MB); ratios are editable.
   const editable = spec.scale !== "log";
 
   return (
@@ -266,9 +256,6 @@ export function MetricsSection({
   );
 }
 
-// Units-per-em pills. A thin wrapper over the shared Section so the sidebar can
-// place it as a sibling of Metrics/Hint (own gap-12), with the upm-specific
-// default pill set and numeric sort baked in.
 export function UnitsPerEmSection({
   upmCounts,
   selectedUpm,
@@ -296,7 +283,6 @@ export function UnitsPerEmSection({
   );
 }
 
-// Hint radio (Hinted / No Hinted), a standalone section.
 export function HintSection({
   hasHinting,
   hintedCount,

@@ -1,11 +1,10 @@
 // WebMCP tool definitions: the site's key actions exposed to an in-browser AI
 // agent via navigator.modelContext. Tools drive the real UI rather than
 // answering out of band — search_fonts writes the filter URL, so the user
-// watches the list narrow and can carry on from wherever the agent left them.
+// watches the list narrow and can carry on from where the agent left them.
 //
-// The API is a W3C WebML CG proposal (webmachinelearning.github.io/webmcp),
-// shipping behind Chrome's Early Preview Program and not in any stable browser.
-// Everything here is feature-detected and a no-op when absent; see ./register.
+// The API is a W3C WebML CG proposal, not in any stable browser. Everything
+// here is feature-detected and a no-op when absent; see ./register.
 
 import type { QueryClient } from "@tanstack/react-query";
 import type { AnyRouter } from "@tanstack/react-router";
@@ -19,8 +18,7 @@ import {
 } from "@/lib/fonts/filter";
 import type { FontRecord } from "@/lib/fonts/types";
 
-// The `category` facet's full domain (see catalog-slim.json). Enumerated in the
-// schema so an agent picks a real bucket instead of guessing "sans-serif".
+// Enumerated in the schema, so an agent picks a real bucket.
 const CATEGORIES = [
   "Sans",
   "Serif",
@@ -32,9 +30,8 @@ const CATEGORIES = [
   "Emoji",
 ] as const;
 
-// How many ids a search returns. The full match set can be ~800 families, which
-// is both useless in a model's context and slow to serialise; the count field
-// carries the real total, and the user sees every match on screen.
+// The full match set can be ~800 families, useless in a model's context. The
+// count field carries the real total, and the user sees every match on screen.
 const MAX_IDS = 50;
 
 export interface ToolContext {
@@ -42,9 +39,6 @@ export interface ToolContext {
   queryClient: QueryClient;
 }
 
-// A WebMCP tool's execute() resolves to MCP content blocks. Only text is used
-// here; the shape matches MCP's CallToolResult so a host can pass it straight
-// through.
 interface ToolResult {
   content: { type: "text"; text: string }[];
   isError?: boolean;
@@ -66,10 +60,9 @@ const failure = (message: string): ToolResult => ({
   isError: true,
 });
 
-// Read an argument as a string array, accepting a bare string for the common
-// single-value call (`{ features: "smcp" }`). Non-string entries are dropped
-// rather than coerced, so a malformed arg narrows nothing instead of filtering
-// on "[object Object]".
+// Accepts a bare string for the common single-value call. Non-string entries
+// are dropped rather than coerced, so a malformed arg narrows nothing instead
+// of filtering on "[object Object]".
 function strings(value: unknown): string[] {
   if (typeof value === "string") return value ? [value] : [];
   if (!Array.isArray(value)) return [];
@@ -80,8 +73,7 @@ async function catalog(ctx: ToolContext): Promise<FontRecord[]> {
   return ctx.queryClient.fetchQuery(catalogQueryOptions());
 }
 
-// Project a record down to what an agent needs to describe a result. The full
-// record is ~7 KB; a 50-item page of these is a few KB total.
+// The full record is ~7 KB, too much to return 50 of.
 function summarise(font: FontRecord) {
   return {
     id: font.id,
@@ -175,15 +167,12 @@ export function buildTools(ctx: ToolContext): ToolDefinition[] {
         if (args.monospace === true && !filter.categories.includes("Mono"))
           filter.categories = [...filter.categories, "Mono"];
 
-        // Same two-pass order the list view uses: applyFilters is the pure
-        // facet gate, then searchByQuery both filters and ranks by relevance.
         const matches = searchByQuery(
           applyFilters(fonts, filter),
           filter.query
         );
-        // Writing the URL is what moves the UI: the list route validates search
-        // params back into this same FilterState, so the page re-renders with
-        // exactly the filter that produced `matches`.
+        // Writing the URL is what moves the UI: the list route validates these
+        // params back into the same FilterState that produced `matches`.
         const search = filterToSearch(filter) satisfies FilterSearch;
         await ctx.router.navigate({ to: "/", search });
 
@@ -216,9 +205,7 @@ export function buildTools(ctx: ToolContext): ToolDefinition[] {
       execute: async (args) => {
         const id = typeof args.id === "string" ? args.id : "";
         if (!id) return failure("id is required");
-        // Read the family out of the loaded catalog rather than fetching
-        // /catalog/{id}.json: the catalog is already in the query cache here,
-        // so this stays a local lookup with no extra request.
+        // Already in the query cache, so this needs no extra request.
         const fonts = await catalog(ctx);
         const font = fonts.find((f) => f.id === id);
         if (!font)
@@ -254,8 +241,7 @@ export function buildTools(ctx: ToolContext): ToolDefinition[] {
         if (!id) return failure("id is required");
         const fonts = await catalog(ctx);
         const font = fonts.find((f) => f.id === id);
-        // Navigating to a non-existent slug would land the user on a 404, so
-        // validate against the catalog before moving them.
+        // A non-existent slug would land the user on a 404.
         if (!font)
           return failure(
             `No font with id "${id}". Call search_fonts to find valid ids.`

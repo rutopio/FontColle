@@ -4,11 +4,8 @@ import { toast } from "sonner";
 import { highlight } from "@/lib/code/highlight";
 import { cn } from "@/lib/utils";
 
-// A copyable code snippet for the Use tab. Renders the code monospace with a
-// hovering copy button that flips to a check for ~1.5s after a successful copy,
-// or a red X for the same window if the clipboard write fails.
-// `lang` is a faint corner label (e.g. "html", "css", "bash") so the reader can
-// tell what each block is at a glance.
+// A copyable code snippet. The copy button flips to a check for ~1.5s, or a
+// red X for the same window when the clipboard write fails.
 export function CodeBlock({
   code,
   lang,
@@ -20,7 +17,6 @@ export function CodeBlock({
 }) {
   const [status, setStatus] = useState<"idle" | "copied" | "failed">("idle");
 
-  // Reset back to idle so a later copy re-triggers the flash.
   useEffect(() => {
     if (status === "idle") return;
     const t = setTimeout(() => setStatus("idle"), 1500);
@@ -31,11 +27,9 @@ export function CodeBlock({
     try {
       await navigator.clipboard.writeText(code);
       setStatus("copied");
-      // Toast alongside the icon flip; name the snippet's language when known.
       toast.success(lang ? `Copied ${lang} snippet` : "Copied to clipboard");
     } catch {
-      // Clipboard may be unavailable (insecure context / denied permission);
-      // flash a red X so the failure is visible rather than a silent no-op.
+      // The clipboard is unavailable in an insecure context or when denied.
       setStatus("failed");
       toast.error("Copy failed");
     }
@@ -92,8 +86,6 @@ export function CodeBlock({
         <code>
           {highlight(code, lang).map((tok, i) =>
             tok.cls ? (
-              // Token order is stable for a given code string, so the index key
-              // is fine here (no reordering, no keyed identity needed).
               // biome-ignore lint/suspicious/noArrayIndexKey: stable token list
               <span key={i} className={`tok-${tok.cls}`}>
                 {tok.text}

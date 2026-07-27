@@ -1,37 +1,28 @@
 import { useCallback, useSyncExternalStore } from "react";
 import { type FilterSearch, parseFilterSearch } from "./filter";
 
-// v1 presets live in localStorage, shaped for a possible one-time upload+merge
-// in a future account-synced v2 (same reasoning as favorites). A preset stores
-// the FilterSearch OBJECT, not a serialized query string: decoding then stays
-// parseFilterSearch's job, so a stored preset written before a param existed
-// (or after one was retired) degrades the same way a shared URL does — unknown
-// keys drop, missing keys read as absent — with no separate migration path.
+// A preset stores the FilterSearch OBJECT, not a query string, so decoding
+// stays parseFilterSearch's job: a preset written before a param existed (or
+// after one was retired) degrades exactly like a shared URL, no migration path.
 const KEY = "font-colle.presets.v1";
 
 export interface FilterPreset {
   id: string;
   name: string;
-  // The filter half of the URL search only. `sort` and `fav` are deliberately
-  // excluded: a preset is a set of conditions, not a view, so applying one
-  // leaves the reader's own sort order and favorites view alone.
+  // The filter half only: a preset is a set of conditions, not a view, so
+  // applying one leaves the reader's own sort and favorites alone.
   search: FilterSearch;
 }
 
-// A preset per distinct combination a person actually browses with; past this
-// the panel is a scroll of near-duplicates and localStorage quota starts to
-// matter. save() refuses rather than silently evicting, so nothing is lost
-// without the user seeing why.
+// save() refuses past this rather than silently evicting.
 export const MAX_PRESETS = 20;
 
 interface PresetStore {
   presets: FilterPreset[];
 }
 
-// Module-level store read through useSyncExternalStore, so the sidebar panel
-// and any future entry point share one array and a save anywhere updates them
-// all. The server (and hydration) renders the empty list; the first client pass
-// after hydration reads the stored one. Mirrors ./favorites.
+// The server and hydration render the empty list; the first client pass after
+// hydration reads the stored one. Mirrors ./favorites.
 const EMPTY: FilterPreset[] = [];
 const listeners = new Set<() => void>();
 const emit = () => {
@@ -44,9 +35,8 @@ const subscribe = (cb: () => void) => {
   };
 };
 
-/** Coerce one stored entry into a FilterPreset, or null if it isn't one. Runs
- *  the search half through parseFilterSearch so a hand-edited or stale entry
- *  can only ever yield known keys with string values. */
+/** Runs the search half through parseFilterSearch, so a hand-edited or stale
+ *  entry can only ever yield known keys with string values. */
 function revivePreset(raw: unknown): FilterPreset | null {
   if (typeof raw !== "object" || raw === null) return null;
   const { id, name, search } = raw as Record<string, unknown>;
@@ -94,15 +84,13 @@ function write(next: FilterPreset[]) {
   emit();
 }
 
-// Ids only have to be unique within one device's list, and presets are created
-// by hand one at a time, so the clock plus a random tail is plenty — no need to
-// pull in crypto.randomUUID (absent on some older mobile browsers over http).
+// Unique within one device's hand-made list is enough, so no need for
+// crypto.randomUUID (absent on some older mobile browsers over http).
 const newId = () =>
   `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
-/** True when two searches hold the same filter conditions. Both sides come from
- *  filterToSearch / parseFilterSearch, which omit empty keys entirely, so a
- *  key-by-key compare over the union is exact. */
+/** Both sides come from filterToSearch / parseFilterSearch, which omit empty
+ *  keys, so a key-by-key compare over the union is exact. */
 export function sameSearch(a: FilterSearch, b: FilterSearch): boolean {
   const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
   for (const k of keys) {
@@ -121,8 +109,7 @@ export function usePresets() {
     getServerSnapshot
   );
 
-  // Returns false when the list is full, so the caller can say so instead of a
-  // click appearing to do nothing.
+  // Returns false when full, so the caller can say so.
   const save = useCallback((name: string, search: FilterSearch) => {
     const prev = getSnapshot();
     if (prev.length >= MAX_PRESETS) return false;
@@ -134,15 +121,9 @@ export function usePresets() {
     write(getSnapshot().filter((p) => p.id !== id));
   }, []);
 
-  // Put a removed preset back where it was, for the undo on the delete toast.
-  // Presets live only in this device's localStorage, so a mis-click is
-  // otherwise unrecoverable — the user would have to rebuild the filter from
-  // memory and re-save it.
-  //
-  // Re-inserts by index and keeps the original id, rather than going through
-  // save(): save() appends and mints a new id, which would move the row and
-  // break the identity the active-preset comparison relies on. No MAX_PRESETS
-  // guard needed — this only ever restores a slot the same list just freed.
+  // Undo for the delete toast. Re-inserts by index keeping the original id,
+  // rather than going through save(), which appends and mints a new id: that
+  // would move the row and break the identity the active-preset check uses.
   const restore = useCallback((preset: FilterPreset, index: number) => {
     const next = getSnapshot().slice();
     if (next.some((p) => p.id === preset.id)) return;

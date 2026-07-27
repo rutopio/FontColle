@@ -1,5 +1,3 @@
-// Build the set of selectable filter values with family counts, from the full
-// dataset, the data behind every sidebar section's pills.
 import { COLOR_FORMATS, isColorFont } from "@/lib/fonts/color";
 import { catalogUpmCounts } from "@/lib/fonts/metrics";
 import type { FontRecord } from "@/lib/fonts/types";
@@ -7,42 +5,30 @@ import { instanceCount } from "./instances";
 import { FONT_TYPE_FACETS } from "./state";
 import { familyWeightSet, familyWidthSet } from "./weights";
 
-/** The selectable filter values with family counts, keyed by section. */
 export type FacetIndex = ReturnType<typeof buildFacetIndex>;
 
-// A font belongs to a classification tag when its score reaches the threshold
-// for that tag's group. Shared with applyFilters so counts and results agree.
+// Shared with applyFilters so counts and results agree.
 //
-// Form (Sans / Serif / Slab / Script) counts at any positive score, matching
-// what Google Fonts' own browse lists. Letterform is an observation: a face
-// scoring /Serif/Didone 20 really does have Didone traits, just less
-// pronounced, and hiding it makes the section disagree with Google for no gain.
-//
-// Mood (Expressive / Theme / Seasonal) keeps a majority threshold. Those are
-// subjective ratings on a continuum, and Google scores nearly every family on
-// nearly every trait — Roboto carries /Expressive/Vintage 10. At 1 the pills
-// would each match most of the catalog and stop discriminating.
+// Form counts at any positive score, matching Google Fonts' own browse lists.
+// Mood needs a majority: Google scores nearly every family on nearly every mood
+// trait (Roboto carries /Expressive/Vintage 10), so at 1 the pills would each
+// match most of the catalog.
 export const FORM_TAG_THRESHOLD = 1;
 export const MOOD_TAG_THRESHOLD = 50;
 
-/** Whether a family carries a classification tag, at the threshold its group
- *  uses. `score` is the family's rating for that tag path (0 when absent). */
+/** `score` is 0 when the family carries no rating for that path. */
 export function meetsTagThreshold(tag: string, score: number): boolean {
   return score >= tagThreshold(tag);
 }
 
-/** The membership threshold a classification tag path is judged at. */
 function tagThreshold(tag: string): number {
   return classificationGroupOf(tag) === "mood"
     ? MOOD_TAG_THRESHOLD
     : FORM_TAG_THRESHOLD;
 }
 
-// The classification sections, in display order, each an ordered list of its
-// sub-tag paths. Sub-tag order is by family count descending, from the current
-// dataset. `group` routes the section to a rail panel: "style" (form: Sans
-// Serif / Serif / Script) or "mood" (feel: Expressive / Theme / Seasonal). Both
-// share the one `style` state; group only decides where it renders.
+// Sub-tags are ordered by family count. Both groups share the one `style`
+// state; `group` only decides which rail panel a section renders under.
 export const CLASSIFICATION_SECTIONS: {
   title: string;
   prefix: string;
@@ -95,9 +81,6 @@ export const CLASSIFICATION_SECTIONS: {
     ],
   },
   {
-    // Google Fonts' subjective "expressive" trait ratings (mood/personality),
-    // ordered by how many families carry each. Not a taxonomy, a family scores
-    // several, so these OR within like every other classification section.
     title: "Expressive",
     prefix: "/Expressive/",
     group: "mood",
@@ -163,16 +146,14 @@ export const CLASSIFICATION_SECTIONS: {
   },
 ];
 
-// Which rail panel a classification tag path belongs to ("style" vs "mood"),
-// matched by section prefix. Lets a group's badge count only its own tags even
-// though every classification shares the one `style` state.
+// Lets a group's badge count only its own tags even though every classification
+// shares the one `style` state.
 export function classificationGroupOf(tag: string): "style" | "mood" | null {
   const section = CLASSIFICATION_SECTIONS.find((s) => tag.startsWith(s.prefix));
   return section?.group ?? null;
 }
 
-// The license pills, in fixed order. Records with a null license never match
-// and get no pill.
+// Records with a null license never match and get no pill.
 export const LICENSE_VALUES = ["OFL", "APACHE2", "UFL"];
 export const LICENSE_LABELS: Record<string, string> = {
   OFL: "OFL",
@@ -180,9 +161,6 @@ export const LICENSE_LABELS: Record<string, string> = {
   UFL: "UFL",
 };
 
-// Source-repository host pills, in fixed order (None trails, as the absence
-// bucket). The catalog is ~99% GitHub with a handful of GitLab/SourceHut and a
-// few families with no repository_url at all.
 export const REPO_HOST_VALUES = ["github", "gitlab", "sourcehut", "none"];
 export const REPO_HOST_LABELS: Record<string, string> = {
   github: "GitHub",
@@ -191,10 +169,7 @@ export const REPO_HOST_LABELS: Record<string, string> = {
   none: "None",
 };
 
-// Maintenance-activity buckets, by how long ago the family last shipped an
-// update. The four values partition the catalog, so they render as radio-style
-// pills. (Every published family has a known date, so there's no "unknown"
-// bucket, it was always empty.)
+// The four buckets partition the catalog, so they render as radio-style pills.
 export const ACTIVITY_VALUES = ["latest", "active", "recent", "dormant"];
 export const ACTIVITY_LABELS: Record<string, string> = {
   latest: "Latest (≤6m)",
@@ -203,19 +178,12 @@ export const ACTIVITY_LABELS: Record<string, string> = {
   dormant: "Dormant (3y+)",
 };
 
-/** The activity bucket a family falls into, from how many months ago the font
- *  binary was last compiled (head.modified). Falls back to the git first-commit
- *  date for the few fonts that ship an unset stamp. The ranges are disjoint
- *  (≤6m / 6-12m / 1-3y / 3y+) so the four buckets partition the catalog.
- *  Shared by the index and applyFilters.
+/** The activity bucket a family falls into, from head.modified.
  *
- *  Deliberately NOT lastModifiedApi. That is the date Google publishes for the
- *  version it serves, and it moves on any release — a library-wide metadata
- *  pass in Sept 2025 stamped 1492 of 1942 families within three weeks, which
- *  would report all but 2 of them as actively maintained. Abril Fatface reads
- *  2025-09-16 there while its binary is untouched since 2011 at version 1.001.
- *  head.modified only advances when the outlines are rebuilt, which is what
- *  "is this still maintained" actually asks. */
+ *  Deliberately NOT lastModifiedApi: that moves on any release, and a
+ *  library-wide metadata pass in Sept 2025 restamped 1492 of 1942 families
+ *  within three weeks. head.modified only advances when the outlines are
+ *  rebuilt, which is what "is this still maintained" actually asks. */
 export function fontActivity(font: FontRecord): string {
   const months = monthsSince(font);
   if (months === null) return "dormant";
@@ -225,8 +193,7 @@ export function fontActivity(font: FontRecord): string {
   return "dormant";
 }
 
-/** Months since the font binary was last compiled, or null when undatable.
- *  A non-positive head.modified is an unset stamp (it decodes to 1904/1970),
+/** A non-positive head.modified is an unset stamp (it decodes to 1904/1970),
  *  not a real date, so it defers to the repo's first commit. */
 function monthsSince(font: FontRecord): number | null {
   const stamp =
@@ -239,9 +206,7 @@ function monthsSince(font: FontRecord): number | null {
   return (Date.now() - stamp) / (1000 * 60 * 60 * 24 * 30.44);
 }
 
-/** The host bucket a family's repository_url falls into. Every family maps to
- *  exactly one value (an absent/unknown URL is "none"), so the four pills
- *  partition the catalog. Shared by the facet index and applyFilters. */
+/** An absent or unrecognised URL is "none", so the pills partition the catalog. */
 export function repoHost(url: string | null): string {
   if (!url) return "none";
   const u = url.toLowerCase();
@@ -251,43 +216,34 @@ export function repoHost(url: string | null): string {
   return "none";
 }
 
-// Display labels for the `tags` values that still have a UI. The retired Tag
-// panel used to show every derived facet as a pill; now only the Font type
-// radio writes to `tags`, so only its two values need a label. deriveFacets
-// still emits the wider set onto each record (feature/axis/subset facets) —
-// those are data, reachable through the Feature, Variant and Language panels,
-// and no longer surfaced as tags. Unmapped ids fall back to the id.
+// Only the Font type radio writes to `tags`, so only its two values need a
+// label. deriveFacets still emits the wider set (feature/axis/subset facets)
+// onto each record; those are data, reached through their own panels. Unmapped
+// ids fall back to the id.
 export const FACET_LABELS: Record<string, string> = {
   static: "Static",
   variable: "Variable",
 };
 
-// Source pills: a radio-style split of the catalog by Noto membership. Every
-// published family is either Noto (Google's global writing-system project) or
-// Others, so these two cover the whole set. (isBrandFont/isOpenSource carry no
-// filter: Brand is ~all Noto, and OpenSource is true for every published
-// family, neither distinguishes anything.)
+// Radio-style split by Noto membership. isBrandFont/isOpenSource get no filter:
+// Brand is ~all Noto, and OpenSource is true for every published family.
 export const FLAG_VALUES = ["noto", "others"];
 export const FLAG_LABELS: Record<string, string> = {
   noto: "Noto",
   others: "Non-Noto",
 };
 
-// Italic radio: whether a family offers an italic style (the has-italic facet)
-// or not. The two partition the whole catalog.
 export const ITALIC_VALUES = ["italic", "upright"];
 export const ITALIC_LABELS: Record<string, string> = {
   italic: "Has Italic",
   upright: "Non-Italic",
 };
 
-// Vendor ids that mean "unknown", not a foundry, dropped from the Vendor
-// facet so they don't masquerade as a real source.
+// Placeholders, not foundries: dropped so they don't masquerade as a source.
 const UNKNOWN_VENDORS = new Set(["NONE", "UKWN", "----", ""]);
 
-/** A font's designers as trimmed tokens. The source field comma-joins
- *  collaborators ("Veronika Burian, José Scaglione"); each token filters
- *  independently. Empty when no designer is recorded. */
+/** The source field comma-joins collaborators ("Veronika Burian, José
+ *  Scaglione"); each token filters independently. */
 export function designerTokens(font: FontRecord): string[] {
   if (!font.designer) return [];
   return font.designer
@@ -296,16 +252,14 @@ export function designerTokens(font: FontRecord): string[] {
     .filter(Boolean);
 }
 
-/** A font's vendor as a folded OS/2 achVendID, or null when unknown. Uppercased
- *  so pyrs/PYRS collapse to one; the placeholder codes (NONE/UKWN/…) become
- *  null so they never get a pill. */
+/** The OS/2 achVendID, uppercased so pyrs/PYRS collapse to one. Placeholder
+ *  codes (NONE/UKWN/…) become null so they never get a pill. */
 export function foldVendor(vendorId: string | null): string | null {
   if (!vendorId) return null;
   const v = vendorId.trim().toUpperCase();
   return UNKNOWN_VENDORS.has(v) ? null : v;
 }
 
-/** Build the set of selectable values with counts, from the full dataset. */
 export function buildFacetIndex(fonts: FontRecord[]) {
   const categories = new Map<string, number>();
   const facets = new Map<string, number>();
@@ -320,9 +274,8 @@ export function buildFacetIndex(fonts: FontRecord[]) {
   const classifications = new Map<string, number>();
   const designers = new Map<string, number>();
   const vendors = new Map<string, number>();
-  // Folded vendor code -> its original casings with counts. The pill groups by
-  // the uppercased code (so pyrs/PYRS merge), but the tooltip should show the
-  // code as the font actually embeds it, so we remember what we saw.
+  // So the tooltip can show the code as the fonts actually embed it, rather
+  // than the uppercased grouping key.
   const vendorCasings = new Map<string, Map<string, number>>();
   const license = new Map<string, number>();
   const repoHosts = new Map<string, number>();
@@ -354,7 +307,6 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     const vnd = foldVendor(font.vendorId);
     if (vnd) {
       bump(vendors, vnd);
-      // Record the raw (unfolded) casing so the tooltip can show it verbatim.
       const raw = (font.vendorId ?? "").trim();
       const seen = vendorCasings.get(vnd) ?? new Map<string, number>();
       seen.set(raw, (seen.get(raw) ?? 0) + 1);
@@ -369,7 +321,6 @@ export function buildFacetIndex(fonts: FontRecord[]) {
   }
   const sorted = (m: Map<string, number>) =>
     [...m.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
-  // Weight/width pills read best in ascending numeric order, not by count.
   const byStep = (m: Map<string, number>) =>
     [...m.entries()].sort((a, b) => Number(a[0]) - Number(b[0]));
   return {
@@ -378,26 +329,20 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     axes: sorted(axes),
     weights: byStep(weights),
     widths: byStep(widths),
-    // real writing systems + languages (language-support task)
     wsScripts: sorted(wsScripts),
     languages: sorted(languages),
-    // Monochrome first, then Colorful (fixed order, not by count).
     color: [
       ["monochrome", color.get("monochrome") ?? 0],
       ["color", color.get("color") ?? 0],
     ] as [string, number][],
-    // Static/Variable in fixed order, the sole entry point for this filter.
-    // Same underlying `tags` values, so applyFilters needs no special case.
     fontTypes: FONT_TYPE_FACETS.map(
       (v) => [v, facets.get(v) ?? 0] as [string, number]
     ),
-    // Every format, in COLOR_FORMATS order, including the ones no published
-    // font uses, they stay selectable rather than vanishing at count 0.
+    // Includes formats no published font uses: they stay selectable rather than
+    // vanishing at count 0.
     colorFormats: COLOR_FORMATS.map(
       (f) => [f.id, colorFormats.get(f.id) ?? 0] as [string, number]
     ),
-    // One entry per Style section: its sub-tag pills in fixed order,
-    // each [full tag path, count].
     style: CLASSIFICATION_SECTIONS.map((section) => ({
       title: section.title,
       group: section.group,
@@ -405,13 +350,8 @@ export function buildFacetIndex(fonts: FontRecord[]) {
         (t) => [t, classifications.get(t) ?? 0] as [string, number]
       ),
     })),
-    // Designers and vendors, count-sorted. Label = value for both (real names,
-    // 4-char codes). The Designer panel renders these via FacetSearchSection.
     designers: sorted(designers),
     vendors: sorted(vendors),
-    // Folded vendor code -> the code as most fonts embed it (the most common
-    // original casing), so the tooltip shows "pyrs" when that's what the fonts
-    // use, not the forced-uppercase grouping key.
     vendorCasing: new Map(
       [...vendorCasings].map(([code, seen]) => {
         const best = [...seen.entries()].sort(
@@ -420,33 +360,26 @@ export function buildFacetIndex(fonts: FontRecord[]) {
         return [code, best];
       })
     ),
-    // License pills in fixed order (OFL / Apache 2.0 / UFL).
     license: LICENSE_VALUES.map(
       (v) => [v, license.get(v) ?? 0] as [string, number]
     ),
-    // Repository-host pills in fixed order (GitHub / GitLab / SourceHut / None).
     repoHosts: REPO_HOST_VALUES.map(
       (v) => [v, repoHosts.get(v) ?? 0] as [string, number]
     ),
-    // Maintenance-activity pills in fixed order (Latest / Active / Recent / Dormant).
     activity: ACTIVITY_VALUES.map(
       (v) => [v, activity.get(v) ?? 0] as [string, number]
     ),
-    // Source pills in fixed order (Noto / Others).
     flags: FLAG_VALUES.map((v) => [v, flags.get(v) ?? 0] as [string, number]),
     italic: ITALIC_VALUES.map(
       (v) => [v, italic.get(v) ?? 0] as [string, number]
     ),
-    // Instance-count histogram: [count, families] ascending by count. Drives
-    // the range slider's stop list, so only counts the catalog actually has are
-    // reachable (1..12, then 14, 16, 18, 20, 32, … — no dead stops between).
+    // [count, families] ascending. Drives the range slider's stop list, so only
+    // counts the catalog actually has are reachable (no dead stops between).
     instances: [...instances.entries()]
       .map(([n, c]) => [Number(n), c] as [number, number])
       .filter(([n]) => n > 0)
       .sort((a, b) => a[0] - b[0]),
-    // Units-per-em pill items ([value, family count]) for the Metrics tab.
     upmCounts: catalogUpmCounts(fonts),
-    // Family counts for the Hint pills.
     hintedCount,
     unhintedCount,
   };

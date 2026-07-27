@@ -1,19 +1,10 @@
-// One-off generator: pull official display names + descriptions for OpenType
-// variable-font axes (wght, wdth, opsz, GRAD, CASL, ...) from Google Fonts'
-// axis registry, so the UI can show them as tooltips on axis pills without
-// bundling a copy of the registry's Python package.
+// One-off generator: official display names and descriptions for variable-font
+// axes, so the UI can tooltip them without bundling the registry's Python
+// package.
 //
-// Source: https://github.com/googlefonts/axisregistry, one *.textproto file
-// per axis under Lib/axisregistry/data/. Each file is text-protobuf with
-// fields like:
-//   tag: "CASL"
-//   display_name: "Casual"
-//   description:
-//     "Adjust stroke curvature, contrast, and terminals from a sturdy,"
-//     " rational Linear style to a friendly, energetic Casual style."
-// `description` is one or more adjacent quoted string literals that concatenate
-// into a single sentence (textproto's implicit string concatenation), we join
-// them in file order.
+// Source: https://github.com/googlefonts/axisregistry, one *.textproto per axis
+// under Lib/axisregistry/data/. `description` is one or more ADJACENT quoted
+// literals that textproto concatenates implicitly, joined here in file order.
 //
 // Run: node scripts/gen-axes-data.mjs
 
@@ -31,22 +22,17 @@ const API_URL =
 const RAW_BASE =
   "https://raw.githubusercontent.com/googlefonts/axisregistry/main/Lib/axisregistry/data/";
 
-// Unescape a single textproto quoted-string literal's contents (we don't need
-// the full grammar, axis descriptions only use \" and \\).
+// Not the full textproto grammar: axis descriptions only use \" and \\.
 function unescapeProtoString(s) {
   return s.replace(/\\(.)/g, "$1");
 }
 
-// Parse one textproto file's `tag`, `display_name`, and (possibly multi-line,
-// concatenated) `description` fields.
 function parseTextproto(text) {
   const tagMatch = text.match(/^tag:\s*"((?:\\.|[^"\\])*)"/m);
   const nameMatch = text.match(/^display_name:\s*"((?:\\.|[^"\\])*)"/m);
   if (!tagMatch || !nameMatch) return null;
 
-  // The `description` value is one or more adjacent quoted string literals,
-  // either all on the `description:` line, or indented on following lines
-  // (textproto's implicit string concatenation either way).
+  // The literals sit either on the `description:` line or indented below it.
   const descMatch = text.match(
     /^description:[ \t]*\n?[ \t]*((?:"(?:\\.|[^"\\])*"[ \t]*\n?[ \t]*)+)/m
   );
@@ -64,9 +50,8 @@ function parseTextproto(text) {
     return m ? Number(m[1]) : null;
   };
 
-  // Named fallback stops: repeated `fallback { name: "..." value: N }` blocks
-  // that label positions on the axis (e.g. CTRS: Reversed/None/High). Order is
-  // as declared in the file. Blocks with fallback_only aside, we keep every one.
+  // Repeated `fallback { name value }` blocks labelling positions on the axis,
+  // kept in declared order.
   const fallbacks = [];
   for (const blk of text.matchAll(/fallback\s*\{([^}]*)\}/g)) {
     const body = blk[1];

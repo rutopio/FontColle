@@ -9,10 +9,7 @@ import {
 import type { FontRecord } from "@/lib/fonts/types";
 import { cn } from "@/lib/utils";
 
-// The card/row action cluster: favorite toggle, Google Fonts link, and (when
-// known) the upstream repo link. Byte-identical between FontCard and FontRow,
-// so it lives here once. Layout stays in each component; only these buttons
-// move. The -m-2 p-2 wrapping preserves the enlarged tap target.
+// Identical between FontCard and FontRow, so it lives here once.
 export function FontActions({
   font,
   isFavorite,
@@ -22,11 +19,9 @@ export function FontActions({
   font: FontRecord;
   isFavorite: boolean;
   onToggleFavorite: (id: string) => void;
-  // Keep the repo button's footprint when the family has no repo. Rows share
-  // one continuous right edge down the list, so a dropped button pulls that
-  // row's heart and Google icon rightward and breaks the column. Cards don't
-  // need it: each card's cluster aligns to its own edge, and there is no
-  // shared column to fall out of.
+  // Rows share one continuous right edge, so a dropped button pulls the heart
+  // and Google icon rightward and breaks the column. Cards each align to their
+  // own edge and need no placeholder.
   reserveRepoSlot?: boolean;
 }) {
   return (
@@ -42,9 +37,7 @@ export function FontActions({
           className="-m-2 p-2 text-muted-foreground transition-colors hover:text-foreground"
         >
           <HoverBoldIcon
-            // Key on the favorited state so hearting remounts the icon and
-            // replays the pop; the class only applies when favorited, so
-            // un-hearting doesn't animate.
+            // Keyed so hearting remounts the icon and replays the pop.
             key={isFavorite ? "on" : "off"}
             icon={HeartIcon}
             weight={isFavorite ? "fill" : "regular"}

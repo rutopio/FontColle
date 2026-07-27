@@ -20,20 +20,9 @@ export type DetailTab =
   | "designer"
   | "license";
 
-// The icon-rail switcher for the detail page, matching the list's FilterRail:
-// one button per view (the named instances vs. the Tester editor vs. the
-// font's specs vs. the designer vs. the license). Icons are chosen to not
-// collide with the list's FilterRail set.
-//
-// `slug` is the URL segment (/{slug}/{fontId}). It matches the tab id
-// everywhere except `sample`, whose code name predates the Instances label it
-// now renders under. Slugs track the labels, so a shared link reads as the tab
-// it opens. `instances` is the canonical tab: it's what every list card links
-// to and what the canonical URL points at.
-//
-// Instances leads the rail and is the default view: a family's named styles are
-// what a visitor wants to see first, with the Tester there for trying text
-// against them.
+// `slug` is the URL segment and matches the tab id everywhere EXCEPT `sample`,
+// whose code name predates the Instances label it renders under. `instances`
+// is the canonical tab, so it also leads the rail as the default view.
 export const TABS = [
   {
     id: "sample" as const,
@@ -79,15 +68,12 @@ export type TabSlug = (typeof TABS)[number]["slug"];
 const BY_SLUG = new Map(TABS.map((t) => [t.slug, t.id]));
 const BY_ID = new Map(TABS.map((t) => [t.id, t.slug]));
 
-// Resolve a URL segment to a tab id, or undefined for an unknown slug.
 export const tabFromSlug = (slug: string): DetailTab | undefined =>
   BY_SLUG.get(slug);
 export const slugFromTab = (id: DetailTab): TabSlug => BY_ID.get(id) as TabSlug;
 
-// Mobile-only (<768px) horizontal tab strip, pinned under the detail header.
-// Mirrors the desktop DetailRail but scrolls sideways and navigates via Link
-// (replace, matching selectTab) instead of a callback, so it needs no extra
-// wiring from the page. `fontId` is the current URL slug.
+// Navigates via Link (replace, matching selectTab) rather than a callback, so
+// it needs no extra wiring from the page.
 export function DetailTabBar({
   active,
   fontId,

@@ -41,10 +41,7 @@ import { cn } from "@/lib/utils";
 import { SIZE_MAX, SIZE_MIN, SIZE_PRESETS } from "./detail-sidebar";
 import { instanceStyle, isTesterBlock, TESTER_NODES } from "./tester-nodes";
 
-// Block styles the toolbar can apply to the current selection. "normal" is a
-// plain paragraph; the rest are heading levels. Values match Lexical's node
-// keys (paragraph / h1 / h2 / h3), so reading the selection's block back maps
-// straight onto this list.
+// Values match Lexical's node keys, so a read-back maps straight onto this list.
 type BlockType = "normal" | "h1" | "h2" | "h3";
 const BLOCK_OPTIONS: { value: BlockType; label: string }[] = [
   { value: "h1", label: "Heading 1" },
@@ -53,11 +50,9 @@ const BLOCK_OPTIONS: { value: BlockType; label: string }[] = [
   { value: "normal", label: "Normal text" },
 ];
 
-// The Tester is a real rich-text editor (Lexical), deliberately independent
-// of the shared usePreview() string that the type tester, instance rows and
-// list cards render. It lets you mix block styles in one document — select a
-// line, make it Heading 2, leave the rest Normal — the way the Google Fonts
-// specimen does, which a single shared plain string can't represent.
+// A real rich-text editor (Lexical), deliberately independent of the shared
+// usePreview() string: it mixes block styles in one document, the way the
+// Google Fonts specimen does, which one plain string can't represent.
 export function Tester({
   fontStyle,
   seedLines,
@@ -65,40 +60,28 @@ export function Tester({
   fontName,
   fontLoaded,
 }: {
-  // The family's base preview style (family, axis coords, italic, features).
-  // It sets the document's default; a block that has been given a named
-  // instance overrides the axes for itself. Size is set per-block by this
-  // editor, so it's stripped here.
+  // The document default; a block given a named instance overrides the axes
+  // for itself. Carries no font-size, which is per block type.
   fontStyle: CSSProperties;
-  // First-load document text: successive lines of the family's specimen
-  // passage, seeded as a Heading 1 / Heading 2 / Heading 3 stack. A font with
-  // nothing to continue (emoji, deliberately blank) supplies fewer lines, and
+  // A font with nothing to continue (emoji, blank) supplies fewer lines, and
   // the extra headings are simply not created.
   seedLines: string[];
-  // The family's named instances, offered as chips that apply to the block the
-  // caret is in. Empty for a static family with none. Also the source of the
-  // weights the family really ships, which the heading defaults snap to.
+  // Also the source of the weights the family really ships, which the heading
+  // defaults snap to.
   instances: FontInstance[];
   fontName: string;
   fontLoaded: boolean;
 }) {
   const initialConfig = {
     namespace: "font-tester",
-    // The subclasses that render a per-block style, plus the rules that make
-    // Lexical build them in place of the stock paragraph/heading.
     nodes: TESTER_NODES,
     onError: (error: Error) => {
       throw error;
     },
-    // Seed the document as Heading 1 / Heading 2 / Heading 3, matching the
-    // Google Fonts specimen page. Anything past the third line (there isn't
-    // normally one) falls back to a Normal paragraph.
-    //
-    // Each heading is seeded carrying the named instance that matches its
-    // wanted weight, rather than leaning on a CSS font-weight. Two reasons:
-    // the block then renders a real cut instead of a browser-synthesized one,
-    // and because the style is on the node, the matching Instance chip reads as
-    // active the moment the caret lands in that heading.
+    // Each heading carries the named instance matching its wanted weight rather
+    // than a CSS font-weight, so the block renders a real cut instead of a
+    // synthesized one, and its Instance chip reads as active when the caret
+    // lands in it.
     editorState: () => {
       const root = $getRoot();
       if (root.getFirstChild() !== null) return;
@@ -115,17 +98,12 @@ export function Tester({
         block.append($createTextNode(line));
         root.append(block);
       }
-      // Land the caret in the first block, so the toolbar and the Instance
-      // chips have a target on arrival. Without this syncFromSelection bails
-      // at its !$isRangeSelection guard and setActiveKeys([]) leaves every
-      // control reading empty until the user thinks to click a line — the
-      // size slider, the block-type group and the chips all look inert on a
-      // tab whose whole purpose is editing.
+      // Land the caret in the first block so the toolbar has a target on
+      // arrival: without this syncFromSelection bails at its !$isRangeSelection
+      // guard and every control reads empty until the user clicks a line.
       //
-      // selectStart(), not editor.focus(): this only places the selection.
-      // Focusing on mount would scroll the editor into view and raise the
-      // software keyboard on mobile the moment the tab opens, which is a
-      // different and unwanted behaviour.
+      // selectStart(), not editor.focus(): focusing on mount would scroll the
+      // editor into view and raise the software keyboard on mobile.
       root.getFirstChild()?.selectStart();
     },
   };
@@ -142,12 +120,8 @@ export function Tester({
   );
 }
 
-// Default size per block type. Because one document mixes several block types
-// at once, each level carries its own value (not a single editor font-size):
-// they're published as CSS custom properties on the editor root and consumed by
-// the h1/h2/h3/p rules in styles.css, so a Heading 2 and a Normal paragraph
-// render at their own sizes side by side. Line height is a fixed 1.2 for every
-// level, set in styles.css rather than here.
+// Published as CSS custom properties and consumed by the h1/h2/h3/p rules in
+// styles.css, so one document can mix block types at their own sizes.
 const DEFAULT_SIZE: Record<BlockType, number> = {
   h1: 48,
   h2: 28,
@@ -155,21 +129,19 @@ const DEFAULT_SIZE: Record<BlockType, number> = {
   normal: 18,
 };
 
-// The weight each heading level wants. Only a wish: a family that doesn't ship
-// the cut falls back to Regular below rather than letting the browser fake it.
+// Only a wish: a family that doesn't ship the cut falls back to Regular below
+// rather than letting the browser fake it.
 const HEADING_WEIGHT: Record<"h1" | "h2" | "h3", number> = {
   h1: 700,
   h2: 600,
   h3: 500,
 };
 
-// Regular, the fallback when a family has no cut at the wanted weight.
 const REGULAR_WEIGHT = 400;
 
-// The alignment buttons, in visual order. `label` takes the block's direction
-// because "left" is the natural start of an LTR line but the *end* of an RTL
-// one, so the same button means opposite things to a screen-reader user
-// depending on what they're editing.
+// `label` takes the block's direction because "left" is the start of an LTR
+// line but the END of an RTL one, so the same button means opposite things to
+// a screen-reader user depending on what they're editing.
 const ALIGNMENTS: {
   id: Exclude<ElementFormatType, "" | "justify" | "start" | "end">;
   icon: typeof TextAlignLeftIcon;
@@ -188,13 +160,9 @@ const ALIGNMENTS: {
   },
 ];
 
-// Which button to light up for a block's stored format.
-//
 // Lexical's unset format ("") renders as `text-align: start`, which the browser
-// resolves against the block's own direction: left for LTR, right for RTL. That
-// is exactly the requested default, so it needs no special-casing at write
-// time — only at read time, to show the user which end their text is actually
-// sitting at. "start"/"end" resolve the same way.
+// resolves against the block's own direction — the wanted default, so it needs
+// resolving only here, at read time, to light the right button.
 function alignedAs(
   format: ElementFormatType,
   rtl: boolean
@@ -203,20 +171,13 @@ function alignedAs(
   if (format === "left" || format === "right") return format;
   if (format === "" || format === "start") return rtl ? "right" : "left";
   if (format === "end") return rtl ? "left" : "right";
-  // justify has no button of its own.
   return null;
 }
 
-// The named instance a heading level is seeded with: the upright cut at the
-// wanted weight (Bold for h1, SemiBold for h2, Medium for h3).
-//
-// Falls back to the upright cut nearest that weight, so a family that stops at
-// Medium seeds its h1 with Medium rather than a weight it cannot draw. Asking
-// for a cut the family doesn't ship would leave the browser to synthesize a
-// fake one, which misrepresents the typeface on a page whose job is to show it
-// honestly — and over half the catalog ships a single weight, so that is the
-// common case. Returns undefined only when the family has no upright instance
-// at all, in which case the heading keeps the document default.
+// Falls back to the nearest weight the family actually ships: asking for a
+// missing cut leaves the browser to synthesize a fake, misrepresenting the
+// typeface. Over half the catalog ships a single weight, so this is the common
+// case, not an edge one.
 function headingInstance(
   instances: FontInstance[],
   tag: "h1" | "h2" | "h3"
@@ -243,34 +204,17 @@ function TesterInner({
 }) {
   const [editor] = useLexicalComposerContext();
   const [block, setBlock] = useState<BlockType>("normal");
-  // Alignment of the block the caret is in. "" is Lexical's unset format, which
-  // renders as `text-align: start` — i.e. left in an LTR block and right in an
-  // RTL one, which is why the default needs no per-script special-casing. The
-  // toolbar shows it as whichever end-aligned button matches the block's own
-  // direction (see alignedStart below).
+  // "" is Lexical's unset format; see alignedStart for how it is displayed.
   const [align, setAlign] = useState<ElementFormatType>("");
-  // Direction of the block the caret is in, read off the DOM element Lexical
-  // rendered (it sets dir from the text's first strong character). Decides
-  // which of the two end buttons the unset format lights up.
+  // Read off the DOM element Lexical rendered, which sets dir from the text's
+  // first strong character. Decides which end button the unset format lights.
   const [rtl, setRtl] = useState(false);
-  // The style string on the block the caret sits in, so the active chip can be
-  // highlighted. Empty when that block has no instance of its own (it renders
-  // at the document default).
   const [blockStyle, setBlockStyle] = useState("");
-  // Node keys of the block(s) the selection covers, used only to tint them.
   const [activeKeys, setActiveKeys] = useState<string[]>([]);
-  // Per-block-type size. The slider edits whichever block type is currently
-  // selected; every block of that type updates together.
   const [sizes, setSizes] = useState<Record<BlockType, number>>(DEFAULT_SIZE);
   const size = sizes[block];
-  // Both the slider and the editable readout write the size of whichever block
-  // type is currently selected.
   const setSize = (v: number) => setSizes((s) => ({ ...s, [block]: v }));
 
-  // Reflect the selection's current block into the toolbar, so moving the caret
-  // into a Heading 2 line shows "Heading 2", and into a block carrying a named
-  // instance lights that chip. Also records which block that is, so it can be
-  // tinted below.
   const syncFromSelection = useCallback(() => {
     const selection = $getSelection();
     if (!$isRangeSelection(selection)) {
@@ -288,14 +232,10 @@ function TesterInner({
     setBlock(next);
     setBlockStyle(isTesterBlock(element) ? element.getStyle() : "");
     setAlign($isElementNode(element) ? element.getFormatType() : "");
-    // Read the direction off the rendered element rather than the node: Lexical
-    // derives it from the text's first strong character, the same rule dir=auto
-    // uses everywhere else in the app.
+    // Off the rendered element, not the node: Lexical derives dir from the
+    // first strong character, the same rule dir=auto uses elsewhere.
     const dom = editor.getElementByKey(element.getKey());
     setRtl(dom ? getComputedStyle(dom).direction === "rtl" : false);
-    // Every block the selection touches, matching the scope the toolbar and
-    // the instance chips actually write to: a caret marks one, a drag across
-    // paragraphs marks each of them.
     setActiveKeys(
       Array.from(
         new Set(
@@ -326,13 +266,9 @@ function TesterInner({
     );
   }, [editor, syncFromSelection]);
 
-  // Tint the block(s) the caret is in, so it's visible that the toolbar and the
-  // instance chips act on the whole paragraph rather than the selected word.
-  //
-  // Marked as a DOM attribute rather than a Lexical node property: the tint is
-  // pure presentation, and writing it into the editor state would put a
-  // highlight in the undo history and dirty the document on every click.
-  // `getElementByKey` is the supported way to reach a node's rendered element.
+  // A DOM attribute, NOT a Lexical node property: writing pure presentation
+  // into the editor state would put a highlight in the undo history and dirty
+  // the document on every click.
   useEffect(() => {
     const marked = activeKeys
       .map((key) => editor.getElementByKey(key))
@@ -343,8 +279,6 @@ function TesterInner({
     };
   }, [editor, activeKeys]);
 
-  // Apply a block style to every block the selection touches. The slider below
-  // then edits that type's shared size.
   const applyBlock = (value: BlockType) => {
     editor.update(() => {
       const selection = $getSelection();
@@ -356,19 +290,15 @@ function TesterInner({
     setBlock(value);
   };
 
-  // Apply a named instance to every block the selection touches, so clicking a
-  // chip restyles just the paragraph the caret is in rather than the document.
-  // Clicking the active chip again clears the style, dropping that block back
-  // to the document default.
+  // Clicking the active chip again drops the block to the document default.
   const applyInstance = (inst: FontInstance) => {
     const next = instanceStyle(inst.coords, inst.italic);
     const clearing = next === blockStyle;
     editor.update(() => {
       const selection = $getSelection();
       if (!$isRangeSelection(selection)) return;
-      // getNodes() returns the text nodes in range; walking up to each one's
-      // top-level element and de-duplicating gives the blocks to restyle. A
-      // collapsed caret yields exactly one, which is the common case.
+      // getNodes() returns text nodes, so walk up to each one's top-level
+      // element and de-duplicate to get the blocks to restyle.
       const blocks = new Set(
         selection
           .getNodes()
@@ -383,10 +313,7 @@ function TesterInner({
     setBlockStyle(clearing ? "" : next);
   };
 
-  // Font sizes for every block type, exposed as CSS variables the stylesheet
-  // maps onto h1/h2/h3/p, plus the shared font (family/axes/italic/features).
-  // Colour is left to the theme so the document reads correctly in both light
-  // and dark mode.
+  // Colour is left to the theme, so the document reads in both modes.
   const editorStyle: CSSProperties = {
     ...fontStyle,
     "--pg-size-h1": `${sizes.h1}px`,

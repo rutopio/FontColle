@@ -1,16 +1,11 @@
 import { useCallback, useSyncExternalStore } from "react";
 
-// A useState-shaped hook backed by localStorage, for personal-device
-// preferences that should survive reloads but must never leak into a shared
-// URL (view mode, preview text, …). Reads go through useSyncExternalStore:
-// the server (and hydration) renders `initial`, the first client pass after
-// hydration reads the stored value — no sync effect, no flash-of-initial
-// beyond hydration. All hook instances share one listener set, so a write
-// from any of them updates the rest in the same tab.
+// For preferences that survive reloads but must never leak into a shared URL.
+// The server and hydration render `initial`; the first client pass reads the
+// stored value.
 //
-// Writes are best-effort: quota / private-mode errors fall back to the
-// in-memory overlay so the value still updates for this session, matching
-// the theme toggle's behavior.
+// Writes are best-effort: quota and private-mode errors fall back to the
+// in-memory overlay, so the value still updates for this session.
 
 const listeners = new Set<() => void>();
 const emit = () => {
@@ -23,8 +18,7 @@ const subscribe = (cb: () => void) => {
   };
 };
 
-// Session fallback for environments where localStorage throws. When storage
-// works this mirrors it, and reads prefer the real stored value.
+// Mirrors localStorage where it works; reads prefer the real stored value.
 const memory = new Map<string, string>();
 
 export function useLocalStorageState(

@@ -17,13 +17,9 @@ import {
 // in wherever Lexical itself would construct the stock node (typing Enter,
 // $setBlocksType, paste), so nothing else in the editor has to know they exist.
 
-// Push the node's own style string onto an element, replacing whatever a
-// previous render left behind. cssText is assigned rather than appended: the
-// style is the node's full declaration, and appending would let stale
-// properties from an earlier instance survive a change.
-//
-// createDOM's own output (text-align) is applied by super before this runs, so
-// it's captured and re-applied on top.
+// cssText is assigned, not appended: the style is the node's full declaration,
+// and appending would let stale properties from an earlier instance survive.
+// super's own output (text-align) runs first, so it is captured and re-applied.
 function applyNodeStyle(dom: HTMLElement, style: string): void {
   const { textAlign } = dom.style;
   dom.style.cssText = style;
@@ -92,8 +88,6 @@ export class TesterHeadingNode extends HeadingNode {
   }
 }
 
-// Node registration for LexicalComposer: the subclasses plus the `replace`
-// rules that make Lexical build them instead of the stock nodes.
 export const TESTER_NODES = [
   TesterParagraphNode,
   TesterHeadingNode,
@@ -110,21 +104,17 @@ export const TESTER_NODES = [
   },
 ];
 
-// The CSS a named instance renders as, applied to one block. This has to
-// override everything the editor root's preview style sets, not just add to it:
-// the root carries the family's own font-weight / font-variation-settings, and
-// anything left out here is inherited from it instead of coming from the
-// instance.
-//
-// So it mirrors previewStyle's mapping deliberately:
-//  - wght goes to font-weight as well as the variation settings, the way
-//    previewStyle does it, so the browser can pick the right named face and
-//    the heading rules' font-weight:700 don't win by default;
+// The CSS a named instance renders as. It must OVERRIDE everything the editor
+// root's preview style sets, not add to it: anything left out here is inherited
+// from the root instead of coming from the instance. So it mirrors
+// previewStyle's mapping deliberately:
+//  - wght goes to font-weight as well as the variation settings, so the browser
+//    picks the right named face and the heading rules' font-weight:700 doesn't
+//    win by default;
 //  - font-style is explicit because italic is a separate cut on most families
-//    rather than an axis (Inter's "Thin Italic" carries only opsz+wght, with
-//    italic as a flag), so the coords alone would never slant the text;
-//  - font-optical-sizing follows previewStyle: an explicit opsz coord is inert
-//    while the browser's default `auto` keeps driving the axis from font-size.
+//    rather than an axis, so the coords alone would never slant the text;
+//  - font-optical-sizing, because an explicit opsz coord is inert while the
+//    browser's default `auto` drives the axis from font-size.
 export function instanceStyle(
   coords: Record<string, number>,
   italic: boolean
@@ -143,8 +133,6 @@ export function instanceStyle(
   return `${parts.join("; ")};`;
 }
 
-// Whether a node is one of ours, so the toolbar can read/write its style
-// without caring which of the two it got.
 export function isTesterBlock(
   node: LexicalNode
 ): node is TesterParagraphNode | TesterHeadingNode {

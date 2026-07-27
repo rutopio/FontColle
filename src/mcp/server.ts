@@ -12,14 +12,12 @@
 // filter on.
 import type { FontRecord } from "@/lib/fonts/types";
 
-// The subset of FontRecord that catalog-slim.json actually carries. Declared
-// separately from FontRecord because the slim projection drops most fields, and
-// typing it as the full record would invite reading ones that are absent.
+// What catalog-slim.json actually carries. Declared separately from FontRecord,
+// which would invite reading fields the projection drops.
 //
-// Two fields are reshaped by the projection rather than merely dropped: `axes`
-// is flattened from FontAxis objects to bare tag strings ("wght"), and `weights`
-// is numeric. Both are declared here instead of Pick-ed, or the inherited type
-// would not match the bytes on the wire.
+// Two fields are reshaped rather than merely dropped: `axes` is flattened from
+// FontAxis objects to bare tag strings, and `weights` is numeric. Both are
+// declared, not Pick-ed, or the inherited type wouldn't match the wire bytes.
 type SlimFont = Pick<
   FontRecord,
   | "id"
@@ -49,8 +47,7 @@ const CATEGORIES = [
   "Emoji",
 ];
 
-// Cap on returned families, for the same reason as the WebMCP tools: a filter
-// can match ~800 records and a model does not want them all. `count` carries the
+// A filter can match ~800 records, which no model wants. `count` carries the
 // true total.
 const MAX_RESULTS = 50;
 
@@ -253,9 +250,8 @@ function searchFonts(fonts: SlimFont[], args: Record<string, unknown>) {
   };
 }
 
-// The full per-family record lives in its own asset, so get_font reads that
-// rather than the slim projection — this is the one call that should return
-// metrics, instances, and version history.
+// Reads the full per-family asset rather than the slim projection: this is the
+// one call that should return metrics, instances and version history.
 async function getFont(
   assets: AssetsBinding,
   origin: string,
@@ -391,11 +387,9 @@ export async function mcpEndpoint(
   const url = new URL(request.url);
   if (url.pathname !== "/mcp") return undefined;
 
-  // Browsers preflight a cross-origin POST carrying content-type: application/
-  // json, and desktop MCP clients run from other origins, so the endpoint is
-  // opened up deliberately. It is a read-only, unauthenticated view of data
-  // that is already public, so there is nothing for a hostile origin to reach
-  // that it could not fetch directly.
+  // Opened up deliberately: desktop MCP clients run from other origins, and
+  // this is a read-only, unauthenticated view of already-public data, so a
+  // hostile origin reaches nothing it could not fetch directly.
   const cors = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "POST, OPTIONS",

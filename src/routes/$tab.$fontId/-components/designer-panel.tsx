@@ -12,9 +12,6 @@ import { sanitizeHtml } from "@/lib/sanitize-html";
 import { AboutPanel } from "./about-panel";
 import { Panel } from "./panel";
 
-// The Designer view: who made the family, each designer's Google Fonts bio and
-// avatar when available, a link out to their page, and the other families they
-// authored in the catalog.
 export function DesignerPanel({
   font,
   siblingsByDesigner,
@@ -22,15 +19,13 @@ export function DesignerPanel({
   font: FontRecord;
   siblingsByDesigner: Record<string, DesignerSibling[]>;
 }) {
-  // The DB stores designers as one string; Google Fonts credits several as a
-  // comma-separated list. Split so each gets their own credit + profile link.
+  // One string in the record, but Google Fonts credits several, comma-joined.
   const designers = (font.designer ?? "")
     .split(",")
     .map((d) => d.trim())
     .filter(Boolean);
 
-  // Bios/avatars come keyed by designer name from the metadata endpoint; match
-  // by trimmed name so each credit can show its profile.
+  // The metadata endpoint keys profiles by name, so match on the trimmed one.
   const profileByName = new Map(
     (font.designerProfiles ?? [])
       .filter((p) => p.name)
@@ -164,8 +159,7 @@ export function DesignerPanel({
   );
 }
 
-// Up to two initials from a designer name, for the avatar fallback when there's
-// no profile image. Uses the first and last words so "Erik Spiekermann" -> "ES".
+// First and last words, so "Erik Spiekermann" -> "ES".
 function initials(name: string): string {
   const words = name.split(/\s+/).filter(Boolean);
   if (words.length === 0) return "";

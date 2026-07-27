@@ -2,39 +2,25 @@
 // authoritative src/data/fonts.json:
 //
 //   public/catalog.json          - every published FontRecord minus the
-//                                   detail-only fields (home page fetches this
-//                                   and filters client-side). See
-//                                   DETAIL_ONLY_FIELDS below.
-//   public/catalog/<id>.json     - one COMPLETE FontRecord per published family
-//                                   (the detail page's SSR loader fetches just the
-//                                   one it needs, so it never loads the whole
-//                                   catalog). This is why the shared catalog can
-//                                   drop those fields without losing anything.
-//                                   Kept out of public/fonts/, which holds the
-//                                   site's own UI webfonts.
-//   public/designer-index.json   - {id, name, designer}[] for published families
-//                                   (the detail page's Designer tab buckets these
-//                                   by designer name, client-side).
-//   public/catalog-slim.json     - every published family projected to the
-//                                   query-relevant fields (~2 MB vs the full
-//                                   13 MB), for LLM agents. Documented in
-//                                   public/llms.txt, unused by the app itself.
-//   public/catalog-first.json    - the first ~24 full FontRecords in the home
-//                                   page's DEFAULT sort order (popularity). The
-//                                   index loader returns just this slice so the
-//                                   SSR HTML of a default `/` visit ships real
-//                                   font cards + /instances/ links for crawlers,
-//                                   while the full catalog still loads client-side
-//                                   (never in the Worker, Error 1102).
+//                                   detail-only fields; the home page fetches
+//                                   this and filters client-side.
+//   public/catalog/<id>.json     - one COMPLETE FontRecord per family, which is
+//                                   why the shared catalog can drop those
+//                                   fields. The detail loader fetches just one.
+//   public/designer-index.json   - {id, name, designer}[], bucketed by the
+//                                   Designer tab client-side.
+//   public/catalog-slim.json     - every family projected to the query-relevant
+//                                   fields (~2 MB vs 13 MB), for LLM agents.
+//                                   Documented in public/llms.txt, unused here.
+//   public/catalog-first.json    - the first ~24 full records in the default
+//                                   sort, so a default `/` visit's SSR HTML
+//                                   ships real cards without the Worker ever
+//                                   touching the full catalog (Error 1102).
 //
-// This replaces D1: the app used to read the catalog from a database that was
-// itself just a copy of fonts.json, and rebuilding the whole catalog in the
-// Worker per request exceeded its limits (Error 1102). The data is read-only,
-// site-wide, and refreshed once a day, so static CDN-cached JSON fits it better
-// than a database: no Worker round-trip, no seeding, no migrations.
+// The data is read-only, site-wide and refreshed daily, so static CDN-cached
+// JSON fits it better than a database: no Worker round-trip, no migrations.
 //
-// catalog.json is sorted by name to match the old loadAllFonts() ordering so the
-// client renders without re-sorting.
+// catalog.json is sorted by name, so the client renders without re-sorting.
 
 import { createHash } from "node:crypto";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
@@ -51,12 +37,10 @@ export async function genCatalog() {
     .filter((f) => f?.isPublished ?? true)
     .sort((a, b) => a.name.localeCompare(b.name));
 
-  // Fields the list view never reads: they exist only for the detail page, which
-  // fetches its own complete public/catalog/<id>.json and so already has them.
-  // Shipping them in the shared catalog made every visitor download ~2.4 MB of
-  // per-family prose and profiles to render a grid of names — a fifth of the
-  // payload, on the critical path to first render. `languages` stays despite
-  // being the single fattest field: the sidebar's language facet filters on it.
+  // Fields the list view never reads: the detail page fetches its own complete
+  // record and already has them. Shipping them here cost every visitor ~2.4 MB
+  // of prose and profiles to render a grid of names. `languages` stays despite
+  // being the fattest field: the sidebar's language facet filters on it.
   const DETAIL_ONLY_FIELDS = [
     "designerProfiles",
     "about",
@@ -70,24 +54,21 @@ export async function genCatalog() {
     return out;
   };
 
-  // Minified (no whitespace) to keep the transfer small; the browser parses it.
   const catalog = JSON.stringify(fonts.map(forList));
-  // Plain path stays for backward-compat + fallback (see catalog.ts).
+  // Kept as the fallback when the manifest fetch fails (see catalog.ts).
   await writeFile(path.join(ROOT, "public/catalog.json"), catalog, "utf8");
   console.log(
     `[catalog] wrote ${fonts.length} published families to public/catalog.json (${(catalog.length / 1024 / 1024).toFixed(1)} MB)`
   );
 
-  // Cache-busting: also write the catalog to a content-hashed, immutable path
-  // and point a tiny manifest at it. The client fetches the manifest (short
-  // TTL) then the hashed file (year-long immutable in public/_headers), so a
-  // redeploy that changes the data ships a new hash and busts the CDN cache
-  // without waiting out a TTL. The hash is a short sha256 of the JSON bytes, so
-  // identical content re-emits the same filename (idempotent rebuilds).
+  // Cache-busting: a short-TTL manifest points at a content-hashed, immutable
+  // copy, so a redeploy that changes the data busts the CDN cache without
+  // waiting out a TTL. The hash is of the JSON bytes, so identical content
+  // re-emits the same filename and rebuilds stay idempotent.
   const hash = createHash("sha256").update(catalog).digest("hex").slice(0, 16);
   const hashedRel = `/catalog-v/${hash}.json`;
   const hashedDir = path.join(ROOT, "public/catalog-v");
-  // Rebuild from scratch so stale hashed files from previous builds are dropped.
+  // From scratch, so stale hashed files from previous builds are dropped.
   await rm(hashedDir, { recursive: true, force: true });
   await mkdir(hashedDir, { recursive: true });
   await writeFile(path.join(ROOT, `public${hashedRel}`), catalog, "utf8");
@@ -98,9 +79,8 @@ export async function genCatalog() {
   );
   console.log(`[catalog] wrote hashed catalog + manifest -> ${hashedRel}`);
 
-  // Per-font files for the detail page. Rebuild this dir from scratch so
-  // families that became unpublished don't leave a stale file behind. It holds
-  // nothing but generated files, so wiping it is safe.
+  // Rebuilt from scratch so an unpublished family leaves no stale file behind.
+  // The dir holds nothing but generated files, so wiping it is safe.
   const perFontDir = path.join(ROOT, "public/catalog");
   await rm(perFontDir, { recursive: true, force: true });
   await mkdir(perFontDir, { recursive: true });
@@ -117,7 +97,6 @@ export async function genCatalog() {
     `[catalog] wrote ${fonts.length} per-font files to public/catalog/`
   );
 
-  // Designer index: just what the Designer tab needs to link siblings.
   const designerIndex = fonts.map((f) => ({
     id: f.id,
     name: f.name,
@@ -133,22 +112,15 @@ export async function genCatalog() {
     `[catalog] wrote designer-index.json (${(indexJson.length / 1024).toFixed(0)} KB)`
   );
 
-  // Slim catalog for LLM / agent consumption (documented in public/llms.txt).
-  // The full catalog is ~13 MB, past any model's context window, so an agent
-  // asked "find me a playful variable sans" can only use it by downloading and
-  // scripting over it. This projection keeps every field a semantic query
-  // filters or ranks on and drops the bulk: `languages` (~9 KB per record, the
-  // single fattest field), `instances`, `about`, `versionHistory`,
-  // `designerProfiles`, `specimen`, `licenseHeader`, and the raw vertical
-  // metrics that `metrics.ts` only reads to derive ratios from.
+  // For LLM agents: the full catalog is ~13 MB, past any model's context
+  // window. Keeps every field a semantic query filters or ranks on.
   //
-  // `axes` flattens to its tags: an agent filtering "has a wght axis" needs the
-  // tag, not each axis's min/max/default. Full per-axis ranges stay in
-  // catalog.json and the per-font files.
+  // `axes` flattens to its tags: filtering "has a wght axis" needs the tag, not
+  // each axis's min/max/default, which stay in the full records.
   //
-  // `tags` (Google Fonts classification scores, 0-100) is kept in full rather
-  // than thresholded at the UI's >= 50: the scores are what make ranking by
-  // "how playful" possible, and keeping them costs only ~0.2 MB.
+  // `tags` keeps its full 0-100 scores rather than thresholding at the UI's
+  // >= 50: the scores are what make ranking by "how playful" possible, and
+  // they cost only ~0.2 MB.
   const slim = fonts.map((f) => ({
     id: f.id,
     name: f.name,
@@ -190,12 +162,10 @@ export async function genCatalog() {
     `[catalog] wrote catalog-slim.json (${slim.length} records, ${(slimJson.length / 1024 / 1024).toFixed(1)} MB)`
   );
 
-  // First-page SSR slice: the first FIRST_PAGE_SIZE full FontRecords in the home
-  // page's DEFAULT sort (popularity), replicated here in plain JS so the index
-  // loader can return this tiny slice (a few tens of KB) without the Worker ever
-  // touching the 14 MB catalog. Keep this ordering in lockstep with
-  // sortFonts(fonts, "popularity") in src/lib/fonts/sort.ts: lower
-  // popularityRank first, null ranks last, ties broken by name (base sensitivity).
+  // The default (popularity) sort, replicated here in plain JS so the index
+  // loader can return a tiny slice without the Worker touching the full
+  // catalog. Keep this in lockstep with sortFonts(fonts, "popularity") in
+  // src/lib/fonts/sort.ts.
   const FIRST_PAGE_SIZE = 24;
   const byNameBase = (a, b) =>
     a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
@@ -210,15 +180,11 @@ export async function genCatalog() {
   const firstPage = [...fonts]
     .sort(byPopularity)
     .slice(0, FIRST_PAGE_SIZE)
-    // Drop the per-font `languages` list (the single fattest field, ~9 KB each,
-    // ~1/3 of the slice). Nothing in the card render path or facet derivation
-    // reads it, it feeds only the filter sidebar's language section, which the
-    // first-page pending state renders empty. Blanked (not omitted) so records
-    // still satisfy FontRecord. This keeps the loader's payload a few tens of KB,
-    // honouring the Error 1102 constraint, while every field the cards touch
-    // stays intact. The detail-only fields go too, for the same reason they are
-    // stripped from the catalog above — and it matters more here, because this
-    // slice is serialized into the SSR HTML of every default `/` document.
+    // Drop `languages`, the fattest field at ~9 KB each and ~1/3 of the slice:
+    // nothing in the card render path reads it, and the sidebar section it
+    // feeds renders empty in the pending state. Blanked, not omitted, so
+    // records still satisfy FontRecord. The detail-only fields go too, and it
+    // matters more here: this slice is serialized into every `/` document.
     .map((f) => ({ ...forList(f), languages: [] }));
   const firstJson = JSON.stringify(firstPage);
   await writeFile(
@@ -231,7 +197,6 @@ export async function genCatalog() {
   );
 }
 
-// Allow running standalone: `node scripts/gen-catalog.mjs`.
 if (import.meta.url === `file://${process.argv[1]}`) {
   await genCatalog();
 }

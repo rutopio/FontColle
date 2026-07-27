@@ -1,8 +1,7 @@
 import type { FontRecord } from "./types";
 
-// Derive the §12 facets from a record's axes/features/subsets. Mirrors the
-// harvester's Python logic so records carrying only raw axes / features (not
-// derived facets) get the same facet tags as the static dataset.
+// Mirrors the harvester's Python logic, so a record carrying only raw axes and
+// features gets the same facet tags as the static dataset.
 
 const FEATURE_FACETS: Record<string, string> = {
   smcp: "small-caps",
@@ -35,8 +34,7 @@ export function deriveFacets(font: FontRecord): string[] {
   const hasSlantOrItalAxis = font.axes.some(
     (a) => a.tag === "ital" || a.tag === "slnt"
   );
-  // Instances now carry an explicit italic flag (separate-file italics), so use
-  // it directly and fall back to a name check for older records.
+  // Older records predate the explicit italic flag, hence the name check.
   const hasItalicInstance = font.instances.some(
     (i) => i.italic || (i.name ?? "").toLowerCase().includes("ital")
   );
@@ -51,18 +49,16 @@ export function deriveFacets(font: FontRecord): string[] {
     if (f) facets.add(f);
   }
 
-  // Plain-language trait tags surfaced in the Tag panel. These duplicate more
-  // precise entry points elsewhere (Color tab, Source tab, isMonospace metric)
-  // on purpose: the Tag panel is the natural-language shortcut for users who
-  // don't know the underlying terms. Derived from existing FontRecord fields,
-  // so no reharvest is needed.
+  // Plain-language trait tags. The Tag panel that surfaced them is retired, so
+  // nothing renders these today; they stay because they cost only a derivation
+  // from existing fields and a shared URL from before its removal still
+  // decodes them (see FilterSearch.tag).
   if (font.isMonospace) facets.add("monospace");
   if (font.colorTables.length > 0) facets.add("colorful");
   if (font.isNoto) facets.add("noto-family");
 
-  // Coarse script/subset tags. The Writing system tab covers scripts with real
-  // cmap-based coverage; these subset-based tags are the plain-language version
-  // for the Tag panel (a font "has a Latin subset"), kept deliberately simpler.
+  // Coarse subset-based script tags, likewise unrendered. The Writing system
+  // section is the live entry point, and covers scripts by real cmap coverage.
   if (font.subsets.includes("latin")) facets.add("latin");
   if (
     font.subsets.some(
@@ -85,7 +81,6 @@ export function deriveFacets(font: FontRecord): string[] {
   return [...facets].sort();
 }
 
-/** Fill in facets for records that don't already have them. */
 export function withFacets(fonts: FontRecord[]): FontRecord[] {
   return fonts.map((f) =>
     f.facets.length ? f : { ...f, facets: deriveFacets(f) }

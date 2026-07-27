@@ -21,21 +21,15 @@ interface Props {
   favorites: string[];
   onToggleFavorite: (id: string) => void;
   view: ViewMode;
-  // Active filter slice, forwarded to each card/row to drive the live preview
-  // and highlight the matching trait badges.
   selection: FilterSelection;
-  // Session slider positions (0-100%) per selected variable axis.
   axisValues: Record<string, number>;
-  // The scroll container (the Column's ScrollArea viewport) the virtualizer
-  // scrolls within. The list lives inside it, so measurement and scrolling are
-  // element-based, not window-based.
+  // The Column's ScrollArea viewport: this list scrolls inside it, not the
+  // window, so the virtualizer measures against an element.
   scrollRef: RefObject<HTMLDivElement | null>;
 }
 
-// Grid column count matches the CSS breakpoints (md:2, lg:3). Row mode is always
-// a single column. Measured from the container width (not the viewport), so the
-// skeleton can reuse it to match the real grid even when the sidebar narrows
-// the panel below a viewport breakpoint.
+// Measured from the container width, not the viewport, since the sidebar can
+// narrow the panel well below the matching viewport breakpoint.
 export function columnsFor(width: number, view: ViewMode): number {
   if (view === "row") return 1;
   if (width >= 1024) return 3;
@@ -43,10 +37,15 @@ export function columnsFor(width: number, view: ViewMode): number {
   return 1;
 }
 
-// Card/line heights, shared with the loading skeleton so its placeholders match
-// the real cells.
-const CARD_H = 288; // grid card height (h-72)
-const LINE_H = 128; // row-mode line height (h-32)
+const CARD_H = 288; // h-72
+const LINE_H = 128; // h-32
+
+// Keyed by contents rather than row index, because a `cols` change re-slices
+// every index onto different fonts: React would reuse the old row's DOM and
+// strand its cells. `view` is in the key so a grid<->row switch remounts too,
+// or the entrance animation would replay on a reused node and no-op.
+const rowKey = (view: ViewMode, firstFontId: string) =>
+  `${view}-${firstFontId}`;
 
 const GAP = 16; // Tailwind gap-4
 
@@ -61,15 +60,11 @@ export function FontGrid({
   scrollRef,
 }: Props) {
   const listRef = useRef<HTMLDivElement>(null);
-  // Derive a Set from the favorites array once per change, so each cell reads a
-  // stable `isFavorite` primitive (favSet.has) instead of every cell scanning
-  // the array with `.includes()`. Toggling one favorite then only flips that
-  // cell's boolean prop; the memoized twins bail out on the rest.
+  // A Set, so toggling one favorite flips one cell's boolean prop and the
+  // memoized twins bail out instead of every cell re-scanning the array.
   const favSet = useMemo(() => new Set(favorites), [favorites]);
   const [cols, setCols] = useState(view === "row" ? 1 : 3);
-  // SSR renders a fixed first batch so crawlers/no-JS see content; after mount
-  // the element virtualizer takes over.
-  const [mounted, setMounted] = useState(false);
+  const [virtualizerReady, setVirtualizerReady] = useState(false);
 
   useLayoutEffect(() => {
     const measure = () => {
@@ -77,7 +72,7 @@ export function FontGrid({
       setCols(columnsFor(listRef.current.offsetWidth, view));
     };
     measure();
-    setMounted(true);
+    setVirtualizerReady(true);
     window.addEventListener("resize", measure);
     return () => window.removeEventListener("resize", measure);
   }, [view]);
@@ -122,11 +117,7 @@ export function FontGrid({
       />
     );
 
-  if (!mounted) {
-    // SSR / first paint, before the virtualizer measures. Render a clean grid
-    // of skeleton placeholders (not real cards) so the first frame is regular
-    // instead of showing half-streamed cards jumping around. The virtualizer
-    // takes over with real cards once mounted.
+  if (!virtualizerReady) {
     return (
       <div ref={listRef} className="flex-1">
         <SkeletonGrid view={view} />
@@ -142,21 +133,12 @@ export function FontGrid({
         {items.map((row) => {
           const start = row.index * cols;
           const rowFonts = fonts.slice(start, start + cols);
-          // Guard the frame where `cols` and the virtualizer's row `count` are
-          // briefly out of sync (a row.index can point past the new slice).
+          // `cols` and the virtualizer's `count` are briefly out of sync after
+          // a resize, so row.index can point past the new slice.
           if (rowFonts.length === 0) return null;
-          // Key by the row's contents, not its position. When `cols` changes
-          // (measure after mount, resize) each index maps to a different slice
-          // of fonts; a positional key (row.index) makes React reuse the old
-          // row's DOM and cells get stranded in the wrong cells. Keying by the
-          // first font's id forces a correct remount.
           return (
             <div
-              // `view` is part of the key so a grid<->row switch remounts the
-              // row. Without it the key is identical across the switch, React
-              // reuses the DOM node, and a CSS animation on a reused element
-              // never restarts — the entrance would silently no-op.
-              key={`${view}-${rowFonts[0]?.id ?? row.key}`}
+              key={rowKey(view, rowFonts[0]?.id ?? String(row.key))}
               data-index={row.index}
               style={{
                 position: "absolute",
@@ -186,12 +168,10 @@ export function FontGrid({
   );
 }
 
-// A grid/list of skeleton placeholders, matching the real layout. Shared by the
-// pre-mount frame here and the list route's pendingComponent (shown while the
-// catalog loader runs), so a slow load looks the same as the first paint.
+// Also the list route's pendingComponent, so a slow load and the first paint
+// look the same. Heights track the real card/line.
 export function SkeletonGrid({ view }: { view: ViewMode }) {
   const count = view === "row" ? 8 : 9;
-  // Stable keys for the fixed, never-reordered placeholder set.
   const keys = Array.from({ length: count }, (_, i) => `skeleton-${i}`);
   return view === "row" ? (
     <div className="flex flex-col">
@@ -200,12 +180,9 @@ export function SkeletonGrid({ view }: { view: ViewMode }) {
       ))}
     </div>
   ) : (
-    // Container queries, not md:/lg: viewport breakpoints: the real grid gets
-    // its column count from columnsFor(container width), and the filter panel
-    // narrows the list well below the matching viewport breakpoint. At 1440px
-    // the list is ~1000px and the real grid picks 2 columns while `lg:` would
-    // put 3 here, so the skeleton reflowed the moment the cards took over.
-    // Breakpoints mirror columnsFor's.
+    // Container queries, not viewport breakpoints, mirroring columnsFor: the
+    // real grid measures its container, so viewport-based columns here would
+    // reflow the moment the cards took over.
     <div className="@container">
       <div className="grid @min-[1024px]:grid-cols-3 @min-[768px]:grid-cols-2 grid-cols-1 gap-4">
         {keys.map((k) => (
@@ -216,8 +193,6 @@ export function SkeletonGrid({ view }: { view: ViewMode }) {
   );
 }
 
-// Loading placeholders for the pre-mount frame. Match the real card/line
-// heights (h-72 / h-28) so nothing jumps when the virtualizer takes over.
 function SkeletonCard() {
   return (
     <div className="flex h-72 flex-col gap-4 rounded-lg border bg-card p-5">
@@ -234,8 +209,6 @@ function SkeletonCard() {
 
 function SkeletonLine() {
   return (
-    // px-2 mirrors FontRow's inner rows, so the bars start on the same x as the
-    // real name/preview text instead of flush against the panel edge.
     <div className="flex h-32 flex-col justify-center gap-3 border-b px-2">
       <div className="h-3 w-40 max-w-[60%] animate-pulse rounded bg-muted" />
       <div className="h-15 w-2/3 animate-pulse rounded bg-muted" />

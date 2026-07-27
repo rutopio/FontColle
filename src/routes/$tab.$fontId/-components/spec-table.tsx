@@ -7,8 +7,6 @@ export interface SpecRow {
   badge?: string; // version tag, rendered as "v{badge}"
 }
 
-// The Specs list as a shadcn table: label left, value (with an optional version
-// badge) right-aligned. Borderless rows keep the compact spec look.
 export function SpecTable({ rows }: { rows: SpecRow[] }) {
   return (
     <Table>

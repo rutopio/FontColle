@@ -1,20 +1,14 @@
 import type { Icon, IconWeight } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 
-// A Phosphor icon that reads as bolder while the pointer is over it, so the
-// card/row action icons (favorite, download, repo) emphasize on hover. Phosphor's
-// `weight` is a render-time prop, not CSS-drivable, so a hover state can't be a
-// plain transition. Instead both weights stay mounted — the resting one and a
-// bold twin stacked on top — and hover cross-fades between them on opacity.
-// This replaced a useState weight swap that flipped instantly with no
-// transition.
+// A Phosphor icon that reads as bolder under the pointer. `weight` is a
+// render-time prop, not CSS-drivable, so this can't be a plain transition:
+// both weights stay mounted, stacked, and hover cross-fades their opacity.
 //
-// `weight` sets the resting weight. Only "regular" gets a hover-bold twin: an
-// already-emphasized resting weight (e.g. the favorite Heart's "fill" when
-// active) is left alone, so a filled icon never grows a bold layer under the
-// pointer. When there is no twin the single icon just renders, so callers that
-// pass `className` for a one-shot animation (the heart-pop keyed remount in
-// font-actions) behave exactly as before.
+// Only a "regular" resting weight gets the bold twin, so an already-emphasized
+// icon (the favorite Heart's "fill") never grows a bold layer under the
+// pointer. With no twin the single icon just renders, leaving callers that pass
+// `className` for a one-shot animation unaffected.
 export function HoverBoldIcon({
   icon: IconCmp,
   weight = "regular",
@@ -29,18 +23,11 @@ export function HoverBoldIcon({
     return <IconCmp weight={weight} className={className} />;
   }
 
-  // Stack the resting (regular) and hover (bold) icons in one grid cell and
-  // cross-fade on hover. `group-hover/hover-icon` scopes the hover to this
-  // wrapper so nested icons in the same row don't cross-trigger. A pure opacity
-  // fade needs no reduced-motion special case: styles.css keeps opacity in its
-  // allow-list, so this behaves the same either way.
-  //
-  // Opacity only — no blur, no scale. Those belong to the theme toggle, where
-  // the two layers are different glyphs (sun/moon) and defocusing hides the
-  // shape change. Here both layers are the same icon at two weights, perfectly
-  // superimposed: there is nothing to hide, so a blur just makes a hovered icon
-  // look briefly out of focus, and a scale makes it twitch. The weight change
-  // is the whole effect.
+  // `group-hover/hover-icon` scopes the hover to this wrapper, so nested icons
+  // in the same row don't cross-trigger. Opacity only, which styles.css keeps
+  // in its reduced-motion allow-list: the two layers are the same icon at two
+  // weights, perfectly superimposed, so a blur or scale would only make a
+  // hovered icon look out of focus or twitch.
   return (
     <span className="group/hover-icon relative grid place-items-center">
       <IconCmp

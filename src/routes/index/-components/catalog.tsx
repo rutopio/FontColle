@@ -65,16 +65,9 @@ import { SortControl } from "./sort-control";
 
 const Route = getRouteApi("/");
 
-// A stable string identity for a filter's chip-driving part, so we can tell
-// whether the live filter has diverged from the one the list is showing. `filter`
-// is a fresh object on every render, so `===` is no use; filterToSearch already
-// flattens a filter to a plain URL-param object, and JSON of that is order-stable
-// for our shapes (string values / string arrays).
-//
-// The text query (`q`) is deliberately excluded: it comes from the search box,
-// not a chip, and search-as-you-type must stay live — folding it in would fade
-// the whole list out and back on every keystroke. Query-only changes bypass the
-// fade and update the results immediately (see the effect in Catalog).
+// `filter` is a fresh object every render, so `===` is no use. The text query
+// is deliberately excluded: folding it in would fade the list out and back on
+// every keystroke.
 function filterKey(f: FilterState): string {
   const { q: _q, ...rest } = filterToSearch(f);
   return JSON.stringify(rest);
@@ -89,59 +82,29 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
   const { listScrollY, lastGroup } = useFilter();
   const facetIndex = useMemo(() => buildFacetIndex(fonts), [fonts]);
 
-  // The results list scrolls inside the Column's ScrollArea viewport, not the
-  // window. The virtualizer and scroll restore both bind to this element.
   const scrollRef = useRef<HTMLDivElement>(null);
-  // The search field, so the "/" shortcut can focus it.
   const searchRef = useRef<HTMLInputElement>(null);
 
-  // The URL search params are the single source of truth for the filter. Every
-  // interaction commits straight to the URL via commitFilter (a replace: true
-  // navigation, cheap because the loader has no loaderDeps and doesn't re-run),
-  // so back/forward and shared links Just Work with no state<->URL sync loop.
-  //  - `filter` is derived from `search`, so it reflects the live URL and drives
-  //    everything that must respond instantly: pills, rail, chips, active count,
-  //    the search input and the sort write.
-  //  - `deferredFilter` trails it: the heavy applyFilters + grid re-render run
-  //    against this deferred copy, and it advances only while the list is faded
-  //    out (see below), so the results and the chip row swap together, unseen.
+  // The URL is the single source of truth: every interaction commits straight
+  // to it, so back/forward and shared links work with no state<->URL sync loop.
   const filter = useMemo(() => searchToFilter(search), [search]);
-  // The filter the results list + its chip row currently show. It trails `filter`
-  // by one fade: when `filter` changes we fade the list out, and only once it has
-  // reached opacity 0 do we advance `deferredFilter` to it. So the new results
-  // and the chip-row reflow (a chip appearing, or the row collapsing to nothing)
-  // both happen while the list is invisible; the list then fades back in already
-  // in its final position. The user never sees a half-applied result set, and
-  // never sees the grid jump up or down as the chip row above it resizes.
-  const [deferredFilter, setDeferredFilter] = useState(filter);
-  // `fading` is true from the moment `filter`'s chip part diverges from what the
-  // list shows until the fade-out completes and we commit the new filter. It
-  // drives the list's opacity: true -> fade out, false -> fade in.
-  const fading = filterKey(filter) !== filterKey(deferredFilter);
-  // The chip fade-out advances `deferredFilter` from the wrapper's
-  // onAnimationComplete (see the body), which fires only after opacity has
-  // reached 0 — so the results recompute and swap while invisible, then fade
-  // back in. The wrapper wraps BOTH the list and the empty state, so that
-  // callback fires whichever is on screen (an earlier version hung it off the
-  // list alone and stranded "No fonts found" when a chip was cleared back to a
-  // non-empty result).
-  //
-  // Query-only edits (typing in the search box) don't fade — commit them at once
-  // so results track the text live.
+  // Advances only at opacity 0, so the new results and the chip-row reflow both
+  // land while invisible. The list never shows a half-applied result set, nor a
+  // grid that jumps as the chip row above it resizes.
+  const [shownFilter, setShownFilter] = useState(filter);
+  const fading = filterKey(filter) !== filterKey(shownFilter);
+  // Query-only edits don't fade, so results track the text live.
   useEffect(() => {
-    if (!fading && filter.query !== deferredFilter.query) {
-      setDeferredFilter(filter);
+    if (!fading && filter.query !== shownFilter.query) {
+      setShownFilter(filter);
     }
-  }, [fading, filter, deferredFilter.query]);
+  }, [fading, filter, shownFilter.query]);
 
-  // Commit a filter change to the URL. Preserves the non-filter view modes
-  // (sort, favorites) that live in the URL alongside the filter but aren't part
-  // of it. replace: true so intermediate taps don't stack history entries.
+  // sort/fav live in the URL beside the filter and must survive. replace: true
+  // so taps don't stack history entries.
   const commitFilter = (next: FilterState) => {
-    // Drop the slider position of any axis this change deselects, so a Reset
-    // (or a single-pill clear, or the Static font-type wipe) sends the slider
-    // back to its 50% default instead of resurrecting the old position the
-    // next time that axis is picked.
+    // Drop the slider position of any axis this deselects, so re-picking it
+    // starts at the 50% default instead of resurrecting the old position.
     pruneAxisValues(next.axes);
     navigate({
       search: { ...filterToSearch(next), sort: search.sort, fav: search.fav },
@@ -149,15 +112,13 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
     });
   };
 
-  // Relative position (0-100%) per selected variable-axis tag, from the
-  // sidebar sliders. Session-only UI state, not URL-synced: there's no
-  // universal min/max across fonts to persist as a real filter value, so each
-  // font maps this percent onto its own axis range for the live preview.
+  // Session-only, not URL-synced: axis ranges differ per font, so there is no
+  // universal value to share — each font maps this percent onto its own range.
   const [axisValues, setAxisValues] = useState<Record<string, number>>({});
   const setAxisValue = (tag: string, pct: number) =>
     setAxisValues((s) => ({ ...s, [tag]: pct }));
-  // Keep only the tags still selected. Returns the same object when nothing was
-  // dropped, so an unrelated filter change doesn't re-render the preview grid.
+  // Returns the same object when nothing was dropped, so an unrelated filter
+  // change doesn't re-render the preview grid.
   const pruneAxisValues = (nextAxes: string[]) =>
     setAxisValues((s) => {
       const keep = new Set(nextAxes);
@@ -168,11 +129,7 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
       return out;
     });
 
-  // Apply a saved preset. Its stored value is already in search shape, so it
-  // goes straight to the URL rather than through commitFilter's FilterState
-  // round-trip. sort/fav ride along untouched: a preset is a set of filter
-  // conditions, not a view, so it must not change how results are ordered or
-  // whether the favorites view is on.
+  // Already in search shape, so it skips commitFilter's round-trip.
   const applyPreset = (preset: FilterSearch) => {
     pruneAxisValues(searchToFilter(preset).axes);
     navigate({
@@ -181,10 +138,8 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
     });
   };
 
-  // Which filter group the sidebar panel shows. Session-only UI state, seeded
-  // from the context ref so returning from a font's detail page reopens the
-  // panel you left (the route unmounts on that trip, so plain useState would
-  // reset to Style every time). Position within the panel isn't restored.
+  // The route unmounts on a trip to a detail page, so plain useState would
+  // reset to Style every time; the context ref survives it.
   const [group, setGroupState] = useState<FilterGroupId>(
     () => lastGroup.current ?? DEFAULT_FILTER_GROUP
   );
@@ -195,46 +150,34 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
     },
     [lastGroup]
   );
-  // View mode is a personal-device preference, kept in localStorage rather than
-  // the URL so a shared link never forces the recipient into your grid/row
-  // choice. Sort stays in the URL, it can carry result meaning worth sharing.
+  // localStorage, not the URL, so a shared link never forces the recipient into
+  // your grid/row choice. Sort stays in the URL: it carries result meaning.
   const [viewPref, setViewPref] = useLocalStorageState(
     "font-colle.view",
     "grid"
   );
   const view: ViewMode = viewPref === "row" ? "row" : "grid";
-  // The view the grid currently shows. Like deferredFilter, it trails `view` by
-  // one fade so a grid<->row switch fades the list out, swaps layout while it's
-  // invisible, and fades back in — instead of the two layouts hard-cutting.
-  const [deferredView, setDeferredView] = useState(view);
-  const viewFading = view !== deferredView;
+  // Same one-fade lag as shownFilter, so the layouts swap while invisible.
+  const [shownView, setShownView] = useState(view);
+  const viewFading = view !== shownView;
   const sort = (search.sort as SortKey) ?? DEFAULT_SORT;
-  // Favorites-only view mode (rail heart toggle, ?fav=1). Narrows the result set
-  // to hearted fonts; independent of the filter pills so it composes with them.
   const favOnly = search.fav === "1";
 
-  // Favorites only affect the result set in the favorites view. Depend on the
-  // list only then, so hearting a font outside that view doesn't rebuild
-  // `results` (which would re-run the grid's entrance animation, a needless
-  // flash for what is just a heart toggle).
+  // Depended on only inside the favorites view: elsewhere, hearting a font
+  // would rebuild `results` and replay the grid's entrance animation.
   const favDep = favOnly ? favorites : null;
   const results = useMemo(() => {
-    const matched = applyFilters(fonts, deferredFilter);
+    const matched = applyFilters(fonts, shownFilter);
     const filtered = favDep
       ? matched.filter((f) => favDep.includes(f.id))
       : matched;
-    // With a search query, uFuzzy both filters and ranks the facet-passed
-    // candidates (best textual match first, ignoring the sort dropdown). Without
-    // one, the chosen sort orders the full set.
-    if (!deferredFilter.query.trim()) return sortFonts(filtered, sort);
-    return searchByQuery(filtered, deferredFilter.query);
-  }, [fonts, deferredFilter, sort, favDep]);
+    // With a query, uFuzzy both filters and ranks, ignoring the sort dropdown.
+    if (!shownFilter.query.trim()) return sortFonts(filtered, sort);
+    return searchByQuery(filtered, shownFilter.query);
+  }, [fonts, shownFilter, sort, favDep]);
 
   useListScrollRestore(scrollRef, listScrollY);
 
-  // Sort writes the URL immediately, it's cheap and doesn't gate on the
-  // deferred filter. It carries the current filter and the favorites view
-  // along so the URL keeps a consistent shape.
   const setSort = (next: SortKey) => {
     navigate({
       search: {
@@ -247,8 +190,6 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
   };
 
   const setView = (next: ViewMode) => setViewPref(next);
-  // Clear every filter and the search query, keeping only display prefs. Writes
-  // the emptied filter straight to the URL, carrying sort/fav along.
   const reset = useCallback(
     () =>
       navigate({
@@ -258,8 +199,6 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
     [navigate, search.sort, search.fav]
   );
 
-  // Toggle the favorites-only view, matching the rail's heart link: drop the
-  // param when leaving, set it when entering, keeping the rest of the search.
   const toggleFavOnly = useCallback(() => {
     navigate({
       search: (prev) => ({ ...prev, fav: favOnly ? undefined : "1" }),
@@ -267,12 +206,9 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
     });
   }, [navigate, favOnly]);
 
-  // Catalog keyboard shortcuts, the usual directory-site set: "/" focuses the
-  // search field, "g"/"r" switch the grid/row view, "f" toggles the favorites
-  // view, Escape resets the filters.
-  // They're ignored while a text field is focused (so typing "r" into the search
-  // box types an r, and the field's own Escape/blur still works). Bound to the
-  // document since there's no single focused element to hang them off.
+  // Ignored while a text field is focused, so typing "r" into the search box
+  // types an r and the field's own Escape still works. Bound to the document,
+  // there being no single element to hang them off.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
@@ -298,20 +234,13 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [setViewPref, reset, toggleFavOnly]);
-  // Leave the favorites view and clear filters, landing on the full catalog,
-  // the CTA shown when there are no favorites yet.
   const discoverFonts = () => {
     navigate({ search: { sort: search.sort }, replace: true });
   };
 
   const activeCount = activeFilterCount(filter);
-  // Reset clears the search query as well as the filters, so the control shows
-  // whenever either is active. One neutral "Reset" label covers all cases (only
-  // filters, only a search, or both) without a misleading "filter" wording.
   const hasQuery = filter.query.trim().length > 0;
 
-  // Open a font's detail page. Backs both the search box's Enter (top match) and
-  // clicks on an autocomplete row.
   const openFont = useCallback(
     (id: string) => {
       navigate({
@@ -322,11 +251,8 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
     [navigate]
   );
 
-  // Live autocomplete list under the search box: the top fuzzy matches for the
-  // CURRENT (undeferred) query, ranked by the same searchByQuery the grid uses,
-  // so the drop-down mirrors the results below. Runs against the full catalog by
-  // name — a jump-to affordance, independent of the active facet filters. Empty
-  // (and so the panel hidden) when the query is blank.
+  // Against the CURRENT (undeferred) query, so the drop-down keeps up with
+  // typing, and over the full catalog rather than the facet-filtered set.
   const searchSuggestions = useMemo<SearchSuggestion[]>(() => {
     const q = filter.query.trim();
     if (!q) return [];
@@ -335,10 +261,8 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
       .map((f) => ({ id: f.id, name: f.name }));
   }, [fonts, filter.query]);
 
-  // Typo-tolerant fallback for the pure-substring search: when a query returns
-  // nothing, suggest the closest family name ("Did you mean Inter?"). Only run
-  // the edit-distance scan on the empty state, and skip it when the suggestion
-  // would just echo the query.
+  // Only run the edit-distance scan on the empty state, and skip it when the
+  // suggestion would just echo the query.
   const suggestions = useMemo(() => {
     if (results.length > 0 || !hasQuery) return [];
     const q = filter.query.trim().toLowerCase();
@@ -349,11 +273,8 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
 
   return (
     <FilterLayout
-      // Preset heads the rail: it is a filter too, and the fastest one — a
-      // saved combination is where you start when you have one. It stays out of
-      // FILTER_GROUPS below the rule, though, because unlike those it is not a
-      // section in the panel's scroll: picking it swaps the panel wholesale.
-      // The rule is what says so.
+      // Preset heads the rail but stays out of FILTER_GROUPS: it is not a
+      // section in the panel's scroll, and picking it swaps the panel wholesale.
       rail={
         <div className="flex flex-col gap-1">
           <PresetToggle active={group === "preset"} onSelect={setGroup} />
@@ -367,9 +288,8 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
           filter={filter}
           onChange={commitFilter}
           group={group}
-          // The panel stacks every group in one scroll, so scrolling is what
-          // decides which group is current; the rail follows it. Clicking the
-          // rail still sets `group`, which the panel reads as a jump request.
+          // Scrolling decides which group is current; clicking the rail sets
+          // `group`, which the panel reads as a jump request.
           onActiveGroupChange={setGroup}
           axisValues={axisValues}
           onAxisValueChange={setAxisValue}
@@ -479,12 +399,12 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
             state renders its own chips inside <Empty>. */}
         {results.length > 0 && (
           <ActiveFilterChips
-            filter={deferredFilter}
+            filter={shownFilter}
             onChange={commitFilter}
             align="left"
-            // Encoded from the SAME deferred filter the chips show, so what a
-            // save stores is exactly the conditions spelled out beside it.
-            currentSearch={filterToSearch(deferredFilter)}
+            // The SAME filter the chips show, so a save stores exactly the
+            // conditions spelled out beside it.
+            currentSearch={filterToSearch(shownFilter)}
           />
         )}
         {/* Opacity wrapper over the RESULTS only (list or empty state). A chip
@@ -493,16 +413,17 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
             invisible and fade back in. Wrapping both branches (not just the
             list) keeps the commit firing even when the result set is empty.
             Opacity only — no transform. */}
+        {/* Must wrap BOTH the list and the empty state: the commit below rides
+            on this fade, so hung off the list alone it strands "No fonts found"
+            when a chip is cleared back to a non-empty result. */}
         <motion.div
           className="flex flex-1 flex-col"
           animate={{ opacity: fading || viewFading ? 0 : 1 }}
           transition={{ duration: MOTION_S.base, ease: EASE_OUT }}
           onAnimationComplete={() => {
-            // Fires at the end of both directions; only the fade-OUT (still
-            // pending) should commit the live filter / view, flipping the
-            // pending flag false and starting the fade back in.
-            if (fading) setDeferredFilter(filter);
-            if (viewFading) setDeferredView(view);
+            // Fires in both directions; only the fade-OUT commits.
+            if (fading) setShownFilter(filter);
+            if (viewFading) setShownView(view);
           }}
         >
           {results.length === 0 ? (
@@ -549,7 +470,7 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
               {/* Committed filter, like the in-list chips, so the row's reflow
                   stays in step with the faded results rather than jumping ahead. */}
               <ActiveFilterChips
-                filter={deferredFilter}
+                filter={shownFilter}
                 onChange={commitFilter}
               />
               {favOnly ? (
@@ -568,8 +489,8 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
               previewText={previewText}
               favorites={favorites}
               onToggleFavorite={toggle}
-              view={deferredView}
-              selection={deferredFilter}
+              view={shownView}
+              selection={shownFilter}
               axisValues={axisValues}
               scrollRef={scrollRef}
             />

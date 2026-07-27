@@ -1,20 +1,13 @@
-// Build-time generator: one Open Graph image per font family, rendered in the
-// family's OWN typeface. The card is a light canvas with the family name set
-// large and centered, and the FontColle brand mark (stroked logo icon + a Paper
-// Mono wordmark, on one row) near the bottom. Written to public/og/<id>.png
-// (plus public/og/_default.png for the home page), so the share route serves a
+// Build-time generator: one Open Graph image per family, set in the family's
+// OWN typeface, written to public/og/<id>.png so the share route serves a
 // static asset with zero runtime work.
 //
-// How "set in its own face" works without a runtime font loader: we fetch each
-// family's plain .ttf from the Google Fonts CSS2 API (asking for the exact
-// glyphs the name needs via text=), trace the name to an SVG <path> with
-// opentype.js, then rasterize the whole card to PNG with resvg. The font only
-// exists at build time; the shipped artifact is a flat PNG.
+// No runtime font loader is involved: this fetches each family's plain .ttf
+// from the CSS2 API (subset via text= to just the glyphs the name needs),
+// traces the name to an SVG <path> with opentype.js, then rasterizes with
+// resvg. The font exists only at build time; the artifact is a flat PNG.
 //
-// Run: pnpm gen:og   (re-run when the font list changes)
-//
-// Mirrors scripts/gen-specimen-svgs.mjs (same CSS2 + old-UA + opentype trace)
-// and is intentionally build-time only, never in the app bundle.
+// Run: pnpm gen:og. Mirrors scripts/gen-specimen-svgs.mjs.
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
@@ -46,8 +39,7 @@ const NAME_MAX_SIZE = 200;
 // hand the bytes straight to opentype.js (which doesn't decompress woff2).
 const UA = "Mozilla/4.0";
 
-// The FontColle mark: the four strokes from src/components/logo-icon.tsx (a
-// shop-front arch), drawn stroked in FG with no backdrop, matching the sidebar.
+// The four strokes from src/components/logo-icon.tsx, matching the sidebar.
 const ICON_PATHS = [
   "M3 21H21V12C21 9.61305 20.0518 7.32387 18.364 5.63604C16.6761 3.94821 14.3869 3 12 3C9.61305 3 7.32387 3.94821 5.63604 5.63604C3.94821 7.32387 3 9.61305 3 12V21Z",
   "M3 17L21 17",
@@ -64,11 +56,10 @@ const FONT_FACE =
   `@font-face{font-family:'Paper Mono';` +
   `src:url(data:font/woff2;base64,${PAPER_MONO_B64}) format('woff2');}`;
 
-// Ask the CSS2 API for a family and return the first truetype/opentype src.
-// `text` subsets the face to just those characters, so the name's font stays
-// tiny. The subset (text=) endpoint serves an extension-less /l/font?kit= URL,
-// so match on the format() hint rather than a file suffix (opentype.js can't
-// decode woff2, so we must avoid the woff2 src).
+// `text` subsets the face to just those characters. That endpoint serves an
+// extension-less /l/font?kit= URL, so match on the format() hint rather than a
+// file suffix — and it must not be the woff2 src, which opentype.js can't
+// decode.
 async function fontUrl(family, text) {
   const fam = family.trim().replace(/\s+/g, "+");
   const q = text ? `&text=${encodeURIComponent(text)}` : "";
@@ -142,9 +133,8 @@ function centeredText(font, text, { boxX, boxY, boxW, boxH, maxSize }) {
   return `<path transform="translate(${tx.toFixed(2)} ${ty.toFixed(2)})" d="${path.toPathData(2)}" fill="${FG}"/>`;
 }
 
-// Bottom brand mark: the stroked logo icon and a Paper Mono "FontColle" on the
-// SAME row, icon left of the word, the pair centered. Word is a <text> element
-// (resvg lays it out via the embedded font); the icon is a stroked path group.
+// The icon and wordmark on one row, centered. The word is a <text> element,
+// laid out by resvg via the embedded font; the icon is a stroked path group.
 function wordmark() {
   const iconSize = 56; // icon viewBox is 24 units
   const iconScale = iconSize / 24;
@@ -171,24 +161,23 @@ function wordmark() {
   return icon + word;
 }
 
-// The home page's whole card: logo icon stacked above the "FontColle" wordmark,
-// the pair optically centered on the canvas. Larger than the bottom strip's
-// mark because here it is the subject rather than an attribution.
+// The home page's card: icon stacked above the wordmark, optically centered.
+// Larger than the bottom strip's mark, being the subject not an attribution.
 function brandLockup() {
   const iconSize = 200;
   const iconScale = iconSize / 24; // icon viewBox is 24 units
   const gap = 48; // vertical gap between icon and word
   const wordSize = 96;
 
-  // Stack height uses the word's cap height rather than its full em box, so the
-  // optical centre sits where the eye expects it.
+  // Cap height, not the full em box, so the optical centre lands where the eye
+  // expects it.
   const wordVisualH = wordSize * 0.72;
   const stackH = iconSize + gap + wordVisualH;
   const top = (H - stackH) / 2;
 
   const iconX = (W - iconSize) / 2;
-  // Stroke scales with the icon, so divide the 1.5 UI stroke back out to keep
-  // the weight matching the sidebar mark instead of ballooning to 12px.
+  // Stroke scales with the icon, so divide the UI stroke back out or it
+  // balloons instead of matching the sidebar mark.
   const icon =
     `<g transform="translate(${iconX.toFixed(2)} ${top.toFixed(2)}) scale(${iconScale.toFixed(3)})" ` +
     `fill="none" stroke="${FG}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">` +
@@ -232,11 +221,10 @@ async function main() {
   writeFileSync(resolve(OUT_DIR, "_default.png"), toPng(card(brandLockup())));
   console.log("wrote _default.png");
 
-  // Only published families get a font page (see queries.ts getFontById), so
-  // only those need a card. `--force` re-renders all; default skips existing
-  // PNGs so an interrupted run resumes cheaply. `--ids=<file>` restricts to the
-  // family ids listed (one per line), the daily update regenerates only the
-  // changed subset, always with force since those cards must be refreshed.
+  // Only published families get a font page, so only those need a card.
+  // `--force` re-renders all; the default skips existing PNGs so an interrupted
+  // run resumes cheaply. `--ids=<file>` restricts to the ids listed, which the
+  // daily update uses with force to refresh only the changed subset.
   const force = process.argv.includes("--force");
   const idsArg = process.argv.find((a) => a.startsWith("--ids="));
   const onlyIds = idsArg

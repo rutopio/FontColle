@@ -1,16 +1,12 @@
-// One-off generator: pull the registered OpenType vendor IDs (OS/2 achVendID)
-// and their foundry names from Microsoft's typography registry, so the Vendor
-// facet can show "ParaType" instead of the bare 4-char code "PYRS".
+// One-off generator: the registered OpenType vendor IDs (OS/2 achVendID) and
+// their foundry names, so the Vendor facet shows "ParaType" instead of "PYRS".
 //
-// Source: https://learn.microsoft.com/en-us/typography/vendors/, one big HTML
-// table of `<tr><td>ID</td><td>Foundry Name</td></tr>` rows, names often an
-// anchor `<a href=…>Name</a>`. ~1760 entries; ~80% of our catalog's families
-// carry a code that appears here.
+// Source: https://learn.microsoft.com/en-us/typography/vendors/, one HTML table
+// of `<tr><td>ID</td><td>Foundry Name</td></tr>` rows. ~1760 entries, covering
+// ~80% of the catalog's families.
 //
-// We clean the names lightly (strip trailing Inc./Ltd./GmbH/… and a trailing
-// "(ABBR)" that just repeats the code) and fold codes to uppercase so they key
-// the same way facets.ts folds them. A small OVERRIDES map fills the few
-// high-count Google-ecosystem codes the MS registry doesn't list.
+// Codes fold to uppercase, keying the same way facets.ts folds them. OVERRIDES
+// fills the few high-count Google-ecosystem codes the registry doesn't list.
 //
 // Run: node scripts/gen-vendors-data.mjs
 
@@ -24,10 +20,9 @@ const FONTS_JSON = resolve(HERE, "../src/data/fonts.json");
 
 const PAGE_URL = "https://learn.microsoft.com/en-us/typography/vendors/";
 
-// Codes absent from the MS registry but common in the Google Fonts catalog
-// (Google-internal tags, tool artifacts, or foundries that never registered).
-// Hand-maintained; keep it short, only worth an entry if several families use
-// the code. Names verified from each foundry's own site / the font's METADATA.
+// Codes absent from the MS registry but common in the Google Fonts catalog.
+// Hand-maintained: keep it short, only worth an entry if several families use
+// the code, with the name verified from the foundry's site or the METADATA.
 const OVERRIDES = {
   AOEF: "Astigmatic One Eye",
   NEWT: "Vernon Adams",
@@ -51,13 +46,10 @@ function stripHtml(s) {
     .replace(/&nbsp;/g, " ");
 }
 
-// Light cleanup: collapse whitespace, drop a trailing "(ABBR)" that only
-// repeats an abbreviation, and trim common company suffixes. Conservative,
-// we'd rather keep a slightly long name than mangle one.
+// Deliberately conservative: better a slightly long name than a mangled one.
 function cleanName(name) {
   let n = name.replace(/\s+/g, " ").trim();
-  // A "/ Made with X" tail (e.g. "PYRS Fontlab Ltd. / Made with FontLab").
-  // Strip it first so the suffix rule below sees the real trailing token.
+  // Stripped first, so the suffix rule below sees the real trailing token.
   n = n.replace(/\s*\/\s*Made with .*$/i, "").trim();
   // Trailing parenthetical that just echoes an acronym: "SIL International (SIL)".
   n = n.replace(/\s*\([A-Z][A-Za-z0-9 .&-]*\)\s*$/, "").trim();
@@ -78,8 +70,8 @@ async function main() {
   });
 
   const map = {};
-  // Table rows: `<tr><td>ID</td><td>Foundry Name</td>…</tr>`. Take the first
-  // two cells of each row; skip the header (its cells are <th>, not <td>).
+  // The first two cells of each row. The header is skipped for free: its cells
+  // are <th>, not <td>.
   const rowRe = /<tr\b[^>]*>([\s\S]*?)<\/tr>/gi;
   const cellRe = /<td\b[^>]*>([\s\S]*?)<\/td>/gi;
   for (const [, inner] of html.matchAll(rowRe)) {
@@ -100,9 +92,8 @@ async function main() {
     if (!map[code]) map[code] = name;
   }
 
-  // The MS registry has ~1770 vendors; our catalog uses ~235. Ship only the
-  // codes that actually appear (folded to uppercase, matching facets.ts), so
-  // vendors.json stays a few KB instead of ~47KB of mostly-dead names.
+  // The registry has ~1770 vendors; the catalog uses ~235. Shipping only those
+  // keeps vendors.json a few KB instead of ~47KB of mostly-dead names.
   const used = new Set();
   for (const rec of JSON.parse(readFileSync(FONTS_JSON, "utf8"))) {
     const v = (rec.vendorId ?? "").trim().toUpperCase();

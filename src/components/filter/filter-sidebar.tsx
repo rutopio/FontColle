@@ -54,19 +54,15 @@ interface Props {
   index: FacetIndex;
   filter: FilterState;
   onChange: (next: FilterState) => void;
-  // The rail's current group. "preset" swaps the whole panel out; any other id
-  // is the section the panel scrolls to, and is also what the rail highlights.
+  // "preset" swaps the whole panel out; any other id is a section to scroll to.
   group: FilterGroupId;
-  // Reports the section that scrolling brought to the top, so the rail can
-  // follow the scroll. Omitted where no rail is showing.
+  // Omitted where no rail is showing.
   onActiveGroupChange?: (id: FilterGroupId) => void;
-  // Relative position (0-100, default 50) per selected variable-axis tag,
-  // forwarded to the preview grid to drive each font's own axis range live.
+  // A 0-100 position per axis tag; each font maps it onto its own range.
   axisValues: Record<string, number>;
   onAxisValueChange: (tag: string, pct: number) => void;
-  // Apply a saved preset: replaces the filter half of the URL search wholesale,
-  // leaving sort/fav alone. Separate from onChange because a preset is already
-  // stored in search shape, so it skips the FilterState round-trip.
+  // Replaces the filter half of the URL search wholesale, leaving sort/fav
+  // alone. Separate from onChange because a preset is already in search shape.
   onApplyPreset: (search: FilterSearch) => void;
 }
 
@@ -80,9 +76,8 @@ export function FilterSidebar({
   onAxisValueChange,
   onApplyPreset,
 }: Props) {
-  // A section that just had its selection silently cleared by a mutually-
-  // exclusive pick elsewhere (Weight/Width pill <-> wght/wdth axis). The bumped
-  // key drives a one-shot header flash so the swap isn't invisible.
+  // A section whose selection was just silently cleared by a mutually-exclusive
+  // pick elsewhere. The bumped key drives a one-shot header flash.
   const [flash, setFlash] = useState<{
     section: "weights" | "widths" | "axes";
     key: number;
@@ -90,12 +85,9 @@ export function FilterSidebar({
   const flashKeyFor = (s: "weights" | "widths" | "axes") =>
     flash?.section === s ? flash.key : undefined;
 
-  // Thin wrappers: every rule lives in filter-actions.ts (pure, testable); the
-  // component only feeds the current filter in and pushes the result back out.
+  // Every rule lives in filter-actions.ts, pure and testable.
   const toggle = (key: Parameters<typeof actions.toggle>[1], value: string) =>
     onChange(actions.toggle(filter, key, value));
-  // Selecting an axis clears the matching Weight/Width pick; flash that section
-  // if it actually held a selection.
   const toggleAxis = (tag: string) => {
     const next = actions.toggleAxis(filter, tag);
     const cleared = (["weights", "widths"] as const).find(
@@ -104,8 +96,6 @@ export function FilterSidebar({
     if (cleared) setFlash({ section: cleared, key: Date.now() });
     onChange(next);
   };
-  // Selecting a Weight/Width pill clears the matching axis; flash Variable axes
-  // if it actually held a selection.
   const select = (key: "weights" | "widths", value: string) => {
     const next = actions.select(filter, key, value);
     if (filter.axes.length > 0 && next.axes.length < filter.axes.length) {
@@ -118,10 +108,7 @@ export function FilterSidebar({
   const selectFontType = (value: string) =>
     onChange(actions.selectFontType(filter, value));
 
-  // Category cards are the primary categories, each mutually exclusive (Slab
-  // and Emoji are their own categories now). Fixed display order; Slab/Emoji
-  // slot in before the odd-one-out Graphics. Italic is a separate section
-  // below, not a Category card.
+  // Italic is a separate section below, not a Category card.
   const categoryCount = (v: string) =>
     index.categories.find(([c]) => c === v)?.[1] ?? 0;
   const categoryCards = [
@@ -143,7 +130,6 @@ export function FilterSidebar({
   const toggleCategory = (value: string) => toggle("categories", value);
   const selectItalic = (value: string) =>
     onChange(actions.selectItalic(filter, value));
-  // OR/AND toggle for a multi-select section, plus the current mode to show.
   const toggleMode = (key: ModeKey) =>
     onChange(actions.toggleMatchMode(filter, key));
   const modeOf = (key: ModeKey) => matchMode(filter, key);
@@ -156,9 +142,9 @@ export function FilterSidebar({
   const colorSelected = actions.colorSelection(filter);
   const fontTypeSelected = actions.fontTypeSelection(filter);
 
-  // The classification sub-lists, split by the group they render under. Both
-  // feed a single ClassificationSection, so the shared OR/AND mode and reset sit
-  // on one header instead of being hosted by whichever sub-list came first.
+  // Split by the group they render under. Both feed a single
+  // ClassificationSection, so the shared OR/AND mode and reset sit on one
+  // header rather than on whichever sub-list came first.
   const styleClassifications = useMemo(
     () => index.style.filter((s) => s.group === "style"),
     [index.style]
@@ -168,32 +154,26 @@ export function FilterSidebar({
     [index.style]
   );
 
-  // Metrics: set or clear one range key; toggle a boolean facet (off = absent).
   const setMetric = (key: MetricKey, next: MetricRange | undefined) => {
     const metrics = { ...filter.metrics };
     if (next) metrics[key] = next;
     else delete metrics[key];
     onChange({ ...filter, metrics });
   };
-  // Hint: radio-style toggle. Re-selecting the active value clears it.
   const setHinting = (value: boolean) =>
     onChange({
       ...filter,
       hasHinting: filter.hasHinting === value ? undefined : value,
     });
 
-  // The current filter in URL-search shape, for the Preset panel: it is both
-  // what a Save stores and what stored presets are matched against.
   const currentSearch = useMemo(() => filterToSearch(filter), [filter]);
 
   // Always open at the top; don't let router scroll restoration carry the
   // sidebar's position across list <-> detail navigation.
   const viewportRef = useScrollReset<HTMLDivElement>();
 
-  // Every filter group is stacked in this one scroll, so the rail no longer
-  // swaps the panel's contents — it highlights whichever section the scroll has
-  // reached, and jumps to one when clicked. Preset is the exception: it isn't a
-  // facet of the catalog, so it still replaces the panel wholesale.
+  // Preset is the exception: not a facet, so it replaces the panel wholesale
+  // rather than being one more section in this scroll.
   const showingPreset = group === "preset";
   const { registerSection } = useSectionScrollspy({
     viewportRef,
@@ -206,17 +186,14 @@ export function FilterSidebar({
     enabled: !showingPreset,
   });
 
-  // Base UI's ScrollArea re-evaluates overflow on scroll, but not when the
-  // panel content is swapped by AnimatePresence. Leaving the (tall, scrolled)
-  // filter list for the shorter Preset panel leaves the scrollbar stuck visible
-  // even though nothing overflows. Once the outgoing panel has left and the new
-  // one is measured, nudge a scroll event so the primitive recomputes and hides
-  // the now-unneeded scrollbar.
+  // Base UI's ScrollArea re-evaluates overflow on scroll, but not when
+  // AnimatePresence swaps the panel content, so leaving the tall filter list
+  // for the shorter Preset panel strands a scrollbar over content that no
+  // longer overflows.
   const resetScrollbar = () => {
-    // The incoming panel isn't laid out on the same frame the exit completes;
-    // it swaps in a few frames later. Nudge a scroll event across a short run
-    // of frames so at least one lands after the new (non-overflowing) content
-    // is measured, letting Base UI drop the now-unneeded scrollbar.
+    // The incoming panel isn't laid out on the frame the exit completes, so
+    // nudge a scroll event across several frames: at least one then lands after
+    // the new content is measured and Base UI drops the scrollbar.
     let frame = 0;
     const nudge = () => {
       viewportRef.current?.dispatchEvent(
@@ -227,8 +204,6 @@ export function FilterSidebar({
     requestAnimationFrame(nudge);
   };
 
-  // One group's sections. Every group renders, stacked, so this is keyed by id
-  // rather than compared against the active one.
   const groupContent = (id: FilterGroupId) => (
     <>
       {id === "style" && (
@@ -478,17 +453,13 @@ export function FilterSidebar({
             key={showingPreset ? "preset" : "filters"}
             className={cn(
               "flex flex-col p-4",
-              // Preset's empty state centres itself vertically, which needs a
-              // height to centre in. The filter list is a tall scrolling stack,
-              // where a min-height would stretch nothing to any purpose.
+              // Preset's empty state centres vertically, so it needs a height
+              // to centre in; the tall filter list has no use for one.
               showingPreset
                 ? "min-h-full gap-12"
-                : // One rule per rail group (Style, Variant, Language, ...), not
-                  // between the sections inside them — those stay on plain
-                  // spacing, so the line reads as the boundary the rail names.
-                  // Centred in the space rather than sat on top of the group
-                  // below: half the old gap-14 as margin above it, half as
-                  // padding below, keeping the 56px the groups already had.
+                : // One rule per rail group, not between the sections inside
+                  // them, so the line reads as the boundary the rail names.
+                  // Equal margin above and padding below centres it in the gap.
                   "[&>section+section]:mt-7 [&>section+section]:border-border [&>section+section]:border-t [&>section+section]:pt-7"
             )}
             initial={{ opacity: 0, y: 8 }}

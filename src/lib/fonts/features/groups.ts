@@ -1,6 +1,6 @@
-// Feature grouping for the filter panel. The features panel groups tags by what
-// they do, not by how many fonts have them. Group order below is the display
-// order; within a group, pills stay count-sorted (see Section).
+// Feature grouping for the filter panel: tags bucket by what they do, not by
+// how many fonts have them. Order below is display order; within a group, pills
+// stay count-sorted (see Section).
 
 export type FeatureGroupId =
   | "ligatures"
@@ -44,23 +44,17 @@ export const FEATURE_GROUPS: {
   { id: "other", title: "Private & other", topN: 3 },
 ];
 
-// Explicit tag -> group. ss##/cv## are matched by pattern instead (there are
-// 20 and 81 of them in the catalog). Anything unlisted falls to "other" (shown
-// as "Private & other"), which is where the private/reserved tags live (zz01–
-// zz52, the uppercase vendor tags APLF/MOSC/…, a broken 3-letter "lig", …), 62
-// of the catalog's 272 tags, so the bucket cannot be dropped. Only size (Optical
-// Size) and elli among them are registered features, but neither has a natural
-// home group, so they stay here too. rvrn and crcy were moved out to their real
-// groups below.
+// Explicit tag -> group; ss##/cv## match by pattern instead. Anything unlisted
+// falls to "other", where the private/reserved tags live (zz01–zz52, the
+// uppercase vendor tags, …) — 62 of the catalog's 272 tags, so that bucket
+// cannot be dropped.
 const FEATURE_GROUP_OF: Record<string, FeatureGroupId> = {
-  // Ligatures
   liga: "ligatures",
   clig: "ligatures",
   dlig: "ligatures",
   hlig: "ligatures",
   rlig: "ligatures",
   slig: "ligatures",
-  // Alternates
   aalt: "alternates",
   salt: "alternates",
   calt: "alternates",
@@ -73,7 +67,6 @@ const FEATURE_GROUP_OF: Record<string, FeatureGroupId> = {
   titl: "alternates",
   ornm: "alternates",
   falt: "alternates",
-  // Letter case
   smcp: "letterCase",
   c2sc: "letterCase",
   pcap: "letterCase",
@@ -81,7 +74,6 @@ const FEATURE_GROUP_OF: Record<string, FeatureGroupId> = {
   case: "letterCase",
   cpsp: "letterCase",
   unic: "letterCase",
-  // Numerals
   lnum: "numerals",
   onum: "numerals",
   tnum: "numerals",
@@ -96,7 +88,6 @@ const FEATURE_GROUP_OF: Record<string, FeatureGroupId> = {
   sinf: "numerals",
   ordn: "numerals",
   crcy: "numerals", // currency symbols, alongside zero/frac/ordn
-  // Positioning & kerning
   kern: "positioning",
   vkrn: "positioning",
   mark: "positioning",
@@ -110,9 +101,8 @@ const FEATURE_GROUP_OF: Record<string, FeatureGroupId> = {
   opbd: "positioning",
   lfbd: "positioning",
   rtbd: "positioning",
-  // Script shaping: General — script-agnostic shaping. ccmp/locl apply to any
-  // script; the cursive-join quartet (init/medi/fina/isol) and rvrn (mandatory
-  // variation pass) are shared machinery, not tied to one writing system.
+  // Script-agnostic shaping: ccmp/locl apply anywhere, and the cursive-join
+  // quartet plus rvrn are shared machinery, not tied to one writing system.
   rvrn: "shapingGeneral",
   ccmp: "shapingGeneral",
   locl: "shapingGeneral",
@@ -120,8 +110,7 @@ const FEATURE_GROUP_OF: Record<string, FeatureGroupId> = {
   medi: "shapingGeneral",
   fina: "shapingGeneral",
   isol: "shapingGeneral",
-  // Script shaping: Indic — the Brahmic shaping engine's reordering/conjunct
-  // features (Devanagari, Bengali, Tamil, …).
+  // The Brahmic shaping engine's reordering/conjunct features.
   akhn: "shapingIndic",
   rphf: "shapingIndic",
   blwf: "shapingIndic",
@@ -140,12 +129,11 @@ const FEATURE_GROUP_OF: Record<string, FeatureGroupId> = {
   vatu: "shapingIndic",
   pref: "shapingIndic",
   haln: "shapingIndic",
-  // Script shaping: Korean — Hangul jamo composition (leading/vowel/trailing).
+  // Hangul jamo composition.
   ljmo: "shapingKorean",
   tjmo: "shapingKorean",
   vjmo: "shapingKorean",
-  // Script shaping: Arabic & RTL — Syriac final/medial forms, bidi mirroring,
-  // and Syriac stretching.
+  // Syriac forms, bidi mirroring, Syriac stretching.
   fin2: "shapingArabic",
   fin3: "shapingArabic",
   med2: "shapingArabic",
@@ -153,14 +141,13 @@ const FEATURE_GROUP_OF: Record<string, FeatureGroupId> = {
   rtlm: "shapingArabic",
   rtla: "shapingArabic",
   stch: "shapingArabic",
-  // Script shaping: Math — math-mode script styles, flattened accents, dotless.
+  // Math-mode script styles, flattened accents, dotless.
   dtls: "shapingMath",
   flac: "shapingMath",
   ssty: "shapingMath",
   mgrk: "shapingMath",
-  // CJK: widths, JIS/kanji form variants, simplified/traditional, ruby notation.
-  // hkna is the horizontal kana pair, so it stays here; its vertical partner
-  // vkna moves to "vertical" below.
+  // CJK: widths, JIS/kanji form variants, simplified/traditional, ruby. hkna is
+  // the horizontal kana pair; its vertical partner vkna sits in "vertical".
   ruby: "cjk",
   fwid: "cjk",
   hwid: "cjk",
@@ -179,14 +166,13 @@ const FEATURE_GROUP_OF: Record<string, FeatureGroupId> = {
   smpl: "cjk",
   chws: "cjk",
   ital: "cjk",
-  // Vertical: features that only apply when text is set top-to-bottom.
+  // Only apply when text is set top-to-bottom.
   vert: "vertical",
   vrt2: "vertical",
   vkna: "vertical",
   vchw: "vertical",
 };
 
-/** Which section a feature tag belongs to. */
 export function featureGroupOf(tag: string): FeatureGroupId {
   if (/^ss\d\d$/.test(tag)) return "stylisticSets";
   if (/^cv\d\d$/.test(tag)) return "characterVariants";
@@ -197,18 +183,18 @@ export interface FeatureGroup {
   id: FeatureGroupId;
   title: string;
   items: [string, number][];
-  /** The tags this group shows up front. Holds every tag when `topN` is unset. */
+  /** Every tag when `topN` is unset. */
   topNSet: Set<string>;
 }
 
 /**
- * Bucket [tag, count] pairs into the display groups, preserving the incoming
- * order within each. Empty groups are dropped.
+ * Buckets [tag, count] pairs into the display groups, preserving incoming order
+ * within each and dropping empty groups.
  *
- * `topNSet` is always computed from font count, never from `features`' order,
- * flipping the panel to A–Z must reorder the pills, not change which ones the
- * group hides. A group with no `topN` gets a set of all its tags, so Pills
- * shows them all rather than falling back to its own rarity threshold.
+ * `topNSet` comes from font count, never from `features`' order: flipping the
+ * panel to A–Z must reorder the pills, not change which ones hide. A group with
+ * no `topN` gets all its tags, so Pills shows them all rather than falling back
+ * to its own rarity threshold.
  */
 export function groupFeatures(features: [string, number][]): FeatureGroup[] {
   const byGroup = new Map<FeatureGroupId, [string, number][]>();

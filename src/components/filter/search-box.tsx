@@ -10,16 +10,9 @@ import {
 } from "@/components/ui/empty";
 import { cn } from "@/lib/utils";
 
-// A magnifier icon over a full-width `type="search"` box, shared by the filter
-// sections (facet / feature / language) and the glyphs sidebar. It stays a raw
-// <input> rather than the shadcn <Input>: those callers want a lighter, icon-led
-// search field, not the primitive's form-field chrome (rounded-lg, ring-3).
-//
-// `size` swaps the icon geometry and left padding; `sm` is the tighter sidebar
-// build. `text-base` on mobile stops iOS Safari zooming on focus; the desktop
-// size drops to text-sm/text-xs via the size variant. Any other native input
-// prop (onKeyDown, aria-invalid, ...) passes straight through, and
-// `inputClassName` layers on top for per-caller focus/state styling.
+// A raw <input>, not the shadcn <Input>: these callers want a lighter, icon-led
+// field, not the primitive's form chrome. `text-base` on mobile stops iOS
+// Safari zooming on focus.
 const SIZES = {
   md: { icon: "left-2.5 size-4", pad: "py-1.5 pl-8 sm:text-sm" },
   sm: { icon: "left-2 size-3.5", pad: "h-8 pl-7 sm:text-xs" },
@@ -37,7 +30,6 @@ export function SearchBox({
   value: string;
   onChange: (value: string) => void;
   placeholder: string;
-  // Accessible name for the input, e.g. "Search OpenType features".
   label: string;
   size?: keyof typeof SIZES;
   inputClassName?: string;
@@ -71,9 +63,6 @@ export function SearchBox({
   );
 }
 
-// The no-results state for a searchable section: an icon, a title and
-// description, and a button that clears the query. Title/description copy is
-// per-section (features vs languages vs facets), so both are passed in.
 export function NoMatches({
   title,
   description,

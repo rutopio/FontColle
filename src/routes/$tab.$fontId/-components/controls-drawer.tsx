@@ -4,16 +4,9 @@ import { useState } from "react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { FAB_MOTION, FAB_SHIFT, fabBottom, fabLift } from "./fab-motion";
 
-// Mobile-only (<768px) access to the detail sidebar controls. The desktop
-// two-level sidebar collapses to an unreachable Sheet on mobile (see
-// app-sidebar), so on the Instances/Tester/Glyphs tabs, the only ones with sidebar
-// controls (size/axes/features, Unicode blocks), this floating button opens a
-// bottom drawer holding the very same panel. Hidden on desktop and on tabs with
-// no controls; the page decides when to render it (inside an AnimatePresence,
-// so the FAB can animate out when the tab changes).
-//
-// Sits one button-height (3.5rem) plus a 1rem gap above LinksDrawer's FAB,
-// which holds the lower slot on every tab so it stays put as tabs change.
+// Mobile-only access to the detail sidebar controls: the desktop sidebar
+// collapses to an unreachable Sheet there (see app-sidebar), so this FAB opens
+// a drawer holding the very same panel. Stacks above LinksDrawer's FAB.
 export function ControlsDrawer({
   title,
   icon: FabIcon,
@@ -21,15 +14,10 @@ export function ControlsDrawer({
   children,
 }: {
   title: string;
-  // The tab's own icon, matching its entry in the detail rail (sliders for the
-  // preview controls, the glyph grid for Unicode blocks).
   icon: Icon;
-  // Drops the FAB with the rest of the stack when the preview dock slides away.
   dockVisible: boolean;
-  // A render prop so the panel can dismiss the drawer once a choice is made
-  // (picking a Unicode block is a one-shot action, unlike the Instances sliders
-  // you keep adjusting). The same panel renders in the desktop sidebar, where
-  // there is nothing to close, so the callback is supplied only here.
+  // A render prop, so the panel can dismiss the drawer after a one-shot choice
+  // like picking a Unicode block.
   children: (close: () => void) => React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);

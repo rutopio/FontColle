@@ -1,9 +1,8 @@
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
-// A card section on the detail page, optionally titled with a count badge. When
-// no label/count/action is given the header and its divider are dropped, leaving
-// a plain card, used by the Use-tab methods, whose tab label already names them.
+// With no label, count or action the header and its divider are dropped: the
+// Use-tab methods rely on that, their tab label already naming them.
 export function Panel({
   label,
   count,
@@ -14,11 +13,8 @@ export function Panel({
 }: {
   label?: string;
   count?: number;
-  // Optional control rendered at the right of the header (e.g. a copy button).
   action?: React.ReactNode;
   className?: string;
-  // Extra classes on the body wrapper, e.g. max-w-lg to keep prose-width
-  // content from stretching across a full-width card.
   bodyClassName?: string;
   children: React.ReactNode;
 }) {
@@ -31,8 +27,8 @@ export function Panel({
             <div
               className={cn(
                 "flex justify-between",
-                // A count sits on the label's baseline; an action is an icon
-                // button, which reads right only when centered on the label.
+                // A count sits on the label's baseline; an icon button reads
+                // right only when centred on it.
                 action ? "items-center" : "items-baseline"
               )}
             >

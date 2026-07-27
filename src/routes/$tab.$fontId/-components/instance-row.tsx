@@ -3,12 +3,7 @@ import { previewStyle } from "@/lib/fonts/preview-style";
 import type { FontInstance } from "@/lib/fonts/types";
 import { EditableSpecimen } from "./editable-specimen";
 
-// One named-instance row: its label + coords on the first line, and a large
-// editable preview of the shared specimen on the second. Editing the preview
-// updates the shared text, so every row and the type tester change together.
-//
-// The sidebar's size and OpenType feature controls apply to every row, so the
-// whole list can be read at one size with the same features on. The axis
+// The sidebar's size and feature controls apply to every row, but the axis
 // sliders deliberately do NOT: each row is pinned to its own instance's coords,
 // which is the entire point of this view.
 export function InstanceRow({
@@ -29,8 +24,8 @@ export function InstanceRow({
   // undefined when no feature deviates from its W3C default, which leaves
   // font-feature-settings unset rather than pinning it to an empty value.
   featureSettings: string | undefined;
-  // Axis tags that differ somewhere in the family. Only these get a badge: a
-  // tag every instance pins to the same value says nothing about this row.
+  // Only varying tags get a badge: one every instance pins to the same value
+  // says nothing about this row.
   varyingAxisTags: Set<string>;
   onEditText: (value: string) => void;
 }) {
@@ -46,9 +41,8 @@ export function InstanceRow({
   };
 
   return (
-    // Mirrors the list's FontRow: a full-width row, its own bottom border, the
-    // name line above a large single-line preview. No hover/focus tint here
-    // though, the row isn't a link, its preview is the editable target.
+    // Mirrors FontRow, but with no hover/focus tint: this row isn't a link,
+    // its preview is an editable field.
     <div className="flex flex-col justify-center gap-3 overflow-hidden border-b py-4">
       {/* items-center, not baseline: the coord badges are fixed-height pills,
           so they centre on the name the way FontRow's trait badges do. */}

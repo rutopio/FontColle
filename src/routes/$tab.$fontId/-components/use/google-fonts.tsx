@@ -21,10 +21,8 @@ import {
   weightList,
 } from "./shared";
 
-// METHOD 1, Google Fonts hosted API. Configure each axis (Full axis vs one
-// value), drop the generated <link>/@import, then apply the CSS. The per-axis
-// controls drive both the stylesheet URL and the CSS block, mirroring
-// fonts.google.com's embed panel.
+// METHOD 1, Google Fonts hosted API. Mirrors fonts.google.com's embed panel:
+// the per-axis controls drive both the stylesheet URL and the CSS block.
 export function GoogleFontsMethod({
   font,
   cssFamily,
@@ -33,7 +31,6 @@ export function GoogleFontsMethod({
 }: {
   font: FontRecord;
   cssFamily: string;
-  // Current Specimen sidebar axis values + italic, for "Match current preview".
   previewAxes: Record<string, number>;
   previewItalic: boolean;
 }) {
@@ -49,10 +46,8 @@ export function GoogleFontsMethod({
         ? "slnt"
         : "none";
 
-  // The axes shown as their own controls, ordered wght -> wdth -> opsz -> slnt
-  // first (the common variable axes, in that fixed order), then the rest
-  // alphabetically. When italic rides on the slnt axis, the Italic toggle
-  // governs it, so drop slnt from the list.
+  // When italic rides on the slnt axis the Italic toggle governs it, so slnt
+  // is dropped from the list.
   const axes = [...font.axes]
     .filter((a) => !(italicKind === "slnt" && a.tag === "slnt"))
     .sort((a, b) => {
@@ -62,8 +57,7 @@ export function GoogleFontsMethod({
       return a.tag.localeCompare(b.tag, "en-US");
     });
 
-  // Per-axis mode + value, seeded to Full axis at the axis default. Static
-  // families (no axes) still expose weight via the shipped `weights` list.
+  // Static families have no axes and expose weight via `weights` instead.
   const [picks, setPicks] = useState<Record<string, AxisPick>>(() =>
     Object.fromEntries(
       font.axes.map((a) => [
@@ -76,9 +70,6 @@ export function GoogleFontsMethod({
   const setPick = (tag: string, next: Partial<AxisPick>) =>
     setPicks((p) => ({ ...p, [tag]: { ...p[tag], ...next } }));
 
-  // Pin every axis to the value it currently shows in the Specimen preview, so
-  // the generated snippet renders exactly what's on screen. Italic follows too
-  // (skipped for a slnt-driven family, where the preview toggle maps onto slnt).
   const matchPreview = () => {
     setPicks((prev) => {
       const next = { ...prev };
@@ -91,7 +82,6 @@ export function GoogleFontsMethod({
     });
     if (italicKind !== "none") setItalic(previewItalic);
   };
-  // Only offer it when there's something to match: a variable family with axes.
   const canMatchPreview = font.axes.length > 0;
 
   const href = googleFontsHref(font, picks, italic, italicKind);
@@ -151,7 +141,6 @@ export function GoogleFontsMethod({
                 </li>
               ))
             ) : (
-              // Static family: no axes to configure, just the shipped weights.
               <li>
                 <StaticWeightControl
                   weights={font.weights}
@@ -201,10 +190,6 @@ export function GoogleFontsMethod({
   );
 }
 
-// One axis row: its name + a Full axis / One value tab switch. In One-value
-// mode there's always a slider across the axis range; axes with named stops in
-// the registry (Weight, Width) also show those as value pills, so you can either
-// drag or click a named instance. Full-axis requests the whole min..max span.
 function AxisControl({
   axis,
   pick,
@@ -216,17 +201,15 @@ function AxisControl({
 }) {
   const min = axis.min ?? 0;
   const max = axis.max ?? min;
-  // Named stops (from the axis registry) that fall inside this family's range,
-  // for the axes whose stops read as useful instance names (Weight, Width).
-  // opsz's stops are just point sizes and slnt has only one, so they stay
-  // slider-only to avoid a wall of pills.
+  // Registry stops inside this family's range. opsz's stops are just point
+  // sizes and slnt has only one, so those stay slider-only.
   const stops = STOP_AXES.has(axis.tag)
     ? axisStops(axis.tag).filter((s) => s.value >= min && s.value <= max)
     : [];
 
   return (
-    // Controlled Collapsible: the One-value controls expand/collapse (with a
-    // height transition) as the mode tab flips, instead of popping in and out.
+    // Controlled, so the One-value controls animate their height as the mode
+    // flips instead of popping in and out.
     <Collapsible open={pick.mode === "one"} className="flex flex-col">
       <div className="flex items-center justify-between gap-2">
         <span className="truncate text-sm">
@@ -298,7 +281,6 @@ function AxisControl({
   );
 }
 
-// Static family fallback: no axes, so just pick one of the shipped weights.
 function StaticWeightControl({
   weights,
   value,
@@ -327,25 +309,21 @@ function StaticWeightControl({
   );
 }
 
-// Display order for the common variable axes: Weight, Width, Optical Size,
-// Slant come first, in this order; every other axis sorts after them (then
-// alphabetically). Lower rank = earlier.
+// Lower rank sorts earlier; everything unlisted follows, alphabetically.
 const AXIS_ORDER = ["wght", "wdth", "opsz", "slnt"];
 const axisRank = (tag: string): number => {
   const i = AXIS_ORDER.indexOf(tag);
   return i === -1 ? AXIS_ORDER.length : i;
 };
 
-// Axes whose registry stops make good named-instance pills. Weight and Width
-// have a compact, meaningful set; opsz (point sizes) and parametric axes don't.
+// Only these have a compact, meaningful set of registry stops; opsz's are bare
+// point sizes and the parametric axes have none worth showing.
 const STOP_AXES = new Set(["wght", "wdth"]);
 
-// Build the Google Fonts CSS2 stylesheet URL from the per-axis selections,
-// mirroring fonts.google.com's embed URL. GF lists the requested axis tags as
-// an alphabetically-sorted tuple (en-US, case-insensitive, so `ital` and the
-// lowercase registered axes precede the uppercase custom ones), then their
-// values in the same order: `min..max` for a Full-axis pick, the pinned number
-// for a One-value pick; `ital` -> 1 when italic.
+// Mirrors fonts.google.com's embed URL: the axis tags as an alphabetically
+// sorted tuple (en-US, case-insensitive, so lowercase registered axes precede
+// uppercase custom ones), then their values in the same order — `min..max` for
+// a Full-axis pick, the pinned number for a One-value pick.
 function googleFontsHref(
   font: FontRecord,
   picks: Record<string, AxisPick>,
@@ -354,8 +332,7 @@ function googleFontsHref(
 ): string {
   const family = urlFamily(font.name);
   const parts: { tag: string; value: string }[] = [];
-  // Italic on a real `ital` axis (or static italic) is a separate `ital@1` axis;
-  // on a `slnt` family it's the slnt axis pinned to its slanted min.
+  // A real `ital` axis becomes `ital@1`; a slnt family pins slnt to its min.
   const slnt = font.axes.find((a) => a.tag === "slnt");
   if (italic && italicKind === "ital") parts.push({ tag: "ital", value: "1" });
   if (italic && italicKind === "slnt" && slnt?.min != null) {
@@ -368,14 +345,12 @@ function googleFontsHref(
     if (!pick) continue;
     const min = axis.min ?? pick.value;
     const max = axis.max ?? pick.value;
-    // A degenerate axis (min === max) has nothing to request; skip it.
-    if (pick.mode === "full" && min < max) {
+      if (pick.mode === "full" && min < max) {
       parts.push({ tag: axis.tag, value: `${min}..${max}` });
     } else {
       parts.push({ tag: axis.tag, value: String(pick.value) });
     }
   }
-  // Static family with no variable axes: fall back to the pinned/base weight.
   if (parts.every((p) => p.tag === "ital")) {
     const w = picks.wght?.value ?? 400;
     parts.push({ tag: "wght", value: String(w) });
@@ -389,12 +364,9 @@ function googleFontsHref(
   return `https://fonts.googleapis.com/css2?family=${family}${spec}&display=swap`;
 }
 
-// The CSS block that applies the selection, matching GF's "CSS class" snippet:
-// the family, then the standard properties GF emits for the common axes
-// (`font-optical-sizing: auto` when opsz is present, `font-weight`, `font-width`
-// for wdth, `font-style`), and `font-variation-settings` for any other axis
-// pinned to a single value. Full-axis picks on non-standard axes leave the axis
-// free, so they aren't written here.
+// Matches GF's "CSS class" snippet: the standard properties for the common
+// axes, then font-variation-settings for any other axis pinned to a single
+// value. A Full-axis pick leaves its axis free, so it isn't written here.
 function googleFontsCss(
   font: FontRecord,
   cssFamily: string,
@@ -405,23 +377,20 @@ function googleFontsCss(
   const lines = [`  font-family: ${cssFamily};`];
   const has = (tag: string) => font.axes.some((a) => a.tag === tag);
   if (has("opsz")) lines.push("  font-optical-sizing: auto;");
-  // Weight: the pinned value, or the family's default when left as a full axis.
   const wght = picks.wght;
   if (wght) lines.push(`  font-weight: ${wght.value};`);
   const wdth = picks.wdth;
   if (wdth?.mode === "one") lines.push(`  font-width: ${wdth.value}%;`);
-  // Italic on an `ital` axis is a plain font-style; on a `slnt` family it's an
-  // oblique angle (the slnt slanted min, expressed as a positive degree slope).
+  // An `ital` axis is a plain font-style; a slnt family needs an oblique angle.
   const slnt = font.axes.find((a) => a.tag === "slnt");
   if (italicKind === "slnt" && italic && slnt?.min != null) {
     lines.push(`  font-style: oblique ${-slnt.min}deg;`);
   } else {
     lines.push(`  font-style: ${italic ? "italic" : "normal"};`);
   }
-  // Any remaining single-value axis becomes a font-variation-settings entry, in
-  // the same alphabetical order GF uses. wght/wdth/opsz have dedicated
-  // properties above; the slnt axis is covered by font-style when it's the
-  // italic mechanism.
+  // Everything left over, in the alphabetical order GF uses. wght/wdth/opsz
+  // have dedicated properties above, and slnt is covered by font-style when it
+  // is the italic mechanism.
   const vars = font.axes
     .filter(
       (a) =>

@@ -1,23 +1,17 @@
 import type { CSSProperties } from "react";
 import { previewFontFamily } from "./loader";
 
-/** Serialize axis coords into a `font-variation-settings` string, e.g.
- *  `{ wght: 700, wdth: 80 } -> '"wght" 700, "wdth" 80'`. Empty -> "". */
 export function variationSettings(coords: Record<string, number>): string {
   return Object.entries(coords)
     .map(([tag, value]) => `"${tag}" ${value}`)
     .join(", ");
 }
 
-/** Shared preview styling for a family rendered at a set of axis coords. Drives
- *  the list cards, the detail tester, instance chips, and instance rows from one
- *  place. `wght` maps to `font-weight` (so browsers can synthesize/smooth it)
- *  and the rest go to `font-variation-settings`.
+/** `wght` maps to `font-weight`, so browsers can synthesize and smooth it; the
+ *  rest go to `font-variation-settings`.
  *
- *  letterSpacing is reset to `normal` because the app tracks its UI wide on
- *  <html>, and any non-zero letter-spacing suppresses ligatures (spacing is
- *  inserted between the character units a ligature would otherwise join). A
- *  preview has to show the font as it really is, so it opts out. */
+ *  letterSpacing resets to `normal`: the app tracks its UI wide on <html>, and
+ *  non-zero letter-spacing suppresses ligatures. */
 export function previewStyle({
   name,
   loaded,
@@ -35,19 +29,16 @@ export function previewStyle({
     fontWeight: coords.wght ? Math.round(coords.wght) : undefined,
     fontStyle: italic ? "italic" : undefined,
     fontVariationSettings: settings || undefined,
-    // See opticalSizing: an explicit opsz coord is inert while the browser's
-    // default `auto` keeps driving the axis from the rendered font-size.
+    // See opticalSizing: an explicit opsz coord is inert under the default.
     fontOpticalSizing: opticalSizing(coords),
     letterSpacing: "normal",
   };
 }
 
-/** `font-optical-sizing` for a coord set. Browsers default it to `auto`, which
- *  ties the `opsz` axis to the rendered font-size and silently overrides any
- *  `opsz` in `font-variation-settings` — so the sidebar's opsz slider moved the
- *  value but nothing on screen changed. Switching to `none` while opsz is being
- *  driven explicitly hands the axis back to the slider. Left `auto` otherwise,
- *  where automatic optical sizing is the correct default. */
+/** Browsers default `font-optical-sizing` to `auto`, which ties the `opsz` axis
+ *  to the rendered font-size and silently overrides any `opsz` in
+ *  `font-variation-settings`. `none` hands the axis back to an explicit coord;
+ *  otherwise `auto` stays, being the right default. */
 export function opticalSizing(coords: Record<string, number>): "auto" | "none" {
   return "opsz" in coords ? "none" : "auto";
 }

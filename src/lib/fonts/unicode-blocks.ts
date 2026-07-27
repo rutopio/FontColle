@@ -1,8 +1,4 @@
-// Unicode Basic Multilingual Plane (BMP) blocks: name + inclusive codepoint
-// range, in codepoint order. Source: Unicode Blocks.txt, restricted to
-// U+0000..U+FFFF. The Glyphs view lists only the blocks a font actually covers
-// (from its cmap; see glyph-coverage.ts) and, within a block, renders one cell
-// per codepoint, present ones showing the glyph, gaps left blank.
+// From Unicode's Blocks.txt, restricted to the BMP (U+0000..U+FFFF).
 export interface UnicodeBlock {
   name: string;
   start: number;
@@ -184,18 +180,13 @@ export const BMP_BLOCKS: readonly UnicodeBlock[] = [
   { name: "Specials", start: 0xfff0, end: 0xffff },
 ];
 
-// The BMP block containing a codepoint, or undefined if it falls outside the
-// listed ranges (or above U+FFFF). Blocks are non-overlapping and codepoint-
-// ordered, so a linear scan is fine for the ~160 entries.
+// Blocks are non-overlapping and ordered, so a linear scan over ~160 is fine.
 export function blockOf(cp: number): UnicodeBlock | undefined {
   return BMP_BLOCKS.find((b) => cp >= b.start && cp <= b.end);
 }
 
-// Parse a glyph-search query to a codepoint. A "U+XXXX" / "0xXXXX" prefix is
-// read as hex; anything else is taken literally as its first code point (so "a"
-// finds U+0061 and "中" finds U+4E2D, without the ambiguity of guessing whether
-// bare "ab" meant the string or the hex value 0x00AB). Returns null when the
-// input is empty or an unparseable hex code.
+// A "U+XXXX"/"0xXXXX" prefix reads as hex; anything else is taken literally as
+// its first codepoint, so bare "ab" is never ambiguously the hex 0x00AB.
 export function parseGlyphQuery(input: string): number | null {
   const q = input.trim();
   if (!q) return null;

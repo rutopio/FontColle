@@ -4,22 +4,18 @@ import { Input } from "@/components/ui/input";
 import { Kbd } from "@/components/ui/kbd";
 import { cn } from "@/lib/utils";
 
-// A single autocomplete row: the font's id (for navigation) and the name shown.
 export interface SearchSuggestion {
   id: string;
   name: string;
 }
 
-// Local draft state + IME composition guard so typing 注音/拼音 assembles a
-// character before it reaches the filter. Committing every keystroke to the URL
-// interrupts composition; we only commit once the IME finishes (or on plain
-// input for non-IME text).
+// Local draft state plus an IME composition guard, so typing 注音/拼音
+// assembles a character before it reaches the filter: committing every
+// keystroke to the URL would interrupt composition.
 //
-// The field is also a combobox: while it has focus and text, an autocomplete
-// list of the top fuzzy-matched family names drops below it. Arrow keys move the
-// active row, Enter opens it, click opens it — all via onPick. The list is a
-// plain absolute panel (not a Popover) so focus never leaves the input, and the
-// active row is tracked with aria-activedescendant for screen readers.
+// The field is also a combobox. The dropdown is a plain absolute panel, not a
+// Popover, so focus never leaves the input, and the active row is tracked with
+// aria-activedescendant for screen readers.
 export function SearchInput({
   query,
   onQueryChange,
@@ -29,28 +25,22 @@ export function SearchInput({
 }: {
   query: string;
   onQueryChange: (query: string) => void;
-  // Top fuzzy matches for the current query, ranked exactly like the results
-  // grid (same searchByQuery source), so the list mirrors what's shown below.
   suggestions: SearchSuggestion[];
-  // Open a suggested font's detail page. Called on click or Enter.
   onPick: (id: string) => void;
   inputRef?: React.Ref<HTMLInputElement>;
 }) {
   const [draft, setDraft] = useState(query);
   const composing = useRef(false);
-  // Which suggestion the keyboard has landed on, or -1 for "none yet" — Enter
-  // then falls back to the first row (the top match), matching a plain submit.
+  // -1 is "none yet", where Enter falls back to the top match.
   const [active, setActive] = useState(-1);
-  // The list is open only while the field is focused; blur closes it (a click on
-  // a row fires before blur, so the pick still lands). Kept separate from
-  // "has suggestions" so tabbing away hides the panel even mid-query.
+  // Separate from "has suggestions", so tabbing away hides the panel even
+  // mid-query. A row's click fires before blur, so the pick still lands.
   const [open, setOpen] = useState(false);
   const listId = useId();
 
-  // Keep the draft in sync when the query changes from outside (e.g. reset),
-  // by comparing against the last-seen prop during render. Not a key-remount:
-  // our own commits also round-trip through `query`, and remounting mid-typing
-  // would drop focus and break IME composition.
+  // Adopt outside changes (a reset) by comparing the last-seen prop during
+  // render. Not a key-remount: our own commits round-trip through `query` too,
+  // and remounting mid-typing would drop focus and break IME composition.
   const [prevQuery, setPrevQuery] = useState(query);
   if (query !== prevQuery) {
     setPrevQuery(query);
@@ -59,13 +49,10 @@ export function SearchInput({
 
   const commit = (value: string) => {
     setDraft(value);
-    // A fresh query invalidates the old active row; reset to "none" so Enter
-    // targets the new top match, not a stale index.
     setActive(-1);
     if (!composing.current) onQueryChange(value);
   };
 
-  // The list shows only with focus, text, and matches to show.
   const showList = open && draft.trim().length > 0 && suggestions.length > 0;
   const activeId = active >= 0 ? `${listId}-${active}` : undefined;
 
@@ -97,9 +84,7 @@ export function SearchInput({
           onQueryChange(e.currentTarget.value);
         }}
         onKeyDown={(e) => {
-          // Escape: if the list is open, close it first (leaving the query
-          // intact); otherwise clear the search, matching the "/"-to-focus
-          // shortcut, then blur so a second Escape isn't swallowed.
+          // Blur after clearing, so a second Escape isn't swallowed.
           if (e.key === "Escape") {
             if (showList) {
               e.preventDefault();
@@ -113,8 +98,7 @@ export function SearchInput({
             }
             return;
           }
-          // Arrow keys move the active row while the list is open, wrapping at
-          // the ends. Ignored mid-composition so the IME keeps its own arrows.
+          // Ignored mid-composition, so the IME keeps its own arrows.
           if (composing.current) return;
           if (showList && (e.key === "ArrowDown" || e.key === "ArrowUp")) {
             e.preventDefault();
@@ -127,8 +111,7 @@ export function SearchInput({
             });
             return;
           }
-          // Enter opens the active row (or the top match when none is active).
-          // Ignored mid-composition so the IME's own Enter isn't hijacked.
+          // Ignored mid-composition, so the IME's own Enter isn't hijacked.
           if (e.key === "Enter" && suggestions.length > 0) {
             e.preventDefault();
             pick(active);
@@ -137,9 +120,8 @@ export function SearchInput({
         }}
         placeholder="Search family or designer"
         aria-label="Search fonts by family or designer"
-        // pr-8 only reserves room for the "/" badge, so it tracks the badge's
-        // own md gate: below md there is no badge and the query gets the full
-        // width back.
+        // pr-8 reserves room for the "/" badge, so it tracks the badge's own md
+        // gate: below md there is no badge and the query gets the width back.
         className={cn("h-9 pl-8", !draft && "md:pr-8")}
       />
       {/* Advertises the "/"-to-focus shortcut. Hidden once the field has text,
@@ -156,9 +138,9 @@ export function SearchInput({
           stays in the input (a Popover would move it). mousedown, not click, so
           the pick fires before the input's blur closes the list. */}
       {showList && (
-        // div, not ul/li: the ARIA combobox pattern wants role=listbox/option,
-        // which the a11y lint rejects on ul/li. Options carry tabIndex=-1 (focus
-        // stays in the input; the active row is tracked via aria-activedescendant).
+        // div, not ul/li: the combobox pattern wants role=listbox/option, which
+        // the a11y lint rejects on ul/li. Options are tabIndex=-1, focus
+        // staying in the input.
         <div
           id={listId}
           role="listbox"
@@ -173,7 +155,7 @@ export function SearchInput({
               tabIndex={-1}
               aria-selected={i === active}
               onMouseDown={(e) => {
-                // Keep focus in the input; run the pick ourselves.
+                // Keep focus in the input.
                 e.preventDefault();
                 onPick(s.id);
                 setOpen(false);

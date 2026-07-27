@@ -4,10 +4,7 @@ import { CardButton } from "./card-button";
 import { SectionHeader } from "./section-header";
 import { WeightSpecimen, WidthSpecimen } from "./specimen-icon";
 
-// Big-button grid (same shape as CategoryCards) for value dimensions like Weight
-// and Width. Each card renders an Inconsolata "Aa" at the weight/width it stands
-// for, above its label + family count, drawn from a static SVG specimen (no
-// webfont load). All cards render at once (no rare collapse): the value sets are
+// Every card renders at once, with no rare-value collapse: these value sets are
 // small and fixed.
 export function CardGrid({
   title,
@@ -27,17 +24,11 @@ export function CardGrid({
   items: [string, number][];
   selected: string[];
   onToggle: (v: string) => void;
-  // Clear this section's selection (scoped to this section).
   onReset: () => void;
-  // Map a raw value to a display label (e.g. "700" -> "Bold").
   label: (value: string) => string;
-  // Which axis the card value drives on the "Aa" specimen.
   axis: "wght" | "wdth";
-  // Bumped when this section's pick was cleared by the sibling axis (see
-  // FilterSidebar), so the header flashes to hint at the swap.
+  // Bumped when the sibling axis cleared this section's pick.
   flashKey?: number;
-  // OR/AND toggle: pass both to show it. "Any" matches a family offering any
-  // selected step, "All" one that covers every selected step.
   mode?: MatchMode;
   onToggleMode?: () => void;
 }) {

@@ -1,11 +1,8 @@
-// Minimal, dependency-free HTML sanitizer for the Google Fonts "about" prose and
-// designer bios. These come from a trusted source (Google's metadata endpoint),
-// but we still strip to a small allowlist before dangerouslySetInnerHTML so a
-// future source change can't inject scripts/handlers. Isomorphic: pure string
-// work, so it runs the same under SSR and in the browser (no DOM needed).
+// The source is trusted (Google's metadata endpoint), but this still strips to
+// an allowlist before dangerouslySetInnerHTML, so a future source change can't
+// inject scripts or handlers. Pure string work, so it runs under SSR too.
 
-// Block/inline tags we keep. Everything else (script, style, img, iframe, on*
-// handlers) is dropped. <a> keeps a sanitized href; all other attributes go.
+// Everything else is dropped. <a> keeps a sanitized href, nothing else does.
 const ALLOWED = new Set([
   "p",
   "br",
@@ -31,9 +28,8 @@ function safeHref(raw: string): string | null {
 }
 
 /**
- * Return the input with only allowlisted tags kept. Disallowed tags are removed
- * (their text content stays); attributes are stripped except a validated href on
- * <a>, which also gets rel/target for safe external navigation.
+ * A disallowed tag is removed but its text content stays. Attributes are
+ * stripped except a validated href, which also gets rel/target.
  */
 export function sanitizeHtml(html: string | null | undefined): string {
   if (!html) return "";

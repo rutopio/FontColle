@@ -4,22 +4,14 @@ import { subTagLabel } from "./constants";
 import { Pills } from "./section";
 import { SectionHeader } from "./section-header";
 
-// One sub-list of classification pills (Serif, Sans Serif, Slab, Script, …).
 export interface ClassificationGroup {
   title: string;
-  // [full tag path, count], in fixed order.
   items: [string, number][];
 }
 
-// The classification sections under a single heading, shaped like Features:
-// one SectionHeader over sub-lists labelled by a plain <h3>.
-//
-// Previously each sub-list carried its own SectionHeader, which misrepresented
-// the state: Serif/Sans/Slab/Script all write to the one `classifications` key
-// and therefore share one OR/AND mode, so the toggle was hosted on whichever
-// section happened to render first (Sans Serif) and silently governed the rest.
-// Hoisting it to a group header puts the control at the scope it actually
-// applies to, and reset now clears the whole group rather than one sub-list.
+// ONE SectionHeader over all the sub-lists, because they all write to the one
+// `style` key and share its OR/AND mode: a per-sub-list header would host that
+// toggle on whichever rendered first and silently govern the rest.
 export function ClassificationSection({
   title,
   icon,
@@ -32,14 +24,11 @@ export function ClassificationSection({
   onToggleMode,
 }: {
   title: string;
-  // Matches the rail button's icon for this group, so the panel header and the
-  // rail read as the same thing.
   icon: Icon;
   groups: ClassificationGroup[];
   selected: string[];
   onToggle: (v: string) => void;
   onReset: () => void;
-  // Optional tooltip note behind an info icon after the title (see SectionHeader).
   info?: React.ReactNode;
   mode?: MatchMode;
   onToggleMode?: () => void;

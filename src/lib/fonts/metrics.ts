@@ -1,11 +1,7 @@
-// Derived style-metric values and their filter domains. One place both the
-// sidebar sliders and applyFilters read from, so the ratios they compare are
-// computed identically. Every derivation returns null when any raw input it
-// needs is missing (or unitsPerEm is absent/zero); a null value is excluded
-// while its slider is active and ignored while it's inactive.
+// One place the sidebar sliders and applyFilters both read from, so the ratios
+// they compare are computed identically.
 import type { FontRecord } from "./types";
 
-// The six range-slider metrics, in display order.
 export type MetricKey =
   | "xHeight"
   | "capHeight"
@@ -14,34 +10,26 @@ export type MetricKey =
   | "contrast"
   | "fileSize";
 
-// A [lo, hi] range, in the metric's own units (ratios for the first four,
-// raw upm, raw bytes for fileSize).
 export type MetricRange = [number, number];
 
 export interface MetricSpec {
   key: MetricKey;
   label: string;
-  // Domain edges. A thumb resting on an edge means "unbounded on that side":
-  // the domains deliberately clip outliers, so a full-extent slider excludes
-  // nothing (see derive()/matchesRange).
+  // The domains deliberately clip outliers, so a thumb resting on an edge means
+  // "unbounded on that side" and a full-extent slider excludes nothing.
   min: number;
   max: number;
   step: number;
-  // "linear": value maps straight onto the track (ratios). "log": track works
-  // in log space (fileSize).
   scale: "linear" | "log";
-  // p25/p50/p75 of this metric's value over the published catalog (computed
-  // 2026-07-11). They split the domain into four quartile pills (Q1…Q4), so
-  // each pill selects a range holding ~1/4 of the fonts, unlike an even split
-  // of the clipped domain, whose edge buckets are near-empty.
+  // p25/p50/p75 over the published catalog, driving the four quartile pills so
+  // each holds ~1/4 of the fonts (an even split of the clipped domain would
+  // leave the edge buckets near-empty).
   quantiles: [number, number, number];
-  // One-sentence explanation of what the ratio measures and what higher/lower
-  // looks like on the page. Shown in the metric's info-icon tooltip.
-  hint: string;
+  hint: string; // shown in the metric's info-icon tooltip
 }
 
-// Ratio domains sized from the p1/median/p99 distribution over the catalog so
-// the sliders resolve the dense middle while clipping the long tails.
+// Domains sized from the p1/median/p99 distribution over the catalog, so the
+// sliders resolve the dense middle while clipping the long tails.
 export const METRIC_SPECS: Record<MetricKey, MetricSpec> = {
   xHeight: {
     key: "xHeight",
@@ -83,10 +71,8 @@ export const METRIC_SPECS: Record<MetricKey, MetricSpec> = {
     quantiles: [0.497, 0.563, 0.635],
     hint: "Average character width relative to the em (OS/2 average). Higher means a wider, more spacious font; lower is condensed and fits more per line.",
   },
-  // Stroke-contrast ratio (thick/thin) at the regular weight, from google/fonts
-  // quant.csv. Domain clipped at the catalog p1/p99 (1.02 / 8.52, computed
-  // 2026-07-11); the long Didone tail past 8.5 still matches when the top thumb
-  // rests on the edge. Value is already a ratio, so derive() passes it through.
+  // Already a ratio, so derive() passes it through. The long Didone tail past
+  // the 8.5 clip still matches when the top thumb rests on the edge.
   contrast: {
     key: "contrast",
     label: "Contrast",
@@ -110,7 +96,6 @@ export const METRIC_SPECS: Record<MetricKey, MetricSpec> = {
   },
 };
 
-/** Humanize a byte count for the fileSize readout (e.g. 3.5MB, 512KB). */
 function humanBytes(bytes: number): string {
   if (bytes >= 1024 * 1024) {
     const mb = bytes / (1024 * 1024);
@@ -119,14 +104,11 @@ function humanBytes(bytes: number): string {
   return `${Math.round(bytes / 1024)}KB`;
 }
 
-/** Format one metric value for display: fileSize as KB/MB, every other metric
- *  as a 2-dp ratio. Shared by the sidebar readouts/quartile pills and the
- *  active-filter chips so a range reads the same everywhere (see describe.ts). */
+/** Shared, so a range reads the same in the readouts and the chips. */
 export function formatMetricValue(key: MetricKey, v: number): string {
   return key === "fileSize" ? humanBytes(v) : v.toFixed(2);
 }
 
-// The order the metrics render in the sidebar.
 export const METRIC_ORDER: MetricKey[] = [
   "xHeight",
   "capHeight",
@@ -139,8 +121,7 @@ export const METRIC_ORDER: MetricKey[] = [
 const ratio = (n: number | null, d: number | null): number | null =>
   n != null && d != null && d > 0 ? n / d : null;
 
-/** The derived value a font contributes to a given metric, or null when a
- *  required raw field is missing. Shared by the UI and applyFilters. */
+/** Null when a required raw field is missing. */
 export function derive(font: FontRecord, key: MetricKey): number | null {
   const upm = font.unitsPerEm;
   switch (key) {
@@ -169,9 +150,8 @@ export function derive(font: FontRecord, key: MetricKey): number | null {
   }
 }
 
-/** True when a font's derived value falls in an active range. A thumb on the
- *  domain edge is treated as unbounded on that side, so outliers past the edge
- *  still match. Fonts whose derived value is null never match an active range. */
+/** A thumb on the domain edge is unbounded on that side, so outliers past it
+ *  still match. A null derived value never matches. */
 export function matchesRange(
   font: FontRecord,
   spec: MetricSpec,
@@ -184,9 +164,6 @@ export function matchesRange(
   return true;
 }
 
-/** The four quartile ranges of a metric, from its p25/p50/p75 breakpoints:
- *  [min,p25], [p25,p50], [p50,p75], [p75,max]. Each holds ~1/4 of the catalog.
- *  Drives the Q1…Q4 quick-select pills under each slider. */
 export function quartileRanges(spec: MetricSpec): MetricRange[] {
   const [q1, q2, q3] = spec.quantiles;
   return [
@@ -197,15 +174,13 @@ export function quartileRanges(spec: MetricSpec): MetricRange[] {
   ];
 }
 
-/** Whether a stored range equals a given quartile range (so its pill shows
- *  active and a second click clears it). Compared with a small epsilon since
- *  the values are stored rounded. */
+/** Epsilon compare, since the stored values are rounded. */
 export function rangesEqual(a: MetricRange, b: MetricRange): boolean {
   return Math.abs(a[0] - b[0]) < 1e-6 && Math.abs(a[1] - b[1]) < 1e-6;
 }
 
-/** A range is active (filters anything) only when a thumb has moved off a
- *  domain edge. Inactive ranges are dropped from state and the URL. */
+/** Only a thumb off a domain edge filters anything. Inactive ranges are
+ *  dropped from state and the URL. */
 export function isRangeActive(
   spec: MetricSpec,
   [lo, hi]: MetricRange
@@ -213,8 +188,6 @@ export function isRangeActive(
   return lo > spec.min || hi < spec.max;
 }
 
-/** Per-catalog upm pill items: [value, family count], sorted by count desc
- *  then value asc. Drives the Units-per-em pill list in the Metrics tab. */
 export function catalogUpmCounts(fonts: FontRecord[]): [string, number][] {
   const counts = new Map<string, number>();
   for (const f of fonts)

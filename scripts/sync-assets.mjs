@@ -1,6 +1,5 @@
-// Pulls the data assets that live in R2 (per the manifest, itself now at the R2
-// key manifest/latest.json rather than in git) back into place so a build or
-// local dev has them:
+// Pulls the data assets that live in R2 (per the manifest at
+// manifest/latest.json) into place for a build or local dev:
 //
 //   src/data/fonts.json   <- fonts/<sha16>.json (the snapshot the manifest
 //                            points at; content-hashed key)
@@ -19,12 +18,10 @@ import path from "node:path";
 import { ROOT, r2Get, r2GetManifest, sha256File } from "./lib/r2.mjs";
 import { extractTar } from "./lib/tar.mjs";
 
-// Verify a just-downloaded file against the sha256 the manifest recorded, so a
-// truncated download OR a stale copy served for a fixed key (glyphs/og tarballs
-// keep the same key and are overwritten in place, unlike the dated fonts
-// snapshot) fails loudly instead of silently shipping an old asset. This is why
-// a reseeded glyphs tarball could deploy with the previous file set: the sync
-// pulled the key with no integrity check and used whatever came back.
+// Verify against the sha256 the manifest recorded, so a truncated download OR
+// a stale copy served for a fixed key fails loudly instead of silently
+// shipping an old asset. Without this a reseeded glyphs tarball deploys with
+// the previous file set.
 function verify(file, expected, label) {
   const got = sha256File(file);
   if (got !== expected) {
@@ -39,8 +36,7 @@ const GLYPHS_DIR = path.join(ROOT, "public/glyphs");
 const OG_DIR = path.join(ROOT, "public/og");
 const SCRATCH = path.join(ROOT, ".r2-tmp");
 
-// The manifest lives in R2 (not git) so the daily harvest commits nothing; pull
-// the current pointer straight from there before resolving the snapshot keys.
+// Pull the current pointer before resolving any snapshot key.
 const manifest = r2GetManifest();
 mkdirSync(SCRATCH, { recursive: true });
 
@@ -49,9 +45,8 @@ r2Get(manifest.fonts.key, FONTS_JSON);
 verify(FONTS_JSON, manifest.fonts.sha256, "fonts.json");
 console.log(`[sync] fonts.json <- ${manifest.fonts.key} (verified)`);
 
-// glyphs, extract the seed tarball. Verify BEFORE extract so a stale/truncated
-// tarball fails here instead of shipping the wrong file set (fixed key, so a
-// reseed overwrites in place — the download must match the manifest sha).
+// Verify BEFORE extracting, so a stale or truncated tarball fails here rather
+// than shipping the wrong file set.
 {
   const tar = path.join(SCRATCH, "glyphs.tar.gz");
   r2Get(manifest.glyphs.key, tar);

@@ -1,25 +1,12 @@
-// Dev-only breakpoint readout: shows which Tailwind screen the viewport is
-// currently in. Stripped from production by the import.meta.env.PROD guard,
-// which Vite statically replaces, so the whole component folds away at build
-// time instead of shipping and returning null at runtime.
+// Dev-only breakpoint readout. The import.meta.env.PROD guard is statically
+// replaced by Vite, so the whole component folds away at build time.
 //
-// Bottom-right, offset to clear the two things already in that corner, both of
-// which only exist when this badge does:
-//   * TanStack Devtools anchors its trigger bottom-right (see __root), so the
-//     badge sits a row above it rather than on top of it.
-//   * On mobile the FAB stack (filter / links / controls drawers) owns right-4
-//     at z-40 and lifts with the preview dock. Those are md:hidden, so the
-//     badge shifts left of that column only below md, and returns to the
-//     corner from md up where the FABs are gone.
+// Offset bottom-right to clear the Devtools trigger and, below md, the FAB
+// stack that owns that column.
 //
-// pointer-events-none so it can never swallow a click meant for either.
-//
-// Breakpoints are Tailwind v4's defaults plus --breakpoint-3xl (120rem/1920px),
-// which styles.css adds so the container keeps widening past 2xl. Keep this list
-// in sync with that theme block — a missing step makes the badge under-report,
-// showing the step below it across two screens.
-// Note useIsMobile() keys off 768px, which is `md` — the badge reading `sm` or
-// narrower means that hook reports mobile.
+// Keep the steps in sync with the theme block in styles.css, which adds
+// --breakpoint-3xl on top of Tailwind's defaults: a missing step makes the
+// badge under-report, showing the step below it across two screens.
 export function ScreenSize() {
   if (import.meta.env.PROD) {
     return null;

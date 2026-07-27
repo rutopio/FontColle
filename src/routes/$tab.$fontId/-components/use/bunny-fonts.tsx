@@ -15,11 +15,9 @@ import {
   weightList,
 } from "./shared";
 
-// METHOD 3, Bunny Fonts: a privacy-first, GDPR-compliant drop-in for the Google
-// Fonts API. It serves the same open-source families from its own CDN without
-// logging IPs or setting cookies. Bunny ships static weights only (no variable
-// fonts), with its own `css?family=<slug>:<weights>` grammar, italic weights
-// carry an `i` suffix. So this panel is a weight + style picker driving the URL.
+// METHOD 3, Bunny Fonts: a GDPR-compliant drop-in for the Google Fonts API,
+// serving the same families from its own CDN. Bunny ships STATIC weights only,
+// which is why this panel is just a weight + style picker.
 export function BunnyMethod({ font }: { font: FontRecord }) {
   const slug = fontsourceSlug(font.name);
   const weights = weightList(font.weights);
@@ -44,8 +42,7 @@ export function BunnyMethod({ font }: { font: FontRecord }) {
     <Panel label="Privacy-first & GDPR-friendly CDN" bodyClassName="max-w-2xl">
       <MethodIntro blurb="A drop-in for the Google Fonts API that serves the same families without logging IPs or setting cookies." />
       {font.isVariable && (
-        // Bunny serves static instances only, so a variable family's axes aren't
-        // available here, say so rather than silently offering just weights.
+        // Say so, rather than silently offering weights for a variable family.
         <p className="mb-3 rounded-md bg-muted/50 px-2.5 py-1.5 text-xs">
           Bunny serves static weights only, this variable family's axes aren't
           available here. Use the Google Fonts method above for the full axes.
@@ -111,8 +108,8 @@ export function BunnyMethod({ font }: { font: FontRecord }) {
   );
 }
 
-// Bunny Fonts stylesheet URL for one weight/style. Bunny's grammar is
-// `css?family=<slug>:<weight>` with an `i` suffix for italic (e.g. `700i`).
+// Bunny's grammar is `css?family=<slug>:<weight>`, italic taking an `i`
+// suffix (e.g. `700i`).
 function bunnyHref(slug: string, weight: number, italic: boolean): string {
   return `https://fonts.bunny.net/css?family=${slug}:${weight}${
     italic ? "i" : ""

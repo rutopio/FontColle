@@ -14,38 +14,26 @@ import { EASE_OUT, MOTION_S } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { SectionHeader } from "./section-header";
 
-// Official display name + description per axis tag, from Google Fonts'
-// axisregistry (see scripts/gen-axes-data.mjs). Tags not in the registry
-// (mostly newer or vendor-specific axes) render with no info icon.
+// From Google Fonts' axisregistry. A tag the registry doesn't cover renders
+// with no info icon.
 const AXES: Record<
   string,
   {
     name: string;
     description: string;
-    // axes.json also carries `fallbacks` (the axis's named stops). Not declared
-    // here because this panel only shows the description; the detail page's Use
-    // tab still reads them (see routes/$tab.$fontId/-components/use/shared).
+    // axes.json also carries `fallbacks`, undeclared here because this panel
+    // only shows the description. The detail page's Use tab reads them.
   }
 > = axesData;
 
 const TOP_N = 4;
-// Relative-position presets offered in the editable % readout's dropdown.
 const PCT_PRESETS = [0, 25, 50, 75, 100];
 
-// Variable axes, one full-width pill per row, count-sorted. The top 4 show by
-// default; the rest collapse behind a "more" expander. Selecting a tail axis
-// never reorders the list (it animates in place); collapsing the tail pins any
-// selected tail axes just below the top rows so the choice stays visible.
-// Selecting a pill animates it shrinking to a third of the row, then fades in a
-// relative-position slider (0-100%, default 50) in the freed space, driving the
-// live preview. The slider is always mounted (faded out when unselected) so the
-// width animation and fade can play; it's a sibling of the pill, not nested in
-// it (its thumb is a native <input type="range">, illegal inside a <button>),
-// so dragging can never also toggle the pill.
-//
-// `disabled` fades the list out under Font type = Static: only variable fonts
-// have axes. Picking Static also clears the axis selection (see FilterSidebar),
-// so the sliders are always collapsed by the time this renders disabled.
+// Selecting a pill shrinks it and fades a 0-100% slider into the freed space.
+// That slider stays mounted, faded out when unselected, so the width animation
+// can play, and it is a SIBLING of the pill, not nested: a native
+// <input type="range"> is illegal inside a <button>, and dragging one would
+// otherwise also toggle the pill.
 export function VariableAxesSection({
   icon,
   items,
@@ -69,24 +57,20 @@ export function VariableAxesSection({
   disabled?: boolean;
   mode?: MatchMode;
   onToggleMode?: () => void;
-  // Bumped when the axis selection was cleared by a Weight/Width pick (see
-  // FilterSidebar), so the header flashes to hint at the swap.
+  // Bumped when a Weight/Width pick cleared the axis selection.
   flashKey?: number;
 }) {
   const [showMore, setShowMore] = useState(false);
-  // Names the collapsed tail row so the toggle's aria-expanded has a target.
   const tailId = useId();
   const hasSelection = items.some(([value]) => selected.includes(value));
 
-  // Grouping is by count only, never by selection, so selecting an axis in the
-  // expanded tail never reorders the list, the pill plays its shrink animation
-  // in place. The top N always show; the rest live behind the expander.
+  // By count only, never by selection, so selecting a tail axis never reorders
+  // the list and the pill plays its shrink animation in place.
   const common = useMemo(() => items.slice(0, TOP_N), [items]);
   const rare = useMemo(() => items.slice(TOP_N), [items]);
 
-  // When collapsed, a selected axis from the tail would otherwise vanish. Pin
-  // those below the top rows (not inside the collapsing region) so the choice
-  // stays visible. Empty while expanded, the tail already shows them in place.
+  // A selected tail axis would vanish when collapsed, so pin it below the top
+  // rows, outside the collapsing region. Empty while expanded.
   const pinned = useMemo(
     () => (showMore ? [] : rare.filter(([tag]) => selected.includes(tag))),
     [rare, selected, showMore]
@@ -103,15 +87,13 @@ export function VariableAxesSection({
           type="button"
           onClick={() => onToggle(tag)}
           disabled={disabled}
-          // Motion animates flex-basis (the pill shrinks to 1/3 when selected,
-          // expanding back to full when cleared); border/background stay CSS
-          // transitions since they're color micro-changes, not layout.
+          // Motion animates flex-basis; border/background stay CSS transitions,
+          // being colour micro-changes rather than layout.
           initial={false}
           animate={{ flexBasis: on ? "33.333333%" : "100%" }}
           transition={{ duration: MOTION_S.base, ease: EASE_OUT }}
           className={cn(
-            // Height matches PillButton: taller tap target on mobile, compact
-            // on desktop.
+            // Height matches PillButton, for the same tap target.
             "flex min-h-9 min-w-0 flex-1 items-center justify-between gap-1 rounded-md border px-2.5 py-2 text-xs transition-[border-color,background-color] duration-[var(--motion-fast)] ease-[var(--ease-snap)] md:min-h-8 md:py-1",
             disabled && "cursor-not-allowed",
             on ? "border-primary bg-muted" : "border-input",

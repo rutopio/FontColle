@@ -4,16 +4,10 @@ import type { MatchMode } from "@/lib/fonts/filter";
 import { scriptLabel, scriptPopulation } from "@/lib/fonts/labels";
 import { FacetSearchSection } from "./facet-search-section";
 
-// Writing systems (real scripts, Latn/Cyrl/…). Only 45 of them, so the whole
-// list lives inline: pills show the top 10 by real-world speaker population
-// (summed per script from gflanguages), the rest sit behind a "N more"
-// expander, and a search box filters across all of them.
-//
-// Note the two rankings pull apart: population picks which pills show, but
-// FacetSearchSection orders them by font count. So Simplified Han (1.3B
-// writers, 10 fonts) earns a pill yet lands last, while Greek (135 fonts) is
-// collapsed. That is deliberate, ranking exposure by font count would bury
-// every non-Latin system; the info tooltip explains it to the user.
+// Two rankings pull apart here, deliberately: speaker population picks which
+// pills show, but FacetSearchSection orders them by font count. So Simplified
+// Han (1.3B writers, 10 fonts) earns a pill yet lands last. Ranking exposure by
+// font count instead would bury every non-Latin system.
 export function WritingSystemSection({
   scripts,
   selectedScripts,
@@ -29,7 +23,6 @@ export function WritingSystemSection({
   mode?: MatchMode;
   onToggleMode?: () => void;
 }) {
-  // Label scripts with human names; keep counts. Already count-sorted.
   const items = useMemo(
     () =>
       scripts.map(([code, count]) => [code, count, scriptLabel(code)] as const),
@@ -38,11 +31,8 @@ export function WritingSystemSection({
 
   return (
     <FacetSearchSection
-      // Not "Script": the Category cards already use that word for the Google
-      // Fonts /Script/ class (handwriting-style faces), and that string is a
-      // stored filter value, not just a label. Two different "Script" filters in
-      // one panel would be worse than a longer title, which the header now
-      // truncates rather than wrapping.
+      // NOT "Script": the Category cards already use that word for the Google
+      // Fonts /Script/ class, and that string is a stored filter value.
       title="Writing system"
       icon={GlobeIcon}
       items={items}

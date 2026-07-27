@@ -10,13 +10,8 @@ import {
 import { useFavorites } from "@/lib/fonts/favorites";
 import { cn } from "@/lib/utils";
 
-// The heart, with a hover-swapped duotone twin (Phosphor weight is a prop, not
-// CSS). `active` fills it; the duotone twin shows on hover. `red` tints the
-// filled heart red, used in the detail toggle, where "favorited" is shown by
-// the heart itself (like the card/row), not by a button background. `bar` drops
-// the text label for the compact mobile top bar. `label` is the caption: the
-// list page says "Favorite" (enter the favorites view), the detail page says
-// "Add" (heart this font).
+// Phosphor weight is a prop, not CSS, so the hover-bold twin is a second icon
+// rather than a restyle. `red` is for where the heart itself carries the state.
 function HeartLabel({
   active,
   red,
@@ -32,11 +27,9 @@ function HeartLabel({
     <>
       <HeartIcon
         // Keyed on the favorited state so hearting remounts the icon and
-        // replays the pop, matching the card/row heart in font-actions. Only
-        // the `red` (detail-page) mode pops: there the heart IS the state, so
-        // it earns the beat. The list-page link uses the heart as a view
-        // switch, where a celebration would be claiming something happened to
-        // a font that did not.
+        // replays the pop. Only `red` (detail) pops: there the heart IS the
+        // state. On the list it is a view switch, where a celebration would
+        // claim something happened to a font that did not.
         key={red && active ? "on" : "off"}
         className={cn(
           "size-5 group-hover/rail-btn:hidden",
@@ -63,21 +56,13 @@ function HeartLabel({
   );
 }
 
-// The Favorite control. Its meaning depends on the page:
-//  - List page (no `fontId`): a link that toggles the favorites-only view
-//    (`?fav=1`), "show my hearted fonts".
-//  - Detail page (`fontId` given): a toggle that hearts/un-hearts THIS font,
-//    mirroring the card/row heart, so you can favorite from the detail view.
-// Favorites live in localStorage (device-local); the view flag lives in the URL.
+// Without `fontId` a link toggling the favorites-only view; with one, a toggle
+// that hearts THIS font. Favorites live in localStorage, the view in the URL.
 export function FavoriteToggle({
   fontId,
   variant = "rail",
 }: {
   fontId?: string;
-  // "rail" is the desktop icon-over-label tile; "bar" is the compact mobile
-  // top-bar icon button; "header" is the same captioned tile as "rail", set in
-  // a column header's end cell — the list page's Favorite and the detail
-  // page's Add both use it, mirroring the preview field's Top button.
   variant?: "rail" | "bar" | "header";
 }) {
   const chrome =
@@ -86,16 +71,10 @@ export function FavoriteToggle({
       : variant === "bar"
         ? RAIL_BAR_BTN
         : RAIL_HEADER_BTN;
-  // Only the mobile bar drops the caption; it has no room for one.
   const bare = variant === "bar";
-  // Which variants say "on" with a red filled heart rather than a tile
-  // background: the two that have no tile of their own to fill. The header's
-  // hover tint belongs to the cell around it (like the Top button it sits
-  // beside), so a background here would fight that rather than read as state.
   const red = variant !== "rail";
-  // The header variant sits in a cell that owns the hover tint (and the group
-  // the icon swap watches), so it must not carry a hover of its own to stack
-  // on top of it. Every other variant hovers itself.
+  // The header's cell owns the hover tint (and the group the icon swap
+  // watches), so this must not stack a second hover on top of it.
   const hover = variant === "header" ? undefined : RAIL_BTN_OFF;
   if (fontId)
     return (
@@ -106,7 +85,6 @@ export function FavoriteToggle({
   );
 }
 
-// Detail-page mode: heart this specific font.
 function FavoriteMark({
   fontId,
   bare,
@@ -115,7 +93,6 @@ function FavoriteMark({
 }: {
   fontId: string;
   bare?: boolean;
-  // The hover chrome, or undefined where the cell around it owns that.
   hover?: string;
   chrome: string;
 }) {
@@ -131,8 +108,7 @@ function FavoriteMark({
         onClick={() => toggle(fontId)}
         aria-pressed={on}
         aria-label={on ? "Remove from favorites" : "Add to favorites"}
-        // Neutral chrome always (no ON background): this is a toggle, so the
-        // favorited state is carried by the red filled heart, not a highlight.
+        // Never an ON background: the red filled heart carries the state.
         className={cn(chrome, hover)}
       >
         <HeartLabel active={on} bar={bare} label="Add" red />
@@ -141,7 +117,6 @@ function FavoriteMark({
   );
 }
 
-// List-page mode: toggle the favorites-only view.
 function FavoriteViewLink({
   bare,
   red,
@@ -149,14 +124,12 @@ function FavoriteViewLink({
   chrome,
 }: {
   bare?: boolean;
-  // Show the active view with a red filled heart instead of a tile background.
   red?: boolean;
-  // The hover chrome, or undefined where the cell around it owns that.
   hover?: string;
   chrome: string;
 }) {
-  // Route-agnostic search read: this sits in the global AppSidebar, shown on
-  // both the list and detail routes, so it can't use a strict route hook.
+  // Route-agnostic: this sits in the global AppSidebar, shown on both routes,
+  // so it can't use a strict route hook.
   const fav = useRouterState({
     select: (s) => s.location.search.fav === "1",
   });
@@ -167,19 +140,11 @@ function FavoriteViewLink({
     >
       <Link
         to="/"
-        // Toggle: drop the param when leaving favorites, set it when entering.
-        // Keep the rest of the search so an active sort/filter survives.
         search={(prev) => ({ ...prev, fav: fav ? undefined : "1" })}
-        // This is an <a> (role="link"), not a button: role="link" does not allow
-        // aria-pressed, so a screen reader would drop the state and Lighthouse
-        // flags it. aria-current is the link equivalent, marking this as the
-        // view you're currently in.
+        // role="link" does not allow aria-pressed, so a screen reader would
+        // drop the state; aria-current is the link equivalent.
         aria-current={fav ? "page" : undefined}
         aria-label={fav ? "Show all fonts" : "Show favorite fonts"}
-        // The rail tile shows the active view with a background, which carries
-        // its own hover; the others say it in red and take `hover` separately,
-        // which is unset for the header variant because the cell around it
-        // lights up instead, the way the Top button beside it does.
         className={cn(
           chrome,
           red ? cn(fav && "text-red-500", hover) : fav ? RAIL_BTN_ON : hover

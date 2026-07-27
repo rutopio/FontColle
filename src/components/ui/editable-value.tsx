@@ -2,9 +2,9 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 // A slider's numeric readout that doubles as a manual input: a dotted underline
-// hints it's editable. Clicking swaps it for a borderless underlined field (no
-// spinner box, à la the LiveMirror pt-input) plus a dropdown of preset values.
-// Commits on blur/Enter/preset-pick (clamped to [min, max]); Escape cancels.
+// hints it's editable, and clicking swaps it for a borderless underlined field
+// (no spinner box) plus a dropdown of presets. Commits on blur, Enter or a
+// preset pick, clamped to [min, max]; Escape cancels.
 export function EditableValue({
   value,
   min,

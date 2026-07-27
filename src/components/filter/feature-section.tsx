@@ -7,13 +7,10 @@ import { Pills } from "./section";
 import { SectionHeader } from "./section-header";
 import { filterGroupsByQuery, useSearchSort } from "./use-facet-search";
 
-// OpenType features: 272 distinct tags across the catalog. Rather than one
-// count-sorted wall of pills, group them by what they do (ligatures, numerals,
-// script shaping, …) under a single header. Every tag is rendered, rare ones
-// collapse behind each sub-list's own "N more" expander, which is what keeps
-// the 81 character variants and the 64 unregistered tags from swamping the
-// panel while still leaving them reachable. The search box matches both the raw
-// tag and its human name, so "ligature" finds liga/dlig/hlig.
+// 272 distinct tags, grouped by what they do rather than left as one
+// count-sorted wall. Per-sub-list expanders keep the 81 character variants and
+// 64 unregistered tags from swamping the panel while leaving them reachable.
+// The search matches both the raw tag and its name, so "ligature" finds dlig.
 export function FeatureSection({
   features,
   selectedFeatures,
@@ -31,10 +28,8 @@ export function FeatureSection({
 }) {
   const { sort, toggleSort, query, setQuery, q } = useSearchSort();
 
-  // `features` arrives count-sorted; groupFeatures preserves that order within
-  // each group. Alpha sort re-orders before grouping so each sub-list follows.
-  // filterGroupsByQuery then drops non-matching tags and rebuilds each group's
-  // topNSet so a match never stays hidden behind a "N more" expander.
+  // filterGroupsByQuery rebuilds each group's topNSet, so a match never stays
+  // hidden behind a "N more" expander.
   const groups = useMemo(() => {
     const ordered =
       sort === "alpha"
@@ -85,9 +80,8 @@ export function FeatureSection({
                 grid
                 spread
                 mono
-                // The pill shows the 4-letter tag; the tooltip its full name.
-                // Unknown tags map to themselves, so skip the tooltip there
-                // (it would just repeat the label).
+                // An unknown tag maps to itself, so its tooltip would just
+                // repeat the label.
                 title={(tag) => {
                   const name = featureName(tag);
                   return name === tag ? "" : name;

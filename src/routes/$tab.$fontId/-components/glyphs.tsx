@@ -14,12 +14,8 @@ import {
   type Range,
 } from "./glyph-block-grid";
 
-// GLYPHS view: one Unicode block at a time, showing only the codepoints the
-// font actually contains (from its cmap; see glyph-coverage.ts). The block list
-// lives in the sidebar (GlyphsSidebar); this panel picks the active block from
-// BMP_BLOCKS, renders its title, and hands the chart itself to BlockGrid (see
-// glyph-block-grid.tsx). While the font's coverage loads it shows a matching
-// skeleton so the real grid swaps in without a layout shift.
+// One Unicode block at a time, showing only the codepoints the font contains.
+// The block list lives in GlyphsSidebar; the chart itself is BlockGrid.
 
 export function GlyphsPanel({
   font,
@@ -43,8 +39,6 @@ export function GlyphsPanel({
     [blockName]
   );
 
-  // Copy the character to the clipboard and confirm with a toast (or an error
-  // toast if the clipboard write is blocked, insecure context / denied).
   const onCopy = useCallback(async (cp: number) => {
     try {
       await navigator.clipboard.writeText(String.fromCodePoint(cp));
@@ -56,19 +50,17 @@ export function GlyphsPanel({
     }
   }, []);
 
-  // Always fall back to Adobe Blank (empty glyphs), never NotDef, so a stray
-  // absent cell stays blank. While the font loads we are already on Blank, the
-  // same look, so no special-casing needed.
+  // Always Adobe Blank, never NotDef, so a stray absent cell stays blank.
   //
   // letterSpacing is reset for the same reason the preview helpers do it: the
-  // app tracks its UI wide on <html>, and an inherited value appends that
-  // spacing to every glyph, nudging each one off the centre of its cell.
+  // app tracks its UI wide on <html>, and an inherited value would append that
+  // spacing to every glyph, nudging each off the centre of its cell.
   const glyphStyle: CSSProperties = {
     fontFamily: `"${font.name}", "Adobe Blank"`,
     letterSpacing: "normal",
   };
-  // fontLoaded is accepted so the panel re-renders once the face is ready and
-  // the browser repaints real glyphs over the blank ones.
+  // Accepted only to re-render once the face is ready, so the browser repaints
+  // real glyphs over the blank ones.
   void fontLoaded;
 
   return (
@@ -96,11 +88,8 @@ export function GlyphsPanel({
   );
 }
 
-// Loading placeholder for the glyph chart: the same column count and square
-// cells as BlockGrid (leading address column + header in the wide layout), so
-// the real grid swaps in without a layout shift. Both read useGlyphCompact, so
-// they cannot disagree about which layout is current. role=status + aria-busy announce the
-// pending state; the individual cells are decorative.
+// Both this and BlockGrid read useGlyphCompact, so they cannot disagree about
+// which layout is current and the real grid swaps in with no shift.
 function GlyphGridSkeleton() {
   const COLS = useGlyphCompact() ? COLS_MOBILE : COLS_DESKTOP;
   const labelW = COLS === COLS_DESKTOP ? LABEL_W : 0;

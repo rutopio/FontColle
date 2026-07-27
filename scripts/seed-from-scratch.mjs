@@ -1,9 +1,8 @@
-// Single-entry orchestrator for building the WHOLE dataset from nothing — the
-// one-time manual seed the incremental daily workflow can't do (it diffs the
-// previous fonts.json and reads the existing R2 manifest, neither of which
-// exists yet). It shells out to the existing scripts in the documented order
-// with fail-fast, so a bootstrap can't run steps out of order or skip a
-// backfill. See docs/data-pipeline.md for what each step does.
+// Builds the WHOLE dataset from nothing: the one-time manual seed the daily
+// workflow can't do, since that diffs the previous fonts.json and reads the
+// existing R2 manifest, neither of which exists yet. Shells out to the existing
+// scripts in order with fail-fast, so a bootstrap can't skip a backfill or run
+// steps out of order. See docs/data-pipeline.md for what each step does.
 //
 //   node scripts/seed-from-scratch.mjs             # local dataset only, no R2
 //   node scripts/seed-from-scratch.mjs --publish   # + seed R2 (remote write)
@@ -25,8 +24,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const HARVESTER = path.join(ROOT, "scripts/harvester");
 const FONTS_JSON = path.join(ROOT, "src/data/fonts.json");
 
-// Load .env like the rest of the pipeline expects its vars to be present. Node
-// 20.12+ has loadEnvFile; ignore a missing file (CI passes vars directly).
+// A missing file is fine: CI passes the vars directly.
 try {
   process.loadEnvFile(path.join(ROOT, ".env"));
 } catch {

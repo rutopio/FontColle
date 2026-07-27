@@ -14,8 +14,7 @@ import {
   weightList,
 } from "./shared";
 
-// Install command per package manager, for the "Add the package" tabs (like
-// Fontsource's own install page). Each manager has its own verb.
+// Each manager has its own verb.
 const PACKAGE_MANAGERS: { id: string; cmd: (pkg: string) => string }[] = [
   { id: "npm", cmd: (p) => `npm install ${p}` },
   { id: "pnpm", cmd: (p) => `pnpm add ${p}` },
@@ -23,26 +22,19 @@ const PACKAGE_MANAGERS: { id: string; cmd: (pkg: string) => string }[] = [
   { id: "bun", cmd: (p) => `bun add ${p}` },
 ];
 
-// The variable-package axis files we surface as individual imports, in the
-// site's order. Every axis file already bundles `wght`, so these are
-// alternatives, not additive; `wght` is the default. (`ital` is a `-italic`
-// file suffix, not a standalone axis file, so it's excluded here.)
+// Every axis file already bundles `wght`, so these are alternatives, not
+// additive. `ital` is excluded: it is a `-italic` file suffix, not an axis file.
 const VARIABLE_AXES = ["wght", "opsz", "slnt", "wdth", "GRAD"] as const;
 const DISPLAY_VALUES = ["auto", "swap", "block", "fallback", "optional"];
 const STATIC_FORMATS = ["woff2", "woff"];
 
-// METHOD 2, Fontsource self-hosting. Install the npm package, then either a
-// Simple axis/weight import or an Advanced @font-face you assemble from filters.
-// Ships the files with your bundle; no third-party request at runtime.
-//
-// Simple/Advanced mirror fontsource.org's own install page: Simple toggles one
-// import line; Advanced is a @font-face builder driven by Subsets / Variants
-// (or Weights) / Display filters, matching the site's Advanced panel.
+// METHOD 2, Fontsource self-hosting: ships the files with your bundle, so
+// there is no third-party runtime request. Both panels mirror fontsource.org's
+// own install page.
 export function FontsourceMethod({ font }: { font: FontRecord }) {
   const slug = fontsourceSlug(font.name);
   const hasItalic = font.instances.some((i) => i.italic);
-  // Variable families ship both a variable and a static Fontsource package;
-  // static-only families just the static one. Default to variable when offered.
+  // A variable family ships both packages; default to the variable one.
   const [variant, setVariant] = useState<"variable" | "static">(
     font.isVariable ? "variable" : "static"
   );
@@ -50,11 +42,9 @@ export function FontsourceMethod({ font }: { font: FontRecord }) {
   const pkg = isVariable
     ? `@fontsource-variable/${slug}`
     : `@fontsource/${slug}`;
-  // Variable Fontsource packages name the family "<Name> Variable"; static ones
-  // keep the plain family name.
+  // Fontsource names a variable package's family "<Name> Variable".
   const cssFamily = `"${font.name}${isVariable ? " Variable" : ""}", ${fallbackFor(font.category)}`;
-  // Real script subsets the family ships (drop the synthetic "menu" entry), for
-  // the Advanced Subsets picker. Fall back to latin when none are recorded.
+  // Drops the synthetic "menu" entry; falls back to latin when none recorded.
   const subsets = font.subsets.filter((s) => s !== "menu");
 
   return (
@@ -150,21 +140,16 @@ export function FontsourceMethod({ font }: { font: FontRecord }) {
   );
 }
 
-// A no-build <link> that pulls the Fontsource package's CSS off the jsDelivr
-// CDN. Points at the same recommended entry the Simple import uses: `wght.css`
-// for a variable package, `index.css` (all weights) for a static one.
+// A no-build <link> pulling the package's CSS off jsDelivr, at the same entry
+// the Simple import uses.
 function jsdelivrLink(pkg: string, isVariable: boolean): string {
   const entry = isVariable ? "wght.css" : "index.css";
   const href = `https://cdn.jsdelivr.net/npm/${pkg}@latest/${entry}`;
   return `<link href="${href}" rel="stylesheet" />`;
 }
 
-// SIMPLE, one axis import at a time, chosen with toggle buttons, exactly like
-// the buttons on Fontsource's install page. Selecting an axis (wght/opsz/slnt…)
-// swaps which `<axis>.css` is imported; the `ital` toggle appends `-italic` to
-// it (Fontsource ships italic as a suffixed twin of the same axis file). The
-// snippet is annotated with the supported weight range, since every axis file
-// bundles `wght`.
+// SIMPLE: one axis import at a time. The `ital` toggle appends `-italic`,
+// Fontsource shipping italic as a suffixed twin of the same file.
 function SimpleVariableImport({
   pkg,
   axes,
@@ -175,7 +160,6 @@ function SimpleVariableImport({
   hasItalic: boolean;
 }) {
   const tags = axes.map((a) => a.tag);
-  // Shipped axes, in the site's order; wght always leads and is the default.
   const available = VARIABLE_AXES.filter((t) => tags.includes(t));
   const [axis, setAxis] = useState<string>("wght");
   const [ital, setItal] = useState(false);
@@ -207,9 +191,7 @@ function SimpleVariableImport({
   );
 }
 
-// SIMPLE (static), weight + italic toggles that swap the single import line.
-// The default (no toggles) is the package's base import (weight 400); picking a
-// weight imports its `<weight>.css`, and `italic` its `<weight>-italic.css`.
+// With no toggles this is the package's base import, weight 400.
 function SimpleStaticImport({
   pkg,
   weights,
@@ -254,11 +236,9 @@ function SimpleStaticImport({
   );
 }
 
-// ADVANCED, a @font-face builder, matching Fontsource's Advanced panel. Filter
-// groups (Subsets, Variants/Weights, Display) drive a generated @font-face block
-// you paste into your global CSS; the bundler rewrites the `src` url into an
-// asset. We omit the per-subset `unicode-range` (data we don't carry), the
-// package's own file supplies it, and note that below the snippet.
+// ADVANCED: a @font-face builder. The bundler rewrites the `src` url into an
+// asset. Omits the per-subset `unicode-range`, data we don't carry and the
+// package's own file supplies; the snippet notes that below.
 function AdvancedFontFace({
   slug,
   isVariable,
@@ -284,8 +264,7 @@ function AdvancedFontFace({
   const axisList = VARIABLE_AXES.filter((t) => tags.includes(t));
   const wghtList = weightList(weights);
 
-  // Selections. Defaults mirror the site: latin subset, primary axis / weight,
-  // font-display: swap, both formats for static.
+  // Defaults mirror the site: latin, primary axis/weight, swap, both formats.
   const [subset, setSubset] = useState(
     subsetList.includes("latin") ? "latin" : subsetList[0]
   );
@@ -301,7 +280,6 @@ function AdvancedFontFace({
     isVariable && wght?.min != null && wght.max != null
       ? `${wght.min} ${wght.max}`
       : variant;
-  // Fontsource's file/comment id: <slug>-<subset>-<variant>-<style>.
   const id = `${slug}-${subset}-${variant}-${style}`;
   const srcFmts = isVariable ? ["woff2"] : formats;
   const src = srcFmts
@@ -388,8 +366,7 @@ function AdvancedFontFace({
   );
 }
 
-// A labelled row of pill toggles, matching the Subsets/Variants/Display headings
-// on Fontsource's Advanced panel.
+// A labelled row of pill toggles, one per Advanced-panel filter group.
 function FilterGroup({
   label,
   children,

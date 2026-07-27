@@ -12,19 +12,11 @@ import {
 import { cn } from "@/lib/utils";
 import { SectionHeader } from "./section-header";
 
-// Instance count (how many named styles a family ships): a two-thumb range
-// slider over the counts, with bucket presets below. Same shape as a metric
-// row (readout, slider, quartile buttons + All); the buttons jump the slider
-// to a preset range, and All clears back to no filter.
-//
-// The slider works in STOP INDEX space rather than raw counts. The
-// distribution is extremely skewed -- 1..12 covers almost the whole catalog
-// while the tail runs 14, 16, 18, 20, 32, 36, 45, 64, 72, 74 -- so on a linear
-// track everything below 12 would crowd into the first sixth and be
-// undraggable. Stops give each real value equal width. The stored value is
-// always the real count, never the index.
+// The slider works in STOP INDEX space, not raw counts: the distribution is
+// extremely skewed (1..12 covers almost the whole catalog while the tail runs
+// to 74), so on a linear track everything below 12 would crowd into the first
+// sixth and be undraggable. The stored value is always the real count.
 export function InstancesSection({
-  // [instance count, family count] ascending, from the facet index.
   histogram,
   value,
   onChange,
@@ -33,14 +25,12 @@ export function InstancesSection({
   value: InstanceRange | undefined;
   onChange: (next: InstanceRange | undefined) => void;
 }) {
-  // Every count the catalog actually has, ascending. Falls back to the domain
-  // edges if the histogram is empty, so the slider still renders.
+  // Falls back to the domain edges, so an empty histogram still renders.
   const stops = useMemo(() => {
     const xs = histogram.map(([n]) => n).filter((n) => n > 0);
     return xs.length ? xs : [INSTANCE_MIN, INSTANCE_MAX];
   }, [histogram]);
 
-  // Nearest stop index for a real count (thumbs only rest on a stop).
   const indexOf = (v: number) => {
     let best = 0;
     for (let i = 1; i < stops.length; i++) {
@@ -53,7 +43,6 @@ export function InstancesSection({
   const trackValue: [number, number] = [indexOf(lo), indexOf(hi)];
   const active = instanceBucketOf(value);
 
-  // Families in a range, summed from the histogram (no second catalog pass).
   const countIn = (rlo: number, rhi: number) =>
     histogram.reduce(
       (sum, [n, c]) => (n >= rlo && n <= rhi ? sum + c : sum),
@@ -61,8 +50,8 @@ export function InstancesSection({
     );
   const matched = countIn(lo, hi);
 
-  // Store the real counts; a range spanning the whole domain filters nothing,
-  // so it clears instead (keeping All lit rather than showing a no-op filter).
+  // A range spanning the whole domain filters nothing, so it clears instead,
+  // keeping All lit rather than showing a no-op filter.
   const commit = (nlo: number, nhi: number) => {
     const a = Math.min(nlo, nhi);
     const b = Math.max(nlo, nhi);
@@ -75,8 +64,7 @@ export function InstancesSection({
     commit(stops[arr[0]] ?? INSTANCE_MIN, stops[arr[1]] ?? INSTANCE_MAX);
   };
 
-  // A preset button jumps the slider to that bucket; clicking the active one
-  // again clears, so the row never traps the user into needing All.
+  // Clicking the active bucket clears, so the row never forces a trip to All.
   const pick = (id: string) => {
     if (id === active) return onChange(undefined);
     const r = instanceRangeOf(id);

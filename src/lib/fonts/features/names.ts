@@ -1,10 +1,6 @@
-// OpenType feature names + which features browsers enable by default per the
-// W3C CSS Fonts spec. Consumed by the detail tester (feature toggles and the
-// font-feature-settings it emits).
-
-// Features engines apply by default for normal text. The UI shows these ON
-// initially; setting font-feature-settings overrides the browser default, so we
-// only emit a default-on feature when the user explicitly turns it OFF.
+// Which features engines apply by default, per the W3C CSS Fonts spec. Setting
+// font-feature-settings overrides that default wholesale, so a default-on
+// feature is only ever emitted when the user turns it OFF.
 export const DEFAULT_ON = new Set([
   "calt", // Contextual Alternates
   "liga", // Standard Ligatures
@@ -18,9 +14,8 @@ export const DEFAULT_ON = new Set([
   "rclt", // Required Contextual Alternates
 ]);
 
-// Human-readable names per the OpenType 1.9.1 registered feature list
-// (https://learn.microsoft.com/typography/opentype/spec/featurelist).
-// Unknown tags fall back to the raw tag so the list is always complete.
+// Per the OpenType 1.9.1 registered feature list. An unknown tag falls back to
+// itself, so the list is always complete.
 const FEATURE_NAMES: Record<string, string> = {
   aalt: "Access All Alternates",
   abvf: "Above-base Forms",
@@ -160,9 +155,8 @@ export function featureName(tag: string): string {
 }
 
 /**
- * Build the `font-feature-settings` value from the user's overrides.
- * `overrides` maps tag -> desired on/off. We only emit entries that differ from
- * the browser default, so untouched default-on features keep the engine default.
+ * Emits only entries that differ from the browser default, so untouched
+ * default-on features keep the engine's own behaviour.
  */
 export function buildFeatureSettings(
   overrides: Record<string, boolean>

@@ -1,18 +1,15 @@
 import { useCallback, useSyncExternalStore } from "react";
 
-// v1 favorites live in localStorage, shaped for a possible one-time upload+merge
-// in a future account-synced v2. Keep the shape flat and stable: an array of
-// family ids.
+// Shaped for a possible one-time upload+merge into an account-synced v2, so
+// keep it a flat, stable array of family ids.
 const KEY = "font-colle.favorites.v1";
 
 interface FavStore {
   favorites: string[];
 }
 
-// Module-level store read through useSyncExternalStore, so every useFavorites
-// instance (list grid, detail heart) shares one array and a toggle anywhere
-// updates them all. The server (and hydration) renders the empty list; the
-// first client pass after hydration reads the stored one.
+// The server and hydration render the empty list; the first client pass after
+// hydration reads the stored one.
 
 const EMPTY: string[] = [];
 const listeners = new Set<() => void>();

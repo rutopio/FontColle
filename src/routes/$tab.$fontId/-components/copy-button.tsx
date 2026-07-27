@@ -3,10 +3,8 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-// A copy-to-clipboard button that flips to a green check for ~1.5s on success,
-// or a red X for the same window if the clipboard write fails (insecure context
-// / denied permission), rather than lying about success with a silent no-op.
-// A toast fires alongside the icon flip for a second, glanceable confirmation.
+// Flips to a red X when the clipboard write fails (insecure context, denied
+// permission) rather than lying about success with a silent no-op.
 export function CopyButton({
   text,
   label = "Copy",

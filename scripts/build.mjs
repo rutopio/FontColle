@@ -1,23 +1,15 @@
-// Production build wrapper.
-//
-// `vite build` runs the full pipeline (client + SSR + TanStack Start prerender)
-// but never exits: the @cloudflare/vite-plugin spins up a miniflare preview
-// server whose bindings can leave the event loop alive after the build resolves.
-// All artifacts are written by then, so we force a clean exit. (Same reason as
-// TypeSpan's build wrapper, do not revert to plain `vite build`.)
+// `vite build` never exits: @cloudflare/vite-plugin spins up a miniflare
+// preview server whose bindings keep the event loop alive after the build
+// resolves. Every artifact is written by then, so force the exit. Do NOT
+// revert this to a plain `vite build`.
 process.env.NODE_ENV ??= "production";
 
-// The full data assets (src/data/fonts.json, public/glyphs, public/og) live in
-// R2, not git — as does the manifest that points at them (manifest/latest.json;
-// see docs/data-pipeline.md). A build from a fresh clone, notably Cloudflare
-// Workers Builds, which clones the repo on every push, must pull them first.
-// Local trees that already have the files skip this; `pnpm pull:data` refreshes
-// explicitly.
+// The data assets live in R2, not git (see docs/data-pipeline.md), so a fresh
+// clone — notably Cloudflare Workers Builds, which clones on every push — must
+// pull them first.
 //
-// A fork without R2 credentials (a UI/UX contributor) can't pull. When the sync
-// fails, fall back to the committed 24-record sample (src/data/fonts.sample.json)
-// so the build still produces a working, if small, catalog. The full dataset
-// needs a harvest — see the README's Contributing section.
+// A fork without R2 credentials can't. The sync failing then falls back to the
+// committed 24-record sample, so the build still produces a working catalog.
 import { copyFileSync, existsSync } from "node:fs";
 
 const url = (p) => new URL(p, import.meta.url);
@@ -43,20 +35,16 @@ if (assetPaths.some((p) => !existsSync(url(p)))) {
   }
 }
 
-// Emit public/sitemap.xml (+ robots Sitemap line) before the build so the
-// static file is picked up as an asset. No-op when VITE_SITE_URL is unset.
+// Before the build, so the static file is picked up as an asset.
 const { genSitemap } = await import("./gen-sitemap.mjs");
 await genSitemap();
 
-// Emit public/catalog.json (published families) before the build so the client
-// can fetch the catalog as a static CDN asset instead of the Worker rebuilding
-// it from D1 on every request (Error 1102). See gen-catalog.mjs.
+// Before the build, so the client fetches a static CDN asset rather than the
+// Worker rebuilding this per request (Error 1102).
 const { genCatalog } = await import("./gen-catalog.mjs");
 await genCatalog();
 
-// Emit public/catalog/facets/* (pre-sharded slices + index) from the slim
-// catalog genCatalog just wrote, so agents that read data into context can pull
-// one small slice instead of the 2 MB slim file. See gen-facets.mjs.
+// From the slim catalog genCatalog just wrote.
 const { genFacets } = await import("./gen-facets.mjs");
 await genFacets();
 

@@ -1,20 +1,12 @@
-// One-off generator: extract the "Aa" specimen outlines used on the sidebar
-// filter cards (Category / Weight / Width) into static SVGs under
-// public/specimens/, so those cards no longer depend on loading a webfont.
+// One-off generator: the "Aa" specimen outlines for the sidebar filter cards
+// (Category / Weight / Width) as static SVGs under public/specimens/, so those
+// cards don't depend on loading a webfont.
 //
-// Source faces are the same ones the live cards render:
-//   - Category: one representative Google Font per class (see CATEGORY_SPECIMEN)
-//   - Weight:   Inconsolata "Aa" at each wght step (100..900)
-//   - Width:    Inconsolata "Aa" at each wdth percentage
+// Fetches each face from the CSS2 API at the exact axis tuple where relevant,
+// then traces the "A" + "a" outlines into a single path per card.
 //
-// We fetch each face's woff2 from the Google Fonts CSS2 API (asking for the
-// exact axis tuple where relevant), decompress it to an OpenType buffer, then
-// trace the "A" + "a" glyph outlines into a single path per card.
-//
-// Run: node scripts/gen-specimen-svgs.mjs   (opentype.js must be installed)
-//
-// This is intentionally a build-time script, not shipped in the app bundle.
-// Re-run it if the specimen faces or the weight/width steps change.
+// Run: node scripts/gen-specimen-svgs.mjs. Re-run when the specimen faces or
+// the weight/width steps change.
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
@@ -26,7 +18,8 @@ const OUT_DIR = resolve(
   "../public/specimens"
 );
 
-// Mirrors src/components/filter/constants.ts CATEGORY_SPECIMEN.
+// The representative face per category. Sole source of truth: the cards render
+// the SVGs this emits (see specimen-icon.tsx), so nothing in src mirrors these.
 const CATEGORY_SPECIMEN = {
   Sans: "Inter",
   Serif: "Playfair Display",
@@ -35,9 +28,9 @@ const CATEGORY_SPECIMEN = {
   Mono: "JetBrains Mono",
 };
 
-// Mirrors src/lib/fonts/filter.ts WEIGHT_STEPS.
+// Mirrors src/lib/fonts/filter/weights.ts WEIGHT_STEPS.
 const WEIGHT_STEPS = [100, 200, 300, 400, 500, 600, 700, 800, 900];
-// Mirrors src/lib/fonts/filter.ts WIDTH_STEP_PCT (step -> wdth percentage).
+// Mirrors src/lib/fonts/filter/weights.ts WIDTH_STEP_PCT (step -> wdth %).
 const WIDTH_STEP_PCT = {
   1: 50,
   2: 62.5,
@@ -54,15 +47,13 @@ const WIDTH_STEP_PCT = {
 // can hand the bytes straight to opentype.js (which doesn't decompress woff2).
 const UA = "Mozilla/4.0";
 
-// Inconsolata's variable axes, matching src/components/filter/constants.ts
-// SPECIMEN_AXES. css2 serves an already-instanced static ttf per tuple, so we
-// clamp each requested value to these bounds exactly as the live cards do.
+// Inconsolata's real axis bounds. css2 serves an already-instanced static ttf
+// per tuple, so a requested value outside these silently yields the nearest
+// instance instead; clamping keeps each step's SVG the cut it claims to be.
 const INCONSOLATA_WGHT = { min: 200, max: 900 };
 const INCONSOLATA_WDTH = { min: 50, max: 200 };
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
-// Ask the CSS2 API for a family (optionally at a wght/wdth tuple, or italic) and
-// return the first font URL in the returned stylesheet.
 async function fontUrl(family, { wght, wdth, ital } = {}) {
   const fam = family.trim().replace(/\s+/g, "+");
   let spec = fam;
@@ -99,15 +90,13 @@ async function loadFont(family, axes) {
   );
 }
 
-// Build one specimen SVG string for "Aa" from a parsed font.
 function specimenSvg(font) {
-  // A nominal font size; the viewBox is derived from actual glyph metrics so the
-  // chosen size only sets the coordinate scale.
+  // Nominal: the viewBox comes from real glyph metrics, so this only sets the
+  // coordinate scale.
   const size = 100;
   const unitsPerEm = font.unitsPerEm;
   const scale = size / unitsPerEm;
 
-  // Lay out "A" then "a" advancing by each glyph's advanceWidth.
   const glyphs = font.stringToGlyphs("Aa");
   let x = 0;
   const path = new opentype.Path();
@@ -145,9 +134,8 @@ async function main() {
     console.log(`  ${name}  <- ${family}`);
   }
 
-  // Extra Category cards that aren't a primary class: Slab (a slab serif face)
-  // and Italic (an italic face). Emoji has no meaningful "Aa", so it uses an
-  // icon in the UI instead of a specimen SVG.
+  // Category cards that aren't a primary class. Emoji has no meaningful "Aa",
+  // so the UI shows an icon for it instead of a specimen SVG.
   {
     const slab = await loadFont("Roboto Slab");
     writeFileSync(resolve(OUT_DIR, "category-slab.svg"), specimenSvg(slab));

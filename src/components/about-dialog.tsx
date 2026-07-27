@@ -23,21 +23,17 @@ const REPO_URL = "https://github.com/rutopio/FontColle";
 const AUTHOR_URL = "https://chingru.com";
 const SPONSOR_URL = "https://buymeacoffee.com/chingru";
 
-// The lockup alone: mark and wordmark. Title is passed in rather than imported,
-// because the Dialog and Sheet shells each need their own primitive for the
-// popup to be labelled correctly.
+// Title is passed in rather than imported, because the Dialog and Sheet shells
+// each need their own primitive for the popup to be labelled correctly.
 function AboutHeading({
   Title,
 }: {
   Title: typeof DialogTitle | typeof SheetTitle;
 }) {
   return (
-    // Mark and wordmark side by side, matching BrandMark's proportions (the
-    // standalone NotFound/ErrorState lockup). Not BrandMark itself: that one
-    // is a <Link to="/">, which would navigate the page out from under the
-    // popup, and the name here has to be the shell's own Title primitive for
-    // the popup to be labelled. translate-y-1 optically seats the wordmark
-    // against the mark, as it does there.
+    // Matches BrandMark's proportions but is not BrandMark: that one is a
+    // <Link to="/">, which would navigate the page out from under the popup,
+    // and the name has to be the shell's Title primitive to label it.
     <div className="flex flex-wrap items-center justify-center gap-2 text-primary">
       <LogoIcon className="size-8" />
       <Title className="translate-y-0.5 font-mono text-xl tracking-tight">
@@ -47,9 +43,8 @@ function AboutHeading({
   );
 }
 
-// Everything below the lockup: identical in both presentations. The tagline
-// stays the shell's Description primitive even though it now reads as body
-// copy, so the popup keeps its accessible description.
+// The tagline stays the shell's Description primitive even though it reads as
+// body copy, so the popup keeps its accessible description.
 function AboutBody({
   Description,
 }: {
@@ -128,14 +123,8 @@ function AboutBody({
   );
 }
 
-// About is a popup rather than a page: it holds a few paragraphs, and keeping
-// the page underneath mounted means the icon rail stays exactly as it was on
-// whichever view opened it. Mounted once in __root; opened from AboutLink in the
-// icon rail's footer and the mobile top bar.
-//
-// Same content, two shells: a centered dialog on desktop, a bottom sheet on
-// touch, where a centered box is an awkward place to reach. This mirrors the
-// list's SortControl, which swaps a dropdown for a sheet at the same breakpoint.
+// A popup rather than a page, so the view underneath stays mounted. Two shells
+// for one content, mirroring how SortControl swaps at the same breakpoint.
 export function AboutDialog() {
   const { open, setOpen } = useAbout();
   const mobile = useIsMobile();
@@ -146,8 +135,7 @@ export function AboutDialog() {
         <SheetContent
           side="bottom"
           className="gap-4 px-4 pt-6"
-          // Clear of the home indicator on gesture-nav phones, matching the
-          // sort sheet.
+          // Clear of the home indicator on gesture-nav phones.
           style={{
             paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))",
           }}

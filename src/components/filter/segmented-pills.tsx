@@ -1,22 +1,15 @@
 import { cn } from "@/lib/utils";
 
-// A segmented control for radio-style filters: the options share one border and
-// sit flush against each other, so the group physically reads as one mutually
-// exclusive choice — apart from the multi-select pills, which stay as separate
-// rounded-md boxes with gaps. Clicking the active segment clears it.
-//
-// Replaces the two-per-row PillButton grid the either/or filters used (Variable
-// Support, Italic, Color, Noto Family). Selecting a segment fills it; the count
-// rides along muted so the label stays the emphasis.
+// Radio-style filters: one shared border with the options flush against each
+// other, so the group physically reads as one mutually exclusive choice, apart
+// from the multi-select pills and their separate boxes.
 export function SegmentedPills({
   items,
   labels,
   selected,
   onToggle,
 }: {
-  // [value, count], in display order.
   items: [string, number][];
-  // value -> human label; falls back to the raw value.
   labels: Record<string, string>;
   selected: string[];
   onToggle: (v: string) => void;

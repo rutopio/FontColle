@@ -13,22 +13,22 @@ import path from "node:path";
 export const ROOT = path.resolve(import.meta.dirname, "..", "..");
 export const BUCKET = "fontcolle-assets";
 
-// The manifest (the pointer at which fonts/glyphs/og snapshot the build should
-// pull) lives in R2 now, NOT git — so a daily harvest updates it with zero
-// commits and triggers the deploy via a Cloudflare Deploy Hook instead. A single
-// fixed key is the build's well-known entry point; unlike the big blobs (which
-// use content-hash keys to dodge Cloudflare's edge cache), the manifest is read
-// through wrangler's `--remote` R2 API, not the cached public bucket URL, so a
-// fixed key is safe here. MANIFEST_PATH is only a LOCAL scratch/dev copy now
-// (pnpm pull:data writes it; shrinkage-guard's --manifest fixture uses it); it
-// is no longer git-versioned.
+// The manifest — which fonts/glyphs/og snapshot the build should pull — lives
+// in R2, NOT git, so a daily harvest updates it with zero commits and fires a
+// Cloudflare Deploy Hook instead.
+//
+// A single fixed key is the build's well-known entry point. Safe here, unlike
+// the big blobs that need content-hash keys: the manifest is read through
+// wrangler's `--remote` R2 API, not the edge-cached public bucket URL.
+//
+// MANIFEST_PATH is only a LOCAL scratch copy (pnpm pull:data writes it,
+// shrinkage-guard's --manifest fixture reads it).
 export const MANIFEST_KEY = "manifest/latest.json";
 export const MANIFEST_PATH = path.join(ROOT, "src/data/data-manifest.json");
 
-// wrangler resolves the account from CLOUDFLARE_ACCOUNT_ID. Required, with no
-// fallback: an account id identifies a specific Cloudflare tenant, so baking
-// one in would both leak it and silently point a fork's uploads at someone
-// else's account. Failing loudly here beats a confusing wrangler auth error.
+// Required, with no fallback: an account id identifies a specific Cloudflare
+// tenant, so a baked-in default would leak it AND silently point a fork's
+// uploads at someone else's account.
 const ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID;
 if (!ACCOUNT_ID) {
   throw new Error(
@@ -54,8 +54,7 @@ function wrangler(args, { input } = {}) {
   return res.stdout;
 }
 
-// Upload a local file to `key`. Reads bytes and pipes them so binary/large
-// files transfer intact.
+// Piped rather than passed by path, so binary/large files transfer intact.
 export function r2Put(key, filePath) {
   const buf = readFileSync(filePath);
   wrangler(["r2", "object", "put", `${BUCKET}/${key}`, "--remote", "--pipe"], {
@@ -63,7 +62,6 @@ export function r2Put(key, filePath) {
   });
 }
 
-// Download `key` into `destPath`.
 export function r2Get(key, destPath) {
   wrangler([
     "r2",
@@ -76,11 +74,10 @@ export function r2Get(key, destPath) {
   ]);
 }
 
-// Read the manifest from R2 and return it parsed. This is the build's single
-// source of truth for which snapshot to pull, so it must never read a stale
-// copy: wrangler's `--remote r2 object get` hits the R2 API directly (not the
-// edge-cached public bucket URL), so the fixed MANIFEST_KEY returns current
-// bytes. Logs the fonts key it resolved so a stale read is visible in CI.
+// The build's single source of truth for which snapshot to pull, so it must
+// never read a stale copy: `--remote r2 object get` hits the R2 API directly,
+// not the edge-cached bucket URL. Logs the resolved fonts key so a stale read
+// is visible in CI.
 export function r2GetManifest() {
   const tmp = path.join(ROOT, ".r2-manifest.json");
   r2Get(MANIFEST_KEY, tmp);
@@ -90,9 +87,8 @@ export function r2GetManifest() {
   return manifest;
 }
 
-// Upload the manifest object to R2 under the fixed pointer key. Serialized the
-// same way the old git file was (2-space, trailing newline) so a diff against a
-// pulled copy is clean.
+// Serialized 2-space with a trailing newline, matching what pull:data writes
+// locally, so a diff against a pulled copy is clean.
 export function r2PutManifest(manifest) {
   const tmp = path.join(ROOT, ".r2-manifest.json");
   writeFileSync(tmp, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");

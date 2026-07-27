@@ -65,28 +65,21 @@ export function Detail({
 }) {
   const { text, setText } = usePreview();
   const router = useRouter();
-  // Detail-only field: absent from the shared list catalog, always present on
-  // the per-font record this page loads. See DETAIL_ONLY_FIELDS in
-  // scripts/gen-catalog.mjs.
+  // Detail-only: absent from the shared list catalog. See DETAIL_ONLY_FIELDS
+  // in scripts/gen-catalog.mjs.
   const versionHistory = font.versionHistory ?? [];
-  // useCanGoBack() reads the browser history, which the server can't see: it's
-  // false on the server (so the back control SSRs as a plain <a> Link) but may
-  // be true right after hydration, and swapping <a> -> <button> mid-hydration
-  // is a mismatch. Gate on a mount flag so the first client render matches the
-  // server (Link), then upgrade to the history-back <button> once mounted.
+  // useCanGoBack() reads browser history, which the server can't see, so
+  // swapping <a> -> <button> on its value would be a hydration mismatch. Gate
+  // on a mount flag: first client render matches the server, then upgrade.
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   const canGoBack = useCanGoBack() && mounted;
   const specimen = text || specimenFor(font);
-  // The Tester's opening document: always the family's own three-line
-  // specimen passage, deliberately decoupled from the shared preview sentence.
-  // The editor owns its text once mounted, so borrowing the dock's sentence
-  // would make the two look linked when only the first render ever reads it.
-  // Every visit to the tab therefore starts from the same known document.
+  // Deliberately NOT the shared preview sentence: the editor owns its text
+  // once mounted, so borrowing it would make the two look linked when only the
+  // first render ever reads it.
   const seedLines = specimenLinesFor(font);
-  // The Column's ScrollArea viewport, shared with the Glyphs grid so its
-  // row-virtualizer scrolls in the same container the rest of the page does
-  // (matching how the list's FontGrid scrolls in its Column).
+  // Shared with the Glyphs grid, whose row-virtualizer binds to it.
   const scrollRef = useRef<HTMLDivElement>(null);
   const hasItalic = useMemo(
     () => font.instances.some((i) => i.italic),
@@ -99,17 +92,12 @@ export function Detail({
 
   const fontLoaded = useFontLoaded(font.name);
 
-  // Real script subsets, minus the synthetic "menu" entry. Used for both the
-  // Subsets list and its count.
   const subsets = font.subsets.filter((s) => s !== "menu");
 
-  // Repo button icon, by host (GitHub / GitLab / SourceHut), like the list
-  // card/row. Only rendered when the family has a known upstream repo.
   const RepoIcon = repoHostIcon(font.repositoryUrl);
 
-  // Specs table rows, built as data so optional rows can be filtered out. The
-  // "Added" row carries a version badge; "Last updated" deliberately omits one
-  // (the git-tag history lags the font's own version, so they'd disagree).
+  // "Last updated" deliberately carries no version badge: the git-tag history
+  // lags the font's own version, so the two would disagree.
   const specRows: SpecRow[] = [
     { label: "Variable", value: font.isVariable ? "Yes" : "No" },
     { label: "Axes", value: String(font.axes.length) },
@@ -133,10 +121,9 @@ export function Detail({
       value: formatDate(font.dateAdded),
       badge: versionOnDate(versionHistory, font.dateAdded) ?? undefined,
     },
-    // Two different dates, deliberately both shown: Google's publish date moves
-    // on any release (a metadata pass bumps it library-wide), while the binary's
-    // head.modified only moves when the outlines are rebuilt. The Maintenance
-    // filter buckets on the latter.
+    // Both shown deliberately: Google's publish date moves on any release,
+    // while head.modified moves only when the outlines are rebuilt. The
+    // Maintenance filter buckets on the latter.
     font.lastModifiedApi && {
       label: "Published",
       value: formatDate(font.lastModifiedApi),
@@ -149,26 +136,20 @@ export function Detail({
     font.license && { label: "License", value: font.license },
   ].filter(Boolean) as SpecRow[];
 
-  // The sidebar's feature toggles as a font-feature-settings value. Shared by
-  // every preview surface (Tester document, instance rows) so one
-  // toggle reads the same everywhere.
+  // Shared by every preview surface, so one toggle reads the same everywhere.
   const featureSettings = useMemo(
     () => buildFeatureSettings(featureState),
     [featureState]
   );
 
-  // Axis tags whose value actually differs across the family's named instances.
-  // A family's instances often pin a dozen axes at one shared value (Roboto
-  // Flex names 13 but only varies wght and slnt), and a badge repeating that
-  // same number on every row carries no information. Computed once here rather
-  // than per row: it's a property of the family, not of one instance.
+  // Instances often pin a dozen axes at one shared value (Roboto Flex names 13
+  // but varies only wght and slnt), and a badge repeating that number on every
+  // row carries no information.
   const varyingAxisTags = useMemo(() => {
     const seen = new Map<string, number>();
     const varying = new Set<string>();
     for (const inst of font.instances) {
       for (const [tag, value] of Object.entries(inst.coords)) {
-        // First sighting records the value; any later disagreement (including
-        // an instance that omits a tag others carry) marks the axis as varying.
         if (!seen.has(tag)) {
           seen.set(tag, value);
           if (inst !== font.instances[0]) varying.add(tag);
@@ -183,10 +164,7 @@ export function Detail({
     return varying;
   }, [font.instances]);
 
-  // The family styling the Tester document renders at, with no font-size:
-  // the editor sets that per block type itself. Axis coords come from the
-  // sidebar sliders and the instance chips (both write axisState), and the
-  // feature settings from the sidebar toggles.
+  // No font-size: the editor sets that per block type itself.
   const testerFontStyle: React.CSSProperties = useMemo(() => {
     const coords = Object.fromEntries(
       font.axes.map((a) => [a.tag, axisState[a.tag]])
@@ -304,10 +282,8 @@ export function Detail({
         </>
       }
       footer={<PreviewBar />}
-      // The preview sentence field drives the instance rows, so it's up on
-      // Instances only. The Tester seeds its document from the sentence once,
-      // on mount, then owns it: a live field there would look like it edits
-      // the document when it no longer does.
+      // Instances only: the Tester seeds its document once and then owns it,
+      // so a live field there would look like it still edits.
       footerHidden={tab !== "sample"}
     >
       {/* PLAYGROUND, a rich-text editor (not the shared preview string): mix
@@ -333,8 +309,8 @@ export function Detail({
       Unwrapped, and styled like the list's FontRow: the tab already names the
       view, so a titled card around it would just be a second frame. */}
       {tab === "sample" && font.instances.length > 0 && (
-        // One flush stack, not a gapped list: each row carries its own bottom
-        // border, so the Column body's gap-4 would break them apart.
+        // Each row has its own bottom border, so the body's gap-4 would break
+        // the stack apart.
         <div className="flex flex-col">
           {font.instances.map((inst) => (
             <InstanceRow
@@ -382,12 +358,11 @@ export function Detail({
             </Panel>
             <Panel
               label="Subsets"
-              // "menu" is a synthetic subset (the family name glyphs), not a
-              // real script subset, so exclude it from the list and the count.
+              // Excludes "menu", a synthetic subset of the family-name glyphs.
               count={subsets.length || undefined}
               // flex-col + a flex-1 body give ColumnList a real height to fill:
-              // the panel is already stretched to the row's tallest card, but
-              // without this chain that height stops at the section.
+              // the panel is stretched to the row's tallest card, but without
+              // this chain that height stops at the section.
               className="flex flex-col md:col-span-1"
               bodyClassName="flex-1"
             >
@@ -460,8 +435,7 @@ export function Detail({
   );
 }
 
-// en-US short date, e.g. "Apr 9, 2025". UTC pins the day so a "yyyy-MM-dd"
-// string isn't shifted back by the local zone.
+// UTC pins the day, so a "yyyy-MM-dd" string isn't shifted by the local zone.
 const DATE_FMT = new Intl.DateTimeFormat("en-US", {
   year: "numeric",
   month: "short",
@@ -469,17 +443,12 @@ const DATE_FMT = new Intl.DateTimeFormat("en-US", {
   timeZone: "UTC",
 });
 
-// Render a "yyyy-MM-dd" string as "Apr 9, 2025". Falls back to the raw string
-// if it isn't the expected shape.
+// Falls back to the raw string when it isn't a "yyyy-MM-dd" date.
 function formatDate(iso: string): string {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso;
   return DATE_FMT.format(new Date(`${iso}T00:00:00Z`));
 }
 
-// The face of the Back control: icon over caption, like every other header
-// cell. Shared by its two forms — a button when there is history to pop, a Link
-// when the page was opened cold — which differ in how they navigate, not in
-// what they look like.
 function BackFace() {
   return (
     <>
@@ -489,12 +458,8 @@ function BackFace() {
   );
 }
 
-// One of the header's outbound links, drawn as a header cell: the same tile as
-// Add beside it, in the same ruled-off full-height box, so the row closes as one
-// band rather than a mix of pills and cells.
-//
-// A plain <a>, not the Button primitive with a render prop: nothing here wants
-// Button's variants or padding, and the anchor carries its own label.
+// A plain <a>, not the Button primitive: nothing here wants its variants or
+// padding, and the anchor carries its own label.
 function HeaderLink({
   href,
   label,
@@ -502,8 +467,7 @@ function HeaderLink({
   "aria-label": ariaLabel,
 }: {
   href: string;
-  // The caption under the icon. Kept short — the cell is 72px wide, and the
-  // full name ("Google Fonts") is in aria-label where it is needed.
+  // Kept short: the cell is 72px wide, and the full name is in aria-label.
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   "aria-label": string;
@@ -526,31 +490,20 @@ function HeaderLink({
   );
 }
 
-// A bulleted list whose left column fills to the bottom of the panel before
-// anything spills into the right one.
+// `column-fill: auto` only fills the left column first when the container has
+// a height to fill; the default `balance` splits ~50/50. Hence h-full inside a
+// panel whose body is stretched.
 //
-// This is what CSS multi-column does under `column-fill: auto` — but only when
-// the container has a height to fill. The default `balance` instead evens the
-// columns out, which is why an auto-height list splits ~50/50. So the list runs
-// h-full inside a panel whose body is stretched (flex-col + flex-1 on the
-// Panel), giving the columns the row's full card height to work against.
-//
-// The bullet is a ::before dot rather than list-disc: a marker is painted
-// outside the item's content box, so `truncate` (overflow-hidden) on a long
-// entry clips it away.
+// The bullet is a ::before dot, not list-disc: a marker paints outside the
+// item's content box, so `truncate` on a long entry would clip it away.
 function ColumnList({ items }: { items: string[] }) {
   return (
     <ul className="h-full columns-1 gap-x-3 text-sm [column-fill:auto] lg:columns-2">
       {items.map((item) => (
         <li
           key={item}
-          // Row spacing is a per-item margin, not gap-y: the parent is a
-          // multi-column container, where gap only sets the column gutter.
-          //
-          // No colour set, so these read at the default foreground like the
-          // Specs values next to them. Subsets and writing systems are the
-          // panel's content, not a caption about it. The bullet is bg-current,
-          // so it follows the text rather than needing its own token.
+          // A per-item margin, not gap-y: in a multi-column container gap only
+          // sets the column gutter.
           className="mb-2 flex min-w-0 items-center gap-1.5 before:size-1 before:shrink-0 before:rounded-full before:bg-current before:content-['']"
         >
           <span className="truncate">{item}</span>
@@ -560,14 +513,12 @@ function ColumnList({ items }: { items: string[] }) {
   );
 }
 
-// The version shipped on (or most recently before) a given "yyyy-MM-dd" date,
-// read off the git-history timeline. Null when no version predates the date.
 function versionOnDate(
   history: { version: string; date: string }[],
   date: string
 ): string | null {
   let match: string | null = null;
-  // history is ascending by date; the last entry that isn't after `date` wins.
+  // versionHistory is ascending by date.
   for (const v of history) {
     if (v.date <= date) match = v.version;
     else break;

@@ -4,35 +4,31 @@ import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query
 import { routeTree } from "./routeTree.gen";
 
 export function getRouter() {
-  // One QueryClient per router instance (per request on the server, once on the
-  // client). Powers the on-demand fetches that aren't route loaders, currently
-  // just per-font glyph coverage, with caching + SSR dehydration.
+  // One per router instance: per request on the server, once on the client.
+  // Powers the on-demand fetches that aren't route loaders.
   const queryClient = new QueryClient();
 
   const router = createTanStackRouter({
     routeTree,
     context: { queryClient },
 
-    // Off on purpose. The list page restores the window scroll itself (the
-    // listScrollY logic in routes/index) with a frame-retry that waits for the
-    // virtualizer to grow to full height, router restoration can't, and fought
-    // it (partial offsets). With it off, inner containers like the sidebar also
-    // aren't restored, so they naturally open at the top.
+    // Off on purpose: the list restores its own scroll (see
+    // use-list-scroll-restore) with a frame-retry that waits for the
+    // virtualizer to reach full height. Router restoration can't do that and
+    // fought it, landing on partial offsets. With it off, inner containers
+    // like the sidebar also open at the top, which is what we want.
     scrollRestoration: false,
     defaultPreload: "intent",
     defaultPreloadStaleTime: 0,
-    // Keep loaded route data fresh for 5 min so navigating back to the list
-    // reuses the cached catalog instead of re-running getAllFonts. Without this
-    // (defaultStaleTime defaults to 0) every back-navigation revalidates the
-    // loader, and when the refetched data commits the whole route re-mounts,
-    // which replayed the RouteFade entry ~1.5s after landing on the list (a
-    // stray second flash). The catalog is static within a session, so caching
-    // it is also just correct.
+    // The catalog is static within a session, so back-navigation should reuse
+    // it. At the default 0 every back-navigation revalidates the loader, and
+    // the refetch commit re-mounts the route, replaying the RouteFade entry as
+    // a stray second flash ~1.5s after landing.
     defaultStaleTime: 5 * 60_000,
   });
 
-  // Dehydrate/hydrate the QueryClient across the SSR boundary and inject the
-  // QueryClientProvider (wrapQueryClient defaults on), so __root needs no change.
+  // Dehydrates across the SSR boundary and injects the QueryClientProvider,
+  // so __root needs no wrapper of its own.
   setupRouterSsrQueryIntegration({ router, queryClient });
 
   return router;

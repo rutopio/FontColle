@@ -13,9 +13,8 @@ import { RARE_THRESHOLD } from "./constants";
 import { PillButton } from "./pill-button";
 import { SectionHeader, type SortMode } from "./section-header";
 
-// A pill-list filter section: a header (title + reset/sort) over a Pills list.
-// Used for the Tag panel. Rare values (below RARE_THRESHOLD, or outside the
-// top-N when set) collapse behind a "more" expander.
+// Rare values, below RARE_THRESHOLD or outside a given top-N, collapse behind
+// a "more" expander.
 export function Section({
   title,
   icon,
@@ -40,21 +39,17 @@ export function Section({
   onToggle: (v: string) => void;
   onReset?: () => void;
   sortable?: boolean;
-  // OR/AND toggle, forwarded to the header. Pass both to show it.
   mode?: MatchMode;
   onToggleMode?: () => void;
   grid?: boolean;
   spread?: boolean;
-  // Human display name for a value; the toggle still passes the raw value.
+  // The toggle still passes the raw value.
   label?: (value: string) => string;
-  // Show every value at once, with no "more" expander.
   expandAll?: boolean;
-  // When provided, only these values show by default; the rest collapse behind
-  // the "more" expander (instead of using RARE_THRESHOLD).
+  // Overrides RARE_THRESHOLD: only these show by default.
   topNSet?: Set<string> | null;
-  // Sort the non-count mode numerically (largest first) instead of by label
-  // text, right for numeric values like units-per-em, where "1000" must rank
-  // above "16", not below it.
+  // Sort the non-count mode numerically, for values like units-per-em where
+  // "1000" must rank above "16", not below it.
   numericSort?: boolean;
 }) {
   const [sort, setSort] = useState<SortMode>("count");
@@ -99,9 +94,8 @@ export function Section({
   );
 }
 
-// The pill list on its own, without a section header. Exported so a panel that
-// renders several labelled sub-lists under one header (the features panel) can
-// reuse the rare-value collapsing without nesting SectionHeaders.
+// Exported so a panel with several sub-lists under one header can reuse the
+// rare-value collapsing without nesting SectionHeaders.
 export function Pills({
   items,
   selected,
@@ -120,20 +114,14 @@ export function Pills({
   onToggle: (v: string) => void;
   grid?: boolean;
   spread?: boolean;
-  // Render the value in a monospaced face, right for four-letter tags like
-  // "liga", wrong for human labels like "Latin".
+  // For four-letter tags like "liga", not human labels like "Latin".
   mono?: boolean;
-  // Display name for a value; the toggle still passes the raw value.
   label?: (value: string) => string;
-  // Hover/focus tooltip text for a value (e.g. a feature tag's full name).
   // Empty string suppresses the tooltip for that value.
   title?: (value: string) => string;
-  // Cells per row in grid mode.
   columns?: 2 | 3;
-  // When provided, only values in this set are shown by default (instead of
-  // using RARE_THRESHOLD). Selected values outside the set are pulled up.
+  // Overrides RARE_THRESHOLD. Selected values outside it are pulled up.
   topNSet?: Set<string> | null;
-  // Show every value at once, with no "more" expander.
   expandAll?: boolean;
 }) {
   const [showRare, setShowRare] = useState(false);
@@ -161,13 +149,11 @@ export function Pills({
         onToggle={onToggle}
         spread={!!spread}
         mono={mono}
-        // Equal-width cells in grid mode: let each one shrink and clip its
-        // label. When wrapped in a tooltip trigger the pill fills the wrapper
-        // (w-full) instead of stretching as a direct grid item.
+        // Equal-width grid cells, each free to shrink and clip its label. Under
+        // a tooltip trigger the pill fills the wrapper rather than the cell.
         className={cn(grid && "min-w-0", tip && "w-full")}
       />
     );
-    // No tooltip: the pill is the grid/flex item directly, as before.
     if (!tip) return <Fragment key={value}>{pill}</Fragment>;
     return (
       <Tooltip key={value}>
@@ -187,8 +173,7 @@ export function Pills({
     );
   };
 
-  // Grid mode lays pills out N-per-row at equal width; otherwise they wrap.
-  // Both column classes are spelled out, Tailwind can't see interpolated ones.
+  // Both column classes are spelled out: Tailwind can't see interpolated ones.
   const rowClass = grid
     ? columns === 2
       ? "grid grid-cols-2 gap-1.5"

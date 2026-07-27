@@ -3,20 +3,14 @@ import { useEffect, useState } from "react";
 import { RAIL_BAR_BTN, RAIL_BTN, RAIL_BTN_OFF } from "@/components/rail-button";
 import { cn } from "@/lib/utils";
 
-// Light/dark toggle for the icon rail's footer, styled to match the rail's
-// filter buttons (icon over a small label). Theme is just the `dark` class on
-// <html>; a blocking script in __root's <head> applies the saved choice before
-// paint (no flash), and this button flips it and persists to localStorage.
-// Default is light: an unset/other value stays light.
+// Theme is just the `dark` class on <html>; a blocking script in __root's
+// <head> applies the saved choice before paint. An unset value stays light.
 export function ThemeToggle({
   variant = "rail",
 }: {
-  // "rail" is the desktop icon-over-label tile; "bar" is the compact mobile
-  // top-bar icon button (no label).
   variant?: "rail" | "bar";
 }) {
-  // Start light on both server and first client render to match the SSR shell
-  // and avoid a hydration mismatch; sync to the real class after mount.
+  // Light on the server and first client render, or hydration mismatches.
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
@@ -34,7 +28,7 @@ export function ThemeToggle({
     }
   };
 
-  // Label names the theme the click switches TO, mirroring the rail's naming.
+  // Names the theme the click switches TO.
   const target = isDark ? "Light" : "Dark";
   const bar = variant === "bar";
 
@@ -63,9 +57,8 @@ export function ThemeToggle({
   );
 }
 
-// One theme icon stacked in the shared grid cell. `shown` drives an opacity +
-// scale + blur cross-fade on the theme switch; the base weight hides on hover
-// and the duotone twin shows, matching the filter rail's hover treatment.
+// The blur is worth it here, unlike HoverBoldIcon: these two layers are
+// different glyphs, so defocusing hides the shape change.
 function IconFace({
   icon: Icon,
   shown,

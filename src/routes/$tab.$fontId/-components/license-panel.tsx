@@ -3,11 +3,8 @@ import type { FontRecord } from "@/lib/fonts/types";
 import { CopyButton } from "./copy-button";
 import { Panel } from "./panel";
 
-// The License view: the family's full license text, mirroring Google Fonts'
-// /specimen/<Family>/license page. We assemble it from the per-family OFL
-// copyright header (licenseHeader) plus the shared boilerplate for that license
-// (LICENSE_BOILERPLATE), Apache/UFL have no per-family header. Plain text, so
-// it renders verbatim in a monospace, scrollable block.
+// Assembled from the per-family OFL copyright header plus that license's
+// shared boilerplate; Apache and UFL have no per-family header.
 export function LicensePanel({ font }: { font: FontRecord }) {
   const boilerplate = font.license
     ? LICENSE_BOILERPLATE[font.license]

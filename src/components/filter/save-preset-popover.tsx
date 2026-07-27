@@ -16,15 +16,13 @@ import { MAX_PRESETS, usePresets } from "@/lib/fonts/presets";
 import { cn } from "@/lib/utils";
 import { groupActiveFilters } from "./describe";
 
-// A default name for the filter about to be saved, built from the same section
-// groups the chip row shows: "Sans + Hant", "Serif + Latn +2". Reusing
-// groupActiveFilters means the suggestion always speaks the UI's own vocabulary,
-// and the user starts from something editable rather than an empty field.
+// A default name built from the same groups the chip row shows ("Serif + Latn
+// +2"), so the suggestion always speaks the UI's own vocabulary.
 function suggestName(filter: FilterState): string {
   const groups = groupActiveFilters(filter);
   const query = filter.query.trim();
-  // Each group contributes its first value; a group with more says so once at
-  // the end, so the name stays short no matter how many pills are stacked.
+  // One value per group, with the remainder counted once at the end, so the
+  // name stays short no matter how many pills are stacked.
   const parts = groups.map((g) => g.values[0].value);
   if (query) parts.unshift(query);
   const extra =
@@ -35,24 +33,18 @@ function suggestName(filter: FilterState): string {
   return extra > 0 ? `${head} +${extra}` : head;
 }
 
-// The single entry point for creating a preset: a trigger at the end of the
-// active-filter chip row that opens a naming popover. It sits there because
-// that row is where the conditions being saved are already spelled out, so
-// "save this" reads as being about the chips beside it. The Preset panel itself
-// only lists, applies and deletes.
+// The single entry point for creating a preset, at the end of the chip row
+// because that is where the conditions being saved are already spelled out.
 export function SavePresetPopover({
   filter,
   currentSearch,
 }: {
-  // Live filter, for the suggested name.
   filter: FilterState;
-  // The filter encoded as search params — exactly what gets stored.
   currentSearch: FilterSearch;
 }) {
   const { presets, save } = usePresets();
   const [open, setOpen] = useState(false);
-  // Seeded when the popover opens, so the suggestion reflects the filter as it
-  // stands at that moment rather than whatever it was on first render.
+  // Seeded on open, so the suggestion reflects the filter at that moment.
   const [name, setName] = useState("");
   const full = presets.length >= MAX_PRESETS;
 
@@ -66,18 +58,14 @@ export function SavePresetPopover({
     if (!trimmed || full) return;
     save(trimmed, currentSearch);
     setOpen(false);
-    // The popover closes on save, and the new preset lands in the Preset panel,
-    // which is a different rail group and usually not on screen. Without this
-    // the only feedback for a successful save is the naming form disappearing,
-    // which reads the same as cancelling.
+    // The new preset lands in the Preset panel, usually off screen, so without
+    // this the only feedback is the form closing — which reads as cancelling.
     toast.success("Preset saved", { description: trimmed });
   };
 
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
       <PopoverTrigger
-        // Matches the chips' height and border treatment so it reads as the
-        // last item in the row rather than a control bolted onto the end.
         className={cn(
           "flex min-h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-md border border-input border-dashed px-2.5 py-2 text-muted-foreground text-xs transition-colors hover:border-foreground hover:text-foreground md:min-h-8 md:py-1"
         )}

@@ -18,34 +18,27 @@ import {
 import { cn } from "@/lib/utils";
 import { SectionHeader } from "./section-header";
 
-// How many conditions a saved preset holds, for its subtitle. Counts the search
-// params rather than re-deriving a FilterState: every key present in a stored
-// search is exactly one active section, which is what the label should say.
+// Counts search params rather than re-deriving a FilterState: every key present
+// in a stored search is exactly one active section.
 const conditionCount = (search: FilterSearch) =>
   Object.values(search).filter((v) => v !== undefined).length;
 
-// The Preset panel: lists saved filter combinations, applies one in a click,
-// and deletes them. Creating a preset happens elsewhere — the "Save to Preset"
-// popover at the end of the active-filter chip row is the single entry point,
-// so naming always happens next to the conditions being named. Presets are
-// device-local (localStorage), like favorites and the view mode; a shared URL
-// is still the way to hand a filter to someone else.
+// Creating a preset happens at the chip row's "Save to Preset" popover, the
+// single entry point, so naming happens beside the conditions being named.
 export function PresetSection({
   currentSearch,
   onApply,
 }: {
-  // The current filter encoded as search params, compared against each stored
-  // preset to mark the active one.
+  // Compared against each stored preset to mark the active one.
   currentSearch: FilterSearch;
   onApply: (search: FilterSearch) => void;
 }) {
   const { presets, remove, restore } = usePresets();
   const full = presets.length >= MAX_PRESETS;
 
-  // Delete confirms with an undo rather than a confirmation dialog first: the
-  // row's X is one click and presets exist only in this device's localStorage,
-  // so a mis-click is otherwise unrecoverable. The index is captured before the
-  // write so restore() can put the row back where it was.
+  // Undo rather than a confirmation dialog: the X is one click and presets are
+  // device-local, so a mis-click is otherwise unrecoverable. The index is
+  // captured before the write so restore() can put the row back where it was.
   const onRemove = (preset: FilterPreset, index: number) => {
     remove(preset.id);
     toast.success("Preset deleted", {
@@ -55,32 +48,24 @@ export function PresetSection({
   };
 
   return (
-    // min-h-0 + flex-1 only matter when empty: the Empty block below claims the
-    // leftover height so it can centre in it. With presets listed, the list is
-    // content-height as usual and the flex-1 has nothing to stretch into.
+    // Only matters when empty: the Empty block below centres in this height.
     <div className="flex min-h-0 flex-1 flex-col gap-2">
       <SectionHeader
         title="Preset"
         icon={BookmarkSimpleIcon}
-        // Presets aren't a selection, so the header's Reset/Sort slot stays
-        // empty: removing one is per-row, and there is nothing to reorder.
+        // Not a selection: removal is per-row and there is nothing to reorder.
         hasSelection={false}
         onReset={() => {}}
         canSort={false}
         sort="count"
         onToggleSort={() => {}}
-        // No `info`: the other panels explain where their data comes from, but
-        // presets are the user's own, and the save popover already states the
-        // device-local / keeps-your-sort caveat at the point it matters.
+        // No `info`: presets are the user's own data, and the save popover
+        // already states the device-local caveat where it matters.
       />
 
       {presets.length === 0 ? (
-        // Matches the results list's own empty state (icon tile, title,
-        // description), so an empty panel reads as a deliberate state rather
-        // than a section that failed to render. No border: the panel has no
-        // other framed block, so a box here would read as a card rather than as
-        // the panel's own resting state. Empty's flex-1 + justify-center then
-        // centre it in the height the wrapper above claimed.
+        // No border: the panel frames nothing else, so a box would read as a
+        // card rather than as the panel's own resting state.
         <Empty className="gap-3 px-4">
           <EmptyHeader>
             <EmptyMedia variant="icon">
@@ -116,9 +101,8 @@ export function PresetSection({
   );
 }
 
-// One saved preset: a wide apply button with a delete X pinned to its right.
-// The two are siblings rather than nested, a button inside a button is invalid
-// and the X would inherit the row's click.
+// The X is a SIBLING of the apply button, not nested: a button inside a button
+// is invalid, and it would inherit the row's click.
 function PresetRow({
   preset,
   active,

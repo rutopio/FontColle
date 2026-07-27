@@ -8,11 +8,8 @@ import { EASE_OUT, MOTION_S } from "@/lib/motion";
 import { useScrollReset } from "@/lib/use-scroll-reset";
 import { cn } from "@/lib/utils";
 
-// Glyphs-view side panel: the Unicode blocks the font actually covers, one
-// button each with its present-glyph count. Selecting a block sets the page's
-// active block, which the Glyphs grid reads. Mirrors DetailSidebar's
-// aside/ScrollArea shell so it slots into the same FilterLayout sidebar the
-// Sample view uses.
+// Mirrors DetailSidebar's aside/ScrollArea shell, so it slots into the same
+// FilterLayout sidebar.
 export function GlyphsSidebar({
   blocks,
   loading,
@@ -26,13 +23,9 @@ export function GlyphsSidebar({
   loading: boolean;
   active: string;
   onSelect: (name: string) => void;
-  // Jump to the block/cell for a character or "U+XXXX" query. Returns whether
-  // the query resolved to a covered glyph.
+  // Returns whether the query resolved to a covered glyph.
   onSearch: (query: string) => boolean;
-  // True when the last search found no covered glyph, so the field can flag it.
   searchMiss: boolean;
-  // Close the surrounding mobile drawer after a block or search jump, so the
-  // grid you just asked for is visible instead of sitting behind the sheet.
   // Omitted in the desktop sidebar, which is always on screen.
   onDismiss?: () => void;
 }) {
@@ -61,8 +54,7 @@ export function GlyphsSidebar({
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              // Only close on a hit; a miss keeps the drawer up so the
-              // "doesn't cover that character" message stays visible.
+              // A miss keeps the drawer up, so its message stays visible.
               if (onSearch(query)) onDismiss?.();
             }}
           >
@@ -102,9 +94,9 @@ export function GlyphsSidebar({
                     }}
                     aria-pressed={on}
                     className={cn(
-                      // min-h-11 (44px) meets the pointer-target guidance on
-                      // touch, where this list lives in a drawer; the desktop
-                      // sidebar keeps the tighter 8-unit row.
+                      // min-h-11 meets the touch pointer-target guidance, where
+                      // this list lives in a drawer; desktop keeps the tighter
+                      // row.
                       "flex min-h-11 items-center justify-between gap-2 rounded px-2 py-1 text-left text-xs transition-colors md:min-h-8",
                       on
                         ? "bg-black/10 font-medium text-foreground dark:bg-white/12"

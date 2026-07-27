@@ -1,18 +1,10 @@
-// Emit pre-sharded facet slices of the catalog under public/catalog/facets/ so
-// an agent that can only read data into its context (rather than fetch+filter)
-// can pull one small slice instead of the 2 MB slim catalog (~580k tokens).
+// Pre-sharded slices, so an agent that can only read data into context (rather
+// than fetch and filter) pulls one small slice instead of the 2 MB slim catalog
+// (~580k tokens). Runs after gen-catalog.mjs, reading what it just wrote.
 //
-// Runs after gen-catalog.mjs in build.mjs, reading the catalog-slim.json it just
-// wrote. All output is static assets copied into dist/client by the vite build.
-//
-// Sharding dimensions are deliberately limited to the ones that (a) meaningfully
-// cut the result set and (b) don't combinatorially explode:
-//   - category         (8 values: Sans, Serif, Display, Script, Slab, Mono, ...)
-//   - non-Latin subset (writing-system support; Latin is ~everything, skipped)
-//   - flags            (variable, monospace, color) — small, high-value slices
-// A facets/index.json lists every slice with its count and href so the agent
-// picks one without guessing. Anything finer (tag combos, category x subset) is
-// left to the agent to rank after fetching a slice or the slim catalog.
+// The sharding dimensions are deliberately limited to ones that cut the result
+// set without combinatorially exploding. Anything finer is left to the agent to
+// rank after fetching a slice.
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
@@ -21,10 +13,8 @@ const ROOT = path.resolve(
   ".."
 );
 
-// Per-record projection inside a slice: identity + the fields you still filter
-// or rank on after narrowing (tags drives mood ranking). Drops the metric detail
-// fields (xHeight, capHeight, unitsPerEm, glyphCount, fileSize, ...) that you
-// only read once a family is chosen — fetch /catalog/{id}.json for those.
+// Identity plus what you still rank on after narrowing. The metric detail
+// fields are only read once a family is chosen: fetch /catalog/{id}.json.
 const project = (f) => ({
   id: f.id,
   name: f.name,
@@ -47,8 +37,6 @@ const project = (f) => ({
 // Latin is carried by nearly every family, so a "latin" slice ~= the whole
 // catalog and is not worth emitting. Skip it and its ext variant.
 const SKIP_SUBSETS = new Set(["menu", "latin", "latin-ext"]);
-// Only emit a subset slice once it's small enough to be worth fetching over the
-// slim catalog and populated enough to be useful.
 const MIN_SUBSET_COUNT = 5;
 
 export async function genFacets() {
@@ -88,7 +76,6 @@ export async function genFacets() {
     arr.push(f);
   };
 
-  // category
   const byCategory = new Map();
   for (const f of slim) {
     if (f.category) push(byCategory, f.category, f);
@@ -97,7 +84,6 @@ export async function genFacets() {
     await writeSlice("category", value, records);
   }
 
-  // non-Latin subsets
   const bySubset = new Map();
   for (const f of slim) {
     for (const s of f.subsets ?? []) {
@@ -109,7 +95,6 @@ export async function genFacets() {
     await writeSlice("subset", value, records);
   }
 
-  // flags
   await writeSlice(
     "flag",
     "variable",
@@ -153,7 +138,6 @@ export async function genFacets() {
   );
 }
 
-// Allow running standalone: `node scripts/gen-facets.mjs`.
 if (import.meta.url === `file://${process.argv[1]}`) {
   await genFacets();
 }

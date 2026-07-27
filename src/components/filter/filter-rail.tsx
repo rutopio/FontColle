@@ -8,9 +8,8 @@ import {
   groupActiveCount,
 } from "./groups";
 
-// One group button. Exported so the sidebar footer can render the Preset group
-// (which lives outside FILTER_GROUPS) with pixel-identical chrome instead of a
-// near-copy that drifts.
+// Exported so the sidebar footer can render the Preset group, which lives
+// outside FILTER_GROUPS, with identical chrome rather than a copy that drifts.
 export function FilterGroupButton({
   group,
   active,
@@ -20,7 +19,6 @@ export function FilterGroupButton({
 }: {
   group: FilterGroup;
   active: boolean;
-  // Badge value; 0 draws no badge.
   count: number;
   onSelect: (id: FilterGroupId) => void;
   horizontal?: boolean;
@@ -73,10 +71,8 @@ export function FilterGroupButton({
   );
 }
 
-// The icon-rail switcher for the filter panel: one button per filter group,
-// badged with how many of that group's values are currently selected so a
-// selection stays visible while its group is hidden. Preset is deliberately not
-// here — it renders in the sidebar footer (see PRESET_GROUP in ./groups).
+// Badged with each group's selected count, so a selection stays visible while
+// its group is scrolled away. Preset renders in the sidebar footer instead.
 export function FilterRail({
   active,
   filter,
@@ -86,8 +82,6 @@ export function FilterRail({
   active: FilterGroupId;
   filter: FilterState;
   onSelect: (id: FilterGroupId) => void;
-  // Vertical is the desktop icon rail; horizontal is the mobile filter drawer's
-  // top strip (a scrollable row of the same group buttons).
   orientation?: "vertical" | "horizontal";
 }) {
   return (

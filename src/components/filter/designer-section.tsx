@@ -4,16 +4,9 @@ import type { MatchMode } from "@/lib/fonts/filter";
 import { vendorLabel } from "@/lib/fonts/labels";
 import { FacetSearchSection } from "./facet-search-section";
 
-// Browse by who made the font. Two searchable facet lists: Designer (real
-// names, 700+ of them) and Vendor (folded OS/2 achVendID). Both use the shared
-// FacetSearchSection, a live search over the whole list with the top values up
-// front and the tail behind a "N more" expander.
-//
-// Designer labels are the value itself. Vendor labels are the foundry name from
-// Microsoft's registry (vendorLabel), so a pill reads "ParaType", not "PYRS";
-// the raw 4-char code shows in the pill's hover tooltip and is still searchable
-// (FacetSearchSection matches both value and label). Unregistered codes fall
-// back to the code as the label.
+// A Vendor pill reads "ParaType", not "PYRS": the label is the foundry name
+// from Microsoft's registry, with the raw code in the tooltip and still
+// searchable. Unregistered codes fall back to the code.
 export function DesignerSection({
   designers,
   vendors,
@@ -35,9 +28,8 @@ export function DesignerSection({
   onToggleVendor: (v: string) => void;
   onResetDesigners: () => void;
   onResetVendors: () => void;
-  // OR/AND toggle for Designer only. A family's designer field can list several
-  // collaborators, so "all" (co-designed by every selected name) is meaningful.
-  // Vendor has no toggle: a font carries one vendor id, so AND would be empty.
+  // Designer only: a family can credit several collaborators, so "all" means
+  // something. A font carries ONE vendor id, so AND there would always be empty.
   designerMode: MatchMode;
   onToggleDesignerMode: () => void;
   // Folded vendor code -> the code as fonts embed it, for the tooltip.

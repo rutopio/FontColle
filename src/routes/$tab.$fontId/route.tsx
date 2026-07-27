@@ -31,15 +31,11 @@ import {
 import { DetailSidebar } from "./-components/detail-sidebar";
 import { GlyphsSidebar } from "./-components/glyphs-sidebar";
 
-// Build a per-font meta description from real catalog fields, so each of the
-// ~2000 detail pages gets a distinct summary rather than one shared template.
-// Every clause is optional and only appended when its field is present, so a
-// sparse record still reads naturally. Kept under ~160 chars for typical fonts.
+// Every clause is optional, so a sparse record still reads naturally. Kept
+// under ~160 chars, the length search engines show.
 function detailDescription(font: FontRecord): string {
   const name = font.name;
-  // Classification noun. `class` is the clean human label ("Sans", "Serif",
-  // "Mono", "Script"…); `category` is the raw GF enum ("SANS_SERIF"), so it's
-  // only a fallback, lowercased/despaced to read as prose. "a"/"an" per vowel.
+  // apiCategory is the raw GF enum ("SANS_SERIF"), hence the despacing.
   const rawKind =
     font.category?.trim() ||
     font.apiCategory?.replace(/_/g, " ").toLowerCase() ||
@@ -69,9 +65,8 @@ function detailDescription(font: FontRecord): string {
 export const Route = createFileRoute("/$tab/$fontId")({
   component: DetailPage,
   beforeLoad: ({ params }) => {
-    // The Designer tab used to live at /about/{fontId}, before the tab was
-    // renamed to match what it shows. Retired links move to /designer/{fontId}
-    // permanently (301) rather than 404 on the unknown-slug check below.
+    // /about/{fontId} is the Designer tab's retired slug; 301 it rather than
+    // let the unknown-slug check below 404.
     if (params.tab === "about") {
       throw redirect({
         to: "/$tab/$fontId",
@@ -82,15 +77,11 @@ export const Route = createFileRoute("/$tab/$fontId")({
     }
   },
   loader: async ({ params }) => {
-    // The tab is a URL segment; reject unknown slugs so /foo/roboto 404s
-    // instead of silently falling back to a default view.
+    // Reject unknown slugs, so /foo/roboto 404s instead of silently falling
+    // back to a default view.
     if (!tabFromSlug(params.tab)) throw notFound();
-    // The detail page needs only the one font, so fetch its static file rather
-    // than loading the whole catalog (fetchFontById already derives facets).
     const font = await fetchFontById(params.fontId);
     if (!font) throw notFound();
-    // Other families per credited designer, for the Designer tab. Keyed by name
-    // so each designer's bio can list their own siblings. Empty when unknown.
     const names = (font.designer ?? "")
       .split(",")
       .map((d) => d.trim())
@@ -104,18 +95,15 @@ export const Route = createFileRoute("/$tab/$fontId")({
     const name = font?.name;
     if (!name || !font) return {};
     const description = detailDescription(font);
-    // The six tabs render near-identical content on overlapping URLs, so point
-    // every tab's canonical at the Instances tab to consolidate ranking signals.
+    // The six tabs render near-identical content on overlapping URLs, so every
+    // canonical points at Instances to consolidate ranking signals.
     const canonical = absoluteUrl(`/instances/${fontSlug(font.id)}`);
-    // Per-font share card: the family name set in its own typeface, pre-rendered
-    // to public/og/<id>.png by `pnpm gen:og`. Needs an absolute URL like og:url.
+    // Pre-rendered by `pnpm gen:og`. Needs an absolute URL, like og:url.
     const ogImage = absoluteUrl(`/og/${font.id}.png`);
-    // Structured data is NOT emitted here. Neither head()'s `scripts` (rendered
-    // by <Scripts/>) nor `headScripts` (rendered by <HeadContent/>) put a
-    // ld+json tag in the SSR document in this version, verified against
-    // production both ways. DetailPage renders the tag in its own JSX instead,
-    // which React serializes reliably. Google accepts JSON-LD anywhere in the
-    // document, so living in <body> costs nothing.
+    // Structured data is NOT emitted here: in this version neither head()'s
+    // `scripts` nor `headScripts` puts a ld+json tag in the SSR document,
+    // verified against production both ways. DetailPage renders it in its own
+    // JSX instead, and Google accepts JSON-LD anywhere in the document.
     return {
       meta: [
         { title: pageTitle(name) },
@@ -156,9 +144,7 @@ function DetailPage() {
   const router = useRouter();
   const canGoBack = useCanGoBack();
 
-  // Feature/axis state live at the page level so the sidebar controls and the
-  // type tester share one source of truth. The W3C default state seeds default-on
-  // features as ON so the UI matches what the browser renders.
+  // Default-on features seed as ON, matching what the browser renders.
   const w3cDefaults = () =>
     Object.fromEntries(font.features.map((tag) => [tag, DEFAULT_ON.has(tag)]));
   const [featureState, setFeatureState] =
@@ -167,7 +153,6 @@ function DetailPage() {
     setFeatureState((p) => ({ ...p, [tag]: !p[tag] }));
   const resetFeatures = () => setFeatureState(w3cDefaults());
 
-  // Axis state: tag -> current value, seeded from each axis default.
   const axisDefaults = () =>
     Object.fromEntries(font.axes.map((a) => [a.tag, a.default ?? a.min ?? 0]));
   const [axisState, setAxisState] =
@@ -175,23 +160,16 @@ function DetailPage() {
   const setAxis = (tag: string, value: number) =>
     setAxisState((prev) => ({ ...prev, [tag]: value }));
   const resetAxes = () => setAxisState(axisDefaults());
-  // Whether the page's shared preview style is italic. The Tester's chips
-  // set italic per block on the node itself, so nothing flips this at the page
-  // level any more; it stays the family's upright default, which is what the
-  // Tester's document default and the Use tab's snippets want.
+  // Nothing flips this: the Tester's chips set italic per block on the node
+  // itself, so this stays the family's upright default.
   const italic = false;
 
-  // Preview font size lives here too, since its control is in the sidebar. Only
-  // the Instances rows read it: the Tester editor sets a size per block type
-  // in its own toolbar. A list of instances is meant to be scanned, so it starts
-  // smaller than a single showcase sentence would.
+  // Only the Instances rows read this: the Tester sizes per block type in its
+  // own toolbar.
   const [size, setSize] = useState(24);
 
-  // Which detail view is active. Driven by the URL slug (the loader has already
-  // rejected unknown ones), so the tab is shareable/bookmarkable. Selecting a
-  // tab navigates to its slug rather than holding local state. `replace` so
-  // switching tabs doesn't push history entries, the back arrow should return
-  // to the list, not step through the tabs visited on this font.
+  // `replace` so switching tabs doesn't push history: back should return to
+  // the list, not step through the tabs visited on this font.
   const tab = tabFromSlug(tabSlug) ?? "sample";
   const selectTab = (id: DetailTab) =>
     navigate({
@@ -199,9 +177,8 @@ function DetailPage() {
       replace: true,
     });
 
-  // Escape returns to the catalog, the page this one is always entered from.
-  // Skipped while typing (the specimen and the glyph search are editable) and
-  // while a dialog/drawer is open, where Escape means "close that" instead.
+  // Skipped while typing, and while a dialog or drawer is open, where Escape
+  // means "close that" instead.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
@@ -215,8 +192,8 @@ function DetailPage() {
         return;
       if (document.querySelector("[data-slot=sheet-content], [role=dialog]"))
         return;
-      // Same rule as the Back control: step back if we came from the list, so
-      // its filters and scroll position survive; otherwise go to it fresh.
+      // Same rule as Back: step back if we came from the list, so its filters
+      // and scroll survive; otherwise go there fresh.
       if (canGoBack) router.history.back();
       else navigate({ to: "/" });
     };
@@ -224,34 +201,25 @@ function DetailPage() {
     return () => document.removeEventListener("keydown", onKey);
   }, [navigate, router, canGoBack]);
 
-  // Glyphs view: fetch the font's Unicode coverage, and derive the blocks it
-  // actually covers. Active block lives here so its sidebar (the block list) and
-  // the grid body stay in sync, the same way size/axis state is shared with the
-  // Sample sidebar.
   const { ranges, loading: glyphLoading } = useGlyphCoverage(font.id);
   const coveredBlocks = useMemo(() => blocksWithCoverage(ranges), [ranges]);
   const [glyphBlock, setGlyphBlock] = useState("");
-  // A codepoint to scroll to and briefly highlight in the grid, set by the
-  // sidebar's glyph search. Cleared on manual block selection so a later search
-  // for the same block re-triggers the highlight.
+  // Cleared on manual block selection, so a later search for the same block
+  // re-triggers the highlight.
   const [highlightCp, setHighlightCp] = useState<number | null>(null);
   const [searchMiss, setSearchMiss] = useState(false);
 
-  // "Briefly" has to be enforced, not just intended: the highlight renders as
-  // an infinite animate-pulse, and clearing it only on manual block selection
-  // left it pulsing forever after a search. Auto-playing motion that runs past
-  // five seconds with no way to stop it fails WCAG 2.2.2, so retire it here.
-  // Long enough to survive the scroll-into-view and still be found by eye.
+  // The highlight is an infinite animate-pulse, and auto-playing motion running
+  // past five seconds with no way to stop it fails WCAG 2.2.2, so retire it on
+  // a timer. Long enough to survive the scroll-into-view and be found by eye.
   useEffect(() => {
     if (highlightCp == null) return;
     const id = setTimeout(() => setHighlightCp(null), 3000);
     return () => clearTimeout(id);
   }, [highlightCp]);
 
-  // Resolve a glyph-search query (a character or "U+XXXX") to a covered block +
-  // codepoint. Miss = not a BMP codepoint, or the font doesn't cover it.
-  // Returns whether it landed, so the mobile drawer closes only on a hit and a
-  // miss stays open to show the field's error.
+  // Returns whether it landed, so the mobile drawer closes on a hit and a miss
+  // stays open to show the field's error.
   const searchGlyph = (query: string): boolean => {
     const cp = parseGlyphQuery(query);
     const block = cp == null ? undefined : blockOf(cp);
@@ -275,21 +243,16 @@ function DetailPage() {
     setSearchMiss(false);
   };
 
-  // Active block, derived: the user's pick while the font covers it, else the
-  // first covered one (the font may not cover Basic Latin, so there's no fixed
-  // default). Derived rather than effect-corrected so coverage loading or a
-  // font change never renders a stale selection.
+  // No fixed default: a font may not cover Basic Latin. Derived rather than
+  // effect-corrected, so a font change never renders a stale pick.
   const activeGlyphBlock = coveredBlocks.some(
     (c) => c.block.name === glyphBlock
   )
     ? glyphBlock
     : (coveredBlocks[0]?.block.name ?? "");
 
-  // The Tester/Instances/Glyphs sidebar panel, reused by both the desktop
-  // sidebar slot and the mobile ControlsDrawer, so the two stay in sync (state
-  // lives here on the page, above both). Only these tabs have controls.
-  // `onDismiss` is passed only by the drawer, which is the only host that can
-  // be closed.
+  // Rendered in both the desktop sidebar and the mobile drawer. `onDismiss`
+  // comes only from the drawer, the one host that can be closed.
   const hasControls = tab === "tester" || tab === "sample" || tab === "glyphs";
   const renderSidebarPanel = (onDismiss?: () => void) =>
     tab === "glyphs" ? (
@@ -307,11 +270,9 @@ function DetailPage() {
         panelKey={tab}
         size={size}
         onSizeChange={setSize}
-        // The two tabs want opposite halves of this panel: the Tester sizes
-        // per block type in its own toolbar but reweights the whole document
-        // from the axis sliders, while Instances pins each row to its own
-        // named instance's coords and only needs one shared size. Features
-        // apply to both.
+        // Opposite halves: the Tester sizes per block in its own toolbar but
+        // reweights from the axis sliders, while Instances pins each row to
+        // its own coords and needs only the shared size.
         showSize={tab === "sample"}
         axes={font.axes}
         axisState={axisState}
@@ -326,10 +287,8 @@ function DetailPage() {
     );
   const sidebarPanel = hasControls ? renderSidebarPanel() : null;
 
-  // Structured data for the family, so search engines can surface designer and
-  // license. Rendered here rather than through head() because that path emits
-  // nothing in the SSR document (see the note in head()). React serializes this
-  // into the streamed HTML; Google reads JSON-LD from <body> just as well.
+  // Rendered here rather than through head(), which emits nothing in the SSR
+  // document (see the note there).
   const canonicalUrl = absoluteUrl(`/instances/${fontSlug(font.id)}`);
   const jsonLd = canonicalUrl
     ? JSON.stringify({
@@ -344,11 +303,7 @@ function DetailPage() {
 
   return (
     <FilterLayout
-      // Read-only spec views (Detail/Designer/License) collapse the panel to
-      // just the icon rail; Sample needs the tester controls and Glyphs needs
-      // the block list, so both keep the sidebar open.
       panelOpen={hasControls}
-      // The footer Favorite button hearts this font (vs. the list's fav view).
       favoriteFontId={font.id}
       rail={<DetailRail active={tab} onSelect={selectTab} />}
       sidebar={sidebarPanel}
@@ -383,7 +338,6 @@ function DetailPage() {
           <ControlsDrawer
             title={tab === "glyphs" ? "Unicode blocks" : "Preview controls"}
             icon={tab === "glyphs" ? SquaresFourIcon : SlidersHorizontalIcon}
-            // Mirrors Detail's footerHidden: the dock is up on Instances only.
             dockVisible={tab === "sample"}
           >
             {(close) => renderSidebarPanel(close)}

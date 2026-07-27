@@ -6,12 +6,10 @@ import {
   SECTION_DEFAULT_MODE,
 } from "./filter";
 
-// Drop the OR/AND override of any mode section that no longer holds a value. A
-// section's combine mode only means something while it has >= 2 selected values;
-// once it's empty the override is invisible state that would otherwise ride
-// along in the URL (a "pristine" filter carrying ?mode=tags:any) and silently
-// re-apply the next time that section is used. Called at the tail of every
-// action that can empty a mode section, so clearing always fully resets it.
+// Drop the OR/AND override of any section that no longer holds a value, or it
+// becomes invisible state riding along in the URL (a "pristine" filter carrying
+// ?mode=tags:any) that silently re-applies next time the section is used.
+// Called at the tail of every action that can empty a mode section.
 function pruneEmptyModes(f: FilterState): FilterState {
   const stale = MODE_KEYS.filter(
     (k) => f.matchModes[k] != null && f[k].length === 0
@@ -22,8 +20,6 @@ function pruneEmptyModes(f: FilterState): FilterState {
   return { ...f, matchModes };
 }
 
-// The FilterState fields that hold a plain string[], i.e. the ones toggle/
-// clearSection operate on. Excludes `metrics` (object) and the boolean facets.
 type ArrayKey =
   | "categories"
   | "tags"
@@ -43,14 +39,11 @@ type ArrayKey =
   | "activity"
   | "upm";
 
-// Pure filter-state transitions, lifted out of FilterSidebar so the app's
-// trickiest rules (mutual exclusion, implied selections, scoped resets) live in
-// one testable place. Every function takes the current filter and returns the
-// next one; the component just wires callbacks to them.
+// Lifted out of FilterSidebar so the mutual exclusions and implied selections
+// live in one testable place.
 
 // A variable axis and its equivalent value section drive the same thing, so
-// they're mutually exclusive: the wght axis vs the Weight steps, wdth vs Width.
-// Selecting one clears the other.
+// they're mutually exclusive: wght vs the Weight steps, wdth vs Width.
 const AXIS_EXCLUSIVE: Record<string, "weights" | "widths"> = {
   wght: "weights",
   wdth: "widths",
@@ -60,9 +53,7 @@ const EXCLUSIVE_AXIS: Record<"weights" | "widths", string> = {
   widths: "wdth",
 };
 
-/** Multi-select toggle for a plain array key (classes, facets, features, …).
- *  New picks append to the tail, so the last-clicked value is always last in
- *  the array — the preview reads that end to render the most recent pick. */
+/** Appends to the tail: the preview reads that end for the latest pick. */
 export function toggle(
   filter: FilterState,
   key: ArrayKey,
@@ -75,8 +66,7 @@ export function toggle(
   return pruneEmptyModes({ ...filter, [key]: next });
 }
 
-/** Variable-axis toggle: selecting wght/wdth clears the matching Weight/Width
- *  selection (they're mutually exclusive); other axes toggle normally. */
+/** Selecting wght/wdth clears the matching Weight/Width selection. */
 export function toggleAxis(filter: FilterState, tag: string): FilterState {
   const turningOn = !filter.axes.includes(tag);
   const nextAxes = turningOn
@@ -90,11 +80,7 @@ export function toggleAxis(filter: FilterState, tag: string): FilterState {
   });
 }
 
-/** Multi-select for Weight/Width. New picks append to the tail so the preview
- *  can render the last one clicked; re-clicking a selected step removes it.
- *  Turning a step on clears the mutually exclusive variable axis (wght/wdth),
- *  which drives the same thing. Combine mode (AND by default) lives in
- *  match-mode; this action only edits the value list. */
+/** Turning a step on clears the mutually exclusive variable axis. */
 export function select(
   filter: FilterState,
   key: "weights" | "widths",
@@ -111,19 +97,15 @@ export function select(
   });
 }
 
-// Picking a color format already implies Colorful (only a font with a color
-// table can carry one), so Colorful shows selected without duplicating it into
-// filter.color, applyFilters would just narrow the same way twice.
-/** The color values to show as selected, folding in the format-implied Colorful. */
+/** A color format already implies Colorful, so it shows selected without
+ *  duplicating into filter.color, which would narrow the same way twice. */
 export function colorSelection(filter: FilterState): string[] {
   return filter.colorFormats.length > 0 ? ["color"] : filter.color;
 }
 
-/** Color is radio-style. Two couplings with the format pills:
- *   - Monochrome clears them (a monochrome font has no color table, so leaving
- *     them set would filter everything out from a now-disabled control).
- *   - Clicking the format-implied Colorful clears them too, since that implied
- *     selection is the only thing making it look selected. */
+/** Radio-style. Two couplings with the format pills: Monochrome clears them (a
+ *  monochrome font has no color table, so they would filter everything out from
+ *  a now-disabled control), and so does clicking the format-implied Colorful. */
 export function selectColor(filter: FilterState, value: string): FilterState {
   const colorImpliedByFormat = filter.colorFormats.length > 0;
   if (value === "color" && colorImpliedByFormat) {
@@ -137,26 +119,20 @@ export function selectColor(filter: FilterState, value: string): FilterState {
   };
 }
 
-// Static/Variable live in `tags`, which is AND-ed, selecting both would
-// always return nothing. They behave radio-style, leaving the other tags
-// (ligatures, fractions, …) untouched.
+// Static/Variable live in `tags`, which is AND-ed, so selecting both would
+// always return nothing. Leaves the other tags untouched.
 function withoutFontType(filter: FilterState): string[] {
   return filter.tags.filter((f) => !FONT_TYPE_FACETS.includes(f));
 }
 
-// Picking a variable axis already implies Variable (only a variable font has
-// axes), so Variable shows selected without duplicating it into `tags`.
-// Mirrors how a color format implies Colorful.
-/** The font-type values to show as selected, folding in the axis-implied Variable. */
+/** A variable axis already implies Variable, mirroring colorSelection. */
 export function fontTypeSelection(filter: FilterState): string[] {
   return filter.axes.length > 0
     ? ["variable"]
     : filter.tags.filter((f) => FONT_TYPE_FACETS.includes(f));
 }
 
-/** Radio-style Static/Variable. Two couplings with the variable axes:
- *   - Static clears them (a static font has no axes).
- *   - Clicking the axis-implied Variable clears them too. */
+/** Static clears the axes, and so does clicking the axis-implied Variable. */
 export function selectFontType(
   filter: FilterState,
   value: string
@@ -175,7 +151,6 @@ export function selectFontType(
   });
 }
 
-/** Reset the Font type section: clear its font-type tags and the implied axes. */
 export function resetFontType(filter: FilterState): FilterState {
   return pruneEmptyModes({
     ...filter,
@@ -184,23 +159,19 @@ export function resetFontType(filter: FilterState): FilterState {
   });
 }
 
-/** Radio-style Source select (Noto / Others): at most one value; re-clicking
- *  the active one clears it. Stored in `flags` as a 0- or 1-length array. */
+/** Radio-style: re-clicking the active value clears it. */
 export function selectFlag(filter: FilterState, value: string): FilterState {
   const next = filter.flags.includes(value) ? [] : [value];
   return { ...filter, flags: next };
 }
 
-/** Radio-style Italic select (Italic / Non-Italic): at most one value;
- *  re-clicking the active one clears it. Stored in `italic`. */
+/** Radio-style: re-clicking the active value clears it. */
 export function selectItalic(filter: FilterState, value: string): FilterState {
   const next = filter.italic.includes(value) ? [] : [value];
   return { ...filter, italic: next };
 }
 
-/** Flip a section's OR/AND mode. Stores the override only while it differs from
- *  the section default, so returning to the default drops the entry (keeping a
- *  pristine filter's matchModes empty). */
+/** Returning to the section default drops the entry entirely. */
 export function toggleMatchMode(
   filter: FilterState,
   key: ModeKey
@@ -213,9 +184,8 @@ export function toggleMatchMode(
   return { ...filter, matchModes };
 }
 
-/** Clear only the values a given section shows. Sections can share one
- *  FilterState key (Style and Mood both live in `style`), so scope the reset
- *  to the items that section actually renders. */
+/** Sections can share one FilterState key (Style and Mood both live in
+ *  `style`), so the reset is scoped to the items that section renders. */
 export function clearSection(
   filter: FilterState,
   key: ArrayKey,

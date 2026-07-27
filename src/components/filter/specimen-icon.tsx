@@ -1,15 +1,11 @@
 import { SmileyIcon } from "@phosphor-icons/react";
 
-// Static "Aa" specimens for the Category / Weight / Width filter cards. The
-// outlines were traced from the representative faces once (see
-// scripts/gen-specimen-svgs.mjs) into public/specimens/*.svg, so the cards no
-// longer load a webfont to draw their sample.
+// Traced once by scripts/gen-specimen-svgs.mjs, so the cards draw their sample
+// without loading a webfont.
 
-// The SVGs carry `fill:currentColor`, but that only resolves for inline SVG,
-// an `<img src>` renders in its own context and falls back to black, so dark
-// theme showed black glyphs. Draw the SVG as a CSS mask over a `currentColor`
-// background instead: the shape comes from the SVG, the colour from
-// `text-foreground`, so it inverts with the theme (and follows hover/selected).
+// A CSS mask over a currentColor background, NOT an <img>: `fill:currentColor`
+// resolves only for inline SVG, so an <img src> falls back to black and the
+// glyphs stay black in dark mode.
 function SpecimenImg({ src, className }: { src: string; className?: string }) {
   // Decorative: the visible label below the specimen already names the value.
   return (
@@ -31,7 +27,6 @@ function SpecimenImg({ src, className }: { src: string; className?: string }) {
   );
 }
 
-// The shared box: a fixed-height "Aa" slot matching the old text-2xl sample.
 const boxClass = "h-6 w-full text-foreground";
 
 export function CategorySpecimen({ category }: { category: string }) {

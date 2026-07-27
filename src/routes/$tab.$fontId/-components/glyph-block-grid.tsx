@@ -13,45 +13,29 @@ import { hasCodepoint } from "@/lib/fonts/glyph-coverage";
 import type { UnicodeBlock } from "@/lib/fonts/unicode-blocks";
 import { cn } from "@/lib/utils";
 
-// The active-block glyph chart used by GlyphsPanel (see glyphs.tsx). Lays one
-// Unicode block out as a 16-column code chart at lg and up (one column per low
-// hex nibble, rows aligned on the U+xxx0 boundary) and a packed 5-column glyph
-// browser below that. Big blocks (CJK Unified Ideographs is 15k+ cells) are
-// ROW-VIRTUALIZED so only visible rows are in the DOM; the hover magnifier is
-// driven imperatively via event delegation + a ref, so the grid never
-// re-renders while you hover.
+// A Unicode block as a code chart: 16 columns aligned on U+xxx0 at lg and up,
+// a packed 5-column browser below that. Rows are virtualized (CJK Unified
+// Ideographs is 15k+ cells) and the hover magnifier is driven imperatively, so
+// the grid never re-renders while you hover.
 
 export type Range = [number, number];
 
-// Row stride for a code chart: 16 cells, indexed by the low hex nibble. Below
-// lg, 16 square cells leave each one too small to read, so the row drops to 5
-// and the hex address column/header go away — the grid stops being a canonical
-// code chart there and is simply a glyph browser, with each cell's codepoint
-// still available via its title, aria-label, and the magnifier.
-//
 // The cutoff is lg, not md: at md the detail sidebar has just come back and
-// taken ~24.5rem, so that is where a 16-wide chart is squeezed hardest, not
-// where it becomes affordable. See useGlyphCompact.
+// taken ~24.5rem, squeezing a 16-wide chart hardest.
 export const COLS_DESKTOP = 16;
 export const COLS_MOBILE = 5;
-// Width (px) of the leading row-label column (the U+xxx0 prefix). Fixed so the
-// square cell size can be derived from the container width.
 export const LABEL_W = 44;
-// Gap between grid tracks (Tailwind gap-px).
 const GAP = 1;
-// Fallback row height before the container width is measured.
 const ROW_FALLBACK = 40;
 
 export function hex(cp: number): string {
   return cp.toString(16).toUpperCase().padStart(4, "0");
 }
 
-// Codepoints that have no visible glyph of their own (controls, separators, and
-// the surrogate range), never rendered as a character even if present in cmap.
+// Controls, DEL and surrogate halves have no glyph of their own, so they are
+// never drawn as characters even when cmap covers them.
 function isRenderable(cp: number): boolean {
-  // C0/C1 controls and DEL.
   if (cp < 0x20 || (cp >= 0x7f && cp <= 0x9f)) return false;
-  // Surrogate halves are not valid scalar values.
   if (cp >= 0xd800 && cp <= 0xdfff) return false;
   return true;
 }
@@ -67,33 +51,22 @@ export function BlockGrid({
   block: UnicodeBlock;
   ranges: Range[];
   style: CSSProperties;
-  // The page's shared ScrollArea viewport (from Column). The grid virtualizes
-  // its rows inside this same scroller, matching how the list's FontGrid
-  // scrolls, instead of nesting its own overflow container.
+  // The page's shared ScrollArea viewport: the grid virtualizes inside this
+  // rather than nesting its own overflow container.
   scrollRef: RefObject<HTMLDivElement | null>;
-  // A codepoint (within this block) to scroll to and briefly ring, set by the
-  // sidebar glyph search. Null when nothing is targeted.
   highlightCp: number | null;
-  // Called with a codepoint when a cell is activated (click / Enter / Space) so
-  // the panel can copy the character and flash confirmation.
   onCopy: (cp: number) => void;
 }) {
   const compact = useGlyphCompact();
   const COLS = compact ? COLS_MOBILE : COLS_DESKTOP;
-  // The leading address column exists only in the wide layout; compact gives its
-  // width to the cells. The track is dropped entirely (not zeroed) to match the
-  // label cell no longer being rendered, so cells stay aligned with the header.
   const labelW = compact ? 0 : LABEL_W;
   const gridCols = labelW
     ? `${labelW}px repeat(${COLS}, minmax(0, 1fr))`
     : `repeat(${COLS}, minmax(0, 1fr))`;
 
-  // Wide keeps the canonical code chart: every codepoint in the block gets a
-  // cell (absent ones drawn muted) so rows align on the U+xxx0 boundary. Compact
-  // has already given up the address apparatus, and at 5 columns a sparse block
-  // is mostly empty slots, so it packs only the present codepoints instead. The
-  // grid is then indexed by position in this list rather than by address, which
-  // is why every layout/navigation derivation below branches on `compact`.
+  // Wide gives every codepoint a cell, absent ones muted, so rows align on
+  // U+xxx0. Compact packs only present ones and indexes by position rather
+  // than address — hence the `compact` branches throughout.
   const present = useMemo(() => {
     if (!compact) return null;
     const cps: number[] = [];
@@ -103,30 +76,20 @@ export function BlockGrid({
     return cps;
   }, [compact, block.start, block.end, ranges]);
 
-  // Pad the leading row so the first codepoint sits under its true hex column.
-  // Blocks are 16-aligned in Unicode, so lead is 0, but the guard is cheap.
-  // Packed mode has no address to align to, so it never pads.
   const lead = compact ? 0 : block.start % COLS;
   const total = present ? present.length : lead + (block.end - block.start + 1);
   const rowCount = Math.ceil(total / COLS);
 
-  // The grid sits below the block title within the shared scroller, so the
-  // virtualizer needs its offset from the scroll container's top (scrollMargin)
-  // to place absolutely-positioned rows correctly. Measured after layout.
+  // The grid sits below the block title inside a shared scroller, so the
+  // virtualizer needs scrollMargin to place absolute rows correctly.
   const gridRef = useRef<HTMLDivElement>(null);
   const [scrollMargin, setScrollMargin] = useState(0);
-  // Square cell size (px): derive from the container width so each cell is as
-  // tall as it is wide. Kept in sync with the container via a ResizeObserver.
   const [cellSize, setCellSize] = useState(ROW_FALLBACK);
   useLayoutEffect(() => {
     const el = gridRef.current;
     if (!el) return;
     const measure = () => {
       if (scrollRef.current) setScrollMargin(el.offsetTop);
-      // The flexible columns share the width left after the label column (0 in
-      // compact, where it isn't rendered) and the gaps between tracks; a cell is
-      // that width / COLS, and the row is that tall (square). Dropping to 5
-      // columns and losing the label column both grow the cell.
       const gaps = labelW ? COLS + 1 : COLS - 1;
       const w = el.clientWidth - labelW - gaps * GAP;
       if (w > 0) setCellSize(w / COLS);
@@ -144,33 +107,26 @@ export function BlockGrid({
     overscan: 6,
     scrollMargin,
   });
-  // Re-measure the virtualizer when the square cell size changes.
   // biome-ignore lint/correctness/useExhaustiveDependencies: cellSize is the trigger, not read in the body, a size change must re-run measurement.
   useLayoutEffect(() => {
     rowVirtualizer.measure();
   }, [cellSize, rowVirtualizer]);
 
-  // Imperative magnifier: a single popover node, positioned/filled directly on
-  // pointer events so hovering never triggers a React re-render of the grid.
+  // A single popover node, positioned and filled directly on pointer events so
+  // hovering never re-renders the grid.
   const popRef = useRef<HTMLDivElement>(null);
   const popGlyphRef = useRef<HTMLDivElement>(null);
   const popLabelRef = useRef<HTMLSpanElement>(null);
 
-  // Resolve the cell under an event to its codepoint (or null for gaps/labels).
   const cpOf = (e: React.MouseEvent): number | null => {
     const el = (e.target as HTMLElement).closest<HTMLElement>("[data-cp]");
     if (!el) return null;
     return Number(el.dataset.cp);
   };
 
-  // Cached popover box. Measuring inside showAt meant every mousemove wrote
-  // (textContent, display) and then read offsetWidth/offsetHeight, and a read
-  // after a write forces a synchronous reflow — one per pointer move, across a
-  // grid that can hold 15k cells. The box does not actually change size: the
-  // glyph sits in a fixed size-56 square and the label is always U+XXXX (hex()
-  // pads to 4 and the grid is BMP-only), so one measurement serves every cell.
-  // Re-measured only when the popover goes from hidden to shown, which is also
-  // the one moment a stale value could matter (font swap, zoom).
+  // Cached: measuring inside showAt would read offsetWidth after writing
+  // textContent, forcing a synchronous reflow on every pointer move. The box
+  // never changes size, so one measurement serves every cell.
   const popBox = useRef<{ w: number; h: number } | null>(null);
 
   const showAt = (cp: number, x: number, y: number) => {
@@ -179,15 +135,10 @@ export function BlockGrid({
     if (popGlyphRef.current)
       popGlyphRef.current.textContent = String.fromCodePoint(cp);
     if (popLabelRef.current) popLabelRef.current.textContent = `U+${hex(cp)}`;
-    // Flip toward whichever side has room: below/right of the cursor by
-    // default, but above/left when the popover would overflow the viewport edge
-    // (e.g. hovering a cell near the bottom after scrolling down). 16px gap
-    // from the cursor, 8px min margin from the edge.
     const CURSOR_GAP = 16;
     const MARGIN = 8;
     if (pop.style.display === "none") {
       pop.style.display = "flex";
-      // The only read, and only on the hidden -> shown edge.
       popBox.current = { w: pop.offsetWidth, h: pop.offsetHeight };
     }
     const { w, h } = popBox.current ?? { w: 0, h: 0 };
@@ -199,9 +150,8 @@ export function BlockGrid({
       y + CURSOR_GAP + h + MARGIN > window.innerHeight
         ? y - CURSOR_GAP - h
         : y + CURSOR_GAP;
-    // translate3d, not left/top: left/top are layout properties, so following
-    // the cursor through them re-ran layout on every move. A transform is
-    // compositor-only, and the element is already position:fixed at 0,0.
+    // translate3d, not left/top: those are layout properties, so following the
+    // cursor through them would re-run layout on every move.
     pop.style.transform = `translate3d(${Math.max(MARGIN, left)}px, ${Math.max(MARGIN, top)}px, 0)`;
   };
   const hide = () => {
@@ -214,8 +164,7 @@ export function BlockGrid({
     else showAt(cp, e.clientX, e.clientY);
   };
 
-  // Keyboard parity for the hover magnifier: show it centered on the focused
-  // cell so a keyboard user gets the same enlarged preview as a mouse user.
+  // Keyboard parity for the hover magnifier.
   const onFocus = (e: React.FocusEvent) => {
     const el = (e.target as HTMLElement).closest<HTMLElement>("[data-cp]");
     if (!el) return;
@@ -224,8 +173,6 @@ export function BlockGrid({
     showAt(cp, r.left + r.width / 2, r.bottom);
   };
 
-  // Activating a present cell (click or Enter/Space) copies its character; a
-  // click also re-points the roving cell so a later Tab re-entry lands there.
   const onClick = (e: React.MouseEvent) => {
     const cp = cpOf(e);
     if (cp != null) {
@@ -234,10 +181,6 @@ export function BlockGrid({
       onCopy(cp);
     }
   };
-  // Container-level keyboard delegation (one handler for the whole grid, like
-  // the mouse handlers): Enter/Space copy the focused cell; Arrow/Home/End move
-  // the roving cell across the block's present glyphs. preventDefault fires only
-  // on keys we actually handle.
   const onKeyDown = (e: React.KeyboardEvent) => {
     const el = (e.target as HTMLElement).closest<HTMLElement>("[data-cp]");
     if (!el) return;
@@ -274,9 +217,6 @@ export function BlockGrid({
     if (target != null) focusCp(target);
   };
 
-  // Scroll a searched codepoint's row into view, derived the same way the
-  // render loop lays rows out: by position in the present list when packed,
-  // otherwise from the block start (+ the leading pad).
   useEffect(() => {
     if (highlightCp == null) return;
     if (highlightCp < block.start || highlightCp > block.end) return;
@@ -300,21 +240,16 @@ export function BlockGrid({
   ]);
 
   // --- Roving tabindex (keyboard grid navigation) -------------------------
-  // The grid is a single tab stop: exactly one present cell carries tabIndex=0
-  // (the "roving" cell), every other cell -1, so Tab enters the block once and
-  // the next Tab leaves it. The roving codepoint lives in a REF (read during
-  // render for each cell's tabIndex) so moving it doesn't force per-cell state;
-  // arrow keys re-point it and re-render the container once. Because big blocks
-  // are row-virtualized, the target row may be unmounted: we scrollToIndex it
-  // and stash the codepoint in pendingFocusRef, then focus it once the button
-  // exists (the render after scroll, retried via rAF as rows mount).
+  // The grid is a single tab stop: exactly one present cell carries tabIndex=0,
+  // every other -1. The roving codepoint lives in a REF, read during render for
+  // each cell's tabIndex, so moving it re-renders the container once rather
+  // than forcing per-cell state. Row virtualization means the target row may be
+  // unmounted, so focusCp scrolls to it and stashes the codepoint in
+  // pendingFocusRef, focusing once the button exists.
   const rovingCpRef = useRef<number | null>(null);
   const pendingFocusRef = useRef<number | null>(null);
-  // Bumping this re-renders the container so cells re-read rovingCpRef for their
-  // tabIndex. Not per-cell state, one counter for the whole grid.
   const [, forceRender] = useState(0);
 
-  // First present, renderable codepoint in the block: the default roving cell.
   const firstPresentCp = useMemo(() => {
     for (let cp = block.start; cp <= block.end; cp++) {
       if (isRenderable(cp) && hasCodepoint(ranges, cp)) return cp;
@@ -322,8 +257,6 @@ export function BlockGrid({
     return null;
   }, [block.start, block.end, ranges]);
 
-  // The cell that should own tabIndex=0 right now: the roving ref if it still
-  // points at a present cell, else the block's first present cell.
   const rovingCp =
     rovingCpRef.current != null &&
     rovingCpRef.current >= block.start &&
@@ -333,8 +266,6 @@ export function BlockGrid({
       ? rovingCpRef.current
       : firstPresentCp;
 
-  // Which row a codepoint sits in. Packed mode indexes by position in the
-  // present list; the address-aligned chart by the codepoint's own offset.
   const rowOf = useCallback(
     (cp: number) => {
       if (present) {
@@ -353,7 +284,6 @@ export function BlockGrid({
     []
   );
 
-  // Move focus to a codepoint, scrolling its row in first if it isn't mounted.
   const focusCp = useCallback(
     (cp: number) => {
       rovingCpRef.current = cp;
@@ -363,15 +293,13 @@ export function BlockGrid({
         btn.focus();
         return;
       }
-      // Row not mounted: bring it into view and focus once it renders.
       pendingFocusRef.current = cp;
       rowVirtualizer.scrollToIndex(rowOf(cp), { align: "center" });
     },
     [rowVirtualizer, cellButton, rowOf]
   );
 
-  // Resolve pending focus once its row has mounted (retry across a few frames
-  // while the virtualizer settles the scroll and renders the row).
+  // Retried across a few frames while the virtualizer settles and renders.
   useEffect(() => {
     const cp = pendingFocusRef.current;
     if (cp == null) return;
@@ -390,11 +318,10 @@ export function BlockGrid({
     return () => cancelAnimationFrame(frame);
   });
 
-  // Next present, renderable codepoint from `cp` in `dir` (+1/-1) direction,
-  // skipping absent/non-renderable slots so focus never lands on an empty cell.
-  // `step` is a distance in grid cells (1 for left/right, COLS for up/down).
-  // Packed mode has no gaps, so a step is just a move of `step` places in the
-  // present list, which keeps up/down landing in the same column.
+  // Skips absent slots, so focus never lands on an empty cell. `step` is a
+  // distance in grid cells (1 left/right, COLS up/down); packed mode has no
+  // gaps, so it moves that many places in the present list instead, which keeps
+  // up/down in the same column.
   const nextPresent = (
     cp: number,
     dir: number,
@@ -415,17 +342,11 @@ export function BlockGrid({
     return null;
   };
 
-  // One present glyph's cell. Shared by both layouts: the packed (mobile) grid
-  // and the address-aligned (desktop) one differ only in which codepoint lands
-  // in which slot, not in how a cell looks or behaves.
   const glyphCell = (cp: number) => (
     <button
       type="button"
       key={cp}
       data-cp={cp}
-      // Roving tabindex: only the active cell is tabbable, so the block is a
-      // single tab stop. Read from the ref during render; focusCp re-renders
-      // when the roving cell moves.
       tabIndex={cp === rovingCp ? 0 : -1}
       title={`U+${hex(cp)}: click to copy`}
       aria-label={`U+${hex(cp)} ${String.fromCodePoint(cp)}, copy character`}
@@ -433,8 +354,6 @@ export function BlockGrid({
         "flex items-center justify-center border-primary bg-card leading-none outline-none hover:border focus-visible:border-2 focus-visible:border-primary",
         highlightCp === cp && "animate-pulse border-2 border-primary"
       )}
-      // Glyph fills ~1/2 of the (square) cell, so it scales with the measured
-      // cell size instead of a fixed font-size.
       style={{ ...style, fontSize: cellSize * 0.4 }}
     >
       {String.fromCodePoint(cp)}
@@ -522,15 +441,12 @@ export function BlockGrid({
               )}
               {Array.from({ length: COLS }, (_, c) => {
                 const idx = rowStart + c;
-                // Packed (mobile): the cell is the idx-th present codepoint,
-                // with a blank only past the end of the last row.
                 if (present) {
                   const packedCp = present[idx];
                   if (packedCp === undefined)
                     return <div key={`tail:${idx}`} className="bg-card" />;
                   return glyphCell(packedCp);
                 }
-                // Leading pad cells (before the block's first codepoint).
                 if (idx < lead)
                   return <div key={`pad:${idx}`} className="bg-card" />;
                 const cp = block.start + idx - lead;
@@ -539,8 +455,7 @@ export function BlockGrid({
                 return isRenderable(cp) && hasCodepoint(ranges, cp) ? (
                   glyphCell(cp)
                 ) : (
-                  // Absent (or non-renderable) codepoint: a muted empty slot
-                  // keeps the hex columns aligned.
+                  // A muted empty slot keeps the hex columns aligned.
                   <div key={cp} title={`U+${hex(cp)}`} className="bg-muted" />
                 );
               })}
@@ -554,8 +469,7 @@ export function BlockGrid({
       <div
         ref={popRef}
         style={{ display: "none" }}
-        // Anchored at the viewport origin; showAt positions it with a
-        // translate3d, so top-0 left-0 is the transform's reference point.
+        // top-0 left-0 is the reference point showAt's translate3d works from.
         className="pointer-events-none fixed top-0 left-0 z-50 flex-col items-center gap-1 rounded-lg border bg-popover p-3 shadow-lg"
       >
         <div

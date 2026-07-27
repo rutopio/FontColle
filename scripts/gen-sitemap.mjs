@@ -1,19 +1,14 @@
-// Generates public/sitemap.xml from the font catalog at build time.
+// Generates public/sitemap.xml from the font catalog at build time: one <url>
+// for the home page plus one per published family, pointing at its canonical
+// instances tab (matching the canonical tag in the detail route head).
 //
-// The ~2000 per-font pages are this site's long-tail; without a sitemap they're
-// effectively invisible to crawlers. One <url> for the home page plus one per
-// published family, pointing at its canonical instances tab (matching the
-// canonical tag in the detail route head).
-//
-// Needs an absolute origin. When VITE_SITE_URL is unset we skip generation
-// rather than emit a sitemap full of relative or wrong-domain URLs, the build
-// still succeeds, just without a sitemap until a production domain is set.
+// Needs an absolute origin. With VITE_SITE_URL unset this skips generation
+// rather than emit relative or wrong-domain URLs; the build still succeeds.
 
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 // Imported, not mirrored: site-meta.ts is import-free and touches no
-// import.meta.env, so node's type stripping can load it here. llms.txt reuses
-// the same summary.
+// import.meta.env, so node's type stripping can load it here.
 import { SITE_DESCRIPTION, SITE_NAME } from "../src/lib/site-meta.ts";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
@@ -21,9 +16,8 @@ const ROOT = path.resolve(import.meta.dirname, "..");
 // Mirror src/lib/fonts/slug.ts fontSlug: spaces -> underscores (case kept).
 const fontSlug = (name) => name.replace(/ /g, "_");
 
-// A font's last-modified date as a W3C-valid YYYY-MM-DD, or undefined when the
-// record carries no usable date. Prefer the reharvest timestamp (modifiedMs,
-// epoch ms); fall back to dateAdded (present for every published family).
+// W3C-valid YYYY-MM-DD, or undefined when the record carries no usable date.
+// Prefers modifiedMs, falling back to dateAdded.
 const lastmodOf = (f) => {
   if (typeof f.modifiedMs === "number" && Number.isFinite(f.modifiedMs)) {
     return new Date(f.modifiedMs).toISOString().slice(0, 10);
@@ -50,9 +44,8 @@ const xmlEscape = (s) =>
       })[c]
   );
 
-// Sorted unique values pulled out of the catalog by `pick`, which may return a
-// scalar or an array. Every vocabulary in llms.txt is derived this way rather
-// than hardcoded, so the doc can't drift from the data a reharvest produces.
+// Every vocabulary in llms.txt is derived this way rather than hardcoded, so
+// the doc can't drift from the data a reharvest produces.
 const vocab = (fonts, pick) => {
   const seen = new Set();
   for (const f of fonts) {
@@ -76,13 +69,11 @@ const classificationsBySection = (fonts) => {
   return bySection;
 };
 
-// public/llms.txt, following the llms.txt convention (H1 name, blockquote
-// summary, then sections). Written for an agent that has been asked something
-// subjective ("a playful variable sans") and needs to know (a) that the data
-// can answer it at all, (b) which field carries the style signal, and (c) how
-// to hand the result back as a URL a human can open. Hence the worked example
-// and the full filter vocabulary: without them an agent sees only axes and
-// features and never discovers the `tags` scores.
+// public/llms.txt, following the llms.txt convention. Written for an agent
+// asked something subjective ("a playful variable sans"), which needs to know
+// the data can answer it, which field carries the style signal, and how to hand
+// the result back as a URL. Hence the worked example and the full vocabulary:
+// without them an agent sees only axes and features and never finds `tags`.
 function buildLlmsTxt(siteUrl, fonts) {
   const categories = vocab(fonts, (f) => f.category);
   const licenses = vocab(fonts, (f) => f.license);
@@ -96,8 +87,7 @@ function buildLlmsTxt(siteUrl, fonts) {
   const sections = classificationsBySection(fonts);
   const scored = fonts.filter((f) => Object.keys(f.tags ?? {}).length).length;
 
-  // Registered axes first (the ones a query is likely to name), then a count of
-  // the custom ones rather than all ~40 tags.
+  // Registered axes first, then a count of the custom ones rather than all ~40.
   const REGISTERED_AXES = ["wght", "wdth", "opsz", "slnt", "ital", "GRAD"];
   const customAxes = axes.filter((a) => !REGISTERED_AXES.includes(a));
 
@@ -264,14 +254,12 @@ export async function genSitemap() {
   const data = JSON.parse(raw);
   const fonts = Array.isArray(data) ? data : (data.fonts ?? []);
 
-  // Must match gen-catalog.mjs's publish rule. Unpublished families get no
-  // public/catalog/<id>.json, so the detail loader throws notFound() for them:
-  // listing one in the sitemap points a crawler at a guaranteed 404.
+  // Must match gen-catalog.mjs's publish rule: an unpublished family gets no
+  // public/catalog/<id>.json, so listing it here points a crawler at a 404.
   const published = fonts.filter((f) => f?.name && (f.isPublished ?? true));
 
-  // Per-font <url> entries, each with a <lastmod> derived from real data. The
-  // home page's lastmod is the max across all fonts (the catalog's freshness),
-  // omitted if no font has a usable date.
+  // The home page's lastmod is the max across all fonts, omitted when none has
+  // a usable date.
   const fontEntries = published.map((f) => ({
     loc: `${siteUrl}/instances/${fontSlug(f.name)}`,
     lastmod: lastmodOf(f),

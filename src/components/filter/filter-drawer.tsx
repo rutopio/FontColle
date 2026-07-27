@@ -14,17 +14,12 @@ import { FilterGroupButton, FilterRail } from "./filter-rail";
 import { FilterSidebar } from "./filter-sidebar";
 import { type FilterGroupId, PRESET_GROUP } from "./groups";
 
-// Mobile-only (<768px) filter access. The desktop rail + panel collapse to an
-// unreachable Sheet on mobile (see app-sidebar), so this is the sole way to
-// filter there: a bottom-right FAB opens a bottom drawer holding the same
-// controls, a horizontal FilterRail group switcher over the FilterSidebar. All
-// filter state is shared (FilterProvider is at the root), so changes reflect
-// live and the drawer needs no Apply button. Hidden on desktop via md:hidden.
+// The sole way to filter on mobile, where the desktop rail and panel collapse
+// to an unreachable Sheet (see app-sidebar). Filter state is shared, so it
+// needs no Apply button.
 //
-// Built on ui/drawer (Base UI Drawer), not ui/sheet: this panel covers 85% of
-// the screen, and a sheet that large has to be dismissable by dragging it down
-// — reaching a corner X on a phone is the wrong ask. Single height, no
-// intermediate snap point.
+// Built on Base UI's Drawer, not ui/sheet: this covers 85% of the screen, and
+// a panel that large has to be dismissable by dragging it down.
 export function FilterDrawer({
   index,
   filter,
@@ -112,8 +107,6 @@ export function FilterDrawer({
             filter={filter}
             onChange={onChange}
             group={group}
-            // Same as desktop: the strip above highlights whichever group the
-            // drawer's scroll has reached, and jumps when tapped.
             onActiveGroupChange={onGroupChange}
             axisValues={axisValues}
             onAxisValueChange={onAxisValueChange}

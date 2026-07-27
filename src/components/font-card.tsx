@@ -13,18 +13,15 @@ interface Props {
   previewText: string;
   isFavorite: boolean;
   onToggleFavorite: (id: string) => void;
-  // Active filter slice, drives both the live preview (weight/width/axes) and
-  // which trait badges render highlighted.
+  // Drives the live preview and which trait badges render highlighted.
   selection: FilterSelection;
-  // Session slider positions (0-100%) per selected variable axis. Not part of
-  // the filter: each font maps the percent onto its own axis range for preview.
+  // Session slider positions (0-100%) per axis, not part of the filter: each
+  // font maps the percent onto its own range.
   axisValues: Record<string, number>;
 }
 
-// memo: cards mount by the hundreds in the virtualized grid. Toggling one
-// favorite changes only that card's `isFavorite`; the rest keep referentially
-// stable props (see index/route: `toggle` is useCallback-stable, `selection`/
-// `axisValues`/`previewText` are unchanged), so memo bails them out.
+// memo: cards mount by the hundreds in the virtualized grid, and toggling one
+// favorite changes only that card's prop, so the rest bail out.
 export const FontCard = memo(function FontCard({
   font,
   previewText,
@@ -33,8 +30,7 @@ export const FontCard = memo(function FontCard({
   selection,
   axisValues,
 }: Props) {
-  // Weight/width/axis picks from the sidebar drive the live preview; the
-  // font-loading effect and preview style are shared with FontRow.
+  // Shared with FontRow, so both preview the sidebar's picks identically.
   const { fontLoaded, previewStyle, previewRef } = useFontFacePreview(
     font,
     selection,
@@ -46,10 +42,9 @@ export const FontCard = memo(function FontCard({
       ref={previewRef}
       to="/$tab/$fontId"
       params={{ tab: "instances", fontId: fontSlug(font.id) }}
-      // active:scale gives the press instant feedback on touch, where there is
-      // no hover state to confirm the tap before the route change lands. The
-      // scale is gentler than a button's 0.97: a 288px-tall card travels the
-      // same optical distance at a much smaller ratio.
+      // Press feedback for touch, which has no hover to confirm the tap before
+      // the route change lands. Gentler than a button's 0.97: a 288px-tall card
+      // travels the same optical distance at a much smaller ratio.
       className="flex h-72 flex-col gap-4 overflow-hidden rounded-lg border bg-card p-5 transition-[color,background-color,transform] duration-[var(--motion-fast)] ease-[var(--ease-snap)] hover:bg-muted focus-visible:border-foreground focus-visible:outline-none active:scale-[0.99]"
     >
       <div className="flex flex-col gap-1">
@@ -68,8 +63,7 @@ export const FontCard = memo(function FontCard({
 
       {fontLoaded ? (
         <p
-          // Let the browser derive writing direction from the text so RTL
-          // scripts (Hebrew, Arabic) render right-to-left, LTR otherwise.
+          // Derive direction from the text, so RTL scripts render right-to-left.
           dir="auto"
           style={previewStyle}
           className="min-h-16 flex-1 overflow-hidden break-words text-2xl leading-snug"
@@ -77,8 +71,6 @@ export const FontCard = memo(function FontCard({
           {previewText || specimenFor(font)}
         </p>
       ) : (
-        // Skeleton while the web font is still loading, so the card shows a
-        // steady placeholder instead of an empty/blank preview area.
         <div className="flex min-h-16 flex-1 flex-col gap-2.5 py-1" aria-hidden>
           <div className="h-4 w-[85%] animate-pulse rounded bg-muted" />
           <div className="h-4 w-[70%] animate-pulse rounded bg-muted" />

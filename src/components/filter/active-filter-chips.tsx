@@ -7,15 +7,10 @@ import { cn } from "@/lib/utils";
 import { groupActiveFilters } from "./describe";
 import { SavePresetPopover } from "./save-preset-popover";
 
-// Each chip fades in on add and out on remove; `layout="position"` slides the
-// survivors into the freed space so the row reflows smoothly.
-//
-// "position", not true: a multi-value section is ONE chip whose width grows as
-// values are added (Latin -> Latin OR Greek). `layout: true` animates size too,
-// which motion does by tweening a scaleX on the box — that visibly stretches the
-// text inside for a frame before it settles. Animating position only lets the
-// chip jump straight to its real width (no text distortion) while its neighbours
-// still glide into place.
+// Chips fade in and out, and `layout="position"` slides the survivors into the
+// freed space. "position", not true: a multi-value section is ONE chip whose
+// width grows as values are added, and `layout: true` tweens that as a scaleX,
+// visibly stretching the text for a frame before it settles.
 const CHIP_MOTION = {
   layout: "position",
   initial: { opacity: 0 },
@@ -24,9 +19,6 @@ const CHIP_MOTION = {
   transition: { duration: MOTION_S.fast, ease: EASE_OUT },
 } as const;
 
-// The active filter conditions, each a removable chip. Rendered both at the top
-// of the results list (left-aligned) and in the empty state (centered), so a
-// user can see exactly which conditions are stacked and lift them one at a time.
 export function ActiveFilterChips({
   filter,
   onChange,
@@ -35,52 +27,35 @@ export function ActiveFilterChips({
 }: {
   filter: FilterState;
   onChange: (next: FilterState) => void;
-  // "center" caps the width for the empty state; "left" fills the list header.
   align?: "center" | "left";
-  // Pass to offer "Save to Preset" as the row's last item. Omitted in the empty
-  // state, where a filter matching nothing isn't worth saving.
+  // Omitted in the empty state, where a filter matching nothing isn't worth
+  // saving.
   currentSearch?: FilterSearch;
 }) {
   const groups = groupActiveFilters(filter);
-  // The text query is deliberately kept out of describeActiveFilters (it has its
-  // own input, and activeFilterCount/filterKey exclude it). But it's still an
-  // active condition, and with results showing it's the only one without a chip.
-  // Fold it in here as a lead chip so both the list header and the empty state
-  // surface it; removing it clears the query like any other section.
+  // describeActiveFilters excludes the text query, which is still a condition.
   const query = filter.query.trim();
-  // The empty state ("center") collapses outright: there is no grid under it to
-  // shift, so an unmount costs nothing.
   if (groups.length === 0 && !query && align === "center") return null;
-  // In the list ("left") the row stays mounted even while empty, and animates
-  // its own height instead. Unmounting it meant the first chip mounted a fresh
-  // AnimatePresence — `initial: false` only suppresses children added to an
-  // existing container, so that chip still faded in — and the row's height went
-  // 0 -> ~28px in one frame, snapping the grid down under it. Keeping the
-  // container alive fixes the flash; animating height turns the push into a
-  // transition. Collapsed it is height 0 with no margin, so it takes up nothing.
+  // In the list the row stays mounted even while empty and animates its own
+  // height. It must not unmount: a fresh AnimatePresence would fade in the
+  // first chip (`initial: false` only suppresses children added to an existing
+  // container) and the row's height would snap the grid down in one frame.
   const filled = groups.length > 0 || query.length > 0;
   return (
     <motion.div
-      // `height: auto` rather than a fixed value, so a wrapped second row of
-      // chips animates to its real height too.
-      //
-      // The parent list is `flex flex-col gap-4 md:gap-6`, so this row is a flex
-      // child even at height 0 and still contributes a full gap — which sat
-      // under the header and pushed the grid permanently down once the row
-      // stopped unmounting. Collapsing marginBottom by the same amount cancels
-      // that gap, restoring the original spacing when there are no chips.
+      // `height: auto` so a wrapped second row of chips animates to its real
+      // height. The parent is a flex column with a gap, so this row still
+      // contributes one at height 0; collapsing marginBottom cancels it.
       animate={{
         height: filled ? "auto" : 0,
         marginBottom: filled ? 0 : "calc(var(--chip-row-gap) * -1)",
       }}
       initial={false}
-      // Both directions are instant. In the list the caller drives this row off
-      // the committed (deferred) filter, so any height change lands while the
-      // results are faded to opacity 0 — the row snaps to its new size unseen and
-      // is already in place when the list fades back in. An animated open/close
-      // here would instead play a visible 200ms push against the fading list.
+      // Instant both ways: the caller drives this row off the committed
+      // (deferred) filter, so a height change lands while the results are faded
+      // out and is already in place when they fade back in. Animating it would
+      // play a visible push against the fading list instead.
       transition={{ duration: 0 }}
-      // The chips would otherwise paint outside the collapsed box mid-animation.
       style={{ overflow: "hidden" }}
       className={cn(
         // --chip-row-gap mirrors the parent's gap-4 / md:gap-6 so the negative
@@ -114,13 +89,10 @@ export function ActiveFilterChips({
             {...CHIP_MOTION}
             type="button"
             onClick={() => onChange(group.removeAll)}
-            // flex-wrap + max-w-full: a group with several values (say four
-            // languages) is one chip of N inline spans, which on a phone grows
-            // past the viewport and blows out the row rather than flowing into
-            // it. Wrapping keeps a long group inside the container and lets it
-            // spill onto its own second line, so the row still reads as chips
-            // flowing left-to-right. Height matches PillButton: taller tap
-            // target on mobile, compact on desktop.
+            // flex-wrap + max-w-full: a multi-value group is one chip of N
+            // inline spans, which on a phone would grow past the viewport and
+            // blow out the row instead of spilling onto a second line. Height
+            // matches PillButton, for the same tap target.
             className="flex min-h-9 max-w-full flex-wrap items-center gap-x-1.5 gap-y-1 rounded-md border border-input px-2.5 py-2 text-left text-muted-foreground text-xs transition-colors hover:border-foreground hover:text-foreground md:min-h-8 md:py-1"
             aria-label={`Remove filter ${group.section}: ${group.values
               .map((v) => v.value)

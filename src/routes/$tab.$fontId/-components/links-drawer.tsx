@@ -11,15 +11,11 @@ import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import type { FontRecord } from "@/lib/fonts/types";
 import { FAB_MOTION, FAB_SHIFT, fabBottom, fabLift } from "./fab-motion";
 
-// Mobile-only (<768px) access to the family's outbound links. The detail
-// header's Google Fonts / Download / Repo buttons don't fit beside the title on
-// a phone, so there they're hidden and reached through this FAB instead, which
-// opens a bottom drawer holding the same three links. Hidden on desktop via
-// md:hidden, where the header buttons show as normal.
+// Mobile-only access to the header's outbound links, which don't fit beside
+// the title on a phone.
 //
-// This FAB holds the lower slot on every tab so it never moves as the user
-// switches tabs; ControlsDrawer stacks above it on the tabs that have controls.
-// `dockVisible` drops the whole stack when the preview dock slides away.
+// This FAB holds the lower slot on every tab so it never moves as tabs change;
+// ControlsDrawer stacks above it where a tab has controls.
 export function LinksDrawer({
   font,
   dockVisible,
@@ -95,11 +91,9 @@ export function LinksDrawer({
   );
 }
 
-// One outbound link as a large card. Visually the filter grids' CardButton
-// (bordered, centred, icon over label, same press/focus treatment), but a real
-// <a>: these navigate rather than toggle, so no button element and no
-// aria-pressed. The label is visible text, so it needs no aria-label of its
-// own, the passed one adds the family name for screen readers.
+// Looks like the filter grids' CardButton but is a real <a>: these navigate
+// rather than toggle, so no button element and no aria-pressed. The passed
+// aria-label only adds the family name for screen readers.
 function LinkCard({
   href,
   icon: CardIcon,

@@ -2,29 +2,19 @@ import { useMemo } from "react";
 import { type FilterSelection, WIDTH_STEP_PCT } from "./filter";
 import type { FontRecord } from "./types";
 
-// The preview state a filter selection implies for one family: the weight to
-// render at and any other variation coords (width, extra axes). Shared by the
-// grid card and the list row so both preview the sidebar's Weight/Width/axis
-// picks identically.
 export interface PreviewCoords {
-  // font-weight to apply (from the selected weight step or the wght slider).
   weight: number;
-  // Non-weight variation coords (wdth and any other selected axes).
   variationCoords: Record<string, number>;
-  // Whether to render the preview italic, from the Italic radio. Only the
-  // "italic" pick turns it on; "upright" and no pick leave it off.
+  // Only the "italic" pick turns this on; "upright" and no pick leave it off.
   italic: boolean;
 }
 
-/** Derive the preview weight + variation coords a FilterSelection implies for a
- *  given font. Weight/Width are multi-select OR filters; axisValues holds the
- *  live 0-100% slider position per selected variable axis, mapped onto this
- *  font's own axis range (ranges differ per font). The wght slider and wdth
- *  slider override the Weight/Width step selections when both are in play.
+/** `axisValues` is a 0-100% position per axis, mapped onto this font's own
+ *  range. The wght/wdth sliders override the Weight/Width steps.
  *
- *  Preview renders the LAST-clicked step, i.e. the tail of the array (the
- *  toggle actions append new picks). So clicking Light -> Bold -> Regular
- *  previews each in turn even though all three stay in the filter. */
+ *  Renders the LAST-clicked step, the tail of the array, since toggle appends:
+ *  clicking Light -> Bold -> Regular previews each in turn even though all
+ *  three stay in the filter. */
 export function usePreviewCoords(
   font: FontRecord,
   selection: FilterSelection,

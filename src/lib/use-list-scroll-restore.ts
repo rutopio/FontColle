@@ -1,14 +1,11 @@
 import { useEffect } from "react";
 
-// Remember the list's scroll position while browsing, and restore it when
-// returning from a detail page. The list scrolls inside a container (the
-// Column's ScrollArea viewport), not the window, so this tracks that element's
-// scrollTop. Two obstacles the naive one-shot restore hits: the virtualizer
-// grows its total height over the first frames (so the target isn't reachable
-// immediately), and it resets scrollTop as it mounts/measures (so a one-shot
-// restore gets clobbered). So we keep re-asserting the target across a short
-// time budget, stopping only once the budget elapses, not the first time it's
-// reached.
+// Remember the list's scroll position and restore it when returning from a
+// detail page. The list scrolls inside the Column's ScrollArea viewport, not
+// the window. A one-shot restore does not work: the virtualizer grows its total
+// height over the first frames, so the target isn't reachable immediately, and
+// it resets scrollTop as it measures. Hence re-asserting across a time budget,
+// stopping when the budget elapses rather than when the target is first hit.
 export function useListScrollRestore(
   scrollRef: React.RefObject<HTMLDivElement | null>,
   listScrollY: React.RefObject<number>
@@ -31,11 +28,8 @@ export function useListScrollRestore(
     if (target <= 0) return;
     let raf = 0;
     const start = performance.now();
-    // Re-assert the target for a fixed budget: the virtualizer resets scrollTop
-    // a few times as it mounts and measures, so a "stop once reached" restore
-    // gets clobbered afterward. Hold the target for ~600ms, long enough to
-    // outlast those resets, short enough that a user who immediately scrolls
-    // elsewhere isn't fought for long.
+    // ~600ms: long enough to outlast the virtualizer's resets, short enough
+    // that a user who immediately scrolls elsewhere isn't fought for long.
     const tick = () => {
       const el = scrollRef.current;
       if (el) {

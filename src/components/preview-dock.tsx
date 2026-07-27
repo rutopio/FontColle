@@ -6,36 +6,26 @@ import { Input } from "@/components/ui/input";
 import { usePreview } from "@/lib/preview/context";
 import { cn } from "@/lib/utils";
 
-// The shared preview-text field: type here to preview the string across every
-// font. The Column footer bar supplies the chrome, so the field itself is
-// borderless and fills its container.
-//
-// The field echoes keystrokes instantly via local state, but the value pushed to
-// the shared context (which repaints every visible card's specimen) is debounced
-// so a burst of typing coalesces into one repaint of the grid instead of one per
-// keystroke.
+// Keystrokes echo instantly via local state, but the push to the shared context
+// is debounced, so a burst of typing coalesces into one repaint of the grid.
 const PREVIEW_DEBOUNCE_MS = 150;
 
 function PreviewField() {
   const { text, setText } = usePreview();
   const [draft, setDraft] = useState(text);
-  // Pending debounced commit, scheduled from onChange. A timer that outlives
-  // the field just commits the final keystrokes — the same thing the debounce
-  // would have done — so no unmount cleanup is needed.
+  // No unmount cleanup: a timer that outlives the field just commits the final
+  // keystrokes, which is what the debounce would have done anyway.
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  // Adopt outside changes to the shared text (Clear on the other page, the
-  // value restored from localStorage after mount) by comparing against the
-  // last-seen context value during render. Not a key-remount: our own commits
-  // also change `text`, and remounting mid-typing would drop focus.
+  // Adopt outside changes to the shared text by comparing against the last-seen
+  // context value during render. Not a key-remount: our own commits change
+  // `text` too, and remounting mid-typing would drop focus.
   const [prevText, setPrevText] = useState(text);
   if (text !== prevText) {
     setPrevText(text);
     setDraft(text);
   }
 
-  // Echo the keystroke instantly; push to the shared context once typing
-  // settles for the debounce window.
   const commit = (value: string) => {
     setDraft(value);
     clearTimeout(timer.current);
@@ -45,10 +35,9 @@ function PreviewField() {
   return (
     <>
       <Input
-        // The cards and rows preview this text with dir="auto", so the field
-        // feeding them has to derive direction the same way: typing Arabic or
-        // Hebrew here should read right-to-left as you type, not sit LTR while
-        // every preview below flips.
+        // The cards preview this text with dir="auto", so the field feeding
+        // them must derive direction the same way, or typing Arabic would sit
+        // LTR here while every preview below flips.
         dir="auto"
         value={draft}
         onChange={(e) => commit(e.target.value)}
@@ -61,7 +50,7 @@ function PreviewField() {
           variant="ghost"
           size="icon"
           onClick={() => {
-            // Cancel any in-flight commit so it can't resurrect cleared text.
+            // Or an in-flight commit resurrects the cleared text.
             clearTimeout(timer.current);
             setDraft("");
             setText("");
@@ -76,12 +65,8 @@ function PreviewField() {
   );
 }
 
-// Full-width preview field for a page's bottom bar (Column footer): the whole
-// bar is the input. Both the list and the detail page mount one, so the shared
-// preview text stays reachable while scrolling on either.
-//
-// `onScrollTop`, when supplied (the list page), adds a divider-separated square
-// button on the far right that scrolls the main font list back to the top.
+// The whole footer bar as one input. `onScrollTop` adds a button that scrolls
+// the font list back to the top.
 export function PreviewBar({ onScrollTop }: { onScrollTop?: () => void }) {
   return (
     <div className="flex flex-1 items-center gap-2">

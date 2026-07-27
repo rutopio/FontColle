@@ -23,15 +23,10 @@ import {
 } from "@/lib/fonts/sort";
 import { cn } from "@/lib/utils";
 
-// The list sort control: a group picker on the left and a direction toggle on
-// the right, joined into one bordered button group. A group maps to an asc key
-// and (usually) a desc key; directionless groups (e.g. Popularity) disable the
-// toggle and expose only their `asc` order.
+// A directionless group disables the toggle and exposes only its `asc` order.
 //
-// With an active search query the results are ranked by relevance (the dropdown
-// sort only breaks ties), so the control reads "Relevance" and is disabled, the
-// displayed sort then honestly matches the actual order. Clearing the search
-// restores the chosen sort.
+// With an active search query the results rank by relevance, so the control
+// reads "Relevance" and is disabled: its label has to match the real order.
 export function SortControl({
   sort,
   onChange,
@@ -60,9 +55,6 @@ export function SortControl({
   // groups support it.
   const dirLabel = asc ? group.ascLabel : (group.descLabel ?? group.ascLabel);
 
-  // Picking a group from the current sort's groups, preserving direction where
-  // the target group supports one. Shared by the desktop Select and the mobile
-  // drawer, which differ only in how the choice is presented.
   const selectGroup = (g: string | null) => {
     const next = SORT_GROUPS.find((x) => x.group === g);
     if (next) onChange(!asc && next.desc ? next.desc : next.asc);
@@ -125,9 +117,7 @@ export function SortControl({
   );
 }
 
-// The group picker's mobile form: the same bordered trigger the Select renders,
-// but tapping it opens a bottom sheet of the groups instead of a dropdown. Only
-// the group choice moves; the direction toggle beside it is untouched.
+// The same trigger the Select renders, but tapping opens a bottom sheet.
 function GroupDrawer({
   group,
   onSelect,

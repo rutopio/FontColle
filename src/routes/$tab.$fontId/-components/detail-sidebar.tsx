@@ -21,25 +21,21 @@ import type { FontRecord } from "@/lib/fonts/types";
 import { EASE_OUT, MOTION_S } from "@/lib/motion";
 import { useScrollReset } from "@/lib/use-scroll-reset";
 
-// Preview font-size bounds, shared by the slider and the click-to-edit value so
-// the two can't drift apart. Exported because the Tester's own size control
-// offers the same range and presets.
+// Exported: the Tester's own size control offers the same range.
 export const SIZE_MIN = 12;
 export const SIZE_MAX = 72;
-// Preset values offered in the click-to-edit dropdown. Bounded by SIZE_MIN /
-// SIZE_MAX: EditableValue filters out-of-range presets, so anything outside
-// would be dead.
+// EditableValue filters out-of-range presets, so anything outside SIZE_MIN /
+// SIZE_MAX would be dead.
 export const SIZE_PRESETS = [
   12, 14, 16, 18, 20, 24, 28, 32, 36, 40, 48, 52, 60, 72,
 ];
-// Per-axis presets; axes without an entry just get free-form entry.
 const AXIS_PRESETS: Record<string, number[]> = {
   wght: [100, 200, 300, 400, 500, 600, 700, 800, 900],
   wdth: [50, 62.5, 75, 87.5, 100, 112.5, 125, 150, 200],
 };
 
-// A ghost Reset button for a sidebar section title. Always rendered (hidden via
-// invisible+disabled while inactive) so the title row height stays constant.
+// Always rendered, hidden via invisible+disabled while inactive, so the title
+// row height stays constant.
 function ResetButton({
   active,
   onClick,
@@ -66,34 +62,26 @@ function ResetButton({
   );
 }
 
-// Native range input styled to match the shared shadcn Slider primitive
-// (@/components/ui/slider) at its "sm" size: a muted 1.5px track with a bordered
-// foreground thumb, 12px like the sidebar's other sliders (filter axes, metric
-// ranges), which a 16px thumb would out-weigh in this narrow column.
-// We keep the native <input type="range"> here rather than the primitive because
-// that primitive hides its Thumb, and these sliders need a per-thumb aria-label
-// (preserved below) plus aria-valuetext with units, which the wrapper's props
-// (spread onto Root, not the Thumb) can't carry.
+// A native range input styled to match the shared Slider primitive at its "sm"
+// size. Native rather than the primitive because that one hides its Thumb, and
+// these sliders need a per-thumb aria-label plus aria-valuetext with units,
+// which the wrapper's props (spread onto Root, not the Thumb) can't carry.
 const RANGE_SLIDER_CLASS = [
-  // my-2 reproduces the spacing the primitive gets from its Control's py-2
-  // (that padding is what separates the metric sliders from their labels).
+  // my-2 reproduces the spacing the primitive gets from its Control's py-2.
   // A margin, not padding: the input's background paints over its padding box,
-  // so py-2 would just render a taller track instead of adding space around it.
-  // No bg-* here: the track's background is the fill gradient set inline per
-  // value (see rangeFillStyle), which a utility class would override.
+  // so py-2 would render a taller track instead of adding space around it.
+  // No bg-*: the track's background is the inline fill gradient per value (see
+  // rangeFillStyle), which a utility class would override.
   "my-2 h-1.5 w-full cursor-pointer appearance-none rounded-full outline-none",
-  // WebKit thumb
   "[&::-webkit-slider-thumb]:size-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-foreground [&::-webkit-slider-thumb]:bg-background [&::-webkit-slider-thumb]:shadow-sm",
-  // Firefox thumb
   "[&::-moz-range-thumb]:size-3 [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border [&::-moz-range-thumb]:border-foreground [&::-moz-range-thumb]:bg-background [&::-moz-range-thumb]:shadow-sm",
-  // Focus ring, matching the primitive's focus-visible treatment
   "focus-visible:[&::-webkit-slider-thumb]:ring-[3px] focus-visible:[&::-webkit-slider-thumb]:ring-ring/50",
   "focus-visible:[&::-moz-range-thumb]:ring-[3px] focus-visible:[&::-moz-range-thumb]:ring-ring/50",
 ].join(" ");
 
-// The filled portion left of the thumb, standing in for the primitive's
-// Indicator element (a native range input has no equivalent pseudo-element that
-// both engines style, so paint it as a hard-stop gradient on the track itself).
+// Stands in for the primitive's Indicator: a native range input has no
+// equivalent pseudo-element both engines style, so this paints the filled
+// portion as a hard-stop gradient on the track itself.
 function rangeFillStyle(
   value: number,
   min: number,
@@ -106,7 +94,6 @@ function rangeFillStyle(
   };
 }
 
-// Class list for a feature toggle pill, highlighted when the feature is on.
 function featureToggleClass(on: boolean) {
   return [
     "flex items-center justify-between gap-2.5 rounded-md border px-2.5 py-2 transition-[color,background-color,border-color,transform] hover:border-foreground active:scale-[0.97]",
@@ -114,9 +101,6 @@ function featureToggleClass(on: boolean) {
   ].join(" ");
 }
 
-// Detail-page side panel: the font's variable-axis sliders first (if any), then
-// its OpenType features as toggle pills. Both drive the type tester via shared
-// page state; feature defaults follow the browser/W3C behavior.
 export function DetailSidebar({
   panelKey,
   size,
@@ -132,8 +116,8 @@ export function DetailSidebar({
   onToggleFeature,
   onResetFeatures,
 }: {
-  // Which tab's controls these are. Only used to key the panel transition, so
-  // switching tabs replays the fade-and-rise instead of mutating in place.
+  // Only keys the panel transition, so switching tabs replays the fade-and-rise
+  // instead of mutating in place.
   panelKey: string;
   size: number;
   onSizeChange: (value: number) => void;
@@ -152,7 +136,6 @@ export function DetailSidebar({
   onToggleFeature: (tag: string) => void;
   onResetFeatures: () => void;
 }) {
-  // Axes Reset is offered only when an axis differs from its default value.
   const axesDirty = axes.some(
     (a) => axisState[a.tag] !== (a.default ?? a.min ?? 0)
   );
@@ -167,7 +150,6 @@ export function DetailSidebar({
     [features]
   );
 
-  // Reset is offered only when some feature deviates from its W3C default.
   const dirty = features.some(
     (tag) => featureState[tag] !== DEFAULT_ON.has(tag)
   );

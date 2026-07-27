@@ -3,12 +3,10 @@ import { Button } from "@/components/ui/button";
 import axesData from "@/data/axes.json";
 import { cn } from "@/lib/utils";
 
-// One axis's selection: request its whole range ("full", a variable stylesheet)
-// or pin it to a single value ("one"). Shared by the Google Fonts axis controls.
+// "full" requests the whole range and yields a variable stylesheet; "one" pins
+// a single value.
 export type AxisPick = { mode: "full" | "one"; value: number };
 
-// A sentence on the method's trade-off, above its steps. The method's name lives
-// in the Panel header, so this is just the blurb.
 export function MethodIntro({ blurb }: { blurb: string }) {
   return <p className="mb-4 text-pretty text-xs leading-relaxed">{blurb}</p>;
 }
@@ -17,7 +15,6 @@ export function Steps({ children }: { children: React.ReactNode }) {
   return <ol className="flex flex-col gap-8">{children}</ol>;
 }
 
-// One numbered step: a small circled index, a label, then its code block.
 export function Step({
   n,
   label,
@@ -40,7 +37,6 @@ export function Step({
   );
 }
 
-// A muted "learn more" link out to the upstream docs for each method.
 export function ExternalLink({ href, label }: { href: string; label: string }) {
   return (
     <Button
@@ -60,8 +56,6 @@ export function ExternalLink({ href, label }: { href: string; label: string }) {
   );
 }
 
-// A small pill toggle, shared by the pickers and the Advanced filter groups.
-// Mirrors the instance-chip look on the tester: bordered, filled when active.
 export function Pill({
   active,
   onClick,
@@ -88,12 +82,10 @@ export function Pill({
   );
 }
 
-// Family name as a Google Fonts URL segment: spaces -> "+".
 export const urlFamily = (name: string) => name.replace(/\s+/g, "+");
 
-// Fontsource package slug: family name lowercased, spaces to hyphens, dropping
-// anything that isn't a URL-safe word char. Matches fontsource.org's scheme
-// (e.g. "Playfair Display" -> "playfair-display"). Bunny uses the same slug.
+// Matches fontsource.org's scheme ("Playfair Display" -> "playfair-display").
+// Bunny uses the same slug.
 export function fontsourceSlug(name: string): string {
   return name
     .toLowerCase()
@@ -101,17 +93,15 @@ export function fontsourceSlug(name: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
-// Shipped static weights, deduped and ascending; defaults to [400] when none
-// are recorded so there's always at least one toggle.
+// Defaults to [400] when none are recorded, so there is always one toggle.
 export function weightList(weights: number[]): number[] {
   return [...new Set(weights.length > 0 ? weights : [400])].sort(
     (a, b) => a - b
   );
 }
 
-// Named stops for an axis (e.g. wght: Thin 100 … Black 900; wdth: Condensed 75
-// … Expanded 125) from the axis registry, for the value pills. Empty for
-// custom/parametric axes the registry doesn't name.
+// From the axis registry, for the value pills. Empty for custom or parametric
+// axes the registry doesn't name.
 export const axisStops = (tag: string): { name: string; value: number }[] =>
   (
     axesData as Record<
@@ -120,17 +110,13 @@ export const axisStops = (tag: string): { name: string; value: number }[] =>
     >
   )[tag]?.fallbacks ?? [];
 
-// Weight name lookup (100 -> "Thin") for the static-family weight pills.
 const WEIGHT_NAME = new Map(axisStops("wght").map((s) => [s.value, s.name]));
 export const weightLabel = (w: number) => WEIGHT_NAME.get(w) ?? String(w);
 
-// Official axis display name from Google Fonts' axis registry, falling back to
-// the raw tag for axes the registry doesn't cover.
+// Falls back to the raw tag for axes the registry doesn't cover.
 export const axisName = (tag: string): string =>
   (axesData as Record<string, { name?: string }>)[tag]?.name ?? tag;
 
-// A sane generic fallback for the CSS font stack, by broad class. Serif/mono get
-// their matching keyword; everything else falls back to sans-serif.
 export function fallbackFor(cls: string): string {
   const c = cls.toLowerCase();
   if (c.includes("serif") && !c.includes("sans")) return "serif";

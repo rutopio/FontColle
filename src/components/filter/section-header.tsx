@@ -16,8 +16,6 @@ import type { MatchMode } from "@/lib/fonts/filter";
 import { EASE_OUT, MOTION_S } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
-// Shared fade for header actions that swap in/out (Reset <-> Sort). Fast and
-// subtle, it should read as a soft cross-fade, not a spotlight.
 const FADE = {
   initial: { opacity: 0 },
   animate: { opacity: 1 },
@@ -25,19 +23,14 @@ const FADE = {
   transition: { duration: MOTION_S.fast, ease: EASE_OUT },
 } as const;
 
-// Per-section pill ordering: by font count (default) or alphabetically.
 export type SortMode = "count" | "alpha";
 
-// The "where does this data come from" note behind a section title: an info
-// icon that reveals `children` on hover/focus. Renders nothing without a note,
-// so a section opts in just by passing one. Lives here (rather than inline in
-// SectionHeader) because Category draws its own header and needs the same
-// affordance.
+// Renders nothing without a note, so a section opts in by passing one.
+// Separate from SectionHeader because Category draws its own header.
 export function InfoTip({
   title,
   children,
 }: {
-  // Names the section in the trigger's accessible label ("About Category").
   title: string;
   children?: React.ReactNode;
 }) {
@@ -59,7 +52,6 @@ export function InfoTip({
   );
 }
 
-// Shared small button used in section headers: a compact, monospaced action.
 export function HeaderButton({
   onClick,
   label,
@@ -90,8 +82,6 @@ export function HeaderButton({
   );
 }
 
-// A count/alpha sort toggle for a pill section header. Rendered only when the
-// section has more than one value (nothing to reorder otherwise).
 export function SortToggle({
   sort,
   onToggle,
@@ -99,8 +89,7 @@ export function SortToggle({
 }: {
   sort: SortMode;
   onToggle: () => void;
-  // The values are numeric: the non-count mode sorts by value (largest first),
-  // so label it accordingly rather than as an A–Z name sort.
+  // Numeric values sort largest-first, not A–Z; label it accordingly.
   numeric?: boolean;
 }) {
   const byValueLabel = numeric ? "value" : "name";
@@ -115,9 +104,8 @@ export function SortToggle({
   );
 }
 
-// A ghost OR/AND toggle for a multi-select section: Unite = match any (OR),
-// Intersect = match all (AND). Sits left of the reset/sort slot; rendered only
-// for sections that pass a mode (the ones where both rules are meaningful).
+// Rendered only for sections that pass a mode, i.e. where both rules mean
+// something.
 export function MatchModeToggle({
   mode,
   onToggle,
@@ -141,11 +129,8 @@ export function MatchModeToggle({
   );
 }
 
-// A section header with a title and a right-side action that flips between a
-// Reset button (when values are selected) and a SortToggle (when not). The
-// action slot always renders (invisible when neither applies) so its height
-// is reserved up front, otherwise a Reset button appearing on first
-// selection shifts every section below it down by a row.
+// The action slot always renders, invisible when empty, so a Reset appearing
+// on first selection doesn't shift every section below it down by a row.
 export function SectionHeader({
   title,
   icon: Icon,
@@ -167,38 +152,27 @@ export function SectionHeader({
   canSort: boolean;
   sort: SortMode;
   onToggleSort: () => void;
-  // Label the sort toggle for numeric values (largest-first) rather than A–Z.
   numericSort?: boolean;
-  // Optional explanatory note shown in a tooltip behind an info icon after the
-  // title. Used where the grouping could be misread (e.g. Language by continent).
   info?: React.ReactNode;
-  // OR/AND toggle: pass both to show it (multi-select sections only). The
-  // toggle sits left of the reset/sort slot and is always visible when passed.
   mode?: MatchMode;
   onToggleMode?: () => void;
-  // Bumps to a new value each time this section's selection was silently cleared
-  // by a mutually-exclusive pick in a sibling section, so the header can flash
-  // once to hint at what changed. 0 = never flashed.
+  // Bumps each time a sibling section's mutually-exclusive pick silently
+  // cleared this one's selection. 0 = never flashed.
   flashKey?: number;
 }) {
   return (
     <div className="flex items-center justify-between gap-2">
       <motion.h2
-        // Flash the title once when flashKey changes: a quick color pulse hints
-        // that this section's selection was just cleared by a sibling pick.
         key={flashKey}
         initial={flashKey ? { color: "var(--color-amber-500)" } : false}
         animate={{ color: "var(--color-primary)" }}
-        // 0.9s, deliberately outside the motion scale: this is a one-shot
-        // colour hint, not a UI transition. It has to outlast the glance that
-        // follows a sibling section clearing this one's selection, so the user
-        // still catches it after their eye arrives.
+        // 0.9s, deliberately outside the motion scale: a one-shot colour hint,
+        // not a UI transition, so it has to outlast the glance that follows a
+        // sibling section clearing this one's selection.
         transition={{ duration: 0.9, ease: EASE_OUT }}
-        // min-w-0 + truncate: the action slot on the right is shrink-0, and
-        // once a section has a selection it carries both the Any/All toggle and
-        // Reset. Without this the title is the only flexible item and wraps to a
-        // second line, growing the header's height the moment you pick a value.
-        // Shrinking the title instead keeps every section header one row tall.
+        // min-w-0 + truncate: the action slot is shrink-0, so without this the
+        // title is the only flexible item and wraps to a second line the moment
+        // a selection adds the Any/All toggle beside Reset.
         className="flex min-w-0 items-center gap-1.5 font-medium text-primary text-sm uppercase"
       >
         <Icon className="size-4 shrink-0" />
