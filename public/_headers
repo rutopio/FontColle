@@ -30,8 +30,13 @@
 /catalog.json
   Cache-Control: public, max-age=3600
 
+# /catalog-first.json is the SSR first-page slice, and it is the one overwritten
+# file whose staleness is user-visible: the Worker fetches it for the SSR HTML
+# while the client hydrates from the manifest-resolved catalog. At a 1h TTL a
+# deploy left the two up to ~55 min apart, so the first 24 cards could reshuffle
+# on hydration. Match the manifest's TTL to close that window.
 /catalog-first.json
-  Cache-Control: public, max-age=3600
+  Cache-Control: public, max-age=300
 
 /catalog-slim.json
   Cache-Control: public, max-age=3600
