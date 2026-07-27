@@ -14,6 +14,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { FavoriteToggle } from "@/components/favorite-toggle";
 import { ActiveFilterChips } from "@/components/filter/active-filter-chips";
 import { FilterDrawer } from "@/components/filter/filter-drawer";
 import { FilterRail } from "@/components/filter/filter-rail";
@@ -35,6 +36,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Kbd } from "@/components/ui/kbd";
+import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFilter } from "@/lib/filter/context";
 import { useFavorites } from "@/lib/fonts/favorites";
@@ -345,11 +347,17 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
 
   return (
     <FilterLayout
-      rail={<FilterRail active={group} filter={filter} onSelect={setGroup} />}
-      // Preset sits in the sidebar footer with Favorite, not in the rail: both
-      // are device-local personal state, not facets of the catalog.
-      personal={
-        <PresetToggle active={group === "preset"} onSelect={setGroup} />
+      // Preset heads the rail: it is a filter too, and the fastest one — a
+      // saved combination is where you start when you have one. It stays out of
+      // FILTER_GROUPS below the rule, though, because unlike those it is not a
+      // section in the panel's scroll: picking it swaps the panel wholesale.
+      // The rule is what says so.
+      rail={
+        <div className="flex flex-col gap-1">
+          <PresetToggle active={group === "preset"} onSelect={setGroup} />
+          <Separator className="my-1" />
+          <FilterRail active={group} filter={filter} onSelect={setGroup} />
+        </div>
       }
       sidebar={
         <FilterSidebar
@@ -433,6 +441,22 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
+
+              {/* Favorite closes the header's row of controls. It belongs with
+                  them, not in the sidebar strip it used to sit in: like sort
+                  and the view tabs it changes what this list shows (?fav=1),
+                  so it reads as the last of the list's own controls.
+
+                  Built as the mirror of the preview field's Top button at the
+                  foot of the same column (see PreviewBar): a full-height cell
+                  ruled off from the row and flush to the column's edge, with
+                  the caption under the icon. -mr-4 cancels the header's px-4 so
+                  the cell meets that edge; h-16 fills the header's fixed
+                  height. Desktop only — on mobile the header wraps to two rows
+                  and there is no fixed height to fill, so it sits inline. */}
+              <div className="flex shrink-0 items-center md:-mr-4 md:h-16 md:border-border md:border-l md:px-1">
+                <FavoriteToggle variant="header" />
+              </div>
             </div>
           </>
         }

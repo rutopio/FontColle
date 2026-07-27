@@ -22,6 +22,11 @@ export const RAIL_BTN = `${RAIL_BTN_BASE} relative flex flex-col items-center ga
 // Compact mobile top-bar icon button: no tile, no caption.
 export const RAIL_BAR_BTN = `${RAIL_BTN_BASE} flex size-11 items-center justify-center`;
 
+// Column-header button: the same icon-over-caption tile as RAIL_BTN, but with
+// its own horizontal padding, since it sits in a full-height divider cell at the
+// end of a header row rather than in a rail's fixed-width column.
+export const RAIL_HEADER_BTN = `${RAIL_BTN} px-2`;
+
 // The neutral (unselected) colours most rail buttons share. No resting text
 // colour: the icon/label inherit the default foreground, matching FilterRail.
 export const RAIL_BTN_OFF = "hover:bg-sidebar-accent/50 hover:text-foreground";

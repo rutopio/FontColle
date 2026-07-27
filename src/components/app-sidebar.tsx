@@ -5,8 +5,8 @@ import { FavoriteToggle } from "@/components/favorite-toggle";
 import { LogoIcon } from "@/components/logo-icon";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { Sidebar, SidebarFooter } from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
 
 // sidebar-09 layout: a parent icon-collapsible sidebar holding two child
 // sidebars side by side. First child is the icon rail (the home link, plus
@@ -14,17 +14,13 @@ import { Sidebar, SidebarFooter } from "@/components/ui/sidebar";
 // own panel (list filters / detail features), passed in as children.
 export function AppSidebar({
   rail,
-  personal,
   favoriteFontId,
   children,
   ...props
 }: React.ComponentProps<typeof Sidebar> & {
   rail?: React.ReactNode;
-  // Page-supplied control that belongs with Favorite in the personal group
-  // (the list page's Preset button). Sits directly above Favorite.
-  personal?: React.ReactNode;
-  // When set (the detail page), the footer Favorite button hearts this font
-  // instead of toggling the list's favorites-only view.
+  // When set (the detail page), the Favorite button hearts this font instead of
+  // toggling the list's favorites-only view.
   favoriteFontId?: string;
 }) {
   return (
@@ -37,11 +33,17 @@ export function AppSidebar({
           page's buttons in a box below. shrink-0 keeps its width fixed when the
           parent collapses (the panel closing must not squeeze the rail).
 
-          Only as tall as those two, so self-start stops the flex row stretching
-          it to fill the shell. max-h keeps it inside on a short viewport, where
-          the buttons box gives way and its ScrollArea takes over; it subtracts
-          the column's own 2-unit margins, which a plain max-h-full would
-          overshoot by exactly that much.
+          Full height, not self-start: Theme and About sit in their own box at
+          the foot of the column, level with the bottom of the panel beside it,
+          so the column has to span the shell for them to be pushed down to.
+          h-[calc(100%-1rem)] subtracts the column's own 2-unit margins, which a
+          plain h-full would overshoot by exactly that much.
+
+          Everything above that box — the wordmark and the page's rail buttons —
+          scrolls, so a short viewport can still reach all of it. The scroll has
+          to wrap both, not just the buttons: the wordmark is a fixed h-16 that
+          never shrinks, so on a short enough viewport it alone overflows the
+          column and the overflow-hidden clips whatever follows it.
 
           mr-0, like the inset's ml-0: the panel to the right already carries an
           8px left margin, and two margins between neighbours would set the rail
@@ -52,8 +54,10 @@ export function AppSidebar({
           the panel is collapsed away. Deriving it the other way (icon width plus
           a bit) overflowed that reserved width and the box lost its right edge
           to the shell's overflow-hidden. */}
-      <div className="my-2 mr-0 ml-2 flex max-h-[calc(100%-1rem)] w-[calc(var(--sidebar-width-icon)-0.5rem)] shrink-0 flex-col gap-2 self-start">
-        {/* The wordmark, at the head of the rail. h-16 matches the Column
+      <div className="my-2 mr-0 ml-2 flex h-[calc(100%-1rem)] w-[calc(var(--sidebar-width-icon)-0.5rem)] shrink-0 flex-col gap-2">
+        <ScrollArea className="min-h-0 flex-1">
+          <div className="flex flex-col gap-2">
+            {/* The wordmark, at the head of the rail. h-16 matches the Column
             header beside it, so the two top out on the same line.
 
             No border and no background: it sits directly on the shell's tint,
@@ -62,45 +66,67 @@ export function AppSidebar({
             than a panel of its own.
 
             It links home, the default action for a wordmark. About is not here:
-            it has its own InfoIcon button in the footers below. */}
-        <Link
-          to="/"
-          // Must contain the visible "FontColle" text: WCAG 2.5.3 (Label in
-          // Name) so voice-control users can say what they see.
-          aria-label="FontColle, all fonts"
-          className="group/logo flex h-16 shrink-0 flex-col items-center justify-center gap-1 rounded-xl p-2 text-primary outline-none transition-colors hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-sidebar-ring dark:hover:bg-white/6"
-        >
-          <LogoIcon className="size-7 transition-[stroke-width] group-hover/logo:[stroke-width:2]" />
-          <span className="font-mono text-[9px] group-hover/logo:font-bold">
-            FontColle
-          </span>
-        </Link>
+            it has its own InfoIcon button in the box at the foot of the
+            column. */}
+            <Link
+              to="/"
+              // Must contain the visible "FontColle" text: WCAG 2.5.3 (Label in
+              // Name) so voice-control users can say what they see.
+              aria-label="FontColle, all fonts"
+              className="group/logo flex h-16 shrink-0 flex-col items-center justify-center gap-1 rounded-xl p-2 text-primary outline-none transition-colors hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-sidebar-ring dark:hover:bg-white/6"
+            >
+              <LogoIcon className="size-7 transition-[stroke-width] group-hover/logo:[stroke-width:2]" />
+              <span className="font-mono text-[9px] group-hover/logo:font-bold">
+                FontColle
+              </span>
+            </Link>
 
-        {/* The page's rail buttons, plus the collapsed-state fallback controls.
-            min-h-0 lets it give way on a short viewport, where the ScrollArea
-            inside takes over. */}
-        <div className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-background">
-          {rail && (
-            <ScrollArea className="min-h-0 flex-1 p-2">
-              <div className="pb-2">{rail}</div>
-            </ScrollArea>
-          )}
-          {/* These four live in the panel's footer strip (below). They stay
-              here as the fallback for when the panel is collapsed away — the
-              detail page's read-only views do that — since otherwise Theme and
-              About would have nowhere to be. Only ever one of the two is in the
-              tree: `hidden` drops this copy from the a11y tree as well. */}
-          <SidebarFooter className="mt-auto gap-1 p-2 group-data-[state=expanded]:hidden">
-            {personal}
-            <FavoriteToggle fontId={favoriteFontId} />
-            {/* -mx-2 spans the rule past the footer's p-2 so it meets both
-                edges. The width utility needs the same data-horizontal: variant
-                the primitive uses, or its `w-full` wins and the rule stops short
-                of the padding. my-1 keeps it off both neighbours. */}
-            <Separator className="-mx-2 my-1 data-horizontal:w-auto" />
-            <ThemeToggle />
-            <AboutLink />
-          </SidebarFooter>
+            {/* The page's rail buttons, plus the detail page's Favorite as the
+            fallback for when the panel is collapsed away (its read-only views
+            do that), since otherwise that control would have nowhere to be.
+            Only ever one of the two copies is in the tree: `hidden` drops this
+            one from the a11y tree as well.
+
+            No scroll of its own: the column around it scrolls, so this box is
+            just as tall as its contents.
+
+            While the list's catalog loads there is no `rail` yet, and on the
+            list page there is no Favorite here either — the box had nothing in
+            it, collapsed to zero height, and its two borders stacked into a
+            stray rule under the wordmark. So with no rail, hide the box in
+            exactly the state that empties it; the rail's arrival (or a
+            collapsed panel on the detail page) shows it again. */}
+            <div
+              className={cn(
+                "flex flex-col overflow-hidden rounded-xl border border-border bg-background",
+                !rail && "group-data-[state=expanded]:hidden"
+              )}
+            >
+              {rail && <div className="p-2">{rail}</div>}
+              {favoriteFontId && (
+                <SidebarFooter
+                  className={cn(
+                    "gap-1 p-2 group-data-[state=expanded]:hidden",
+                    rail && "pt-0"
+                  )}
+                >
+                  <FavoriteToggle fontId={favoriteFontId} />
+                </SidebarFooter>
+              )}
+            </div>
+          </div>
+        </ScrollArea>
+
+        {/* Theme and About, in a box of their own at the foot of the column.
+            These two are the only controls that mean the same thing on every
+            page — they act on the app, not on the list or the font you are
+            looking at — so they sit apart from the page's own rail above,
+            outside its scroll, always in the same place. mt-auto pins the box
+            to the bottom of the column, level with the foot of the panel
+            beside it. */}
+        <div className="mt-auto flex shrink-0 flex-col gap-1 rounded-xl border border-border bg-background p-2">
+          <ThemeToggle />
+          <AboutLink />
         </div>
       </div>
 
@@ -130,34 +156,32 @@ export function AppSidebar({
         collapsible="none"
         className="m-2 hidden h-auto min-w-0 flex-1 overflow-hidden rounded-xl border border-border bg-background md:flex"
       >
-        {children}
-        {/* Footer strip, mirroring the main area's preview field: a fixed row
-            pinned to the bottom of the box with a rule above it, while only the
-            body above scrolls. Left to right: Preset, Favorite, Theme, About —
-            the two device-local personal things first, then the two app-level
-            toggles, the same order the rail's stacked footer used.
+        {/* Header strip, mirroring the list column's header (filter-layout's
+            headerEl): a fixed row pinned to the top of the box with a rule
+            below it, while only the body underneath scrolls.
 
-            The "rail" variant, not "bar": these carry their captions like the
+            Detail page only, and down to one control. This row once held
+            Preset, Favorite, Theme and About; each turned out to belong with
+            what it acts on — Preset at the head of the filter rail, the list
+            page's Favorite in the list column's own header, and Theme/About in
+            their own box at the foot of the rail, since they are the same on
+            every page. What is left is the detail page's Favorite, which hearts
+            the font you are looking at. With nothing to show on the list page
+            the strip is dropped there, rather than ruling off an empty row.
+
+            The "rail" variant, not "bar": it carries its caption like the
             preview field's Top button does, icon stacked over a 10px label. */}
-        {/* h-16 to the pixel, not padding around the buttons: the main area's
-            preview field is a fixed 4rem (see Column's footer), and letting
-            this one be sized by its contents instead made it ~3px deeper — the
-            captioned buttons come to 50px, and p-2 around them overshot. The
-            buttons centre in the fixed height. */}
-        <div className="flex h-16 shrink-0 items-center gap-1 border-border border-t px-2 *:flex-1">
-          {/* The strip is always four columns wide. `personal` is the list
-              page's Preset button; the detail page passes none, and with
-              *:flex-1 the remaining three would spread out to fill the row and
-              land nowhere near where they sit on the list page. An empty div
-              holds the first column so Favorite, Theme and About keep the same
-              three positions on both pages, and the eye sees them stay put
-              across a navigation instead of sliding. aria-hidden: it is a
-              spacer, with nothing to announce. */}
-          {personal ?? <div aria-hidden />}
-          <FavoriteToggle fontId={favoriteFontId} />
-          <ThemeToggle />
-          <AboutLink />
-        </div>
+        {/* h-16 to the pixel, not padding around the button: the list header
+            beside it is a fixed 4rem, and letting this one be sized by its
+            contents instead made it ~3px deeper — the captioned button comes to
+            50px, and p-2 around it overshot. The button centres in the fixed
+            height. */}
+        {favoriteFontId && (
+          <div className="flex h-16 shrink-0 items-center gap-1 border-border border-b px-2 *:flex-1">
+            <FavoriteToggle fontId={favoriteFontId} />
+          </div>
+        )}
+        {children}
       </Sidebar>
     </Sidebar>
   );

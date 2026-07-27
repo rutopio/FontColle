@@ -5,6 +5,7 @@ import {
   RAIL_BTN,
   RAIL_BTN_OFF,
   RAIL_BTN_ON,
+  RAIL_HEADER_BTN,
 } from "@/components/rail-button";
 import { useFavorites } from "@/lib/fonts/favorites";
 import { cn } from "@/lib/utils";
@@ -67,21 +68,39 @@ export function FavoriteToggle({
 }: {
   fontId?: string;
   // "rail" is the desktop icon-over-label tile; "bar" is the compact mobile
-  // top-bar icon button.
-  variant?: "rail" | "bar";
+  // top-bar icon button; "header" is the same captioned tile as "rail", set in
+  // the list column's header beside the Top button it mirrors.
+  variant?: "rail" | "bar" | "header";
 }) {
-  if (fontId) return <FavoriteMark fontId={fontId} bar={variant === "bar"} />;
-  return <FavoriteViewLink bar={variant === "bar"} />;
+  const chrome =
+    variant === "rail"
+      ? RAIL_BTN
+      : variant === "bar"
+        ? RAIL_BAR_BTN
+        : RAIL_HEADER_BTN;
+  // Only the mobile bar drops the caption; it has no room for one.
+  const bare = variant === "bar";
+  if (fontId)
+    return <FavoriteMark fontId={fontId} bare={bare} chrome={chrome} />;
+  return <FavoriteViewLink bare={bare} chrome={chrome} />;
 }
 
 // Detail-page mode: heart this specific font.
-function FavoriteMark({ fontId, bar }: { fontId: string; bar?: boolean }) {
+function FavoriteMark({
+  fontId,
+  bare,
+  chrome,
+}: {
+  fontId: string;
+  bare?: boolean;
+  chrome: string;
+}) {
   const { favorites, toggle } = useFavorites();
   const on = favorites.includes(fontId);
   return (
     <nav
       aria-label="Favorite"
-      className={bar ? undefined : "flex flex-col gap-1"}
+      className={bare ? undefined : "flex flex-col gap-1"}
     >
       <button
         type="button"
@@ -90,16 +109,22 @@ function FavoriteMark({ fontId, bar }: { fontId: string; bar?: boolean }) {
         aria-label={on ? "Remove from favorites" : "Add to favorites"}
         // Neutral chrome always (no ON background): this is a toggle, so the
         // favorited state is carried by the red filled heart, not a highlight.
-        className={cn(bar ? RAIL_BAR_BTN : RAIL_BTN, RAIL_BTN_OFF)}
+        className={cn(chrome, RAIL_BTN_OFF)}
       >
-        <HeartLabel active={on} bar={bar} label="Add" red />
+        <HeartLabel active={on} bar={bare} label="Add" red />
       </button>
     </nav>
   );
 }
 
 // List-page mode: toggle the favorites-only view.
-function FavoriteViewLink({ bar }: { bar?: boolean }) {
+function FavoriteViewLink({
+  bare,
+  chrome,
+}: {
+  bare?: boolean;
+  chrome: string;
+}) {
   // Route-agnostic search read: this sits in the global AppSidebar, shown on
   // both the list and detail routes, so it can't use a strict route hook.
   const fav = useRouterState({
@@ -108,7 +133,7 @@ function FavoriteViewLink({ bar }: { bar?: boolean }) {
   return (
     <nav
       aria-label="Favorites"
-      className={bar ? undefined : "flex flex-col gap-1"}
+      className={bare ? undefined : "flex flex-col gap-1"}
     >
       <Link
         to="/"
@@ -121,13 +146,15 @@ function FavoriteViewLink({ bar }: { bar?: boolean }) {
         // view you're currently in.
         aria-current={fav ? "page" : undefined}
         aria-label={fav ? "Show all fonts" : "Show favorite fonts"}
+        // The tile variant shows the active view with a background; the
+        // icon-only variants have no tile to fill, so they say it in red.
         className={
-          bar
-            ? cn(RAIL_BAR_BTN, RAIL_BTN_OFF, fav && "text-red-500")
-            : cn(RAIL_BTN, fav ? RAIL_BTN_ON : RAIL_BTN_OFF)
+          bare
+            ? cn(chrome, RAIL_BTN_OFF, fav && "text-red-500")
+            : cn(chrome, fav ? RAIL_BTN_ON : RAIL_BTN_OFF)
         }
       >
-        <HeartLabel active={fav} bar={bar} label="Favorite" />
+        <HeartLabel active={fav} bar={bare} label="Favorite" />
       </Link>
     </nav>
   );

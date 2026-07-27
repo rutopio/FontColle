@@ -29,7 +29,13 @@ function MobileTopBar({ favoriteFontId }: { favoriteFontId?: string }) {
         <span className="font-mono text-xs">FontColle</span>
       </Link>
       <div className="flex items-center gap-1">
-        <FavoriteToggle fontId={favoriteFontId} variant="bar" />
+        {/* Detail page only, hearting that font. The list page's Favorite (the
+            ?fav=1 view toggle) is in the list header, which is on screen here
+            too — carrying it in both places would show two hearts meaning the
+            same thing. */}
+        {favoriteFontId && (
+          <FavoriteToggle fontId={favoriteFontId} variant="bar" />
+        )}
         <ThemeToggle variant="bar" />
         <AboutLink variant="bar" />
       </div>
@@ -43,15 +49,12 @@ function MobileTopBar({ favoriteFontId }: { favoriteFontId?: string }) {
 // panel. The preview dock is mounted once in __root, so both pages share it.
 export function FilterLayout({
   rail,
-  personal,
   sidebar,
   children,
   panelOpen = true,
   favoriteFontId,
 }: {
   rail?: React.ReactNode;
-  // Footer control grouped with Favorite (the list page's Preset button).
-  personal?: React.ReactNode;
   sidebar: React.ReactNode;
   children: React.ReactNode;
   // When false, the two-level sidebar collapses to just its icon rail, so the
@@ -102,11 +105,10 @@ export function FilterLayout({
         >
           <AppSidebar
             rail={rail ? <RouteFade>{rail}</RouteFade> : undefined}
-            personal={personal}
             favoriteFontId={favoriteFontId}
           >
             {/* flex-1 + min-h-0, not size-full: the panel box now also holds a
-                footer strip, so the content has to take the height left over
+                header strip, so the content has to take the height left over
                 rather than all of it, and be allowed to shrink so its own
                 ScrollArea is what scrolls. */}
             <RouteFade className="flex min-h-0 w-full flex-1 flex-col">
