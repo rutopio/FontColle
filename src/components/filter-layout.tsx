@@ -29,13 +29,12 @@ function MobileTopBar({ favoriteFontId }: { favoriteFontId?: string }) {
         <span className="font-mono text-xs">FontColle</span>
       </Link>
       <div className="flex items-center gap-1">
-        {/* Detail page only, hearting that font. The list page's Favorite (the
-            ?fav=1 view toggle) is in the list header, which is on screen here
-            too — carrying it in both places would show two hearts meaning the
-            same thing. */}
-        {favoriteFontId && (
-          <FavoriteToggle fontId={favoriteFontId} variant="bar" />
-        )}
+        {/* Both pages, unconditionally: the control reads `fontId` to decide
+            what it means (hearting this font on the detail page, toggling the
+            ?fav=1 view on the list). The column headers carry it on desktop,
+            but they are cramped on a phone, so on mobile it belongs here with
+            the other two. */}
+        <FavoriteToggle fontId={favoriteFontId} variant="bar" />
         <ThemeToggle variant="bar" />
         <AboutLink variant="bar" />
       </div>

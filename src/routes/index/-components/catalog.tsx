@@ -59,6 +59,7 @@ import { EASE_OUT, MOTION_S } from "@/lib/motion";
 import { usePreview } from "@/lib/preview/context";
 import { useListScrollRestore } from "@/lib/use-list-scroll-restore";
 import { useLocalStorageState } from "@/lib/use-local-storage-state";
+import { cn } from "@/lib/utils";
 import { SearchInput, type SearchSuggestion } from "./search-input";
 import { SortControl } from "./sort-control";
 
@@ -448,8 +449,12 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
                   and the view tabs it changes what this list shows (?fav=1),
                   so it reads as the last of the list's own controls. Built as
                   the mirror of the preview field's Top button at the foot of
-                  the same column (see PreviewBar and RAIL_HEADER_CELL). */}
-              <div className={RAIL_HEADER_CELL_MD}>
+                  the same column (see PreviewBar and RAIL_HEADER_CELL).
+
+                  Desktop only. On mobile this header wraps to two rows and is
+                  already tight with the search field, so Favorite goes back to
+                  MobileTopBar beside Theme and About, where it was before. */}
+              <div className={cn(RAIL_HEADER_CELL_MD, "hidden md:flex")}>
                 <FavoriteToggle variant="header" />
               </div>
             </div>

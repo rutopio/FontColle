@@ -38,26 +38,51 @@ export const RAIL_BAR_BTN = `${RAIL_BTN_BASE} flex size-11 items-center justify-
 // swap watches, so that swap fires with the tint even when the pointer is in
 // the cell but not on the button. Hence no group of its own here: a second,
 // inner one of the same name would shadow the cell's for everything inside.
-export const RAIL_HEADER_BTN = `${RAIL_BTN_CHROME} ${RAIL_TILE} px-2`;
+// w-full + min-w-0 so it fills its fixed-width cell and is allowed to be
+// narrower than its own caption; the caption then truncates rather than pushing
+// the cell wider (which is what made Download's cell fatter than its
+// neighbours'). px-1 leaves the clipped text just off the cell's rules.
+export const RAIL_HEADER_BTN = `${RAIL_BTN_CHROME} ${RAIL_TILE} w-full min-w-0 px-1`;
 
 // That cell: an end-of-column control ruled off from the row it closes, flush
 // to the column's edge (-mr-4 cancels the px-4 both the header and the preview
 // footer carry) and filling their shared 4rem height.
 //
-// min-w-20 rather than letting the caption size it. The three that use this —
-// the list's Favorite, the detail page's Add, the preview field's Top — have
-// captions of three different lengths, and sized by content they would be three
-// slightly different widths at the corners of the same page. 20 is the rail's
-// own --sidebar-width-icon (5rem), so they line up with the icon column too.
+// A fixed width, not a floor: a min-width still lets a long caption push its
+// own cell wider (Download did exactly that, sitting visibly fatter than Google
+// and Repo either side of it), which is the unevenness this was meant to
+// remove. At a fixed width every cell in the run is the same and the captions
+// truncate instead — see RAIL_HEADER_BTN, which is what clips them.
+//
+// The width is the rail's own button box: --sidebar-width-icon is what the
+// shell reserves for the rail, and the box inside gives up its 8px left margin
+// (see AppSidebar), which is 72px at the current 5rem. So these also come out
+// the width of the buttons down the left edge and the frame reads on one
+// measure. Written out in full in each constant rather than shared through a
+// variable: Tailwind scans for whole class names, and one assembled by string
+// concatenation would never be generated.
 export const RAIL_HEADER_CELL =
-  "group/rail-btn flex h-16 min-w-20 shrink-0 items-center justify-center -mr-4 border-border border-l px-1 transition-colors hover:bg-muted";
+  "group/rail-btn -mr-4 flex h-16 w-[calc(var(--sidebar-width-icon)-0.5rem)] shrink-0 items-center justify-center border-border border-l transition-colors hover:bg-muted";
 
 // The header variant of that cell. A column header, unlike the preview footer,
 // wraps to two rows on a narrow screen, where there is no fixed height to fill
 // and no edge to sit flush against — so the cell styling is desktop-only there
 // and the control sits inline below it.
 export const RAIL_HEADER_CELL_MD =
-  "group/rail-btn flex shrink-0 items-center justify-center transition-colors md:-mr-4 md:h-16 md:min-w-20 md:border-border md:border-l md:px-1 md:hover:bg-muted";
+  "group/rail-btn flex shrink-0 items-center justify-center transition-colors md:-mr-4 md:h-16 md:w-[calc(var(--sidebar-width-icon)-0.5rem)] md:border-border md:border-l md:hover:bg-muted";
+
+// The same header cell for a control that is NOT last in the row: no -mr-4,
+// since only the one at the end has an edge to sit flush against. The detail
+// page runs several of these together (Google, Repo) before its Add, each ruled
+// off from the last so the run reads as one band of controls.
+export const RAIL_HEADER_CELL_MID =
+  "group/rail-btn flex shrink-0 items-center justify-center transition-colors md:h-16 md:w-[calc(var(--sidebar-width-icon)-0.5rem)] md:border-border md:border-l md:hover:bg-muted";
+
+// And the mirror of it, for a control that OPENS the row: the detail page's
+// Back. -ml-4 rather than -mr-4, and the rule on the right, since this one runs
+// out to the column's left edge and divides itself from what follows.
+export const RAIL_HEADER_CELL_START =
+  "group/rail-btn flex shrink-0 items-center justify-center transition-colors md:-ml-4 md:h-16 md:w-[calc(var(--sidebar-width-icon)-0.5rem)] md:border-border md:border-r md:hover:bg-muted";
 
 // The neutral (unselected) colours most rail buttons share. No resting text
 // colour: the icon/label inherit the default foreground, matching FilterRail.

@@ -51,7 +51,14 @@ function HeartLabel({
         )}
         weight="duotone"
       />
-      {!bar && <span className="text-[10px] leading-none">{label}</span>}
+      {/* max-w-full + truncate: in the header variant this sits in a
+          fixed-width cell, and a caption wider than it would otherwise stretch
+          the cell past its neighbours'. */}
+      {!bar && (
+        <span className="max-w-full truncate text-[10px] leading-none">
+          {label}
+        </span>
+      )}
     </>
   );
 }

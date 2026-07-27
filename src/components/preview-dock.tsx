@@ -110,7 +110,9 @@ export function PreviewBar({ onScrollTop }: { onScrollTop?: () => void }) {
               className="hidden size-5 group-hover/rail-btn:block"
               weight="bold"
             />
-            <span className="text-[10px] leading-none">Top</span>
+            <span className="max-w-full truncate text-[10px] leading-none">
+              Top
+            </span>
           </button>
         </div>
       )}

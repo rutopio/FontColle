@@ -1,18 +1,18 @@
-import {
-  ArrowLeftIcon,
-  DownloadSimpleIcon,
-  GoogleLogoIcon,
-} from "@phosphor-icons/react";
+import { ArrowLeftIcon, GoogleLogoIcon } from "@phosphor-icons/react";
 import { Link, useCanGoBack, useRouter } from "@tanstack/react-router";
+import type * as React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FavoriteToggle } from "@/components/favorite-toggle";
 import { Column } from "@/components/filter-layout";
 import { FontTraits } from "@/components/font-traits";
 import { PreviewBar } from "@/components/preview-dock";
-import { RAIL_HEADER_CELL_MD } from "@/components/rail-button";
-import { releasesUrl, repoHostIcon } from "@/components/repo-host-icon";
+import {
+  RAIL_HEADER_BTN,
+  RAIL_HEADER_CELL_MID,
+  RAIL_HEADER_CELL_START,
+} from "@/components/rail-button";
+import { repoHostIcon } from "@/components/repo-host-icon";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import type { DesignerSibling } from "@/lib/fonts/detail";
 import { buildFeatureSettings } from "@/lib/fonts/features";
@@ -69,8 +69,6 @@ export function Detail({
   // the per-font record this page loads. See DETAIL_ONLY_FIELDS in
   // scripts/gen-catalog.mjs.
   const versionHistory = font.versionHistory ?? [];
-  // Null when the family has no repo, or its host has no releases page.
-  const releasesHref = releasesUrl(font.repositoryUrl);
   // useCanGoBack() reads the browser history, which the server can't see: it's
   // false on the server (so the back control SSRs as a plain <a> Link) but may
   // be true right after hydration, and swapping <a> -> <button> mid-hydration
@@ -206,31 +204,42 @@ export function Detail({
       header={
         <>
           <div className="flex w-full min-w-0 items-center gap-3 md:w-auto">
-            {/* Back returns to the list. If we arrived from it, go back in
+            {/* Back opens the header as the band of links closes it: the same
+                cell, mirrored — flush to the column's left edge, ruled off on
+                its right. Below md it falls back to a plain icon button, where
+                the header wraps and there is no edge or fixed height to work
+                against.
+
+                It returns to the list. If we arrived from it, go back in
                 history so its filter URL + scroll position are restored; on a
                 deep/shared link (no history to go back to) fall back to the
                 default, unfiltered list. */}
-            {canGoBack ? (
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="All fonts"
-                onClick={() => router.history.back()}
-              >
-                <ArrowLeftIcon />
-              </Button>
-            ) : (
-              <Button
-                render={<Link to="/" />}
-                nativeButton={false}
-                role="link"
-                variant="ghost"
-                size="icon"
-                aria-label="All fonts"
-              >
-                <ArrowLeftIcon />
-              </Button>
-            )}
+            <div className={RAIL_HEADER_CELL_START}>
+              {canGoBack ? (
+                <button
+                  type="button"
+                  aria-label="Back to all fonts"
+                  onClick={() => router.history.back()}
+                  className={cn(
+                    RAIL_HEADER_BTN,
+                    "group-hover/rail-btn:text-foreground"
+                  )}
+                >
+                  <BackFace />
+                </button>
+              ) : (
+                <Link
+                  to="/"
+                  aria-label="Back to all fonts"
+                  className={cn(
+                    RAIL_HEADER_BTN,
+                    "group-hover/rail-btn:text-foreground"
+                  )}
+                >
+                  <BackFace />
+                </Link>
+              )}
+            </div>
             <div className="flex min-w-0 flex-col gap-1">
               <h1
                 className="truncate font-semibold text-lg leading-tight"
@@ -243,90 +252,54 @@ export function Detail({
               )}
             </div>
           </div>
-          {/* md:ml-auto, rather than leaving this to the header's
-              justify-between: with the Add cell added after it there are three
-              blocks in the row, and justify-between would spread all three,
-              stranding this one in the middle. The auto margin puts the slack
-              on this block's left instead, so it and the cell after it stay
-              together at the end of the row. */}
+          {/* Trait badges, same order as the list card/row (class, Variable/
+              Static, color, feature count), plus the family's license.
+
+              md:ml-auto puts all the row's slack to the left of this block, so
+              it and the run of cells after it stay together at the end of the
+              row. (The header carries no justify-between: with this many blocks
+              it would spread them and strand the badges in the middle.) */}
           <div className="flex w-full flex-wrap items-center gap-2 md:ml-auto md:w-auto md:shrink-0 md:flex-nowrap">
-            {/* Trait badges, same order as the list card/row (class, Variable/
-                Static, color, feature count), plus the family's license. */}
-            <div className="flex flex-wrap items-center gap-2 md:flex-nowrap">
-              <FontTraits font={font} selection={emptyFilter} />
-              {font.license && <Badge variant="outline">{font.license}</Badge>}
-            </div>
-            {/* Desktop only: on mobile these three don't fit beside the title,
-                so they're reached through LinksDrawer's FAB instead. */}
-            <div className="hidden items-center gap-2 md:flex">
-              <Button
-                variant="outline"
-                nativeButton={false}
-                role="link"
-                render={
-                  // biome-ignore lint/a11y/useAnchorContent: Button injects its children into this anchor via the render prop (aria-label also set); the static rule can't see through it.
-                  <a
-                    href={`https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label={`View ${font.name} on Google Fonts`}
-                  />
-                }
-              >
-                <GoogleLogoIcon />
-                Google Fonts
-              </Button>
-              {releasesHref && (
-                <Button
-                  variant="outline"
-                  nativeButton={false}
-                  role="link"
-                  render={
-                    // biome-ignore lint/a11y/useAnchorContent: Button injects its children into this anchor via the render prop (aria-label also set); the static rule can't see through it.
-                    <a
-                      href={releasesHref}
-                      target="_blank"
-                      rel="noreferrer"
-                      aria-label={`Download ${font.name} from its repository releases`}
-                    />
-                  }
-                >
-                  <DownloadSimpleIcon />
-                  Download
-                </Button>
-              )}
-              {font.repositoryUrl && (
-                <Button
-                  nativeButton={false}
-                  role="link"
-                  render={
-                    // biome-ignore lint/a11y/useAnchorContent: Button injects its children into this anchor via the render prop (aria-label also set); the static rule can't see through it.
-                    <a
-                      href={font.repositoryUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      aria-label={`View ${font.name}'s source repository`}
-                    />
-                  }
-                >
-                  <RepoIcon />
-                  Repo
-                </Button>
-              )}
-            </div>
+            <FontTraits font={font} selection={emptyFilter} />
+            {font.license && <Badge variant="outline">{font.license}</Badge>}
           </div>
 
-          {/* Add closes the header, where the list page's Favorite closes its
-              own (see RAIL_HEADER_CELL): same control, same place either side
-              of a navigation — only the meaning differs, hearting this font
-              rather than switching to the hearted view.
+          {/* The outbound links and Add, as one run of header cells rather than
+              outline buttons: they match Favorite and Top at the other corners,
+              so the header closes with a single band of controls instead of a
+              row of pills beside a cell.
 
-              hidden md:flex on top of the cell's own desktop-only styling: on
-              mobile this is reached through LinksDrawer's FAB, like the three
-              link buttons above, so it drops out of the row entirely rather
-              than sitting in it unstyled. */}
-          <div className={cn(RAIL_HEADER_CELL_MD, "hidden md:flex")}>
-            <FavoriteToggle fontId={font.id} variant="header" />
+              The band is its own flex box with no gap, because the header row
+              around it sets gap-3 — which would push the cells apart and leave
+              each rule floating in the space rather than dividing two
+              neighbours. -mr-4 lives here rather than on the last cell, for the
+              same reason: it is the band, not any one cell, that runs out to
+              the column's edge.
+
+              Desktop only, as the buttons were — on mobile these don't fit
+              beside the title and are reached through LinksDrawer's FAB. */}
+          <div className="-mr-4 hidden shrink-0 items-center md:flex">
+            <HeaderLink
+              href={`https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`}
+              label="Google"
+              aria-label={`View ${font.name} on Google Fonts`}
+              icon={GoogleLogoIcon}
+            />
+            {font.repositoryUrl && (
+              <HeaderLink
+                href={font.repositoryUrl}
+                label="Repo"
+                aria-label={`View ${font.name}'s source repository`}
+                icon={RepoIcon}
+              />
+            )}
+            {/* Add closes the band, where the list page's Favorite closes its
+                own header — same control, same place either side of a
+                navigation, only the meaning differs: hearting this font rather
+                than switching to the hearted view. */}
+            <div className={RAIL_HEADER_CELL_MID}>
+              <FavoriteToggle fontId={font.id} variant="header" />
+            </div>
           </div>
         </>
       }
@@ -501,6 +474,56 @@ const DATE_FMT = new Intl.DateTimeFormat("en-US", {
 function formatDate(iso: string): string {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso;
   return DATE_FMT.format(new Date(`${iso}T00:00:00Z`));
+}
+
+// The face of the Back control: icon over caption, like every other header
+// cell. Shared by its two forms — a button when there is history to pop, a Link
+// when the page was opened cold — which differ in how they navigate, not in
+// what they look like.
+function BackFace() {
+  return (
+    <>
+      <ArrowLeftIcon className="size-5 shrink-0" />
+      <span className="max-w-full truncate text-[10px] leading-none">Back</span>
+    </>
+  );
+}
+
+// One of the header's outbound links, drawn as a header cell: the same tile as
+// Add beside it, in the same ruled-off full-height box, so the row closes as one
+// band rather than a mix of pills and cells.
+//
+// A plain <a>, not the Button primitive with a render prop: nothing here wants
+// Button's variants or padding, and the anchor carries its own label.
+function HeaderLink({
+  href,
+  label,
+  icon: Icon,
+  "aria-label": ariaLabel,
+}: {
+  href: string;
+  // The caption under the icon. Kept short — the cell is 72px wide, and the
+  // full name ("Google Fonts") is in aria-label where it is needed.
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  "aria-label": string;
+}) {
+  return (
+    <div className={RAIL_HEADER_CELL_MID}>
+      <a
+        href={href}
+        target="_blank"
+        rel="noreferrer"
+        aria-label={ariaLabel}
+        className={cn(RAIL_HEADER_BTN, "group-hover/rail-btn:text-foreground")}
+      >
+        <Icon className="size-5 shrink-0" />
+        <span className="max-w-full truncate text-[10px] leading-none">
+          {label}
+        </span>
+      </a>
+    </div>
+  );
 }
 
 // A bulleted list whose left column fills to the bottom of the panel before
