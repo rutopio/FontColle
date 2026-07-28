@@ -17,11 +17,26 @@ import { usePreview } from "@/lib/preview/context";
 
 // The rail is inert while pending, so its handler is never reached.
 const NOOP_GROUP = () => {};
-// Fixed-length placeholder runs, keyed by name rather than index.
-const CARD_SLOTS = ["sans", "serif", "mono", "display", "script", "slab"];
-const PILL_SECTIONS = [
-  { id: "style", pills: ["a", "b", "c", "d", "e", "f"] },
-  { id: "mood", pills: ["a", "b", "c", "d"] },
+
+// The panel always opens on Style (DEFAULT_FILTER_GROUP), so the skeleton is
+// that group's shape rather than a generic one: eight Category cards, then the
+// four classification sub-lists with the pill counts the catalog really has.
+// Keyed by name rather than index.
+const CATEGORY_CARDS = [
+  "sans",
+  "serif",
+  "mono",
+  "display",
+  "script",
+  "slab",
+  "emoji",
+  "graphics",
+];
+const STYLE_SUBGROUPS = [
+  { id: "sans-serif", pills: 7 },
+  { id: "serif", pills: 7 },
+  { id: "slab", pills: 3 },
+  { id: "script", pills: 4 },
 ];
 
 // Mirrors Catalog's real header block for block, because the header is
@@ -90,43 +105,55 @@ function PendingRail() {
   );
 }
 
-// The filter panel, shimmering like the header above it. Only the shapes: a
-// group heading, the card grid the Style group opens with, then two runs of
-// pills. Enough to hold the panel's silhouette so the real sections don't
-// arrive into an empty box.
+// The filter panel while the catalog loads, shaped like the Style group it
+// always resolves into: the same p-4, the same gaps, the same grids. Only the
+// text and icons are stand-ins, so the real sections arrive into the outline
+// they already occupy instead of pushing it around.
 const SIDEBAR_SKELETON = (
-  <div className="flex w-full flex-col gap-8 p-4">
+  <div className="flex w-full flex-col gap-12 p-4">
+    {/* CATEGORY: a header row (icon + title, with the Reset slot's width held
+        open on the right) over a 3-up grid of square cards. */}
     <div className="flex flex-col gap-2">
-      {/* The group heading: an icon over its label, at the h2's own size. */}
-      <div className="flex items-center gap-1.5">
-        <div className="size-4 animate-pulse rounded bg-muted" />
-        <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5">
+          <div className="size-4 animate-pulse rounded bg-muted" />
+          <div className="h-3.5 w-20 animate-pulse rounded bg-muted" />
+        </div>
       </div>
-      {/* CategoryCards' 3-up grid of square tiles. */}
-      <div className="grid grid-cols-3 gap-1.5">
-        {CARD_SLOTS.map((slot) => (
+      <div className="grid grid-cols-3 gap-3">
+        {CATEGORY_CARDS.map((card) => (
           <div
-            key={`card:${slot}`}
+            key={`card:${card}`}
             className="aspect-square animate-pulse rounded-lg bg-muted"
           />
         ))}
       </div>
     </div>
 
-    {/* Two pill sections, the shape most of the panel's groups take. */}
-    {PILL_SECTIONS.map((section) => (
-      <div key={`section:${section.id}`} className="flex flex-col gap-2">
-        <div className="h-3 w-20 animate-pulse rounded bg-muted" />
-        <div className="grid grid-cols-2 gap-1.5">
-          {section.pills.map((pill) => (
-            <div
-              key={`pill:${section.id}:${pill}`}
-              className="h-8 animate-pulse rounded-lg bg-muted"
-            />
-          ))}
-        </div>
+    {/* STYLE: one header, then the four classification sub-lists, each an h3
+        over a 2-column grid of h-8 pills. */}
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center gap-1.5">
+        <div className="size-4 animate-pulse rounded bg-muted" />
+        <div className="h-3.5 w-14 animate-pulse rounded bg-muted" />
       </div>
-    ))}
+      <div className="flex flex-col gap-8">
+        {STYLE_SUBGROUPS.map((sub) => (
+          <div key={`sub:${sub.id}`} className="flex flex-col gap-2">
+            <div className="h-3 w-20 animate-pulse rounded bg-muted" />
+            <div className="grid grid-cols-2 gap-1.5">
+              {Array.from({ length: sub.pills }, (_, i) => (
+                <div
+                  // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length static placeholder grid, no reordering.
+                  key={`pill:${sub.id}:${i}`}
+                  className="h-8 animate-pulse rounded-lg bg-muted"
+                />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   </div>
 );
 

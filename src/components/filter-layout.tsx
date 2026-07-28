@@ -250,7 +250,7 @@ export function Column({
         "scroll-mt-20",
         // min-h-full so a short body (an Empty state) fills the viewport and a
         // flex-1 child can center in it.
-        "mx-auto flex min-h-full w-full flex-col gap-4 p-4 md:gap-6 md:p-6",
+        "mx-auto flex min-h-full w-full flex-col gap-4 p-4 md:gap-6 md:p-4",
         // With a solid footer below the scroll area the content needs no
         // clearance; without one the floating preview dock would overlap the
         // last rows, hence the tall bottom padding.
