@@ -1,4 +1,3 @@
-import { SlidersHorizontalIcon, SquaresFourIcon } from "@phosphor-icons/react";
 import {
   createFileRoute,
   notFound,
@@ -6,7 +5,6 @@ import {
   useCanGoBack,
   useRouter,
 } from "@tanstack/react-router";
-import { AnimatePresence } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import { FilterLayout } from "@/components/filter-layout";
 import { NotFound } from "@/components/not-found";
@@ -20,7 +18,6 @@ import { fontSlug } from "@/lib/fonts/slug";
 import type { FontRecord } from "@/lib/fonts/types";
 import { blockOf, parseGlyphQuery } from "@/lib/fonts/unicode-blocks";
 import { absoluteUrl, pageTitle } from "@/lib/site";
-import { ControlsDrawer } from "./-components/controls-drawer";
 import { Detail } from "./-components/detail";
 import {
   DetailRail,
@@ -28,8 +25,6 @@ import {
   slugFromTab,
   tabFromSlug,
 } from "./-components/detail-rail";
-import { DetailSidebar } from "./-components/detail-sidebar";
-import { GlyphsSidebar } from "./-components/glyphs-sidebar";
 
 // Every clause is optional, so a sparse record still reads naturally. Kept
 // under ~160 chars, the length search engines show.
@@ -251,42 +246,6 @@ function DetailPage() {
     ? glyphBlock
     : (coveredBlocks[0]?.block.name ?? "");
 
-  // Rendered in both the desktop sidebar and the mobile drawer. `onDismiss`
-  // comes only from the drawer, the one host that can be closed.
-  const hasControls = tab === "tester" || tab === "sample" || tab === "glyphs";
-  const renderSidebarPanel = (onDismiss?: () => void) =>
-    tab === "glyphs" ? (
-      <GlyphsSidebar
-        blocks={coveredBlocks}
-        loading={glyphLoading}
-        active={activeGlyphBlock}
-        onSelect={selectGlyphBlock}
-        onSearch={searchGlyph}
-        searchMiss={searchMiss}
-        onDismiss={onDismiss}
-      />
-    ) : (
-      <DetailSidebar
-        panelKey={tab}
-        size={size}
-        onSizeChange={setSize}
-        // Opposite halves: the Tester sizes per block in its own toolbar but
-        // reweights from the axis sliders, while Instances pins each row to
-        // its own coords and needs only the shared size.
-        showSize={tab === "sample"}
-        axes={font.axes}
-        axisState={axisState}
-        onAxisChange={setAxis}
-        onResetAxes={resetAxes}
-        showAxes={tab !== "sample"}
-        features={font.features}
-        featureState={featureState}
-        onToggleFeature={toggleFeature}
-        onResetFeatures={resetFeatures}
-      />
-    );
-  const sidebarPanel = hasControls ? renderSidebarPanel() : null;
-
   // Rendered here rather than through head(), which emits nothing in the SSR
   // document (see the note there).
   const canonicalUrl = absoluteUrl(`/instances/${fontSlug(font.id)}`);
@@ -302,11 +261,13 @@ function DetailPage() {
     : undefined;
 
   return (
+    // No sidebar at all: every tab's controls live in the column with the
+    // content they act on, so the rail keeps its collapsed width throughout.
     <FilterLayout
-      panelOpen={hasControls}
+      panelOpen={false}
       favoriteFontId={font.id}
       rail={<DetailRail active={tab} onSelect={selectTab} />}
-      sidebar={sidebarPanel}
+      sidebar={null}
     >
       {jsonLd ? (
         <script
@@ -320,30 +281,23 @@ function DetailPage() {
         tab={tab}
         siblingsByDesigner={siblingsByDesigner}
         size={size}
+        onSizeChange={setSize}
         axisState={axisState}
+        onAxisChange={setAxis}
+        onResetAxes={resetAxes}
         italic={italic}
         featureState={featureState}
+        onToggleFeature={toggleFeature}
+        onResetFeatures={resetFeatures}
+        glyphBlocks={coveredBlocks}
         glyphBlock={activeGlyphBlock}
+        onSelectGlyphBlock={selectGlyphBlock}
+        onSearchGlyph={searchGlyph}
+        glyphSearchMiss={searchMiss}
         glyphRanges={ranges}
         glyphLoading={glyphLoading}
         glyphHighlightCp={highlightCp}
       />
-      {/* Mobile-only controls access for the tabs that have a sidebar.
-          AnimatePresence keeps the FAB mounted through its exit animation when
-          switching to a tab without controls. No per-tab key: Tester,
-          Instances and Glyphs all keep the FAB, so it stays put and only swaps
-          its icon rather than cross-fading two buttons in the same spot. */}
-      <AnimatePresence initial={false}>
-        {hasControls && (
-          <ControlsDrawer
-            title={tab === "glyphs" ? "Unicode blocks" : "Preview controls"}
-            icon={tab === "glyphs" ? SquaresFourIcon : SlidersHorizontalIcon}
-            dockVisible={tab === "sample"}
-          >
-            {(close) => renderSidebarPanel(close)}
-          </ControlsDrawer>
-        )}
-      </AnimatePresence>
     </FilterLayout>
   );
 }

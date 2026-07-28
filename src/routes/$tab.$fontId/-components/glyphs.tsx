@@ -15,7 +15,7 @@ import {
 } from "./glyph-block-grid";
 
 // One Unicode block at a time, showing only the codepoints the font contains.
-// The block list lives in GlyphsSidebar; the chart itself is BlockGrid.
+// The block list lives in BlockPicker; the chart itself is BlockGrid.
 
 export function GlyphsPanel({
   font,

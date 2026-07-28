@@ -136,6 +136,7 @@ export function Column({
   footer,
   footerHidden = false,
   children,
+  aside,
   scrollViewportRef,
 }: {
   header: React.ReactNode;
@@ -145,6 +146,11 @@ export function Column({
   // Slides the footer away and gives its height back to the scroll body.
   footerHidden?: boolean;
   children: React.ReactNode;
+  // A controls column pinned beside the body, between the header and footer.
+  // It gets its own scroller, so working through a long panel doesn't drag the
+  // content along with it and vice versa. Supplies its own responsive
+  // visibility; the detail page hides it below lg for the FAB drawer.
+  aside?: React.ReactNode;
   scrollViewportRef?: Ref<HTMLDivElement>;
 }) {
   const headerEl = (
@@ -207,9 +213,18 @@ export function Column({
       <div className="absolute inset-0 flex flex-col">
         {headerEl}
         {subheader}
-        <ScrollArea viewportRef={scrollViewportRef} className="min-h-0 flex-1">
-          {body}
-        </ScrollArea>
+        {/* The aside is a sibling of the scroll area, not part of its content:
+            that is what keeps the two independent, each scrolling only itself.
+            Both are capped by this row, so neither can push the footer down. */}
+        <div className="flex min-h-0 flex-1">
+          {aside}
+          <ScrollArea
+            viewportRef={scrollViewportRef}
+            className="min-h-0 min-w-0 flex-1"
+          >
+            {body}
+          </ScrollArea>
+        </div>
         {footerEl}
       </div>
     </div>

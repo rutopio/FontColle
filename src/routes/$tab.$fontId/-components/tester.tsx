@@ -38,7 +38,7 @@ import { Slider } from "@/components/ui/slider";
 import { previewStyle } from "@/lib/fonts/preview-style";
 import type { FontInstance } from "@/lib/fonts/types";
 import { cn } from "@/lib/utils";
-import { SIZE_MAX, SIZE_MIN, SIZE_PRESETS } from "./detail-sidebar";
+import { SIZE_MAX, SIZE_MIN, SIZE_PRESETS } from "./preview-controls";
 import { instanceStyle, isTesterBlock, TESTER_NODES } from "./tester-nodes";
 
 // Values match Lexical's node keys, so a read-back maps straight onto this list.
@@ -360,9 +360,10 @@ function TesterInner({
             onValueChange={(v) => setSize(v as number)}
             className="w-32"
           />
-          {/* Click-to-edit readout with the same presets as the sidebar's Font
-              Size, so a heading can be typed straight to 48 instead of dragged
-              there. Fixed width so the slider doesn't shift as digits change. */}
+          {/* Click-to-edit readout with the same presets as PreviewControls'
+              Font Size, so a heading can be typed straight to 48 instead of
+              dragged there. Fixed width so the slider doesn't shift as digits
+              change. */}
           <span className="flex w-8 shrink-0 justify-end">
             <EditableValue
               value={size}
