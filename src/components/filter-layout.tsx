@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import type { Ref } from "react";
 import { AboutLink } from "@/components/about-link";
 import { AppSidebar } from "@/components/app-sidebar";
@@ -138,13 +138,32 @@ export function FilterLayout({
           style={SHELL_WIDTHS}
         >
           <AppSidebar rail={rail ? <RouteFade>{rail}</RouteFade> : undefined}>
-            {/* flex-1 + min-h-0, not size-full: the panel is the only thing in
-                the box now, but it still has to be allowed to shrink below its
+            {/* The panel fades in rather than being pushed in: its width lands
+                in one frame (see the sidebar-gap rule in styles.css), so this
+                fade is the only thing that reads as the change. The exit is
+                declared for symmetry but rarely runs — the route content above
+                swaps first, so a collapsing panel usually just goes.
+
+                flex-1 + min-h-0, not size-full: the panel is the only thing in
+                the box, but it still has to be allowed to shrink below its
                 content's height, or its own ScrollArea has nothing to scroll
                 within and the overflow is clipped instead. */}
-            <RouteFade className="flex min-h-0 w-full flex-1 flex-col">
-              {sidebar}
-            </RouteFade>
+            <AnimatePresence initial={false}>
+              {sidebar ? (
+                <motion.div
+                  key="panel"
+                  className="flex min-h-0 w-full flex-1 flex-col"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: MOTION_S.fast, ease: EASE_OUT }}
+                >
+                  <RouteFade className="flex min-h-0 w-full flex-1 flex-col">
+                    {sidebar}
+                  </RouteFade>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
           </AppSidebar>
           {/* min-w-0 lets the inset shrink to the space left by the fixed-width
           sidebar instead of forcing 100vw (w-full) and pushing itself past the

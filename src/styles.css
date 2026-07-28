@@ -502,6 +502,23 @@
   transition: background-color var(--motion-fast) var(--ease-snap);
 }
 
+/* The filter panel opens and closes between detail tabs — Instances, Tester and
+   Glyphs have controls, the other four do not. The sidebar primitive tweens
+   that as a 25rem width change on two elements: the spacer that reserves the
+   panel's place, and the panel itself. Both are wrong here. The spacer's tween
+   drags the content box sideways for 200ms, and the panel's squeezes its own
+   contents as it goes, so a change of *what is there* reads as everything
+   shoving everything else around.
+
+   Land the width in one frame instead and let the panel cross-fade in place
+   (RouteFade already keys on the pathname; the panel's own AnimatePresence
+   handles the swap). Scoped to this app's shell rather than patched into
+   components/ui/sidebar.tsx, which is vendored shadcn. */
+[data-slot="sidebar-gap"],
+[data-slot="sidebar-container"] {
+  transition: none;
+}
+
 /* List <-> detail navigation, both ways: a plain crossfade of the whole page.
    Nothing carries a view-transition-name of its own, so the root group is the
    entire transition — no element flies between the two pages, which at this
