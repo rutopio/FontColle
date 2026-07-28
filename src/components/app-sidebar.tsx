@@ -133,10 +133,10 @@ export function AppSidebar({
       >
         {/* No header strip any more. It once held Preset, Favorite, Theme and
             About; each turned out to belong with what it acts on — Preset at
-            the head of the filter rail, Theme and About in their own box at the
-            foot of it (they are the same on every page), and Favorite in each
-            page's own column header, where it sits level with that page's
-            controls and stays put whatever the panel is doing. */}
+            the foot of the filter rail, Theme and About in their own box below
+            it (they are the same on every page), and Favorite in each page's
+            own column header, where it sits level with that page's controls and
+            stays put whatever the panel is doing. */}
         {children}
       </Sidebar>
     </Sidebar>

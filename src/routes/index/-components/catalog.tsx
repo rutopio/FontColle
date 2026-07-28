@@ -273,13 +273,14 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
 
   return (
     <FilterLayout
-      // Preset heads the rail but stays out of FILTER_GROUPS: it is not a
+      // Preset closes the rail but stays out of FILTER_GROUPS: it is not a
       // section in the panel's scroll, and picking it swaps the panel wholesale.
+      // The rule moves with it, still dividing it from the groups above.
       rail={
         <div className="flex flex-col gap-1">
-          <PresetToggle active={group === "preset"} onSelect={setGroup} />
-          <Separator className="my-1" />
           <FilterRail active={group} filter={filter} onSelect={setGroup} />
+          <Separator className="my-1" />
+          <PresetToggle active={group === "preset"} onSelect={setGroup} />
         </div>
       }
       sidebar={
