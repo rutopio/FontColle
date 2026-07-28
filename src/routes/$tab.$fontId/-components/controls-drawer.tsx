@@ -1,13 +1,12 @@
 import type { Icon } from "@phosphor-icons/react";
 import { motion } from "motion/react";
 import { useState } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { FAB_MOTION, FAB_SHIFT, fabBottom, fabLift } from "./fab-motion";
 
-// The preview controls for viewports below lg, where the body has no room for
-// the column that holds them beside the content: this FAB opens a drawer with
-// the very same panel. Stacks above LinksDrawer's FAB.
+// Mobile-only access to the detail sidebar controls: the desktop sidebar
+// collapses to an unreachable Sheet there (see app-sidebar), so this FAB opens
+// a drawer holding the very same panel. Stacks above LinksDrawer's FAB.
 export function ControlsDrawer({
   title,
   icon: FabIcon,
@@ -33,7 +32,7 @@ export function ControlsDrawer({
         onClick={() => setOpen(true)}
         aria-label={title}
         style={{ bottom: fabBottom(1) }}
-        className="fixed right-4 z-40 flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring lg:hidden"
+        className="fixed right-4 z-40 flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring md:hidden"
       >
         <FabIcon className="size-6" weight="fill" />
       </motion.button>
@@ -46,11 +45,7 @@ export function ControlsDrawer({
           <FabIcon className="size-4 text-primary" weight="fill" />
           <SheetTitle>{title}</SheetTitle>
         </div>
-        {/* The scroller lives here rather than in the panels: on desktop they
-            sit in the page's own scroll body and must not trap it. */}
-        <ScrollArea className="min-h-0 flex-1">
-          <div className="p-4">{children(() => setOpen(false))}</div>
-        </ScrollArea>
+        <div className="min-h-0 flex-1">{children(() => setOpen(false))}</div>
       </SheetContent>
     </Sheet>
   );

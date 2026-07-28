@@ -1,14 +1,10 @@
-import { SlidersHorizontalIcon, SquaresFourIcon } from "@phosphor-icons/react";
-import { AnimatePresence } from "motion/react";
 import type * as React from "react";
 import { useEffect, useMemo, useRef } from "react";
 import { Column } from "@/components/filter-layout";
 import { PreviewBar } from "@/components/preview-dock";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import type { DesignerSibling } from "@/lib/fonts/detail";
 import { buildFeatureSettings } from "@/lib/fonts/features";
-import type { CoveredBlock } from "@/lib/fonts/glyph-coverage";
 import { scriptLabel } from "@/lib/fonts/labels";
 import { ensureFontRangeLoaded, useFontLoaded } from "@/lib/fonts/loader";
 import { previewStyle } from "@/lib/fonts/preview-style";
@@ -16,8 +12,6 @@ import { fontSlug } from "@/lib/fonts/slug";
 import { specimenFor, specimenLinesFor } from "@/lib/fonts/specimen";
 import type { FontRecord } from "@/lib/fonts/types";
 import { usePreview } from "@/lib/preview/context";
-import { BlockPicker } from "./block-picker";
-import { ControlsDrawer } from "./controls-drawer";
 import { DesignerPanel } from "./designer-panel";
 import { type DetailTab, DetailTabBar } from "./detail-rail";
 import { GlyphsPanel } from "./glyphs";
@@ -27,7 +21,6 @@ import { LicensePanel } from "./license-panel";
 import { LinksDrawer } from "./links-drawer";
 import { MetricsPanel } from "./metrics-panel";
 import { Panel } from "./panel";
-import { PreviewControls } from "./preview-controls";
 import { type SpecRow, SpecTable } from "./spec-table";
 import { Tester } from "./tester";
 import { UsePanel } from "./use";
@@ -37,19 +30,10 @@ export function Detail({
   tab,
   siblingsByDesigner,
   size,
-  onSizeChange,
   axisState,
-  onAxisChange,
-  onResetAxes,
   italic,
   featureState,
-  onToggleFeature,
-  onResetFeatures,
-  glyphBlocks,
   glyphBlock,
-  onSelectGlyphBlock,
-  onSearchGlyph,
-  glyphSearchMiss,
   glyphRanges,
   glyphLoading,
   glyphHighlightCp,
@@ -58,20 +42,10 @@ export function Detail({
   tab: DetailTab;
   siblingsByDesigner: Record<string, DesignerSibling[]>;
   size: number;
-  onSizeChange: (value: number) => void;
   axisState: Record<string, number>;
-  onAxisChange: (tag: string, value: number) => void;
-  onResetAxes: () => void;
   italic: boolean;
   featureState: Record<string, boolean>;
-  onToggleFeature: (tag: string) => void;
-  onResetFeatures: () => void;
-  glyphBlocks: CoveredBlock[];
   glyphBlock: string;
-  onSelectGlyphBlock: (name: string) => void;
-  // Returns whether the query resolved to a covered glyph.
-  onSearchGlyph: (query: string) => boolean;
-  glyphSearchMiss: boolean;
   glyphRanges: [number, number][];
   glyphLoading: boolean;
   glyphHighlightCp: number | null;
@@ -146,42 +120,6 @@ export function Detail({
     [featureState]
   );
 
-  const hasControls = tab === "tester" || tab === "sample" || tab === "glyphs";
-
-  // Rendered twice: in the body's controls column and, below lg, in the FAB
-  // drawer. `onDismiss` comes only from the drawer, the one host that closes.
-  const renderControls = (onDismiss?: () => void) =>
-    tab === "glyphs" ? (
-      <BlockPicker
-        blocks={glyphBlocks}
-        loading={glyphLoading}
-        active={glyphBlock}
-        onSelect={onSelectGlyphBlock}
-        onSearch={onSearchGlyph}
-        searchMiss={glyphSearchMiss}
-        onDismiss={onDismiss}
-      />
-    ) : (
-      <PreviewControls
-        panelKey={tab}
-        size={size}
-        onSizeChange={onSizeChange}
-        // Opposite halves: the Tester sizes per block in its own toolbar but
-        // reweights from the axis sliders, while Instances pins each row to its
-        // own coords and needs only the shared size.
-        showSize={tab === "sample"}
-        axes={font.axes}
-        axisState={axisState}
-        onAxisChange={onAxisChange}
-        onResetAxes={onResetAxes}
-        showAxes={tab !== "sample"}
-        features={font.features}
-        featureState={featureState}
-        onToggleFeature={onToggleFeature}
-        onResetFeatures={onResetFeatures}
-      />
-    );
-
   // Instances often pin a dozen axes at one shared value (Roboto Flex names 13
   // but varies only wght and slnt), and a badge repeating that number on every
   // row carries no information.
@@ -223,24 +161,6 @@ export function Detail({
       // Instances only: the Tester seeds its document once and then owns it,
       // so a live field there would look like it still edits.
       footerHidden={tab !== "sample"}
-      // The controls sit where the sidebar used to, but inside the page rather
-      // than in the layout's sidebar slot, so switching to a tab without them
-      // doesn't animate the whole shell open and shut. Its own scroller, and a
-      // sibling of the body's, so neither column drags the other. Below lg
-      // there is no room for it and the FAB drawer takes over.
-      //
-      // w-100 is 25rem, the width the retired sidebar carried: the same
-      // controls, so a narrower column would only reflow every axis row and
-      // feature toggle to no purpose.
-      aside={
-        hasControls ? (
-          <aside className="hidden w-100 shrink-0 border-border border-r lg:block">
-            <ScrollArea className="h-full">
-              <div className="p-6">{renderControls()}</div>
-            </ScrollArea>
-          </aside>
-        ) : undefined
-      }
     >
       {/* PLAYGROUND, a rich-text editor (not the shared preview string): mix
           Heading 1/2/3 and Normal text in one document, with per-level size +
@@ -387,24 +307,6 @@ export function Detail({
           drops with the preview dock, which is up on Instances only (see
           footerHidden above). */}
       <LinksDrawer font={font} dockVisible={tab === "sample"} />
-
-      {/* The same controls again, for the viewports too narrow for the column
-          beside the content. AnimatePresence keeps the FAB mounted through its
-          exit animation when switching to a tab without controls. No per-tab
-          key: Tester, Instances and Glyphs all keep the FAB, so it stays put
-          and only swaps its icon rather than cross-fading two buttons in the
-          same spot. */}
-      <AnimatePresence initial={false}>
-        {hasControls && (
-          <ControlsDrawer
-            title={tab === "glyphs" ? "Unicode blocks" : "Preview controls"}
-            icon={tab === "glyphs" ? SquaresFourIcon : SlidersHorizontalIcon}
-            dockVisible={tab === "sample"}
-          >
-            {(close) => renderControls(close)}
-          </ControlsDrawer>
-        )}
-      </AnimatePresence>
     </Column>
   );
 }
