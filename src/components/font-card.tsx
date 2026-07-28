@@ -42,6 +42,11 @@ export const FontCard = memo(function FontCard({
       ref={previewRef}
       to="/$tab/$fontId"
       params={{ tab: "instances", fontId: fontSlug(font.id) }}
+      // Opts this navigation alone into a View Transition, so the family name
+      // morphs into the detail page's heading. Per-link rather than the
+      // router's defaultViewTransition, which would also catch the detail
+      // page's own tab switches, where nothing should morph.
+      viewTransition
       // Press feedback for touch, which has no hover to confirm the tap before
       // the route change lands. Gentler than a button's 0.97: a 288px-tall card
       // travels the same optical distance at a much smaller ratio.

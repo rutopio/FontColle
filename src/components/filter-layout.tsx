@@ -40,17 +40,33 @@ function MobileTopBar({ favoriteFontId }: { favoriteFontId?: string }) {
   );
 }
 
+// 5rem, not the 4.5rem the buttons need: the rail is a bordered box with an
+// 8px margin, and this is the width the shell reserves for the pair (see
+// AppSidebar). Declared on both the container and the provider — the container
+// so the header's own left margin can read it, the provider because
+// SidebarProvider writes a 3rem default inline that beats anything inherited.
+const SHELL_WIDTHS = {
+  "--sidebar-width-icon": "5rem",
+  "--sidebar-width": "25rem",
+} as React.CSSProperties;
+
 // The preview dock is mounted once in __root, so both pages share it.
 export function FilterLayout({
   rail,
   sidebar,
   children,
+  header,
   panelOpen = true,
   favoriteFontId,
 }: {
   rail?: React.ReactNode;
   sidebar: React.ReactNode;
   children: React.ReactNode;
+  // Rendered here rather than inside Column, so it spans the filter panel as
+  // well as the content. Inside the inset it could only ever be as wide as
+  // the content, which made the two pages' headers different widths — the
+  // list page's panel takes 25rem the detail page does not have.
+  header?: React.ReactNode;
   panelOpen?: boolean;
   // Set by the detail page, so its footer Favorite hearts this font.
   favoriteFontId?: string;
@@ -73,19 +89,53 @@ export function FilterLayout({
           the provider gives the sidebar, which is absolutely positioned rather
           than viewport-fixed, a padding-box to anchor to, so it starts on the
           container's content edge instead of the screen's. */}
-      <div className="container h-full">
+      {/* A column, so the shared header can sit above the row of rail / panel /
+          content. min-h-0 lets that row take the remaining height instead of
+          overflowing the container.
+
+          The vars are declared here AND on the provider below. SidebarProvider
+          writes its own 3rem default inline, which beats anything inherited,
+          so the provider still needs its copy; the container's is what the
+          header's own margin reads. */}
+      <div
+        className="container relative flex h-full flex-col"
+        style={SHELL_WIDTHS}
+      >
+        {/* Inset from the left by the rail's width, so the wordmark keeps the
+            top-left corner on every page and the header begins where the
+            page's own material does.
+
+            The extra 8px either side lines its edges up with the boxes below:
+            the filter panel and the content box each sit inside a margin of
+            that much, so without it the header overhangs both by exactly one
+            gutter.
+
+            It stays in flow and reserves its own height; the rail below is
+            pulled back up into that band by a negative margin on the provider
+            (see there), which is the one element the rail's absolutely
+            positioned box actually resolves against. */}
+        {/* Mobile-only chrome, outside RouteFade so it stays put like the
+            desktop rail (which never fades). Desktop hides it via md:hidden.
+            Hoisted here with the header: the phone stacks app bar then header,
+            the order it had while the header lived inside Column, and the two
+            can only interleave as siblings. */}
+        <MobileTopBar favoriteFontId={favoriteFontId} />
+        {header ? (
+          // relative + z-20: the row below is pulled up under this band by a
+          // negative margin, and would otherwise paint over it.
+          <div className="relative z-20 shrink-0 md:mr-2 md:ml-[calc(var(--sidebar-width-icon)+0.5rem)]">
+            <ColumnHeader>{header}</ColumnHeader>
+          </div>
+        ) : null}
+        {/* -mt-18 pulls the whole row back up under the header band, so the
+            rail — whose box is absolutely positioned against THIS element and
+            clipped to it — can start at the very top and keep the wordmark in
+            the corner. The panel and the inset each add the same offset back,
+            so only the rail rises. */}
         <SidebarProvider
-          className="relative"
+          className="relative min-h-0 flex-1 md:-mt-18"
           open={panelOpen}
-          style={
-            {
-              // 5rem, not the 4.5rem the buttons need: the rail is a bordered
-              // box with an 8px margin, and this is the width the shell
-              // reserves for the pair (see AppSidebar).
-              "--sidebar-width-icon": "5rem",
-              "--sidebar-width": "25rem",
-            } as React.CSSProperties
-          }
+          style={SHELL_WIDTHS}
         >
           <AppSidebar rail={rail ? <RouteFade>{rail}</RouteFade> : undefined}>
             {/* flex-1 + min-h-0, not size-full: the panel is the only thing in
@@ -113,10 +163,19 @@ export function FilterLayout({
               margin here would double the gap between the two boxes. When the
               panel is collapsed away (the detail page's Detail view) there is
               nothing left to supply it, so take it back. */}
-          <SidebarInset className="min-w-0 md:my-2 md:mr-2 md:ml-0 md:overflow-hidden md:rounded-xl md:border md:border-border md:peer-data-[state=collapsed]:ml-2">
-            {/* Mobile-only chrome, outside RouteFade so it stays put like the
-              desktop rail (which never fades). Desktop hides it via md:hidden. */}
-            <MobileTopBar favoriteFontId={favoriteFontId} />
+          {/* The frame lives inside, on the header and the content block
+              separately (see Column), so the inset keeps only the margins that
+              place the pair.
+
+              md:bg-transparent so the gap between those two boxes shows the
+              body's sidebar tint, the same gutter the rail and panel float on.
+              The inset's own bg-background would otherwise fill it and read as
+              one surface with a line across it rather than two separate
+              boxes. */}
+          {/* mt-20 clears the page header lifted above it, the same offset the
+              filter panel takes: 4.5rem of header band plus the shell's 0.5rem
+              gutter. */}
+          <SidebarInset className="min-w-0 md:mt-20 md:mr-2 md:mb-2 md:ml-0 md:bg-transparent md:peer-data-[state=collapsed]:ml-2">
             <RouteFade distance={16} className="flex min-h-0 flex-1 flex-col">
               {children}
             </RouteFade>
@@ -127,11 +186,25 @@ export function FilterLayout({
   );
 }
 
-// Only the body scrolls, so the scrollbar sits between the fixed header and
+// The page header, a box of its own spanning the shell rather than sitting
+// inside the content column. Passed to FilterLayout's `header` prop, so both
+// pages get the same width whether or not a filter panel is open beside the
+// content.
+//
+// On mobile this may grow to two rows when the list header's controls wrap.
+function ColumnHeader({ children }: { children: React.ReactNode }) {
+  return (
+    <header className="mt-2 flex min-h-16 shrink-0 items-center gap-2 border-border bg-background px-2 py-2 max-md:mt-0 max-md:border-b md:h-16 md:rounded-xl md:border md:py-0">
+      <div className="flex flex-1 flex-wrap items-center gap-3 md:flex-nowrap">
+        {children}
+      </div>
+    </header>
+  );
+}
+
+// Only the body scrolls, so the scrollbar sits between the page header and the
 // footer rather than running through them.
 export function Column({
-  header,
-  headerClassName,
   subheader,
   footer,
   footerHidden = false,
@@ -139,8 +212,6 @@ export function Column({
   aside,
   scrollViewportRef,
 }: {
-  header: React.ReactNode;
-  headerClassName?: string;
   subheader?: React.ReactNode;
   footer?: React.ReactNode;
   // Slides the footer away and gives its height back to the scroll body.
@@ -153,20 +224,6 @@ export function Column({
   aside?: React.ReactNode;
   scrollViewportRef?: Ref<HTMLDivElement>;
 }) {
-  const headerEl = (
-    // On mobile this may grow to two rows when the list header's controls wrap.
-    <header className="flex min-h-16 shrink-0 items-center gap-2 border-border border-b bg-background px-4 py-2 md:h-16 md:py-0">
-      <div
-        className={cn(
-          "flex flex-1 flex-wrap items-center gap-3 md:flex-nowrap",
-          headerClassName
-        )}
-      >
-        {header}
-      </div>
-    </header>
-  );
-
   const footerEl = footer ? (
     // Motion drives height + y together, landing every frame where a reflow-y
     // CSS transition drops the first.
@@ -177,7 +234,7 @@ export function Column({
       }
       transition={{ duration: MOTION_S.base, ease: EASE_OUT }}
       className={cn(
-        "flex shrink-0 items-center gap-2 overflow-hidden bg-background px-4",
+        "flex shrink-0 items-center gap-2 overflow-hidden bg-background p-2",
         footerHidden ? "border-t-0" : "border-border border-t"
       )}
     >
@@ -211,21 +268,27 @@ export function Column({
   return (
     <div className="relative min-w-0 flex-1">
       <div className="absolute inset-0 flex flex-col">
-        {headerEl}
-        {subheader}
-        {/* The aside is a sibling of the scroll area, not part of its content:
-            that is what keeps the two independent, each scrolling only itself.
-            Both are capped by this row, so neither can push the footer down. */}
-        <div className="flex min-h-0 flex-1">
-          {aside}
-          <ScrollArea
-            viewportRef={scrollViewportRef}
-            className="min-h-0 min-w-0 flex-1"
-          >
-            {body}
-          </ScrollArea>
+        {/* With the header lifted out to FilterLayout, what remains — subheader,
+            body, footer — is the content box, and carries the rounded frame the
+            inset used to supply. Its own bg-background too: the inset is
+            transparent so the gap between the boxes shows the page's gutter
+            tint, which leaves each box to paint its own surface. */}
+        <div className="flex min-h-0 flex-1 flex-col bg-background md:overflow-hidden md:rounded-xl md:border md:border-border">
+          {subheader}
+          {/* The aside is a sibling of the scroll area, not part of its content:
+              that is what keeps the two independent, each scrolling only itself.
+              Both are capped by this row, so neither can push the footer down. */}
+          <div className="flex min-h-0 flex-1">
+            {aside}
+            <ScrollArea
+              viewportRef={scrollViewportRef}
+              className="min-h-0 min-w-0 flex-1"
+            >
+              {body}
+            </ScrollArea>
+          </div>
+          {footerEl}
         </div>
-        {footerEl}
       </div>
     </div>
   );

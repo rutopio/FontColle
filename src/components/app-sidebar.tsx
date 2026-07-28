@@ -1,8 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import type * as React from "react";
-import { AboutLink } from "@/components/about-link";
 import { LogoIcon } from "@/components/logo-icon";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sidebar } from "@/components/ui/sidebar";
 
@@ -27,17 +25,15 @@ export function AppSidebar({
           page's buttons in a box below. shrink-0 keeps its width fixed when the
           parent collapses (the panel closing must not squeeze the rail).
 
-          Full height, not self-start: Theme and About sit in their own box at
-          the foot of the column, level with the bottom of the panel beside it,
-          so the column has to span the shell for them to be pushed down to.
-          h-[calc(100%-1rem)] subtracts the column's own 2-unit margins, which a
-          plain h-full would overshoot by exactly that much.
+          Full height, so the column spans the shell alongside the panel beside
+          it. h-[calc(100%-1rem)] subtracts the column's own 2-unit margins,
+          which a plain h-full would overshoot by exactly that much.
 
-          Everything above that box — the wordmark and the page's rail buttons —
-          scrolls, so a short viewport can still reach all of it. The scroll has
-          to wrap both, not just the buttons: the wordmark is a fixed h-16 that
-          never shrinks, so on a short enough viewport it alone overflows the
-          column and the overflow-hidden clips whatever follows it.
+          The wordmark and the page's rail buttons both scroll, so a short
+          viewport can still reach all of it. The scroll has to wrap both, not
+          just the buttons: the wordmark is a fixed h-16 that never shrinks, so
+          on a short enough viewport it alone overflows the column and the
+          overflow-hidden clips whatever follows it.
 
           mr-0, like the inset's ml-0: the panel to the right already carries an
           8px left margin, and two margins between neighbours would set the rail
@@ -59,9 +55,7 @@ export function AppSidebar({
             so it does not read as inert — but as a wash over the frame rather
             than a panel of its own.
 
-            It links home, the default action for a wordmark. About is not here:
-            it has its own InfoIcon button in the box at the foot of the
-            column. */}
+            It links home, the default action for a wordmark. */}
             <Link
               to="/"
               // Must contain the visible "FontColle" text: WCAG 2.5.3 (Label in
@@ -91,18 +85,6 @@ export function AppSidebar({
             )}
           </div>
         </ScrollArea>
-
-        {/* Theme and About, in a box of their own at the foot of the column.
-            These two are the only controls that mean the same thing on every
-            page — they act on the app, not on the list or the font you are
-            looking at — so they sit apart from the page's own rail above,
-            outside its scroll, always in the same place. mt-auto pins the box
-            to the bottom of the column, level with the foot of the panel
-            beside it. */}
-        <div className="mt-auto flex shrink-0 flex-col gap-1 rounded-xl border border-border bg-background p-2">
-          <ThemeToggle />
-          <AboutLink />
-        </div>
       </div>
 
       {/* Second sidebar: the page's own panel, filling the remaining width. The
@@ -127,16 +109,21 @@ export function AppSidebar({
           in, and the overflow it caused was clipped off the bottom — taking the
           box's bottom border with it. As a stretched flex item it now measures
           itself from what is left after the margins. */}
+      {/* mt-20 drops the panel clear of the page header lifted over
+          it — 4.5rem for the header band (h-16 plus its mt-2) and 0.5rem for
+          the gutter, so the gap under the header matches the 8px between every
+          other pair of boxes in the shell. h-auto already measures what is
+          left after the margins, so the box still ends level with the content
+          beside it. */}
       <Sidebar
         collapsible="none"
-        className="m-2 hidden h-auto min-w-0 flex-1 overflow-hidden rounded-xl border border-border bg-background md:flex"
+        className="m-2 hidden h-auto min-w-0 flex-1 overflow-hidden rounded-xl border border-border bg-background md:mt-20 md:flex"
       >
         {/* No header strip any more. It once held Preset, Favorite, Theme and
             About; each turned out to belong with what it acts on — Preset at
-            the foot of the filter rail, Theme and About in their own box below
-            it (they are the same on every page), and Favorite in each page's
-            own column header, where it sits level with that page's controls and
-            stays put whatever the panel is doing. */}
+            the foot of the filter rail, and Theme, About and Favorite in each
+            page's own column header, where they stay put whatever the panel is
+            doing. */}
         {children}
       </Sidebar>
     </Sidebar>

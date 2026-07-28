@@ -4,7 +4,6 @@ import { RAIL_HEADER_BTN, RAIL_HEADER_CELL } from "@/components/rail-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { usePreview } from "@/lib/preview/context";
-import { cn } from "@/lib/utils";
 
 // Keystrokes echo instantly via local state, but the push to the shared context
 // is debounced, so a burst of typing coalesces into one repaint of the grid.
@@ -71,21 +70,16 @@ export function PreviewBar({ onScrollTop }: { onScrollTop?: () => void }) {
   return (
     <div className="flex flex-1 items-center gap-2">
       <PreviewField />
-      {/* The same end-of-column cell the list and detail headers put Favorite
-          and Add in (see RAIL_HEADER_CELL), so all three read as one control
-          repeated at the corners of the page rather than three near-misses.
-          cursor-pointer on the cell: the whole of it is the hit area, not just
-          the button inside. */}
+      {/* The same tile the list and detail headers put Favorite and Add in (see
+          RAIL_HEADER_CELL), so all three read as one control repeated at the
+          corners of the page rather than three near-misses. */}
       {onScrollTop && (
-        <div className={cn(RAIL_HEADER_CELL, "cursor-pointer")}>
+        <div className={RAIL_HEADER_CELL}>
           <button
             type="button"
             onClick={onScrollTop}
             aria-label="Scroll to top"
-            className={cn(
-              RAIL_HEADER_BTN,
-              "group-hover/rail-btn:text-foreground"
-            )}
+            className={RAIL_HEADER_BTN}
           >
             {/* Phosphor weight is a prop, not CSS, so hover-swaps the icon:
                 the base icon hides on hover and the bold twin shows. The group

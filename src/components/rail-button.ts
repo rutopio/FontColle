@@ -14,34 +14,27 @@ const RAIL_BTN_BASE = `group/rail-btn ${RAIL_BTN_CHROME}`;
 
 const RAIL_TILE = "relative flex flex-col items-center gap-1 py-2";
 
+export const RAIL_BTN_OFF = "hover:bg-sidebar-accent/50 hover:text-foreground";
+
 export const RAIL_BTN = `${RAIL_BTN_BASE} ${RAIL_TILE}`;
 
 export const RAIL_BAR_BTN = `${RAIL_BTN_BASE} flex size-11 items-center justify-center`;
 
-// No group of its own: the cell below owns group/rail-btn, so the icon swap
-// fires with the cell's hover tint, and a second group of the same name here
-// would shadow it. min-w-0 lets the caption truncate rather than widen the cell.
-export const RAIL_HEADER_BTN = `${RAIL_BTN_CHROME} ${RAIL_TILE} w-full min-w-0 px-1`;
+// The same tile as RAIL_BTN, for a page header rather than the rail. It carries
+// its own width because there is no bordered box around it to inset it: the
+// rail's buttons come out 54px inside a 5rem column — p-2 either side plus the
+// box's borders — and these have to measure the same to read as the same
+// control. min-w-0 lets the caption truncate.
+//
+// No group of its own: the cell below owns group/rail-btn, so the icon-swap
+// twins fire with this button's hover, and a second group of the same name here
+// would shadow it.
+export const RAIL_HEADER_BTN = `${RAIL_BTN_CHROME} ${RAIL_TILE} ${RAIL_BTN_OFF} w-[calc(var(--sidebar-width-icon)-1.625rem)] min-w-0 px-1`;
 
-// That cell. -mr-4 cancels the px-4 the header and preview footer carry; the
-// width is fixed, not a floor, so every cell in a run matches.
-export const RAIL_HEADER_CELL =
-  "group/rail-btn -mr-4 flex h-16 w-[calc(var(--sidebar-width-icon)-0.5rem)] shrink-0 items-center justify-center border-border border-l transition-colors hover:bg-muted";
-
-// Desktop-only: a column header wraps to two rows on a narrow screen, where
-// there is no fixed height to fill and no edge to sit flush against.
-export const RAIL_HEADER_CELL_MD =
-  "group/rail-btn flex shrink-0 items-center justify-center transition-colors md:-mr-4 md:h-16 md:w-[calc(var(--sidebar-width-icon)-0.5rem)] md:border-border md:border-l md:hover:bg-muted";
-
-// Mid-row: no -mr-4, only the last control has an edge to sit flush against.
-export const RAIL_HEADER_CELL_MID =
-  "group/rail-btn flex shrink-0 items-center justify-center transition-colors md:h-16 md:w-[calc(var(--sidebar-width-icon)-0.5rem)] md:border-border md:border-l md:hover:bg-muted";
-
-// Opens the row (the detail page's Back): -ml-4, rule on the right.
-export const RAIL_HEADER_CELL_START =
-  "group/rail-btn flex shrink-0 items-center justify-center transition-colors md:-ml-4 md:h-16 md:w-[calc(var(--sidebar-width-icon)-0.5rem)] md:border-border md:border-r md:hover:bg-muted";
-
-export const RAIL_BTN_OFF = "hover:bg-sidebar-accent/50 hover:text-foreground";
+// The wrapper around it, which only has to hold the group and stay out of the
+// way: the tile sizes and paints itself, exactly as in the rail. Runs of these
+// set their own gap-1, matching the rail's.
+export const RAIL_HEADER_CELL = "group/rail-btn flex shrink-0 items-center";
 
 export const RAIL_BTN_ON =
   "bg-black/10 text-sidebar-accent-foreground dark:bg-white/12";

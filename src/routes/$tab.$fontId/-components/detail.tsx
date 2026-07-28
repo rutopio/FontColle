@@ -1,29 +1,13 @@
-import {
-  ArrowLeftIcon,
-  GoogleLogoIcon,
-  SlidersHorizontalIcon,
-  SquaresFourIcon,
-} from "@phosphor-icons/react";
-import { Link, useCanGoBack, useRouter } from "@tanstack/react-router";
+import { SlidersHorizontalIcon, SquaresFourIcon } from "@phosphor-icons/react";
 import { AnimatePresence } from "motion/react";
 import type * as React from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { FavoriteToggle } from "@/components/favorite-toggle";
+import { useEffect, useMemo, useRef } from "react";
 import { Column } from "@/components/filter-layout";
-import { FontTraits } from "@/components/font-traits";
 import { PreviewBar } from "@/components/preview-dock";
-import {
-  RAIL_HEADER_BTN,
-  RAIL_HEADER_CELL_MID,
-  RAIL_HEADER_CELL_START,
-} from "@/components/rail-button";
-import { repoHostIcon } from "@/components/repo-host-icon";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import type { DesignerSibling } from "@/lib/fonts/detail";
 import { buildFeatureSettings } from "@/lib/fonts/features";
-import { emptyFilter } from "@/lib/fonts/filter/state";
 import type { CoveredBlock } from "@/lib/fonts/glyph-coverage";
 import { scriptLabel } from "@/lib/fonts/labels";
 import { ensureFontRangeLoaded, useFontLoaded } from "@/lib/fonts/loader";
@@ -32,7 +16,6 @@ import { fontSlug } from "@/lib/fonts/slug";
 import { specimenFor, specimenLinesFor } from "@/lib/fonts/specimen";
 import type { FontRecord } from "@/lib/fonts/types";
 import { usePreview } from "@/lib/preview/context";
-import { cn } from "@/lib/utils";
 import { BlockPicker } from "./block-picker";
 import { ControlsDrawer } from "./controls-drawer";
 import { DesignerPanel } from "./designer-panel";
@@ -94,16 +77,9 @@ export function Detail({
   glyphHighlightCp: number | null;
 }) {
   const { text, setText } = usePreview();
-  const router = useRouter();
   // Detail-only: absent from the shared list catalog. See DETAIL_ONLY_FIELDS
   // in scripts/gen-catalog.mjs.
   const versionHistory = font.versionHistory ?? [];
-  // useCanGoBack() reads browser history, which the server can't see, so
-  // swapping <a> -> <button> on its value would be a hydration mismatch. Gate
-  // on a mount flag: first client render matches the server, then upgrade.
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  const canGoBack = useCanGoBack() && mounted;
   const specimen = text || specimenFor(font);
   // Deliberately NOT the shared preview sentence: the editor owns its text
   // once mounted, so borrowing it would make the two look linked when only the
@@ -123,8 +99,6 @@ export function Detail({
   const fontLoaded = useFontLoaded(font.name);
 
   const subsets = font.subsets.filter((s) => s !== "menu");
-
-  const RepoIcon = repoHostIcon(font.repositoryUrl);
 
   // "Last updated" deliberately carries no version badge: the git-tag history
   // lags the font's own version, so the two would disagree.
@@ -245,108 +219,6 @@ export function Detail({
     <Column
       scrollViewportRef={scrollRef}
       subheader={<DetailTabBar active={tab} fontId={fontSlug(font.id)} />}
-      header={
-        <>
-          <div className="flex w-full min-w-0 items-center gap-3 md:w-auto">
-            {/* Back opens the header as the band of links closes it: the same
-                cell, mirrored — flush to the column's left edge, ruled off on
-                its right. Below md it falls back to a plain icon button, where
-                the header wraps and there is no edge or fixed height to work
-                against.
-
-                It returns to the list. If we arrived from it, go back in
-                history so its filter URL + scroll position are restored; on a
-                deep/shared link (no history to go back to) fall back to the
-                default, unfiltered list. */}
-            <div className={RAIL_HEADER_CELL_START}>
-              {canGoBack ? (
-                <button
-                  type="button"
-                  aria-label="Back to all fonts"
-                  onClick={() => router.history.back()}
-                  className={cn(
-                    RAIL_HEADER_BTN,
-                    "group-hover/rail-btn:text-foreground"
-                  )}
-                >
-                  <BackFace />
-                </button>
-              ) : (
-                <Link
-                  to="/"
-                  aria-label="Back to all fonts"
-                  className={cn(
-                    RAIL_HEADER_BTN,
-                    "group-hover/rail-btn:text-foreground"
-                  )}
-                >
-                  <BackFace />
-                </Link>
-              )}
-            </div>
-            <div className="flex min-w-0 flex-col gap-1">
-              <h1
-                className="truncate font-semibold text-lg leading-tight"
-                style={{ fontFamily: `"${font.name}", sans-serif` }}
-              >
-                {font.name}
-              </h1>
-              {font.designer && (
-                <p className="truncate text-xs">{font.designer}</p>
-              )}
-            </div>
-          </div>
-          {/* Trait badges, same order as the list card/row (class, Variable/
-              Static, color, feature count), plus the family's license.
-
-              md:ml-auto puts all the row's slack to the left of this block, so
-              it and the run of cells after it stay together at the end of the
-              row. (The header carries no justify-between: with this many blocks
-              it would spread them and strand the badges in the middle.) */}
-          <div className="flex w-full flex-wrap items-center gap-2 md:ml-auto md:w-auto md:shrink-0 md:flex-nowrap">
-            <FontTraits font={font} selection={emptyFilter} />
-            {font.license && <Badge variant="outline">{font.license}</Badge>}
-          </div>
-
-          {/* The outbound links and Add, as one run of header cells rather than
-              outline buttons: they match Favorite and Top at the other corners,
-              so the header closes with a single band of controls instead of a
-              row of pills beside a cell.
-
-              The band is its own flex box with no gap, because the header row
-              around it sets gap-3 — which would push the cells apart and leave
-              each rule floating in the space rather than dividing two
-              neighbours. -mr-4 lives here rather than on the last cell, for the
-              same reason: it is the band, not any one cell, that runs out to
-              the column's edge.
-
-              Desktop only, as the buttons were — on mobile these don't fit
-              beside the title and are reached through LinksDrawer's FAB. */}
-          <div className="-mr-4 hidden shrink-0 items-center md:flex">
-            <HeaderLink
-              href={`https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`}
-              label="Google"
-              aria-label={`View ${font.name} on Google Fonts`}
-              icon={GoogleLogoIcon}
-            />
-            {font.repositoryUrl && (
-              <HeaderLink
-                href={font.repositoryUrl}
-                label="Repo"
-                aria-label={`View ${font.name}'s source repository`}
-                icon={RepoIcon}
-              />
-            )}
-            {/* Add closes the band, where the list page's Favorite closes its
-                own header — same control, same place either side of a
-                navigation, only the meaning differs: hearting this font rather
-                than switching to the hearted view. */}
-            <div className={RAIL_HEADER_CELL_MID}>
-              <FavoriteToggle fontId={font.id} variant="header" />
-            </div>
-          </div>
-        </>
-      }
       footer={<PreviewBar />}
       // Instances only: the Tester seeds its document once and then owns it,
       // so a live field there would look like it still edits.
@@ -549,47 +421,6 @@ const DATE_FMT = new Intl.DateTimeFormat("en-US", {
 function formatDate(iso: string): string {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso;
   return DATE_FMT.format(new Date(`${iso}T00:00:00Z`));
-}
-
-function BackFace() {
-  return (
-    <>
-      <ArrowLeftIcon className="size-5 shrink-0" />
-      <span className="max-w-full truncate text-[10px] leading-none">Back</span>
-    </>
-  );
-}
-
-// A plain <a>, not the Button primitive: nothing here wants its variants or
-// padding, and the anchor carries its own label.
-function HeaderLink({
-  href,
-  label,
-  icon: Icon,
-  "aria-label": ariaLabel,
-}: {
-  href: string;
-  // Kept short: the cell is 72px wide, and the full name is in aria-label.
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  "aria-label": string;
-}) {
-  return (
-    <div className={RAIL_HEADER_CELL_MID}>
-      <a
-        href={href}
-        target="_blank"
-        rel="noreferrer"
-        aria-label={ariaLabel}
-        className={cn(RAIL_HEADER_BTN, "group-hover/rail-btn:text-foreground")}
-      >
-        <Icon className="size-5 shrink-0" />
-        <span className="max-w-full truncate text-[10px] leading-none">
-          {label}
-        </span>
-      </a>
-    </div>
-  );
 }
 
 // `column-fill: auto` only fills the left column first when the container has

@@ -38,6 +38,9 @@ export const FontRow = memo(function FontRow({
       ref={previewRef}
       to="/$tab/$fontId"
       params={{ tab: "instances", fontId: fontSlug(font.id) }}
+      // See FontCard: opts this navigation alone into a View Transition, so the
+      // family name morphs into the detail page's heading.
+      viewTransition
       // A background step, not FontCard's scale: the row is full-bleed and sits
       // on its separator, so scaling would peel it off both edges. active: uses
       // foreground/10 rather than a second surface token, since --muted and

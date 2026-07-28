@@ -18,7 +18,9 @@ import { fontSlug } from "@/lib/fonts/slug";
 import type { FontRecord } from "@/lib/fonts/types";
 import { blockOf, parseGlyphQuery } from "@/lib/fonts/unicode-blocks";
 import { absoluteUrl, pageTitle } from "@/lib/site";
+import { backWithViewTransition } from "@/lib/view-transition";
 import { Detail } from "./-components/detail";
+import { DetailHeader } from "./-components/detail-header";
 import {
   DetailRail,
   type DetailTab,
@@ -189,8 +191,8 @@ function DetailPage() {
         return;
       // Same rule as Back: step back if we came from the list, so its filters
       // and scroll survive; otherwise go there fresh.
-      if (canGoBack) router.history.back();
-      else navigate({ to: "/" });
+      if (canGoBack) backWithViewTransition(() => router.history.back());
+      else navigate({ to: "/", viewTransition: true });
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
@@ -268,6 +270,7 @@ function DetailPage() {
       favoriteFontId={font.id}
       rail={<DetailRail active={tab} onSelect={selectTab} />}
       sidebar={null}
+      header={<DetailHeader font={font} />}
     >
       {jsonLd ? (
         <script

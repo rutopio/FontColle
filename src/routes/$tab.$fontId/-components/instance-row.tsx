@@ -66,13 +66,27 @@ export function InstanceRow({
             </Badge>
           ))}
       </div>
-      <EditableSpecimen
-        text={specimen}
-        style={style}
-        onEditText={onEditText}
-        ariaLabel={`preview text for ${inst.name}`}
-        className="w-full cursor-text border-transparent border-b bg-transparent px-2 text-start leading-loose outline-none focus:border-foreground"
-      />
+      {/* Until the face arrives the specimen renders in Adobe Blank, which
+          draws nothing — an empty row that reads as broken rather than
+          pending. Stand a skeleton in its place, as FontRow does in the list.
+          Sized off the current preview size so the swap doesn't reflow. */}
+      {fontLoaded ? (
+        <EditableSpecimen
+          text={specimen}
+          style={style}
+          onEditText={onEditText}
+          ariaLabel={`preview text for ${inst.name}`}
+          className="w-full cursor-text border-transparent border-b bg-transparent px-2 text-start leading-loose outline-none focus:border-foreground"
+        />
+      ) : (
+        <div
+          className="mx-2 w-2/3 animate-pulse rounded bg-muted"
+          // leading-loose is 2, the line-height the specimen renders at, so the
+          // skeleton occupies exactly the height its text will.
+          style={{ height: `${size * 2}px` }}
+          aria-hidden
+        />
+      )}
     </div>
   );
 }

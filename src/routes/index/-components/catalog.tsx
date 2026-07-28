@@ -14,6 +14,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { AboutLink } from "@/components/about-link";
 import { FavoriteToggle } from "@/components/favorite-toggle";
 import { ActiveFilterChips } from "@/components/filter/active-filter-chips";
 import { FilterDrawer } from "@/components/filter/filter-drawer";
@@ -27,7 +28,8 @@ import { PresetToggle } from "@/components/filter/preset-toggle";
 import { Column, FilterLayout } from "@/components/filter-layout";
 import { FontGrid, type ViewMode } from "@/components/font-grid";
 import { PreviewBar } from "@/components/preview-dock";
-import { RAIL_HEADER_CELL_MD } from "@/components/rail-button";
+import { RAIL_HEADER_CELL } from "@/components/rail-button";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -59,7 +61,6 @@ import { EASE_OUT, MOTION_S } from "@/lib/motion";
 import { usePreview } from "@/lib/preview/context";
 import { useListScrollRestore } from "@/lib/use-list-scroll-restore";
 import { useLocalStorageState } from "@/lib/use-local-storage-state";
-import { cn } from "@/lib/utils";
 import { SearchInput, type SearchSuggestion } from "./search-input";
 import { SortControl } from "./sort-control";
 
@@ -246,6 +247,11 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
       navigate({
         to: "/$tab/$fontId",
         params: { tab: "instances", fontId: fontSlug(id) },
+        // Matches the card and row links. The picked font is usually off
+        // screen here, so there is often no name to morph from and the
+        // transition degrades to its default crossfade — which is still the
+        // behaviour we want, and never an error.
+        viewTransition: true,
       });
     },
     [navigate]
@@ -297,90 +303,117 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
           onApplyPreset={applyPreset}
         />
       }
-    >
-      <Column
-        scrollViewportRef={scrollRef}
-        header={
-          <>
-            <div className="flex min-w-0 flex-1 items-center gap-2 max-md:w-full">
-              <SearchInput
-                inputRef={searchRef}
-                query={filter.query}
-                onQueryChange={(query) => commitFilter({ ...filter, query })}
-                suggestions={searchSuggestions}
-                onPick={openFont}
-              />
-              {(activeCount > 0 || hasQuery) && (
-                <Button
-                  variant="outline"
-                  onClick={reset}
-                  className="h-9 text-destructive"
-                >
-                  Reset
-                  {/* Same md gate as the search field's "/" badge: the phone
-                      layout has no physical keyboard, so the shortcut hint is
-                      noise on a button that is already tight for space. */}
-                  <Kbd className="hidden md:inline-flex">Esc</Kbd>
-                </Button>
-              )}
-            </div>
-
-            <div className="ml-auto flex items-center gap-2 max-md:ml-0 max-md:w-full max-md:justify-between md:shrink-0 md:gap-3">
-              <span className="flex-1 text-sm" aria-live="polite">
-                {/* Mono on the number only: it changes on every filter tick,
-                    and tabular digits keep the label beside it from shifting.
-                    The word stays proportional so the line still reads as
-                    prose. */}
-                <span className="font-mono tabular-nums">{results.length}</span>{" "}
-                {results.length === 1 ? "font" : "fonts"}
-              </span>
+      header={
+        <>
+          <div className="flex min-w-0 flex-1 items-center gap-2 max-md:w-full">
+            <SearchInput
+              inputRef={searchRef}
+              query={filter.query}
+              onQueryChange={(query) => commitFilter({ ...filter, query })}
+              suggestions={searchSuggestions}
+              onPick={openFont}
+            />
+            {/* Desktop only, beside the field it acts on: sort orders what the
+                query returns, so the two read as one control pair rather than
+                sort sitting with the count and the view tabs it has nothing to
+                do with. On a phone the header wraps and this row is already
+                tight with the field, so sort stays in the second row below —
+                rendered twice rather than moved, because the two breakpoints
+                put it in different rows. */}
+            <div className="hidden md:block">
               <SortControl
                 sort={sort}
                 onChange={setSort}
                 relevance={filter.query.trim().length > 0}
               />
+            </div>
+            {(activeCount > 0 || hasQuery) && (
+              <Button
+                variant="outline"
+                onClick={reset}
+                className="h-9 text-destructive"
+              >
+                Reset
+                {/* Same md gate as the search field's "/" badge: the phone
+                    layout has no physical keyboard, so the shortcut hint is
+                    noise on a button that is already tight for space. */}
+                <Kbd className="hidden md:inline-flex">Esc</Kbd>
+              </Button>
+            )}
+          </div>
 
-              <Tabs value={view} onValueChange={(v) => setView(v as ViewMode)}>
-                <TabsList className="h-8">
-                  {/* h-full (both breakpoints, to beat the tab's
-                                        own h-9 sm:h-8) so the trigger and its white
-                                        indicator fill the h-8 list instead of
-                                        overflowing it. */}
-                  <TabsTrigger
-                    value="grid"
-                    aria-label="Grid view"
-                    className="h-full sm:h-full"
-                  >
-                    <span className="hidden sm:inline">Grid</span>
-                    <SquaresFourIcon className="size-4" />
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="row"
-                    aria-label="Row view"
-                    className="h-full sm:h-full"
-                  >
-                    <span className="hidden sm:inline">Row</span>
-                    <RowsIcon className="size-4" />
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
+          <div className="ml-auto flex items-center gap-2 max-md:ml-0 max-md:w-full max-md:justify-between md:shrink-0 md:gap-3">
+            <span className="flex-1 text-sm" aria-live="polite">
+              {/* Mono on the number only: it changes on every filter tick,
+                  and tabular digits keep the label beside it from shifting.
+                  The word stays proportional so the line still reads as
+                  prose. */}
+              <span className="font-mono tabular-nums">{results.length}</span>{" "}
+              {results.length === 1 ? "font" : "fonts"}
+            </span>
+            {/* The phone's copy of sort, in the row it has always been in. Its
+                desktop twin sits beside the search field instead. */}
+            <div className="md:hidden">
+              <SortControl
+                sort={sort}
+                onChange={setSort}
+                relevance={filter.query.trim().length > 0}
+              />
+            </div>
+            <Tabs value={view} onValueChange={(v) => setView(v as ViewMode)}>
+              {/* h-9, the search field's height, so the header's controls all
+                  sit on one line. */}
+              <TabsList className="h-9">
+                {/* h-full at both breakpoints, to beat the trigger's own
+                    h-9 sm:h-8, so it and its white indicator fill the list
+                    rather than sitting short inside it. */}
+                <TabsTrigger
+                  value="grid"
+                  aria-label="Grid view"
+                  className="h-full sm:h-full"
+                >
+                  <span className="hidden sm:inline">Grid</span>
+                  <SquaresFourIcon className="size-4" />
+                </TabsTrigger>
+                <TabsTrigger
+                  value="row"
+                  aria-label="Row view"
+                  className="h-full sm:h-full"
+                >
+                  <span className="hidden sm:inline">Row</span>
+                  <RowsIcon className="size-4" />
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
 
-              {/* Favorite closes the header's row of controls. It belongs with
-                  them, not in the sidebar strip it used to sit in: like sort
-                  and the view tabs it changes what this list shows (?fav=1),
-                  so it reads as the last of the list's own controls. Built as
-                  the mirror of the preview field's Top button at the foot of
-                  the same column (see PreviewBar and RAIL_HEADER_CELL).
+            {/* Theme, About and Favorite as one run of header tiles, the way
+                the detail page ends its own header. Its own flex box at gap-1,
+                the same the rail puts between its buttons, rather than the
+                row's gap-3 — which would space these further apart than the
+                rail spaces the ones they match.
 
-                  Desktop only. On mobile this header wraps to two rows and is
-                  already tight with the search field, so Favorite goes back to
-                  MobileTopBar beside Theme and About, where it was before. */}
-              <div className={cn(RAIL_HEADER_CELL_MD, "hidden md:flex")}>
+                Theme and About lead: they are the app's controls, the same on
+                every page, so the list's own Favorite sits last, nearest the
+                edge. Desktop only, all three. On mobile this header wraps to
+                two rows and is already tight with the search field, so the
+                trio stays in MobileTopBar, where it was before. */}
+            <div className="hidden shrink-0 items-center gap-1 md:flex">
+              <div className={RAIL_HEADER_CELL}>
+                <ThemeToggle variant="header" />
+              </div>
+              <div className={RAIL_HEADER_CELL}>
+                <AboutLink variant="header" />
+              </div>
+              <div className={RAIL_HEADER_CELL}>
                 <FavoriteToggle variant="header" />
               </div>
             </div>
-          </>
-        }
+          </div>
+        </>
+      }
+    >
+      <Column
+        scrollViewportRef={scrollRef}
         footer={
           <PreviewBar
             onScrollTop={() =>
@@ -470,10 +503,7 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
               )}
               {/* Committed filter, like the in-list chips, so the row's reflow
                   stays in step with the faded results rather than jumping ahead. */}
-              <ActiveFilterChips
-                filter={shownFilter}
-                onChange={commitFilter}
-              />
+              <ActiveFilterChips filter={shownFilter} onChange={commitFilter} />
               {favOnly ? (
                 <Button variant="outline" onClick={discoverFonts}>
                   Discover Font

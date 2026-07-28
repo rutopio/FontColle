@@ -61,8 +61,15 @@ export function SearchInput({
     if (hit) onPick(hit.id);
   };
 
+  // The desktop cap lines the field's right edge up with the filter panel's
+  // below it. Both start from the same left origin, so the width is the panel
+  // box — --sidebar-width less the rail it shares its row with and its own 8px
+  // margins — minus the header's px-4 and 1px border, which inset the field
+  // from that origin. It cannot be a :root token: --sidebar-width-icon is set
+  // inline on the shell container, so a calc() declared above it resolves
+  // empty.
   return (
-    <div className="relative min-w-0 flex-1 md:max-w-72 xl:max-w-96">
+    <div className="relative ml-2 min-w-0 flex-1 md:max-w-[calc(var(--sidebar-width)-var(--sidebar-width-icon)-1rem-1.0625rem)]">
       <MagnifyingGlassIcon className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
       <Input
         ref={inputRef}

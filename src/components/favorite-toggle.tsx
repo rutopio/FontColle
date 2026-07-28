@@ -78,21 +78,35 @@ export function FavoriteToggle({
   const hover = variant === "header" ? undefined : RAIL_BTN_OFF;
   if (fontId)
     return (
-      <FavoriteMark fontId={fontId} bare={bare} hover={hover} chrome={chrome} />
+      <FavoriteMark
+        fontId={fontId}
+        bare={bare}
+        header={variant === "header"}
+        hover={hover}
+        chrome={chrome}
+      />
     );
   return (
-    <FavoriteViewLink bare={bare} red={red} hover={hover} chrome={chrome} />
+    <FavoriteViewLink
+      bare={bare}
+      header={variant === "header"}
+      red={red}
+      hover={hover}
+      chrome={chrome}
+    />
   );
 }
 
 function FavoriteMark({
   fontId,
   bare,
+  header,
   hover,
   chrome,
 }: {
   fontId: string;
   bare?: boolean;
+  header?: boolean;
   hover?: string;
   chrome: string;
 }) {
@@ -101,7 +115,10 @@ function FavoriteMark({
   return (
     <nav
       aria-label="Favorite"
-      className={bare ? undefined : "flex flex-col gap-1"}
+      // w-full in the header: the cell sizes the control, and without it this
+      // wrapper shrink-wraps the label and the tile floats in the middle of the
+      // cell rather than filling it the way a rail button does.
+      className={header ? "w-full" : bare ? undefined : "flex flex-col gap-1"}
     >
       <button
         type="button"
@@ -119,11 +136,13 @@ function FavoriteMark({
 
 function FavoriteViewLink({
   bare,
+  header,
   red,
   hover,
   chrome,
 }: {
   bare?: boolean;
+  header?: boolean;
   red?: boolean;
   hover?: string;
   chrome: string;
@@ -136,7 +155,8 @@ function FavoriteViewLink({
   return (
     <nav
       aria-label="Favorites"
-      className={bare ? undefined : "flex flex-col gap-1"}
+      // See FavoriteMark: the header cell sizes the control.
+      className={header ? "w-full" : bare ? undefined : "flex flex-col gap-1"}
     >
       <Link
         to="/"

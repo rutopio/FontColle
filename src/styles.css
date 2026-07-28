@@ -502,6 +502,21 @@
   transition: background-color var(--motion-fast) var(--ease-snap);
 }
 
+/* List <-> detail navigation, both ways: a plain crossfade of the whole page.
+   Nothing carries a view-transition-name of its own, so the root group is the
+   entire transition — no element flies between the two pages, which at this
+   size read as a distraction rather than as continuity.
+
+   old and new are timed together rather than left to the default sequence, so
+   the two states cross over instead of the outgoing page emptying first.
+   Browsers without View Transitions ignore all of this and keep RouteFade's
+   fade, which is why nothing here is required for the pages to work. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--motion-slow);
+  animation-timing-function: var(--ease-snap);
+}
+
 /* Reduced motion means less movement, not no animation. This used to flatten
    every duration to 0.01ms, which also killed the fades and colour changes that
    carry meaning — a panel swapping contents became a hard cut, harder to follow
@@ -525,6 +540,16 @@
 
   .animate-heart-pop,
   .animate-copy-pop {
+    animation: none !important;
+  }
+
+  /* A View Transition is a browser-level animation, so neither the
+     transition-property filter above nor __root's MotionConfig reaches it. The
+     morphing name is pure travel — exactly what this setting asks us to drop —
+     so hold every group still and let the pages swap outright. */
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
     animation: none !important;
   }
 
