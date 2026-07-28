@@ -386,6 +386,18 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
               </TabsList>
             </Tabs>
 
+            {/* The same rule the rail draws above Preset, turned upright: it
+                divides this page's own controls from the app's, which is the
+                same boundary the rail marks between its filter groups and the
+                preset that swaps the whole panel. Desktop only, with the run it
+                divides. */}
+            <Separator
+              orientation="vertical"
+              // As tall as the tiles it divides (RAIL_TILE's py-2 around a 20px
+              // icon over a 10px caption), not the header's full height.
+              className="hidden data-vertical:h-[3.125rem] md:block"
+            />
+
             {/* Theme, About and Favorite as one run of header tiles, the way
                 the detail page ends its own header. Its own flex box at gap-1,
                 the same the rail puts between its buttons, rather than the

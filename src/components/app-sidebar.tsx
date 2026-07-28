@@ -45,10 +45,12 @@ export function AppSidebar({
           a bit) overflowed that reserved width and the box lost its right edge
           to the shell's overflow-hidden. */}
       <div className="my-2 mr-0 ml-2 flex h-[calc(100%-1rem)] w-[calc(var(--sidebar-width-icon)-0.5rem)] shrink-0 flex-col gap-2">
-        <ScrollArea className="min-h-0 flex-1">
-          <div className="flex flex-col gap-2">
-            {/* The wordmark, at the head of the rail. h-16 matches the Column
+        {/* The wordmark, at the head of the rail. h-16 matches the Column
             header beside it, so the two top out on the same line.
+
+            Outside the scroll below, so a short viewport scrolls the buttons
+            past it rather than taking the wordmark with them — the same way the
+            filter panel keeps its frame while its list moves.
 
             No border and no background: it sits directly on the shell's tint,
             the one thing in the column that is not a box. Hover still tints it,
@@ -56,21 +58,23 @@ export function AppSidebar({
             than a panel of its own.
 
             It links home, the default action for a wordmark. */}
-            <Link
-              to="/"
-              // Must contain the visible "FontColle" text: WCAG 2.5.3 (Label in
-              // Name) so voice-control users can say what they see.
-              aria-label="FontColle, all fonts"
-              className="group/logo flex h-16 shrink-0 flex-col items-center justify-center gap-1 rounded-xl p-2 text-primary outline-none transition-colors hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-sidebar-ring dark:hover:bg-white/6"
-            >
-              <LogoIcon className="size-7 transition-[stroke-width] group-hover/logo:[stroke-width:2]" />
-              <span className="font-mono text-[9px] group-hover/logo:font-bold">
-                FontColle
-              </span>
-            </Link>
+        <Link
+          to="/"
+          // Must contain the visible "FontColle" text: WCAG 2.5.3 (Label in
+          // Name) so voice-control users can say what they see.
+          aria-label="FontColle, all fonts"
+          className="group/logo flex h-16 shrink-0 flex-col items-center justify-center gap-1 rounded-xl p-2 text-primary outline-none transition-colors hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-sidebar-ring dark:hover:bg-white/6"
+        >
+          <LogoIcon className="size-7 transition-[stroke-width] group-hover/logo:[stroke-width:2]" />
+          <span className="font-mono text-[9px] group-hover/logo:font-bold">
+            FontColle
+          </span>
+        </Link>
 
-            {/* The page's rail buttons. No scroll of its own: the column around
-            it scrolls, so this box is just as tall as its contents.
+        {/* The page's rail buttons, scrolling inside their own box: on a short
+            viewport the list moves within the border rather than sliding the
+            whole column. min-h-0 lets the box shrink below its content's height
+            so the ScrollArea has something to scroll within.
 
             Nothing else lives here now. Favorite used to sit below as the
             fallback for a collapsed panel, on both pages; each page's own
@@ -78,13 +82,13 @@ export function AppSidebar({
             panel is doing. Rendered only when there is a rail, so the empty box
             does not stack its two borders into a stray rule under the
             wordmark. */}
-            {rail && (
-              <div className="flex flex-col overflow-hidden rounded-xl border border-border bg-background p-2">
-                {rail}
-              </div>
-            )}
+        {rail && (
+          <div className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-background">
+            <ScrollArea className="min-h-0 flex-1">
+              <div className="flex flex-col p-2">{rail}</div>
+            </ScrollArea>
           </div>
-        </ScrollArea>
+        )}
       </div>
 
       {/* Second sidebar: the page's own panel, filling the remaining width. The
