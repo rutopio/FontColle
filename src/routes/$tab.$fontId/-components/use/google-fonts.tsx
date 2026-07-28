@@ -345,7 +345,7 @@ function googleFontsHref(
     if (!pick) continue;
     const min = axis.min ?? pick.value;
     const max = axis.max ?? pick.value;
-      if (pick.mode === "full" && min < max) {
+    if (pick.mode === "full" && min < max) {
       parts.push({ tag: axis.tag, value: `${min}..${max}` });
     } else {
       parts.push({ tag: axis.tag, value: String(pick.value) });

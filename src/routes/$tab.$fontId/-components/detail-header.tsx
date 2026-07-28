@@ -9,6 +9,7 @@ import { RAIL_HEADER_BTN, RAIL_HEADER_CELL } from "@/components/rail-button";
 import { repoHostIcon } from "@/components/repo-host-icon";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { emptyFilter } from "@/lib/fonts/filter/state";
 import type { FontRecord } from "@/lib/fonts/types";
 import { backWithViewTransition } from "@/lib/view-transition";
@@ -30,7 +31,7 @@ export function DetailHeader({ font }: { font: FontRecord }) {
 
   return (
     <>
-      <div className="flex w-full min-w-0 items-center gap-3 md:w-auto">
+      <div className="flex w-full min-w-0 items-center gap-1 md:w-auto">
         {/* Back opens the header as the band of links closes it: the same
               tile, at the other end of the row. Below md it falls back to a
               plain icon button, where the header wraps and there is no fixed
@@ -63,7 +64,16 @@ export function DetailHeader({ font }: { font: FontRecord }) {
             </Link>
           )}
         </div>
-        <div className="flex min-w-0 flex-col gap-1">
+        {/* The same rule the list page draws before its app controls: Back
+            leaves the page, the title names it, so the two are different kinds
+            of thing and the line says so. Desktop only, where Back is a tile
+            rather than a wrapped icon button. */}
+        <Separator
+          orientation="vertical"
+          // As tall as the tile it divides, not the header's full height.
+          className="hidden data-vertical:h-[3.125rem] md:block"
+        />
+        <div className="flex min-w-0 flex-col gap-1 pl-3">
           <h1
             className="truncate font-semibold text-lg leading-tight"
             style={{ fontFamily: `"${font.name}", sans-serif` }}
@@ -97,6 +107,12 @@ export function DetailHeader({ font }: { font: FontRecord }) {
             Desktop only, as the buttons were — on mobile these don't fit
             beside the title and are reached through LinksDrawer's FAB. */}
       <div className="hidden shrink-0 items-center gap-1 md:flex">
+        {/* Opens the run, as the rule after Back closes the title block: the
+            badges describe the font, these act on it. */}
+        <Separator
+          orientation="vertical"
+          className="data-vertical:h-[3.125rem]"
+        />
         <HeaderLink
           href={`https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`}
           label="Google"
