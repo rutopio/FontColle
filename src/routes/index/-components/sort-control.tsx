@@ -61,7 +61,7 @@ export function SortControl({
   };
 
   return (
-    <div className="flex h-9 items-center rounded-lg border border-input dark:bg-input/30">
+    <div className="flex h-9 items-center rounded-lg border border-input bg-background dark:bg-input/30">
       {/* Same slot, two presentations: a dropdown on desktop, a bottom sheet on
           touch, where a native select popup is an awkward target. The frame and
           the direction toggle are identical either way. */}

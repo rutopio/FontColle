@@ -23,8 +23,8 @@ export function ScreenSize() {
       <span className="hidden md:block lg:hidden">md</span>
       <span className="hidden lg:block xl:hidden">lg</span>
       <span className="hidden xl:block 2xl:hidden">xl</span>
-      <span className="hidden 2xl:block 3xl:hidden">2xl</span>
-      <span className="hidden 3xl:block">3xl</span>
+      <span className="3xl:hidden hidden 2xl:block">2xl</span>
+      <span className="3xl:block hidden">3xl</span>
     </output>
   );
 }

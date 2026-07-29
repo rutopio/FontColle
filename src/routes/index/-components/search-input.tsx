@@ -69,7 +69,7 @@ export function SearchInput({
   // inline on the shell container, so a calc() declared above it resolves
   // empty.
   return (
-    <div className="relative ml-2 min-w-0 flex-1 md:max-w-[calc(var(--sidebar-width)-var(--sidebar-width-icon)-1rem-1.0625rem)]">
+    <div className="relative min-w-0 flex-1 bg-background md:max-w-[calc(var(--sidebar-width)-var(--sidebar-width-icon)-1rem)]">
       <MagnifyingGlassIcon className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
       <Input
         ref={inputRef}

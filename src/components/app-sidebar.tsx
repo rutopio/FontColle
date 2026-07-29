@@ -63,7 +63,7 @@ export function AppSidebar({
           // Must contain the visible "FontColle" text: WCAG 2.5.3 (Label in
           // Name) so voice-control users can say what they see.
           aria-label="FontColle, all fonts"
-          className="group/logo flex h-16 shrink-0 flex-col items-center justify-center gap-1 rounded-xl p-2 text-primary outline-none transition-colors hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-sidebar-ring dark:hover:bg-white/6"
+          className="group/logo flex h-16 shrink-0 flex-col items-center justify-center gap-1 rounded-xl p-2 text-primary outline-none transition-colors focus-visible:ring-2 focus-visible:ring-sidebar-ring dark:hover:bg-white/6"
         >
           <LogoIcon className="size-7 transition-[stroke-width] group-hover/logo:[stroke-width:2]" />
           <span className="font-mono text-[9px] group-hover/logo:font-bold">
@@ -83,7 +83,7 @@ export function AppSidebar({
             does not stack its two borders into a stray rule under the
             wordmark. */}
         {rail && (
-          <div className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-border bg-background">
+          <div className="flex min-h-0 flex-col overflow-hidden">
             <ScrollArea className="min-h-0 flex-1">
               <div className="flex flex-col p-2">{rail}</div>
             </ScrollArea>

@@ -35,14 +35,14 @@ const full =
 describe.skipIf(!first || !full)("catalog-first.json ordering", () => {
   it("matches sortFonts(catalog, DEFAULT_SORT) head", () => {
     const expected = sortFonts(full!, DEFAULT_SORT)
-      .slice(0, first!.length)
+      .slice(0, first?.length)
       .map((f) => f.id);
-    expect(first!.map((f) => f.id)).toEqual(expected);
+    expect(first?.map((f) => f.id)).toEqual(expected);
   });
 
   it("carries the popularityRank the sort depends on", () => {
     // A slice cut from records whose popularityRank was all null would compare
     // equal above by falling back to name order, passing vacuously.
-    expect(first!.some((f) => f.popularityRank != null)).toBe(true);
+    expect(first?.some((f) => f.popularityRank != null)).toBe(true);
   });
 });

@@ -213,7 +213,7 @@ export function FilterLayout({
 // On mobile this may grow to two rows when the list header's controls wrap.
 function ColumnHeader({ children }: { children: React.ReactNode }) {
   return (
-    <header className="mt-2 flex min-h-16 shrink-0 items-center gap-2 border-border bg-background px-2 py-2 max-md:mt-0 max-md:border-b md:h-16 md:rounded-xl md:border md:py-0">
+    <header className="mt-2 flex min-h-16 shrink-0 items-center gap-2 border-border max-md:mt-0 md:h-16 md:py-0">
       <div className="flex flex-1 flex-wrap items-center gap-3 md:flex-nowrap">
         {children}
       </div>
