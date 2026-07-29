@@ -37,7 +37,7 @@ export const FontRow = memo(function FontRow({
       to="/$tab/$fontId"
       params={{ tab: "instances", fontId: fontSlug(font.id) }}
       viewTransition
-      className="flex h-32 flex-col justify-center gap-4 overflow-hidden transition-colors duration-[var(--motion-fast)] ease-[var(--ease-snap)] hover:bg-muted focus-visible:bg-muted/80 focus-visible:outline-none active:bg-foreground/10"
+      className="flex h-32 flex-col justify-center gap-4 overflow-hidden transition-[color,background-color,transform] duration-[var(--motion-fast)] ease-[var(--ease-snap)] hover:bg-muted focus-visible:bg-muted/80 focus-visible:outline-none active:scale-[0.995] active:bg-foreground/10"
     >
       <div className="flex flex-col gap-0.5 px-4">
         <div className="flex items-center justify-between gap-4">

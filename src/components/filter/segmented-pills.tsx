@@ -24,7 +24,7 @@ export function SegmentedPills({
             onClick={() => onToggle(value)}
             aria-pressed={isSelected}
             className={cn(
-              "relative flex min-h-9 flex-1 items-center justify-between gap-1.5 px-2.5 py-2 text-xs transition-[color,background-color] duration-[var(--motion-fast)] md:min-h-8 md:py-1",
+              "relative flex min-h-9 flex-1 items-center justify-between gap-1.5 px-2.5 py-2 text-xs transition-[color,background-color] duration-[var(--motion-fast)] ease-[var(--ease-snap)] md:min-h-8 md:py-1",
               first && "rounded-l-md",
               last && "rounded-r-md",
               i > 0 && "border-l",
