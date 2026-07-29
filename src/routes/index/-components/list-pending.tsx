@@ -12,8 +12,12 @@ import { RAIL_HEADER_CELL } from "@/components/rail-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Separator } from "@/components/ui/separator";
 import { emptyFilter } from "@/lib/fonts/filter";
+import { DEFAULT_SORT } from "@/lib/fonts/sort";
 import type { FontRecord } from "@/lib/fonts/types";
 import { usePreview } from "@/lib/preview/context";
+import { SearchInput, type SearchSuggestion } from "./search-input";
+import { SortControl } from "./sort-control";
+import { ViewTabs } from "./view-tabs";
 
 const NOOP_GROUP = () => {};
 
@@ -34,20 +38,55 @@ const STYLE_SUBGROUPS = [
   { id: "script", pills: 4 },
 ];
 
+/* The header's controls all render at their real size and in their real state
+   while the catalog loads, so nothing moves when it arrives. Only the result
+   count is a skeleton — it is the one thing that genuinely has no value yet.
+   The controls are inert rather than individually disabled: SearchInput and
+   SortControl take no `disabled` prop, and adding one to both just to gray them
+   out here would be a wider change than the placeholder is worth. Same trick as
+   PendingRail below. */
+const PENDING_SORT = () => {};
+const EMPTY_SUGGESTIONS: SearchSuggestion[] = [];
+
 const HEADER_SKELETON = (
   <>
-    <div className="flex min-w-0 flex-1 items-center gap-2 max-md:w-full">
-      <div className="h-9 min-w-0 flex-1 animate-pulse rounded-lg bg-muted md:max-w-[calc(var(--sidebar-width)-var(--sidebar-width-icon)-1rem-1.0625rem)]" />
-      <div className="hidden h-9 w-44 animate-pulse rounded-lg bg-muted md:block" />
+    <div
+      inert
+      className="flex min-w-0 flex-1 items-center gap-2 opacity-60 max-md:w-full"
+    >
+      <SearchInput
+        query=""
+        onQueryChange={PENDING_SORT}
+        suggestions={EMPTY_SUGGESTIONS}
+        onPick={PENDING_SORT}
+      />
+      <div className="hidden md:block">
+        <SortControl sort={DEFAULT_SORT} onChange={PENDING_SORT} />
+      </div>
     </div>
 
     <div className="ml-auto flex items-center gap-2 max-md:ml-0 max-md:w-full max-md:justify-between md:shrink-0 md:gap-3">
       <div className="flex-1">
         <div className="h-5 w-20 animate-pulse rounded bg-muted" />
       </div>
-      <div className="h-9 w-44 animate-pulse rounded-lg bg-muted md:hidden" />
-      <div className="h-9 w-20 animate-pulse rounded-lg bg-muted" />
-      <div className="hidden items-center gap-1 md:flex">
+      {/* `contents` so these two stay direct flex children of the row above,
+          matching the real header's layout exactly. Opacity has no effect on a
+          `contents` box, so each child dims itself. */}
+      <div inert className="contents">
+        <div className="opacity-60 md:hidden">
+          <SortControl sort={DEFAULT_SORT} onChange={PENDING_SORT} />
+        </div>
+        <div className="opacity-60">
+          <ViewTabs view="grid" onChange={PENDING_SORT} />
+        </div>
+      </div>
+
+      <Separator
+        orientation="vertical"
+        className="hidden data-vertical:h-[3.125rem] md:block"
+      />
+
+      <div className="hidden shrink-0 items-center gap-1 md:flex">
         <div className={RAIL_HEADER_CELL}>
           <ThemeToggle variant="header" />
         </div>
