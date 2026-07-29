@@ -71,6 +71,18 @@
      leaving 384px of dead margin either side; see the container utility below. */
   --breakpoint-3xl: 120rem;
 
+  /* What a bare `transition-colors` / `transition-opacity` resolves to. Tailwind
+     ships 150ms with cubic-bezier(0.4, 0, 0.2, 1) — a symmetric ease-in-out,
+     the one curve the note beside --ease-snap rules out for UI motion. Every
+     shorthand transition silently inherited it, so the defaults are re-pointed
+     at the motion scale here rather than pinned at ~40 call sites.
+
+     Written as literals, not var(--motion-fast) / var(--ease-snap): this block
+     is `@theme inline`, so values are substituted where they are used, and
+     those tokens are defined in :root further down. Keep all three in sync. */
+  --default-transition-duration: 120ms;
+  --default-transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+
   --font-heading: "Host Grotesk Variable", var(--font-sans);
   --font-sans: "Albert Sans Variable", sans-serif;
   --font-mono: "Paper Mono", ui-monospace, monospace;
