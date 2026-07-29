@@ -1,9 +1,4 @@
-import {
-  HeartIcon,
-  MagnifyingGlassIcon,
-  RowsIcon,
-  SquaresFourIcon,
-} from "@phosphor-icons/react";
+import { HeartIcon, MagnifyingGlassIcon } from "@phosphor-icons/react";
 import { getRouteApi } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import {
@@ -40,7 +35,6 @@ import {
 } from "@/components/ui/empty";
 import { Kbd } from "@/components/ui/kbd";
 import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFilter } from "@/lib/filter/context";
 import { useFavorites } from "@/lib/fonts/favorites";
 import {
@@ -63,6 +57,7 @@ import { useListScrollRestore } from "@/lib/use-list-scroll-restore";
 import { useLocalStorageState } from "@/lib/use-local-storage-state";
 import { SearchInput, type SearchSuggestion } from "./search-input";
 import { SortControl } from "./sort-control";
+import { ViewTabs } from "./view-tabs";
 
 const Route = getRouteApi("/");
 
@@ -305,26 +300,7 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
                 relevance={filter.query.trim().length > 0}
               />
             </div>
-            <Tabs value={view} onValueChange={(v) => setView(v as ViewMode)}>
-              <TabsList className="h-9">
-                <TabsTrigger
-                  value="grid"
-                  aria-label="Grid view"
-                  className="h-full sm:h-full"
-                >
-                  <span className="hidden sm:inline">Grid</span>
-                  <SquaresFourIcon className="size-4" />
-                </TabsTrigger>
-                <TabsTrigger
-                  value="row"
-                  aria-label="Row view"
-                  className="h-full sm:h-full"
-                >
-                  <span className="hidden sm:inline">Row</span>
-                  <RowsIcon className="size-4" />
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+            <ViewTabs view={view} onChange={setView} />
 
             <Separator
               orientation="vertical"

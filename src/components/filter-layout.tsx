@@ -106,7 +106,7 @@ export function FilterLayout({
 
 function ColumnHeader({ children }: { children: React.ReactNode }) {
   return (
-    <header className="mt-2 flex min-h-16 shrink-0 items-center gap-2 border-border max-md:mt-0 md:h-16 md:py-0">
+    <header className="mt-2 flex min-h-16 shrink-0 items-center gap-2 max-md:mt-0 md:h-16 md:py-0">
       <div className="flex flex-1 flex-wrap items-center gap-3 md:flex-nowrap">
         {children}
       </div>
