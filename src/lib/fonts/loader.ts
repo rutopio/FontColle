@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 
 const loaded = new Set<string>();
 const loadedWeights = new Map<string, Set<number>>();
@@ -9,41 +9,94 @@ export function previewFontFamily(name: string, isLoaded = true): string {
   return `"${name}", "${fallback}", sans-serif`;
 }
 
-export function useFontLoaded(name: string): boolean {
-  const [ready, setReady] = useState(false);
+/** Families known ready, so check() runs once per family instead of once per subscriber. */
+const readyFamilies = new Set<string>();
+const watchers = new Map<string, Set<() => void>>();
+let listening = false;
 
-  useEffect(() => {
-    if (typeof document === "undefined" || !document.fonts) {
-      setReady(true);
-      return;
-    }
-    let cancelled = false;
-    const probe = `16px "${name}"`;
-    const settle = () => {
-      if (!cancelled) setReady(document.fonts.check(probe));
-    };
-
-    if (document.fonts.check(probe)) {
-      setReady(true);
-      return;
-    }
-    setReady(false);
-    // load() can resolve before check() turns true if the @font-face link registers late.
-    document.fonts
-      .load(probe)
-      .then(settle)
-      .catch(() => {
-        if (!cancelled) setReady(true);
-      });
-    document.fonts.addEventListener("loadingdone", settle);
-    return () => {
-      cancelled = true;
-      document.fonts.removeEventListener("loadingdone", settle);
-    };
-  }, [name]);
-
-  return ready;
+function probeFor(name: string) {
+  return `16px "${name}"`;
 }
+
+/** One document.fonts listener for the whole app: a per-row listener makes every
+ *  loadingdone event O(rows), and each check() forces a style flush mid-scroll. */
+function onLoadingDone() {
+  for (const [name, callbacks] of watchers) {
+    if (readyFamilies.has(name)) continue;
+    if (!document.fonts.check(probeFor(name))) continue;
+    readyFamilies.add(name);
+    for (const cb of callbacks) cb();
+  }
+}
+
+function markReady(name: string) {
+  if (readyFamilies.has(name)) return;
+  readyFamilies.add(name);
+  for (const cb of watchers.get(name) ?? []) cb();
+}
+
+function subscribeFamily(name: string, onChange: () => void) {
+  if (typeof document === "undefined" || !document.fonts) return () => {};
+
+  const callbacks = watchers.get(name) ?? new Set<() => void>();
+  callbacks.add(onChange);
+  watchers.set(name, callbacks);
+
+  if (!listening) {
+    listening = true;
+    document.fonts.addEventListener("loadingdone", onLoadingDone);
+  }
+
+  if (!readyFamilies.has(name)) {
+    if (document.fonts.check(probeFor(name))) {
+      markReady(name);
+    } else {
+      // load() can resolve before check() turns true if the @font-face link registers late.
+      document.fonts
+        .load(probeFor(name))
+        .then(() => {
+          if (document.fonts.check(probeFor(name))) markReady(name);
+        })
+        .catch(() => markReady(name));
+    }
+  }
+
+  return () => {
+    const set = watchers.get(name);
+    if (!set) return;
+    set.delete(onChange);
+    if (set.size === 0) watchers.delete(name);
+  };
+}
+
+export function useFontLoaded(name: string): boolean {
+  const subscribe = useCallback(
+    (onChange: () => void) => subscribeFamily(name, onChange),
+    [name]
+  );
+  const getSnapshot = useCallback(() => readyFamilies.has(name), [name]);
+  // Server has no document.fonts; render the loaded chain to avoid a hydration flip.
+  return useSyncExternalStore(subscribe, getSnapshot, () => true);
+}
+
+/** Internals exposed for tests: the subscription bookkeeping is the part that
+ *  regressed, and it is verifiable without a DOM. */
+export const __loaderInternals = {
+  subscribeFamily,
+  isReady: (name: string) => readyFamilies.has(name),
+  watcherCount: (name: string) => watchers.get(name)?.size ?? 0,
+  familyCount: () => watchers.size,
+  reset() {
+    if (listening && typeof document !== "undefined" && document.fonts) {
+      document.fonts.removeEventListener("loadingdone", onLoadingDone);
+    }
+    listening = false;
+    readyFamilies.clear();
+    watchers.clear();
+    loaded.clear();
+    loadedWeights.clear();
+  },
+};
 
 export function ensureFontLoaded(family: string, weights: number[]) {
   if (typeof document === "undefined") return;
