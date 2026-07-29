@@ -54,8 +54,8 @@ export const FontCard = memo(function FontCard({
       </div>
 
       {fontLoaded ? (
-              <p
-                  dir="auto"
+        <p
+          dir="auto"
           style={previewStyle}
           className="min-h-16 flex-1 overflow-hidden break-words text-2xl leading-snug"
         >

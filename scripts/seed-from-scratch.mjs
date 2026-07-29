@@ -9,8 +9,7 @@ const FONTS_JSON = path.join(ROOT, "src/data/fonts.json");
 
 try {
   process.loadEnvFile(path.join(ROOT, ".env"));
-} catch {
-}
+} catch {}
 
 const args = process.argv.slice(2);
 const publish = args.includes("--publish");

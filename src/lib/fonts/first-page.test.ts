@@ -21,13 +21,15 @@ const full =
 
 describe.skipIf(!first || !full)("catalog-first.json ordering", () => {
   it("matches sortFonts(catalog, DEFAULT_SORT) head", () => {
-    const expected = sortFonts(full!, DEFAULT_SORT)
-      .slice(0, first?.length)
+    if (!(first && full)) return;
+    const expected = sortFonts(full, DEFAULT_SORT)
+      .slice(0, first.length)
       .map((f) => f.id);
-    expect(first?.map((f) => f.id)).toEqual(expected);
+    expect(first.map((f) => f.id)).toEqual(expected);
   });
 
   it("carries the popularityRank the sort depends on", () => {
-    expect(first?.some((f) => f.popularityRank != null)).toBe(true);
+    if (!first) return;
+    expect(first.some((f) => f.popularityRank != null)).toBe(true);
   });
 });

@@ -411,7 +411,7 @@ export function FilterSidebar({
   return (
     <aside className="flex h-full w-full min-w-0 flex-col text-foreground">
       <ScrollArea viewportRef={viewportRef} className="min-h-0 flex-1">
-          <AnimatePresence
+        <AnimatePresence
           mode="wait"
           initial={false}
           onExitComplete={resetScrollbar}

@@ -37,7 +37,7 @@ function MobileTopBar({ favoriteFontId }: { favoriteFontId?: string }) {
 /* Actual rendered widths of the two fixed columns. Main takes what is left via
    flex-1, so neither value is derived from the other or from a shell total. */
 const SHELL_WIDTHS = {
-  "--rail-width": "5rem",
+  "--rail-width": "4.5rem",
   "--panel-width": "20rem",
 } as React.CSSProperties;
 

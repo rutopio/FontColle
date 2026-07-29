@@ -20,4 +20,3 @@ export function colorFormatLabel(id: string): string {
 export function isColorFont(font: FontRecord): boolean {
   return font.colorTables.length > 0;
 }
-
