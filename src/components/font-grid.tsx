@@ -178,7 +178,7 @@ export function SkeletonGrid({ view }: { view: ViewMode }) {
 
 function SkeletonCard() {
   return (
-    <div className="flex h-72 flex-col gap-4 rounded-lg border bg-card p-5">
+    <div className="flex h-72 flex-col gap-4 rounded-lg border bg-card p-4">
       <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
       <div className="flex flex-1 flex-col gap-2.5">
         <div className="h-4 w-[85%] animate-pulse rounded bg-muted" />
