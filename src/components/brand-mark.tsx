@@ -6,12 +6,10 @@ export function BrandMark() {
     <Link
       to="/"
       aria-label="FontColle home"
-      className="group/brand mb-8 flex flex-wrap items-center gap-2 text-primary"
+      className="mb-8 flex flex-wrap items-center gap-2 text-primary"
     >
-      <LogoIcon className="size-10 transition-[stroke-width] group-hover/brand:[stroke-width:2]" />
-      <span className="translate-y-1 font-mono text-2xl tracking-tight group-hover/brand:font-bold">
-        FontColle
-      </span>
+      <LogoIcon className="size-10" />
+      <span className="font-mono text-2xl tracking-tight">FontColle</span>
     </Link>
   );
 }

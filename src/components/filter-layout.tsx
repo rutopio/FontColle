@@ -80,11 +80,30 @@ export function FilterLayout({
             {sidebar ? (
               <motion.div
                 key="panel"
-                className="flex h-full min-h-0 flex-col"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: MOTION_S.fast, ease: EASE_OUT }}
+                className="flex h-full min-h-0 shrink-0 flex-col overflow-hidden"
+                initial={{ width: 0, opacity: 0 }}
+                animate={{
+                  width: "var(--panel-width)",
+                  opacity: 1,
+                  transition: {
+                    duration: MOTION_S.slow,
+                    ease: EASE_OUT,
+                    opacity: {
+                      duration: MOTION_S.base,
+                      delay: 0.06,
+                      ease: EASE_OUT,
+                    },
+                  },
+                }}
+                exit={{
+                  width: 0,
+                  opacity: 0,
+                  transition: {
+                    duration: MOTION_S.slow,
+                    ease: EASE_OUT,
+                    opacity: { duration: MOTION_S.fast, ease: EASE_OUT },
+                  },
+                }}
               >
                 <FilterPanelColumn>
                   <RouteFade className="flex min-h-0 w-full flex-1 flex-col">
@@ -113,7 +132,7 @@ function ColumnHeader({ children }: { children: React.ReactNode }) {
         aria-label="FontColle, all fonts"
         className="group/logo hidden w-(--rail-width) shrink-0 flex-col items-center justify-center gap-1 rounded-xl p-2 text-primary outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring md:flex dark:hover:bg-white/6"
       >
-        <LogoIcon className="size-7 transition-[stroke-width] group-hover/logo:[stroke-width:2]" />
+        <LogoIcon className="size-7" />
         {/* <span className="font-mono text-[9px] group-hover/logo:font-bold">
                     FontColle
                 </span> */}
