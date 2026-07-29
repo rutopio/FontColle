@@ -48,7 +48,7 @@ export function useFontFacePreview(
     activeWeight,
   ]);
 
-  const fontReady = useFontLoaded(font.name);
+  const fontReady = useFontLoaded(font.name, activeWeight);
   const fontLoaded = inView && fontReady;
   const settings = variationSettings(variationCoords);
   const previewStyle: React.CSSProperties = {

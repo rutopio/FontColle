@@ -14,67 +14,145 @@ const readyFamilies = new Set<string>();
 const watchers = new Map<string, Set<() => void>>();
 let listening = false;
 
-function probeFor(name: string) {
-  return `16px "${name}"`;
+/** Keyed by family *and* weight, so a row needing 700 is not reported ready by
+ *  an earlier row's 400: check() only answers "can some face of this family
+ *  render". The list previews at a single weight today, but the detail page
+ *  does not, and the cost is one Set entry per weight. */
+function keyFor(name: string, weight: number) {
+  return `${name}@${weight}`;
+}
+
+function probeFor(name: string, weight: number) {
+  return `${weight} 16px "${name}"`;
+}
+
+/** check() means "renderable without loading anything new", which is true for
+ *  a family that has NO @font-face at all — it just resolves to a system font.
+ *  Mid-fling a row subscribes before its css2 <link> has registered any rules,
+ *  so check() said yes, the skeleton swapped to text, and the chain was already
+ *  on NotDef while the real font had not begun downloading: the boxes that
+ *  flashed before the real face appeared. Requiring a registered face for the
+ *  family keeps the row on Adobe Blank until there is something real to wait
+ *  for. */
+function hasFaces(name: string) {
+  for (const face of document.fonts) {
+    if (face.family === name) return true;
+  }
+  return false;
+}
+
+function canPaint(name: string, weight: number) {
+  return hasFaces(name) && document.fonts.check(probeFor(name, weight));
 }
 
 /** One document.fonts listener for the whole app: a per-row listener makes every
  *  loadingdone event O(rows), and each check() forces a style flush mid-scroll. */
 function onLoadingDone() {
-  for (const [name, callbacks] of watchers) {
-    if (readyFamilies.has(name)) continue;
-    if (!document.fonts.check(probeFor(name))) continue;
-    readyFamilies.add(name);
+  for (const [key, callbacks] of watchers) {
+    if (readyFamilies.has(key)) continue;
+    const { name, weight } = parseKey(key);
+    if (!canPaint(name, weight)) continue;
+    readyFamilies.add(key);
     for (const cb of callbacks) cb();
   }
 }
 
-function markReady(name: string) {
-  if (readyFamilies.has(name)) return;
-  readyFamilies.add(name);
-  for (const cb of watchers.get(name) ?? []) cb();
+function parseKey(key: string) {
+  const at = key.lastIndexOf("@");
+  return { name: key.slice(0, at), weight: Number(key.slice(at + 1)) };
 }
 
-function subscribeFamily(name: string, onChange: () => void) {
+function markReady(key: string) {
+  if (readyFamilies.has(key)) return;
+  readyFamilies.add(key);
+  pursuing.delete(key);
+  for (const cb of watchers.get(key) ?? []) cb();
+}
+
+/** Keys with a retry in flight, so N rows of one family share one chase. */
+const pursuing = new Set<string>();
+
+/** How long a row may sit on the skeleton before it gives up and shows text.
+ *  A stuck skeleton is worse than a brief fallback: the row would otherwise
+ *  stay blank forever if the stylesheet 404s or the face never registers. */
+const GIVE_UP_MS = 3000;
+const RETRY_MS = 100;
+
+/** load() resolves immediately — with an empty list — for a family that has no
+ *  @font-face yet, so a single call cannot settle a row that subscribed before
+ *  its css2 <link> registered. loadingdone does not help either: it may have
+ *  already fired for that stylesheet. So keep asking, the way font-face
+ *  observers do, until the face can paint or the deadline passes. */
+function pursue(key: string, name: string, weight: number) {
+  if (pursuing.has(key)) return;
+  pursuing.add(key);
+
+  const deadline = Date.now() + GIVE_UP_MS;
+
+  const attempt = () => {
+    if (readyFamilies.has(key)) return;
+    // Nobody is watching this key any more (rows scrolled away).
+    if (!watchers.has(key)) {
+      pursuing.delete(key);
+      return;
+    }
+    if (canPaint(name, weight)) {
+      markReady(key);
+      return;
+    }
+    if (Date.now() >= deadline) {
+      // Out of time: let the text through rather than hold the skeleton.
+      markReady(key);
+      return;
+    }
+    // Re-issue load(): once the faces exist this is what actually starts them.
+    document.fonts
+      .load(probeFor(name, weight))
+      .then(() => {
+        if (canPaint(name, weight)) markReady(key);
+        else setTimeout(attempt, RETRY_MS);
+      })
+      .catch(() => markReady(key));
+  };
+
+  attempt();
+}
+
+function subscribeFamily(name: string, weight: number, onChange: () => void) {
   if (typeof document === "undefined" || !document.fonts) return () => {};
 
-  const callbacks = watchers.get(name) ?? new Set<() => void>();
+  const key = keyFor(name, weight);
+  const callbacks = watchers.get(key) ?? new Set<() => void>();
   callbacks.add(onChange);
-  watchers.set(name, callbacks);
+  watchers.set(key, callbacks);
 
   if (!listening) {
     listening = true;
     document.fonts.addEventListener("loadingdone", onLoadingDone);
   }
 
-  if (!readyFamilies.has(name)) {
-    if (document.fonts.check(probeFor(name))) {
-      markReady(name);
-    } else {
-      // load() can resolve before check() turns true if the @font-face link registers late.
-      document.fonts
-        .load(probeFor(name))
-        .then(() => {
-          if (document.fonts.check(probeFor(name))) markReady(name);
-        })
-        .catch(() => markReady(name));
-    }
+  if (!readyFamilies.has(key)) {
+    if (canPaint(name, weight)) markReady(key);
+    else pursue(key, name, weight);
   }
 
   return () => {
-    const set = watchers.get(name);
+    const set = watchers.get(key);
     if (!set) return;
     set.delete(onChange);
-    if (set.size === 0) watchers.delete(name);
+    if (set.size === 0) watchers.delete(key);
   };
 }
 
-export function useFontLoaded(name: string): boolean {
+export function useFontLoaded(name: string, weight = 400): boolean {
   const subscribe = useCallback(
-    (onChange: () => void) => subscribeFamily(name, onChange),
-    [name]
+    (onChange: () => void) => subscribeFamily(name, weight, onChange),
+    [name, weight]
   );
-  const getSnapshot = useCallback(() => readyFamilies.has(name), [name]);
+  const getSnapshot = useCallback(
+    () => readyFamilies.has(keyFor(name, weight)),
+    [name, weight]
+  );
   // Server has no document.fonts; render the loaded chain to avoid a hydration flip.
   return useSyncExternalStore(subscribe, getSnapshot, () => true);
 }
@@ -83,8 +161,10 @@ export function useFontLoaded(name: string): boolean {
  *  regressed, and it is verifiable without a DOM. */
 export const __loaderInternals = {
   subscribeFamily,
-  isReady: (name: string) => readyFamilies.has(name),
-  watcherCount: (name: string) => watchers.get(name)?.size ?? 0,
+  isReady: (name: string, weight = 400) =>
+    readyFamilies.has(keyFor(name, weight)),
+  watcherCount: (name: string, weight = 400) =>
+    watchers.get(keyFor(name, weight))?.size ?? 0,
   familyCount: () => watchers.size,
   reset() {
     if (listening && typeof document !== "undefined" && document.fonts) {
@@ -93,6 +173,7 @@ export const __loaderInternals = {
     listening = false;
     readyFamilies.clear();
     watchers.clear();
+    pursuing.clear();
     loaded.clear();
     loadedWeights.clear();
   },
