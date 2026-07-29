@@ -1,3 +1,4 @@
+import { DiscoBallIcon, ShapesIcon } from "@phosphor-icons/react";
 import { AboutLink } from "@/components/about-link";
 import { FavoriteToggle } from "@/components/favorite-toggle";
 import { FilterRail } from "@/components/filter/filter-rail";
@@ -115,14 +116,19 @@ function PendingRail() {
   );
 }
 
+/* Section rhythm mirrors the real sidebar, which separates its groups with
+   `mt-7 border-t pt-7` rather than a flex gap — so the second block starts on
+   the same y and nothing shifts when the filters arrive. */
 const SIDEBAR_SKELETON = (
-  <div className="flex w-full flex-col gap-12 p-4">
+  <div className="flex w-full flex-col p-4 [&>div+div]:mt-7 [&>div+div]:border-border [&>div+div]:border-t [&>div+div]:pt-7">
     <div className="flex flex-col gap-2">
+      {/* Static labels: they read the same before and after the catalog lands,
+          so render them outright instead of pulsing a bar the same size. */}
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5">
-          <div className="size-4 animate-pulse rounded bg-muted" />
-          <div className="h-3.5 w-20 animate-pulse rounded bg-muted" />
-        </div>
+        <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase">
+          <ShapesIcon className="size-4" />
+          Category
+        </h2>
       </div>
       <div className="grid grid-cols-3 gap-3">
         {CATEGORY_CARDS.map((card) => (
@@ -135,14 +141,16 @@ const SIDEBAR_SKELETON = (
     </div>
 
     <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-1.5">
-        <div className="size-4 animate-pulse rounded bg-muted" />
-        <div className="h-3.5 w-14 animate-pulse rounded bg-muted" />
-      </div>
+      <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase">
+        <DiscoBallIcon className="size-4" />
+        Style
+      </h2>
       <div className="flex flex-col gap-8">
         {STYLE_SUBGROUPS.map((sub) => (
           <div key={`sub:${sub.id}`} className="flex flex-col gap-2">
-            <div className="h-3 w-20 animate-pulse rounded bg-muted" />
+            <h3 className="font-medium text-muted-foreground text-xs uppercase">
+              {sub.id}
+            </h3>
             <div className="grid grid-cols-2 gap-1.5">
               {Array.from({ length: sub.pills }, (_, i) => (
                 <div

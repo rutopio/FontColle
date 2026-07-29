@@ -176,25 +176,44 @@ export function SkeletonGrid({ view }: { view: ViewMode }) {
   );
 }
 
+/* Mirrors FontCard: the name block, then the specimen placeholder at the same
+   min-h-16 flex-1 py-1 as the card's unloaded state, then the trait row. The
+   trait bars are h-5 to match Badge's height, so the card's three bands sit at
+   the same heights whether it is loading or loaded. */
 function SkeletonCard() {
   return (
     <div className="flex h-72 flex-col gap-4 rounded-lg border bg-card p-4">
-      <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
-      <div className="flex flex-1 flex-col gap-2.5">
+      <div className="flex flex-col gap-1">
+        <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
+        <div className="h-3.5 w-1/3 animate-pulse rounded bg-muted" />
+      </div>
+      <div className="flex min-h-16 flex-1 flex-col gap-2.5 py-1">
         <div className="h-4 w-[85%] animate-pulse rounded bg-muted" />
         <div className="h-4 w-[70%] animate-pulse rounded bg-muted" />
         <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
       </div>
-      <div className="mt-auto h-3 w-1/3 animate-pulse rounded bg-muted" />
+      <div className="flex flex-wrap gap-1">
+        <div className="h-5 w-12 animate-pulse rounded-4xl bg-muted" />
+        <div className="h-5 w-14 animate-pulse rounded-4xl bg-muted" />
+        <div className="h-5 w-20 animate-pulse rounded-4xl bg-muted" />
+      </div>
     </div>
   );
 }
 
+/* Mirrors FontRow + its Separator: same h-32, the same gap-4 between the meta
+   block and the specimen, and px-4 on the text rather than the row box, so the
+   placeholder bars start on the same x as the real name and specimen. */
 function SkeletonLine() {
   return (
-    <div className="flex h-32 flex-col justify-center gap-3 border-b px-2">
-      <div className="h-3 w-40 max-w-[60%] animate-pulse rounded bg-muted" />
-      <div className="h-15 w-2/3 animate-pulse rounded bg-muted" />
+    <div className="flex flex-col">
+      <div className="flex h-32 flex-col justify-center gap-4">
+        <div className="px-4">
+          <div className="h-4 w-40 max-w-[60%] animate-pulse rounded bg-muted" />
+        </div>
+        <div className="mx-4 h-15 w-2/3 animate-pulse rounded bg-muted" />
+      </div>
+      <Separator className="px-4" />
     </div>
   );
 }
