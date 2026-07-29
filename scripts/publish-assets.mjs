@@ -69,6 +69,20 @@ async function reseedGlyphs() {
   writeManifest({ ...manifest, glyphs });
 }
 
+/** After a full re-render of public/og. The deltas exist to carry the handful
+ *  of cards a daily run adds on top of the base tarball, so once the base
+ *  contains every current card they are not just redundant but wrong — a
+ *  client would fetch each one to overwrite a file the base already has right.
+ *  Clearing them is the point of reseeding rather than publishing 1900 deltas. */
+async function reseedOg() {
+  const manifest = readManifest();
+  if (!manifest) throw new Error("no manifest; run --seed first");
+  const base = putSeedTarball(OG_DIR, "og");
+  const dropped = manifest.og?.deltas?.length ?? 0;
+  writeManifest({ ...manifest, og: { base, deltas: [] } });
+  console.log(`[publish] og base reseeded, dropped ${dropped} stale deltas`);
+}
+
 function readIds(file) {
   return readFileSync(file, "utf8")
     .split("\n")
@@ -113,9 +127,11 @@ if (args.includes("--seed")) {
   await daily(ogIdsArg?.slice("--og-ids=".length));
 } else if (args.includes("--reseed-glyphs")) {
   await reseedGlyphs();
+} else if (args.includes("--reseed-og")) {
+  await reseedOg();
 } else {
   console.error(
-    "usage: publish-assets.mjs --seed | --daily [--og-ids=<file>] | --reseed-glyphs"
+    "usage: publish-assets.mjs --seed | --daily [--og-ids=<file>] | --reseed-glyphs | --reseed-og"
   );
   process.exit(2);
 }
