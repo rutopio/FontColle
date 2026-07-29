@@ -15,5 +15,12 @@ export const RAIL_HEADER_BTN = `${RAIL_BTN_CHROME} ${RAIL_BTN_OFF} flex size-9 s
 
 export const RAIL_HEADER_CELL = "group/rail-btn flex shrink-0 items-center";
 
-export const RAIL_BTN_ON =
-  "bg-black/10 text-accent-foreground dark:bg-white/12";
+const RAIL_ON_SURFACE = "bg-black/10 dark:bg-white/12";
+
+export const RAIL_BTN_ON = `${RAIL_ON_SURFACE} text-accent-foreground`;
+
+/* Sliding variant: the tile keeps only the colour and a shared layout element
+   (see RailIndicator) carries the surface between buttons. */
+export const RAIL_BTN_ON_SLIDING = "text-accent-foreground";
+
+export const RAIL_INDICATOR = `${RAIL_ON_SURFACE} absolute inset-0 -z-1 rounded-md`;

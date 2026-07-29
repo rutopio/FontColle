@@ -103,9 +103,14 @@ function PendingRail() {
         active={DEFAULT_FILTER_GROUP}
         filter={emptyFilter}
         onSelect={NOOP_GROUP}
+        indicatorId="pending-rail-indicator"
       />
       <Separator className="my-1" />
-      <PresetToggle active={false} onSelect={NOOP_GROUP} />
+      <PresetToggle
+        active={false}
+        onSelect={NOOP_GROUP}
+        indicatorId="pending-rail-indicator"
+      />
     </div>
   );
 }

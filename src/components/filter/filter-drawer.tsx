@@ -74,6 +74,7 @@ export function FilterDrawer({
             filter={filter}
             onSelect={onGroupChange}
             orientation="horizontal"
+            indicatorId="filter-drawer-rail-indicator"
           />
           <FilterGroupButton
             group={PRESET_GROUP}
@@ -81,6 +82,7 @@ export function FilterDrawer({
             count={0}
             onSelect={onGroupChange}
             horizontal
+            indicatorId="filter-drawer-rail-indicator"
           />
         </div>
         <div className="min-h-0 flex-1">

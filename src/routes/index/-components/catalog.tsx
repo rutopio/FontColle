@@ -242,9 +242,18 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
     <FilterLayout
       rail={
         <div className="flex flex-col gap-1">
-          <FilterRail active={group} filter={filter} onSelect={setGroup} />
+          <FilterRail
+            active={group}
+            filter={filter}
+            onSelect={setGroup}
+            indicatorId="filter-rail-indicator"
+          />
           <Separator className="my-1" />
-          <PresetToggle active={group === "preset"} onSelect={setGroup} />
+          <PresetToggle
+            active={group === "preset"}
+            onSelect={setGroup}
+            indicatorId="filter-rail-indicator"
+          />
         </div>
       }
       sidebar={
