@@ -74,19 +74,7 @@
   --font-heading: "Host Grotesk Variable", var(--font-sans);
   --font-sans: "Albert Sans Variable", sans-serif;
   --font-mono: "Paper Mono", ui-monospace, monospace;
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
+  --color-canvas: var(--canvas);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -138,11 +126,6 @@
   --border: oklch(0.923 0.003 48.717);
   --input: oklch(0.923 0.003 48.717);
   --ring: oklch(0.709 0.01 56.259);
-  --chart-1: oklch(0.869 0.005 56.366);
-  --chart-2: oklch(0.553 0.013 58.071);
-  --chart-3: oklch(0.444 0.011 73.639);
-  --chart-4: oklch(0.374 0.01 67.558);
-  --chart-5: oklch(0.268 0.007 34.298);
   --radius: 0.625rem;
 
   /* The motion scale, mirrored by MOTION in src/lib/motion.ts — change both
@@ -171,14 +154,9 @@
   --ease-snap: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 
-  --sidebar: oklch(0.985 0.001 106.423);
-  --sidebar-foreground: oklch(0.147 0.004 49.25);
-  --sidebar-primary: oklch(0.216 0.006 56.043);
-  --sidebar-primary-foreground: oklch(0.985 0.001 106.423);
-  --sidebar-accent: oklch(0.97 0.001 106.424);
-  --sidebar-accent-foreground: oklch(0.216 0.006 56.043);
-  --sidebar-border: oklch(0.923 0.003 48.717);
-  --sidebar-ring: oklch(0.709 0.01 56.259);
+  /* The page behind the columns. A touch off --background so the cards, which
+     are --background, read as raised against it. */
+  --canvas: oklch(0.985 0.001 106.423);
 
   /* Syntax highlighting for the Use-tab code snippets (see lib/code/highlight).
      A muted, low-chroma palette that sits calmly against the neutral UI; the
@@ -214,19 +192,7 @@
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.553 0.013 58.071);
-  --chart-1: oklch(0.869 0.005 56.366);
-  --chart-2: oklch(0.553 0.013 58.071);
-  --chart-3: oklch(0.444 0.011 73.639);
-  --chart-4: oklch(0.374 0.01 67.558);
-  --chart-5: oklch(0.268 0.007 34.298);
-  --sidebar: oklch(0.216 0.006 56.043);
-  --sidebar-foreground: oklch(0.985 0.001 106.423);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0.001 106.423);
-  --sidebar-accent: oklch(0.268 0.007 34.298);
-  --sidebar-accent-foreground: oklch(0.985 0.001 106.423);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.553 0.013 58.071);
+  --canvas: oklch(0.216 0.006 56.043);
 
   /* Dark-card syntax palette: same hues, lifted lightness for legibility. */
   --syntax-comment: oklch(0.6 0 0);
@@ -249,7 +215,7 @@
      1920px, the margins either side. Every surface inside the shell paints its
      own opaque background, so this reads purely as the frame the app sits in. */
   body {
-    @apply bg-sidebar text-foreground;
+    @apply bg-canvas text-foreground;
   }
   button:not(:disabled),
   [role="button"]:not(:disabled) {
@@ -279,7 +245,7 @@
      don't, so the bug is iOS-Chrome-only. The app scrolls inside its own
      ScrollArea (filter-layout uses absolute inset-0), never the body, so we
      lock html/body to a fixed viewport height and hide their overflow. The
-     sidebar-wrapper then fills it exactly with h-full. */
+     shell then fills it exactly with h-full. */
   html,
   body {
     height: 100%;
@@ -502,23 +468,6 @@
   padding-inline: 0.35em;
   box-decoration-break: clone;
   transition: background-color var(--motion-fast) var(--ease-snap);
-}
-
-/* The filter panel opens and closes between detail tabs — Instances, Tester and
-   Glyphs have controls, the other four do not. The sidebar primitive tweens
-   that as a 25rem width change on two elements: the spacer that reserves the
-   panel's place, and the panel itself. Both are wrong here. The spacer's tween
-   drags the content box sideways for 200ms, and the panel's squeezes its own
-   contents as it goes, so a change of *what is there* reads as everything
-   shoving everything else around.
-
-   Land the width in one frame instead and let the panel cross-fade in place
-   (RouteFade already keys on the pathname; the panel's own AnimatePresence
-   handles the swap). Scoped to this app's shell rather than patched into
-   components/ui/sidebar.tsx, which is vendored shadcn. */
-[data-slot="sidebar-gap"],
-[data-slot="sidebar-container"] {
-  transition: none;
 }
 
 /* List <-> detail navigation, both ways: a plain crossfade of the whole page.

@@ -33,7 +33,7 @@ export function LinksDrawer({
         onClick={() => setOpen(true)}
         aria-label={`Links for ${font.name}`}
         style={{ bottom: fabBottom(0) }}
-        className="fixed right-4 z-40 flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring md:hidden"
+        className="fixed right-4 z-40 flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
       >
         <LinkIcon className="size-6" weight="bold" />
       </motion.button>

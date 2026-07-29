@@ -8,7 +8,7 @@ import {
   UserIcon,
 } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
-import { RAIL_BTN } from "@/components/rail-button";
+import { RAIL_BTN, RAIL_BTN_OFF, RAIL_BTN_ON } from "@/components/rail-button";
 import { cn } from "@/lib/utils";
 
 export type DetailTab =
@@ -91,10 +91,10 @@ export function DetailTabBar({
             replace
             aria-current={on ? "page" : undefined}
             className={cn(
-              "flex shrink-0 items-center gap-1.5 rounded-md px-3 py-1.5 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-inset",
+              "flex shrink-0 items-center gap-1.5 rounded-md px-3 py-1.5 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
               on
                 ? "bg-black/10 font-medium text-foreground dark:bg-white/12"
-                : "hover:bg-sidebar-accent/50 hover:text-foreground"
+                : "hover:bg-accent/50 hover:text-foreground"
             )}
           >
             <tab.icon className="size-4" weight="regular" />
@@ -126,9 +126,7 @@ export function DetailRail({
             aria-label={`${tab.label} view`}
             className={cn(
               cn(RAIL_BTN, "focus-visible:ring-inset"),
-              on
-                ? "bg-black/10 text-sidebar-accent-foreground dark:bg-white/12"
-                : "hover:bg-sidebar-accent/50 hover:text-foreground"
+              on ? RAIL_BTN_ON : RAIL_BTN_OFF
             )}
           >
             <tab.icon

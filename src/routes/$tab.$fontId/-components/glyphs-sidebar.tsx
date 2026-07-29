@@ -29,7 +29,7 @@ export function GlyphsSidebar({
   const [query, setQuery] = useState("");
 
   return (
-    <aside className="flex h-full w-full min-w-0 flex-col text-sidebar-foreground">
+    <aside className="flex h-full w-full min-w-0 flex-col text-foreground">
       <ScrollArea viewportRef={viewportRef} className="min-h-0 flex-1">
         <motion.div
           className="flex flex-col gap-4 p-4"
@@ -55,7 +55,7 @@ export function GlyphsSidebar({
               label="Search glyphs by character or codepoint"
               aria-invalid={searchMiss || undefined}
               inputClassName={cn(
-                "focus:border-input focus-visible:ring-2 focus-visible:ring-sidebar-ring",
+                "focus:border-input focus-visible:ring-2 focus-visible:ring-ring",
                 searchMiss && "border-red-500"
               )}
             />
@@ -86,7 +86,7 @@ export function GlyphsSidebar({
                       "flex min-h-11 items-center justify-between gap-2 rounded px-2 py-1 text-left text-xs transition-colors md:min-h-8",
                       on
                         ? "bg-black/10 font-medium text-foreground dark:bg-white/12"
-                        : "hover:bg-sidebar-accent/50 hover:text-foreground"
+                        : "hover:bg-accent/50 hover:text-foreground"
                     )}
                   >
                     <span className="truncate">{block.name}</span>

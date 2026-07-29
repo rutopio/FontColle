@@ -1,11 +1,11 @@
 const RAIL_BTN_CHROME =
-  "cursor-pointer rounded-md outline-none transition-[color,background-color,transform] duration-[var(--motion-fast)] ease-[var(--ease-snap)] focus-visible:ring-2 focus-visible:ring-sidebar-ring active:scale-[0.96]";
+  "cursor-pointer rounded-md outline-none transition-[color,background-color,transform] duration-[var(--motion-fast)] ease-[var(--ease-snap)] focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.96]";
 
 const RAIL_BTN_BASE = `group/rail-btn ${RAIL_BTN_CHROME}`;
 
 const RAIL_TILE = "relative flex flex-col items-center gap-1 py-2";
 
-export const RAIL_BTN_OFF = "hover:bg-sidebar-accent/50 hover:text-foreground";
+export const RAIL_BTN_OFF = "hover:bg-accent/50 hover:text-foreground";
 
 export const RAIL_BTN = `${RAIL_BTN_BASE} ${RAIL_TILE}`;
 
@@ -16,4 +16,4 @@ export const RAIL_HEADER_BTN = `${RAIL_BTN_CHROME} ${RAIL_BTN_OFF} flex size-9 s
 export const RAIL_HEADER_CELL = "group/rail-btn flex shrink-0 items-center";
 
 export const RAIL_BTN_ON =
-  "bg-black/10 text-sidebar-accent-foreground dark:bg-white/12";
+  "bg-black/10 text-accent-foreground dark:bg-white/12";
