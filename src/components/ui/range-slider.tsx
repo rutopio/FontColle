@@ -4,15 +4,11 @@ import { Slider as SliderPrimitive } from "@base-ui/react/slider";
 
 import { cn } from "@/lib/utils";
 
-// A two-thumb range slider. Separate from the single-thumb Slider because a
-// range needs explicit indexed thumbs (base-ui requires this for SSR) and its
-// value is a [lo, hi] tuple. Styling mirrors ui/slider.tsx.
 function RangeSlider({
   className,
   getAriaLabel,
   ...props
 }: SliderPrimitive.Root.Props<readonly number[]> & {
-  // aria-label per thumb index (0 = lower, 1 = upper).
   getAriaLabel?: (index: number) => string;
 }) {
   return (
@@ -24,9 +20,6 @@ function RangeSlider({
       )}
       {...props}
     >
-      {/* px-1.5 = half the 12px thumb, so the track ends inset by the thumb
-          radius and the thumbs sit inside the sidebar's padding instead of
-          spilling to (and past) its edge at the 0%/100% positions. */}
       <SliderPrimitive.Control
         data-slot="slider-control"
         className="flex w-full items-center px-1.5 py-2"

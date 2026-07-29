@@ -1,23 +1,11 @@
-// Generates public/sitemap.xml from the font catalog at build time: one <url>
-// for the home page plus one per published family, pointing at its canonical
-// instances tab (matching the canonical tag in the detail route head).
-//
-// Needs an absolute origin. With VITE_SITE_URL unset this skips generation
-// rather than emit relative or wrong-domain URLs; the build still succeeds.
-
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-// Imported, not mirrored: site-meta.ts is import-free and touches no
-// import.meta.env, so node's type stripping can load it here.
 import { SITE_DESCRIPTION, SITE_NAME } from "../src/lib/site-meta.ts";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
 
-// Mirror src/lib/fonts/slug.ts fontSlug: spaces -> underscores (case kept).
 const fontSlug = (name) => name.replace(/ /g, "_");
 
-// W3C-valid YYYY-MM-DD, or undefined when the record carries no usable date.
-// Prefers modifiedMs, falling back to dateAdded.
 const lastmodOf = (f) => {
   if (typeof f.modifiedMs === "number" && Number.isFinite(f.modifiedMs)) {
     return new Date(f.modifiedMs).toISOString().slice(0, 10);
@@ -44,8 +32,6 @@ const xmlEscape = (s) =>
       })[c]
   );
 
-// Every vocabulary in llms.txt is derived this way rather than hardcoded, so
-// the doc can't drift from the data a reharvest produces.
 const vocab = (fonts, pick) => {
   const seen = new Set();
   for (const f of fonts) {
@@ -56,8 +42,6 @@ const vocab = (fonts, pick) => {
   return [...seen].sort();
 };
 
-// Classification tag paths ("/Expressive/Playful") grouped by section, so the
-// style vocabulary renders as one bullet per section.
 const classificationsBySection = (fonts) => {
   const bySection = new Map();
   for (const path of vocab(fonts, (f) => Object.keys(f.tags ?? {}))) {
@@ -69,11 +53,6 @@ const classificationsBySection = (fonts) => {
   return bySection;
 };
 
-// public/llms.txt, following the llms.txt convention. Written for an agent
-// asked something subjective ("a playful variable sans"), which needs to know
-// the data can answer it, which field carries the style signal, and how to hand
-// the result back as a URL. Hence the worked example and the full vocabulary:
-// without them an agent sees only axes and features and never finds `tags`.
 function buildLlmsTxt(siteUrl, fonts) {
   const categories = vocab(fonts, (f) => f.category);
   const licenses = vocab(fonts, (f) => f.license);
@@ -87,7 +66,6 @@ function buildLlmsTxt(siteUrl, fonts) {
   const sections = classificationsBySection(fonts);
   const scored = fonts.filter((f) => Object.keys(f.tags ?? {}).length).length;
 
-  // Registered axes first, then a count of the custom ones rather than all ~40.
   const REGISTERED_AXES = ["wght", "wdth", "opsz", "slnt", "ital", "GRAD"];
   const customAxes = axes.filter((a) => !REGISTERED_AXES.includes(a));
 
@@ -254,12 +232,8 @@ export async function genSitemap() {
   const data = JSON.parse(raw);
   const fonts = Array.isArray(data) ? data : (data.fonts ?? []);
 
-  // Must match gen-catalog.mjs's publish rule: an unpublished family gets no
-  // public/catalog/<id>.json, so listing it here points a crawler at a 404.
   const published = fonts.filter((f) => f?.name && (f.isPublished ?? true));
 
-  // The home page's lastmod is the max across all fonts, omitted when none has
-  // a usable date.
   const fontEntries = published.map((f) => ({
     loc: `${siteUrl}/instances/${fontSlug(f.name)}`,
     lastmod: lastmodOf(f),
@@ -285,7 +259,6 @@ export async function genSitemap() {
 
   await writeFile(path.join(ROOT, "public/sitemap.xml"), xml, "utf8");
 
-  // Point robots.txt at the sitemap (idempotent: rewrite the Sitemap line).
   const robotsPath = path.join(ROOT, "public/robots.txt");
   let robots = await readFile(robotsPath, "utf8");
   robots = robots.replace(/\n?Sitemap:.*\n?$/i, "\n").trimEnd();
@@ -302,7 +275,6 @@ export async function genSitemap() {
   console.log("[sitemap] wrote public/llms.txt");
 }
 
-// Allow running standalone: `node scripts/gen-sitemap.mjs`.
 if (import.meta.url === `file://${process.argv[1]}`) {
   await genSitemap();
 }

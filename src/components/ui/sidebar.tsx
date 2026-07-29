@@ -67,8 +67,6 @@ function SidebarProvider({
     const isMobile = useIsMobile()
     const [openMobile, setOpenMobile] = React.useState(false)
 
-    // This is the internal state of the sidebar.
-    // We use openProp and setOpenProp for control from outside the component.
     const [_open, _setOpen] = React.useState(defaultOpen)
     const open = openProp ?? _open
     const setOpen = React.useCallback(
@@ -80,18 +78,15 @@ function SidebarProvider({
                 _setOpen(openState)
             }
 
-            // This sets the cookie to keep the sidebar state.
             document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
         },
         [setOpenProp, open]
     )
 
-    // Helper to toggle the sidebar.
     const toggleSidebar = React.useCallback(() => {
         return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open)
     }, [isMobile, setOpen, setOpenMobile])
 
-    // Adds a keyboard shortcut to toggle the sidebar.
     React.useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if (
@@ -107,8 +102,6 @@ function SidebarProvider({
         return () => window.removeEventListener("keydown", handleKeyDown)
     }, [toggleSidebar])
 
-    // We add a state so that we can do data-state="expanded" or "collapsed".
-    // This makes it easier to style the sidebar with Tailwind classes.
     const state = open ? "expanded" : "collapsed"
 
     const contextValue = React.useMemo<SidebarContextProps>(
@@ -212,7 +205,6 @@ function Sidebar({
             data-side={side}
             data-slot="sidebar"
         >
-            {/* This is what handles the sidebar gap on desktop */}
             <div
                 data-slot="sidebar-gap"
                 className={cn(
@@ -228,20 +220,9 @@ function Sidebar({
                 data-slot="sidebar-container"
                 data-side={side}
                 className={cn(
-                    // absolute, not fixed: the shell is centred inside a
-                    // max-width container, and a viewport-fixed sidebar would
-                    // ignore it and stay glued to the screen's left edge. It
-                    // anchors to SidebarProvider's padding box instead, so it
-                    // lands on the container's content edge. h-full follows from
-                    // that too — the provider already spans the locked viewport.
                     "absolute inset-y-0 z-10 hidden h-full w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear data-[side=left]:left-0 data-[side=left]:group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)] data-[side=right]:right-0 data-[side=right]:group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)] md:flex",
-                    // Adjust the padding for floating and inset variants.
                     variant === "floating" || variant === "inset"
                         ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]"
-                        // No side border: the shell's panels are detached boxes
-                        // that carry their own outline, so the divider the
-                        // default variant draws down this edge only doubled up
-                        // against the content box's own left border.
                         : "group-data-[collapsible=icon]:w-(--sidebar-width-icon)",
                     className
                 )}
@@ -297,10 +278,6 @@ function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
             onClick={toggleSidebar}
             title="Toggle Sidebar"
             className={cn(
-                // transition-all here animated every property the collapsible
-                // variants swap, including the inset values that reposition the
-                // rail. The only thing that should ease is the hairline's hover
-                // tint; the repositioning is a state change, not a movement.
                 "absolute inset-y-0 z-20 hidden w-4 after:transition-[background-color] after:duration-[var(--motion-fast)] group-data-[side=left]:-right-4 group-data-[side=right]:left-0 after:absolute after:inset-y-0 after:start-1/2 after:w-[2px] hover:after:bg-sidebar-border sm:flex ltr:-translate-x-1/2 rtl:-translate-x-1/2",
                 "in-data-[side=left]:cursor-w-resize in-data-[side=right]:cursor-e-resize",
                 "[[data-side=left][data-state=collapsed]_&]:cursor-e-resize [[data-side=right][data-state=collapsed]_&]:cursor-w-resize",
@@ -616,7 +593,6 @@ function SidebarMenuSkeleton({
 }: React.ComponentProps<"div"> & {
     showIcon?: boolean
 }) {
-    // Random width between 50 to 90%.
     const [width] = React.useState(() => {
         return `${Math.floor(Math.random() * 40) + 50}%`
     })

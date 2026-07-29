@@ -7,16 +7,10 @@ import { familyWeightSet, familyWidthSet } from "./weights";
 
 export type FacetIndex = ReturnType<typeof buildFacetIndex>;
 
-// Shared with applyFilters so counts and results agree.
-//
-// Form counts at any positive score, matching Google Fonts' own browse lists.
-// Mood needs a majority: Google scores nearly every family on nearly every mood
-// trait (Roboto carries /Expressive/Vintage 10), so at 1 the pills would each
-// match most of the catalog.
 export const FORM_TAG_THRESHOLD = 1;
+// Mood needs a high threshold because Google scores most families on most traits.
 export const MOOD_TAG_THRESHOLD = 50;
 
-/** `score` is 0 when the family carries no rating for that path. */
 export function meetsTagThreshold(tag: string, score: number): boolean {
   return score >= tagThreshold(tag);
 }
@@ -27,8 +21,6 @@ function tagThreshold(tag: string): number {
     : FORM_TAG_THRESHOLD;
 }
 
-// Sub-tags are ordered by family count. Both groups share the one `style`
-// state; `group` only decides which rail panel a section renders under.
 export const CLASSIFICATION_SECTIONS: {
   title: string;
   prefix: string;
@@ -146,14 +138,11 @@ export const CLASSIFICATION_SECTIONS: {
   },
 ];
 
-// Lets a group's badge count only its own tags even though every classification
-// shares the one `style` state.
 export function classificationGroupOf(tag: string): "style" | "mood" | null {
   const section = CLASSIFICATION_SECTIONS.find((s) => tag.startsWith(s.prefix));
   return section?.group ?? null;
 }
 
-// Records with a null license never match and get no pill.
 export const LICENSE_VALUES = ["OFL", "APACHE2", "UFL"];
 export const LICENSE_LABELS: Record<string, string> = {
   OFL: "OFL",
@@ -169,7 +158,6 @@ export const REPO_HOST_LABELS: Record<string, string> = {
   none: "None",
 };
 
-// The four buckets partition the catalog, so they render as radio-style pills.
 export const ACTIVITY_VALUES = ["latest", "active", "recent", "dormant"];
 export const ACTIVITY_LABELS: Record<string, string> = {
   latest: "Latest (≤6m)",
@@ -178,12 +166,7 @@ export const ACTIVITY_LABELS: Record<string, string> = {
   dormant: "Dormant (3y+)",
 };
 
-/** The activity bucket a family falls into, from head.modified.
- *
- *  Deliberately NOT lastModifiedApi: that moves on any release, and a
- *  library-wide metadata pass in Sept 2025 restamped 1492 of 1942 families
- *  within three weeks. head.modified only advances when the outlines are
- *  rebuilt, which is what "is this still maintained" actually asks. */
+/** Uses head.modified (not lastModifiedApi, which moves on metadata-only releases). */
 export function fontActivity(font: FontRecord): string {
   const months = monthsSince(font);
   if (months === null) return "dormant";
@@ -193,8 +176,6 @@ export function fontActivity(font: FontRecord): string {
   return "dormant";
 }
 
-/** A non-positive head.modified is an unset stamp (it decodes to 1904/1970),
- *  not a real date, so it defers to the repo's first commit. */
 function monthsSince(font: FontRecord): number | null {
   const stamp =
     font.modifiedMs && font.modifiedMs > 0
@@ -206,7 +187,6 @@ function monthsSince(font: FontRecord): number | null {
   return (Date.now() - stamp) / (1000 * 60 * 60 * 24 * 30.44);
 }
 
-/** An absent or unrecognised URL is "none", so the pills partition the catalog. */
 export function repoHost(url: string | null): string {
   if (!url) return "none";
   const u = url.toLowerCase();
@@ -216,17 +196,11 @@ export function repoHost(url: string | null): string {
   return "none";
 }
 
-// Only the Font type radio writes to `tags`, so only its two values need a
-// label. deriveFacets still emits the wider set (feature/axis/subset facets)
-// onto each record; those are data, reached through their own panels. Unmapped
-// ids fall back to the id.
 export const FACET_LABELS: Record<string, string> = {
   static: "Static",
   variable: "Variable",
 };
 
-// Radio-style split by Noto membership. isBrandFont/isOpenSource get no filter:
-// Brand is ~all Noto, and OpenSource is true for every published family.
 export const FLAG_VALUES = ["noto", "others"];
 export const FLAG_LABELS: Record<string, string> = {
   noto: "Noto",
@@ -239,11 +213,8 @@ export const ITALIC_LABELS: Record<string, string> = {
   upright: "Non-Italic",
 };
 
-// Placeholders, not foundries: dropped so they don't masquerade as a source.
 const UNKNOWN_VENDORS = new Set(["NONE", "UKWN", "----", ""]);
 
-/** The source field comma-joins collaborators ("Veronika Burian, José
- *  Scaglione"); each token filters independently. */
 export function designerTokens(font: FontRecord): string[] {
   if (!font.designer) return [];
   return font.designer
@@ -252,8 +223,6 @@ export function designerTokens(font: FontRecord): string[] {
     .filter(Boolean);
 }
 
-/** The OS/2 achVendID, uppercased so pyrs/PYRS collapse to one. Placeholder
- *  codes (NONE/UKWN/…) become null so they never get a pill. */
 export function foldVendor(vendorId: string | null): string | null {
   if (!vendorId) return null;
   const v = vendorId.trim().toUpperCase();
@@ -267,15 +236,13 @@ export function buildFacetIndex(fonts: FontRecord[]) {
   const axes = new Map<string, number>();
   const weights = new Map<string, number>();
   const widths = new Map<string, number>();
-  const wsScripts = new Map<string, number>(); // real writing systems (Latn…)
+  const wsScripts = new Map<string, number>();
   const languages = new Map<string, number>();
   const color = new Map<string, number>();
   const colorFormats = new Map<string, number>();
   const classifications = new Map<string, number>();
   const designers = new Map<string, number>();
   const vendors = new Map<string, number>();
-  // So the tooltip can show the code as the fonts actually embed it, rather
-  // than the uppercased grouping key.
   const vendorCasings = new Map<string, Map<string, number>>();
   const license = new Map<string, number>();
   const repoHosts = new Map<string, number>();
@@ -338,8 +305,6 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     fontTypes: FONT_TYPE_FACETS.map(
       (v) => [v, facets.get(v) ?? 0] as [string, number]
     ),
-    // Includes formats no published font uses: they stay selectable rather than
-    // vanishing at count 0.
     colorFormats: COLOR_FORMATS.map(
       (f) => [f.id, colorFormats.get(f.id) ?? 0] as [string, number]
     ),
@@ -373,8 +338,6 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     italic: ITALIC_VALUES.map(
       (v) => [v, italic.get(v) ?? 0] as [string, number]
     ),
-    // [count, families] ascending. Drives the range slider's stop list, so only
-    // counts the catalog actually has are reachable (no dead stops between).
     instances: [...instances.entries()]
       .map(([n, c]) => [Number(n), c] as [number, number])
       .filter(([n]) => n > 0)

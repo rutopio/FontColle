@@ -23,13 +23,9 @@ interface Props {
   view: ViewMode;
   selection: FilterSelection;
   axisValues: Record<string, number>;
-  // The Column's ScrollArea viewport: this list scrolls inside it, not the
-  // window, so the virtualizer measures against an element.
   scrollRef: RefObject<HTMLDivElement | null>;
 }
 
-// Measured from the container width, not the viewport, since the sidebar can
-// narrow the panel well below the matching viewport breakpoint.
 export function columnsFor(width: number, view: ViewMode): number {
   if (view === "row") return 1;
   if (width >= 1024) return 3;
@@ -40,10 +36,6 @@ export function columnsFor(width: number, view: ViewMode): number {
 const CARD_H = 288; // h-72
 const LINE_H = 128; // h-32
 
-// Keyed by contents rather than row index, because a `cols` change re-slices
-// every index onto different fonts: React would reuse the old row's DOM and
-// strand its cells. `view` is in the key so a grid<->row switch remounts too,
-// or the entrance animation would replay on a reused node and no-op.
 const rowKey = (view: ViewMode, firstFontId: string) =>
   `${view}-${firstFontId}`;
 
@@ -60,8 +52,6 @@ export function FontGrid({
   scrollRef,
 }: Props) {
   const listRef = useRef<HTMLDivElement>(null);
-  // A Set, so toggling one favorite flips one cell's boolean prop and the
-  // memoized twins bail out instead of every cell re-scanning the array.
   const favSet = useMemo(() => new Set(favorites), [favorites]);
   const [cols, setCols] = useState(view === "row" ? 1 : 3);
   const [virtualizerReady, setVirtualizerReady] = useState(false);
@@ -133,8 +123,6 @@ export function FontGrid({
         {items.map((row) => {
           const start = row.index * cols;
           const rowFonts = fonts.slice(start, start + cols);
-          // `cols` and the virtualizer's `count` are briefly out of sync after
-          // a resize, so row.index can point past the new slice.
           if (rowFonts.length === 0) return null;
           return (
             <div
@@ -168,8 +156,6 @@ export function FontGrid({
   );
 }
 
-// Also the list route's pendingComponent, so a slow load and the first paint
-// look the same. Heights track the real card/line.
 export function SkeletonGrid({ view }: { view: ViewMode }) {
   const count = view === "row" ? 8 : 9;
   const keys = Array.from({ length: count }, (_, i) => `skeleton-${i}`);
@@ -180,9 +166,6 @@ export function SkeletonGrid({ view }: { view: ViewMode }) {
       ))}
     </div>
   ) : (
-    // Container queries, not viewport breakpoints, mirroring columnsFor: the
-    // real grid measures its container, so viewport-based columns here would
-    // reflow the moment the cards took over.
     <div className="@container">
       <div className="grid @min-[1024px]:grid-cols-3 @min-[768px]:grid-cols-2 grid-cols-1 gap-4">
         {keys.map((k) => (

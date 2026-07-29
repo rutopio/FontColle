@@ -1,9 +1,6 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { BMP_BLOCKS, type UnicodeBlock } from "./unicode-blocks";
 
-// backfill_glyph_coverage.py writes public/glyphs/<id>.json: the font's BMP
-// codepoints, run-length encoded as inclusive [start, end] ranges.
-
 type Range = [number, number];
 
 interface Coverage {
@@ -16,7 +13,6 @@ export interface CoveredBlock {
 }
 
 export function hasCodepoint(ranges: Range[], cp: number): boolean {
-  // Linear is fine: ranges are already narrowed to one block by this point.
   for (const [a, b] of ranges) {
     if (cp < a) return false;
     if (cp <= b) return true;
@@ -43,7 +39,6 @@ export function blocksWithCoverage(ranges: Range[]): CoveredBlock[] {
   return out;
 }
 
-// Coverage files are immutable per font, so they never go stale: cache forever.
 function glyphCoverageQueryOptions(fontId: string) {
   return queryOptions({
     queryKey: ["glyph-coverage", fontId],
@@ -58,7 +53,6 @@ function glyphCoverageQueryOptions(fontId: string) {
   });
 }
 
-// Empty until loaded, and on error.
 export function useGlyphCoverage(fontId: string): {
   ranges: Range[];
   loading: boolean;

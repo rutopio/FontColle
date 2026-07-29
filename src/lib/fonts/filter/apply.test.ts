@@ -4,9 +4,6 @@ import { applyFilters, searchByQuery, suggestFamilies } from "./apply";
 import { fontActivity } from "./facets";
 import { emptyFilter, type FilterState } from "./state";
 
-// A minimal FontRecord factory: every field the matcher reads gets a sane
-// default, and each test overrides only the fields it exercises. Fields the
-// matcher never touches are set to null/empty to keep fixtures readable.
 function font(over: Partial<FontRecord> = {}): FontRecord {
   return {
     id: over.id ?? over.name?.toLowerCase().replace(/\s+/g, "-") ?? "f",
@@ -79,7 +76,6 @@ const filter = (over: Partial<FilterState>): FilterState => ({
   ...over,
 });
 
-// Names of the records that survived a filter, for concise assertions.
 const names = (fonts: FontRecord[]) => fonts.map((f) => f.name);
 
 describe("applyFilters, text query", () => {
@@ -89,7 +85,6 @@ describe("applyFilters, text query", () => {
     font({ name: "Lato", displayName: "Lato Display" }),
   ];
   it("does NOT gate on the query (searchByQuery owns text search now)", () => {
-    // applyFilters is the pure facet pass; the query is applied downstream.
     expect(applyFilters(fonts, filter({ query: "rob" }))).toHaveLength(3);
   });
 });
@@ -106,7 +101,6 @@ describe("applyFilters, category", () => {
   });
 });
 
-// `tags` now backs only the Font type radio, so it carries at most one value.
 describe("applyFilters, tags (Font type radio)", () => {
   const fonts = [
     font({ name: "V", facets: ["variable", "ligatures"] }),
@@ -179,7 +173,6 @@ describe("applyFilters, weight and width ranges", () => {
     expect(names(out)).toEqual(["Reg", "Bold", "Cond", "Both"]);
   });
   it("width covers the wdth-axis range (75-125% -> steps 3..6)", () => {
-    // Cond's wdth axis spans 75..125%, which includes step 3 (75%).
     expect(names(applyFilters(fonts, filter({ widths: ["3"] })))).toEqual([
       "Cond",
     ]);
@@ -244,9 +237,6 @@ describe("applyFilters, color and color formats", () => {
   });
 });
 
-// Form tags (Sans/Serif/Slab/Script) count at any score, matching what Google
-// Fonts lists; Mood tags (Expressive/Theme/Seasonal) need 50+. See
-// FORM_TAG_THRESHOLD / MOOD_TAG_THRESHOLD.
 describe("applyFilters, style (OR default, per-group threshold)", () => {
   const fonts = [
     font({ name: "Didone", tags: { "/Serif/Didone": 80 } }),
@@ -316,7 +306,6 @@ describe("applyFilters, designers, vendors, license, repo, upm", () => {
     ).toEqual(["A", "B"]);
   });
   it("AND within designers (toggle): co-designed by every selected name", () => {
-    // A is by both Burian and Scaglione; B is Matteson only.
     expect(
       names(
         applyFilters(
@@ -392,11 +381,8 @@ describe("applyFilters, noto flag, italic, hinting, monospace-metric", () => {
 
 describe("applyFilters, metric ranges", () => {
   const fonts = [
-    // xHeight ratio 0.52 (520/1000)
     font({ name: "Tall", xHeight: 520, unitsPerEm: 1000 }),
-    // xHeight ratio 0.40
     font({ name: "Short", xHeight: 400, unitsPerEm: 1000 }),
-    // null xHeight -> excluded by any active xHeight range
     font({ name: "Unknown", xHeight: null, unitsPerEm: 1000 }),
   ];
   it("keeps fonts whose derived value is in range, drops null inputs", () => {
@@ -427,7 +413,7 @@ describe("searchByQuery", () => {
   it("matches on designer and on vendor (name + id)", () => {
     const fonts = [
       font({ name: "Alpha", designer: "Christian Robertson" }),
-      font({ name: "Beta", vendorId: "GOOG" }), // vendorLabel -> "Google"
+      font({ name: "Beta", vendorId: "GOOG" }),
     ];
     expect(names(searchByQuery(fonts, "christian"))).toEqual(["Alpha"]);
     expect(names(searchByQuery(fonts, "goog"))).toEqual(["Beta"]);
@@ -435,8 +421,8 @@ describe("searchByQuery", () => {
 
   it("ranks a name hit above a designer-only hit", () => {
     const fonts = [
-      font({ name: "Studio Sans", designer: "Someone" }), // name contains "studio"
-      font({ name: "Zzz", designer: "Studio Foundry" }), // designer only
+      font({ name: "Studio Sans", designer: "Someone" }),
+      font({ name: "Zzz", designer: "Studio Foundry" }),
     ];
     expect(names(searchByQuery(fonts, "studio"))[0]).toBe("Studio Sans");
   });
@@ -458,15 +444,12 @@ describe("suggestFamilies", () => {
     expect(suggestFamilies("intr", fonts)[0]).toBe("Inter");
   });
   it("tolerates two edits on a longer query (looser than the search)", () => {
-    // "robotaa" is edit-distance 2 from "Roboto"; the ~len/3 budget allows it
-    // even though the single-error fuzzy search would miss it.
     expect(suggestFamilies("robotaa", fonts)[0]).toBe("Roboto");
   });
   it("matches an individual word of a multi-word family", () => {
     expect(suggestFamilies("noto", fonts)).toContain("Noto Sans");
   });
   it("lists every family within the edit budget, closest first", () => {
-    // "huninnn" is edit-distance 1 from both cuts' shared "Huninn" word.
     const cuts = [
       font({ name: "Bpmf Huninn" }),
       font({ name: "Klee Huninn" }),
@@ -489,8 +472,6 @@ describe("suggestFamilies", () => {
   });
 });
 
-// Buckets on head.modified (when the binary was compiled), NOT on the Google
-// publish date — see fontActivity for why.
 describe("fontActivity", () => {
   const monthsAgo = (n: number) => Date.now() - n * 30.44 * 24 * 60 * 60 * 1000;
 
@@ -502,7 +483,6 @@ describe("fontActivity", () => {
   });
 
   it("ignores the Google publish date", () => {
-    // The Sept 2025 metadata pass shape: freshly published, ancient binary.
     const f = font({
       modifiedMs: monthsAgo(120),
       lastModifiedApi: new Date().toISOString().slice(0, 10),
@@ -511,7 +491,6 @@ describe("fontActivity", () => {
   });
 
   it("falls back to the first commit when head.modified is unset", () => {
-    // Amiri / Amiri Quran ship modifiedMs 0, which decodes to the epoch.
     const f = font({ modifiedMs: 0, firstCommitDate: "2024-01-15" });
     expect(fontActivity(f)).toBe("recent");
   });

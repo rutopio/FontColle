@@ -33,11 +33,8 @@ import {
 import { DetailSidebar } from "./-components/detail-sidebar";
 import { GlyphsSidebar } from "./-components/glyphs-sidebar";
 
-// Every clause is optional, so a sparse record still reads naturally. Kept
-// under ~160 chars, the length search engines show.
 function detailDescription(font: FontRecord): string {
   const name = font.name;
-  // apiCategory is the raw GF enum ("SANS_SERIF"), hence the despacing.
   const rawKind =
     font.category?.trim() ||
     font.apiCategory?.replace(/_/g, " ").toLowerCase() ||
@@ -67,8 +64,6 @@ function detailDescription(font: FontRecord): string {
 export const Route = createFileRoute("/$tab/$fontId")({
   component: DetailPage,
   beforeLoad: ({ params }) => {
-    // /about/{fontId} is the Designer tab's retired slug; 301 it rather than
-    // let the unknown-slug check below 404.
     if (params.tab === "about") {
       throw redirect({
         to: "/$tab/$fontId",
@@ -79,8 +74,6 @@ export const Route = createFileRoute("/$tab/$fontId")({
     }
   },
   loader: async ({ params }) => {
-    // Reject unknown slugs, so /foo/roboto 404s instead of silently falling
-    // back to a default view.
     if (!tabFromSlug(params.tab)) throw notFound();
     const font = await fetchFontById(params.fontId);
     if (!font) throw notFound();
@@ -97,15 +90,8 @@ export const Route = createFileRoute("/$tab/$fontId")({
     const name = font?.name;
     if (!name || !font) return {};
     const description = detailDescription(font);
-    // The six tabs render near-identical content on overlapping URLs, so every
-    // canonical points at Instances to consolidate ranking signals.
     const canonical = absoluteUrl(`/instances/${fontSlug(font.id)}`);
-    // Pre-rendered by `pnpm gen:og`. Needs an absolute URL, like og:url.
     const ogImage = absoluteUrl(`/og/${font.id}.png`);
-    // Structured data is NOT emitted here: in this version neither head()'s
-    // `scripts` nor `headScripts` puts a ld+json tag in the SSR document,
-    // verified against production both ways. DetailPage renders it in its own
-    // JSX instead, and Google accepts JSON-LD anywhere in the document.
     return {
       meta: [
         { title: pageTitle(name) },
@@ -146,7 +132,6 @@ function DetailPage() {
   const router = useRouter();
   const canGoBack = useCanGoBack();
 
-  // Default-on features seed as ON, matching what the browser renders.
   const w3cDefaults = () =>
     Object.fromEntries(font.features.map((tag) => [tag, DEFAULT_ON.has(tag)]));
   const [featureState, setFeatureState] =
@@ -162,16 +147,9 @@ function DetailPage() {
   const setAxis = (tag: string, value: number) =>
     setAxisState((prev) => ({ ...prev, [tag]: value }));
   const resetAxes = () => setAxisState(axisDefaults());
-  // Nothing flips this: the Tester's chips set italic per block on the node
-  // itself, so this stays the family's upright default.
   const italic = false;
-
-  // Only the Instances rows read this: the Tester sizes per block type in its
-  // own toolbar.
   const [size, setSize] = useState(24);
 
-  // `replace` so switching tabs doesn't push history: back should return to
-  // the list, not step through the tabs visited on this font.
   const tab = tabFromSlug(tabSlug) ?? "sample";
   const selectTab = (id: DetailTab) =>
     navigate({
@@ -179,8 +157,6 @@ function DetailPage() {
       replace: true,
     });
 
-  // Skipped while typing, and while a dialog or drawer is open, where Escape
-  // means "close that" instead.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
@@ -194,8 +170,6 @@ function DetailPage() {
         return;
       if (document.querySelector("[data-slot=sheet-content], [role=dialog]"))
         return;
-      // Same rule as Back: step back if we came from the list, so its filters
-      // and scroll survive; otherwise go there fresh.
       if (canGoBack) backWithViewTransition(() => router.history.back());
       else navigate({ to: "/", viewTransition: true });
     };
@@ -206,22 +180,16 @@ function DetailPage() {
   const { ranges, loading: glyphLoading } = useGlyphCoverage(font.id);
   const coveredBlocks = useMemo(() => blocksWithCoverage(ranges), [ranges]);
   const [glyphBlock, setGlyphBlock] = useState("");
-  // Cleared on manual block selection, so a later search for the same block
-  // re-triggers the highlight.
   const [highlightCp, setHighlightCp] = useState<number | null>(null);
   const [searchMiss, setSearchMiss] = useState(false);
 
-  // The highlight is an infinite animate-pulse, and auto-playing motion running
-  // past five seconds with no way to stop it fails WCAG 2.2.2, so retire it on
-  // a timer. Long enough to survive the scroll-into-view and be found by eye.
+  // WCAG 2.2.2: auto-retire the highlight after 3s.
   useEffect(() => {
     if (highlightCp == null) return;
     const id = setTimeout(() => setHighlightCp(null), 3000);
     return () => clearTimeout(id);
   }, [highlightCp]);
 
-  // Returns whether it landed, so the mobile drawer closes on a hit and a miss
-  // stays open to show the field's error.
   const searchGlyph = (query: string): boolean => {
     const cp = parseGlyphQuery(query);
     const block = cp == null ? undefined : blockOf(cp);
@@ -245,16 +213,12 @@ function DetailPage() {
     setSearchMiss(false);
   };
 
-  // No fixed default: a font may not cover Basic Latin. Derived rather than
-  // effect-corrected, so a font change never renders a stale pick.
   const activeGlyphBlock = coveredBlocks.some(
     (c) => c.block.name === glyphBlock
   )
     ? glyphBlock
     : (coveredBlocks[0]?.block.name ?? "");
 
-  // Rendered in both the desktop sidebar and the mobile drawer. `onDismiss`
-  // comes only from the drawer, the one host that can be closed.
   const hasControls = tab === "tester" || tab === "sample" || tab === "glyphs";
   const renderSidebarPanel = (onDismiss?: () => void) =>
     tab === "glyphs" ? (
@@ -272,9 +236,6 @@ function DetailPage() {
         panelKey={tab}
         size={size}
         onSizeChange={setSize}
-        // Opposite halves: the Tester sizes per block in its own toolbar but
-        // reweights from the axis sliders, while Instances pins each row to
-        // its own coords and needs only the shared size.
         showSize={tab === "sample"}
         axes={font.axes}
         axisState={axisState}
@@ -288,8 +249,6 @@ function DetailPage() {
       />
     );
 
-  // Rendered here rather than through head(), which emits nothing in the SSR
-  // document (see the note there).
   const canonicalUrl = absoluteUrl(`/instances/${fontSlug(font.id)}`);
   const jsonLd = canonicalUrl
     ? JSON.stringify({
@@ -304,8 +263,6 @@ function DetailPage() {
 
   return (
     <FilterLayout
-      // Open only on the tabs that have controls; the rest collapse the panel
-      // away and give the width back to the content.
       panelOpen={hasControls}
       favoriteFontId={font.id}
       rail={<DetailRail active={tab} onSelect={selectTab} />}
@@ -332,11 +289,6 @@ function DetailPage() {
         glyphLoading={glyphLoading}
         glyphHighlightCp={highlightCp}
       />
-      {/* Mobile-only controls access for the tabs that have a sidebar.
-          AnimatePresence keeps the FAB mounted through its exit animation when
-          switching to a tab without controls. No per-tab key: Tester,
-          Instances and Glyphs all keep the FAB, so it stays put and only swaps
-          its icon rather than cross-fading two buttons in the same spot. */}
       <AnimatePresence initial={false}>
         {hasControls && (
           <ControlsDrawer

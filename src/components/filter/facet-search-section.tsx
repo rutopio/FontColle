@@ -8,9 +8,6 @@ import { useSearchSort } from "./use-facet-search";
 
 export type FacetItem = readonly [string, number, string];
 
-// For facets small enough to render inline; Language uses a Browse-all dialog
-// instead. The search matches both the raw value ("Latn") and its label
-// ("Latin"), and hands Pills every survivor so a match can't stay collapsed.
 export function FacetSearchSection({
   title,
   icon,
@@ -35,7 +32,6 @@ export function FacetSearchSection({
   searchPlaceholder: string;
   mode?: MatchMode;
   onToggleMode?: () => void;
-  // Defaults to font count; pass e.g. speaker population to rank by that.
   rankBy?: (value: string) => number;
   topN: number;
   pillTitle?: (value: string) => string;
@@ -69,8 +65,6 @@ export function FacetSearchSection({
     [matches, sort]
   );
 
-  // Ranked by count/population, never by the active sort: flipping to A–Z
-  // reorders pills, it doesn't change which ones hide.
   const topNSet = useMemo(() => {
     if (q) return new Set(matches.map(([value]) => value));
     const rank = rankBy ?? ((_: string) => 0);

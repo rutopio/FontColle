@@ -1,11 +1,3 @@
-// WebMCP tool definitions: the site's key actions exposed to an in-browser AI
-// agent via navigator.modelContext. Tools drive the real UI rather than
-// answering out of band — search_fonts writes the filter URL, so the user
-// watches the list narrow and can carry on from where the agent left them.
-//
-// The API is a W3C WebML CG proposal, not in any stable browser. Everything
-// here is feature-detected and a no-op when absent; see ./register.
-
 import type { QueryClient } from "@tanstack/react-query";
 import type { AnyRouter } from "@tanstack/react-router";
 import { catalogQueryOptions } from "@/lib/fonts/catalog";
@@ -18,7 +10,6 @@ import {
 } from "@/lib/fonts/filter";
 import type { FontRecord } from "@/lib/fonts/types";
 
-// Enumerated in the schema, so an agent picks a real bucket.
 const CATEGORIES = [
   "Sans",
   "Serif",
@@ -30,8 +21,6 @@ const CATEGORIES = [
   "Emoji",
 ] as const;
 
-// The full match set can be ~800 families, useless in a model's context. The
-// count field carries the real total, and the user sees every match on screen.
 const MAX_IDS = 50;
 
 export interface ToolContext {
@@ -60,9 +49,6 @@ const failure = (message: string): ToolResult => ({
   isError: true,
 });
 
-// Accepts a bare string for the common single-value call. Non-string entries
-// are dropped rather than coerced, so a malformed arg narrows nothing instead
-// of filtering on "[object Object]".
 function strings(value: unknown): string[] {
   if (typeof value === "string") return value ? [value] : [];
   if (!Array.isArray(value)) return [];
@@ -73,7 +59,6 @@ async function catalog(ctx: ToolContext): Promise<FontRecord[]> {
   return ctx.queryClient.fetchQuery(catalogQueryOptions());
 }
 
-// The full record is ~7 KB, too much to return 50 of.
 function summarise(font: FontRecord) {
   return {
     id: font.id,
@@ -150,9 +135,6 @@ export function buildTools(ctx: ToolContext): ToolDefinition[] {
       },
       execute: async (args) => {
         const fonts = await catalog(ctx);
-        // Build on emptyFilter, not the current URL: an agent call states the
-        // whole query it means, so leaving the user's stale filters underneath
-        // would silently over-narrow the result.
         const filter = { ...emptyFilter };
         if (typeof args.query === "string") filter.query = args.query;
         filter.categories = strings(args.category);
@@ -162,8 +144,6 @@ export function buildTools(ctx: ToolContext): ToolDefinition[] {
         filter.weights = strings(args.weights);
         if (typeof args.variable === "boolean")
           filter.tags = [args.variable ? "variable" : "static"];
-        // Monospace is a category, not a separate facet, so it merges into the
-        // category list rather than overwriting an explicit category.
         if (args.monospace === true && !filter.categories.includes("Mono"))
           filter.categories = [...filter.categories, "Mono"];
 
@@ -171,8 +151,6 @@ export function buildTools(ctx: ToolContext): ToolDefinition[] {
           applyFilters(fonts, filter),
           filter.query
         );
-        // Writing the URL is what moves the UI: the list route validates these
-        // params back into the same FilterState that produced `matches`.
         const search = filterToSearch(filter) satisfies FilterSearch;
         await ctx.router.navigate({ to: "/", search });
 
@@ -205,7 +183,6 @@ export function buildTools(ctx: ToolContext): ToolDefinition[] {
       execute: async (args) => {
         const id = typeof args.id === "string" ? args.id : "";
         if (!id) return failure("id is required");
-        // Already in the query cache, so this needs no extra request.
         const fonts = await catalog(ctx);
         const font = fonts.find((f) => f.id === id);
         if (!font)
@@ -241,7 +218,6 @@ export function buildTools(ctx: ToolContext): ToolDefinition[] {
         if (!id) return failure("id is required");
         const fonts = await catalog(ctx);
         const font = fonts.find((f) => f.id === id);
-        // A non-existent slug would land the user on a 404.
         if (!font)
           return failure(
             `No font with id "${id}". Call search_fonts to find valid ids.`

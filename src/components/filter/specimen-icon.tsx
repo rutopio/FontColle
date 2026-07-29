@@ -1,13 +1,7 @@
 import { SmileyIcon } from "@phosphor-icons/react";
 
-// Traced once by scripts/gen-specimen-svgs.mjs, so the cards draw their sample
-// without loading a webfont.
-
-// A CSS mask over a currentColor background, NOT an <img>: `fill:currentColor`
-// resolves only for inline SVG, so an <img src> falls back to black and the
-// glyphs stay black in dark mode.
+// Mask + currentColor, not <img>: fill:currentColor only works on inline SVG.
 function SpecimenImg({ src, className }: { src: string; className?: string }) {
-  // Decorative: the visible label below the specimen already names the value.
   return (
     <span
       aria-hidden
@@ -30,7 +24,6 @@ function SpecimenImg({ src, className }: { src: string; className?: string }) {
 const boxClass = "h-6 w-full text-foreground";
 
 export function CategorySpecimen({ category }: { category: string }) {
-  // Emoji has no meaningful "Aa" specimen, so it shows an icon instead.
   if (category === "Emoji") {
     return (
       <span className={boxClass}>

@@ -15,13 +15,8 @@ import { emptyFilter } from "@/lib/fonts/filter";
 import type { FontRecord } from "@/lib/fonts/types";
 import { usePreview } from "@/lib/preview/context";
 
-// The rail is inert while pending, so its handler is never reached.
 const NOOP_GROUP = () => {};
 
-// The panel always opens on Style (DEFAULT_FILTER_GROUP), so the skeleton is
-// that group's shape rather than a generic one: eight Category cards, then the
-// four classification sub-lists with the pill counts the catalog really has.
-// Keyed by name rather than index.
 const CATEGORY_CARDS = [
   "sans",
   "serif",
@@ -39,38 +34,19 @@ const STYLE_SUBGROUPS = [
   { id: "script", pills: 4 },
 ];
 
-// Mirrors Catalog's real header block for block, because the header is
-// flex-wrap: on mobile the real one wraps to two rows, so a skeleton of the
-// wrong shape would resize the header the moment the catalog resolved and push
-// the whole list down. Every height here tracks the real control's.
 const HEADER_SKELETON = (
   <>
     <div className="flex min-w-0 flex-1 items-center gap-2 max-md:w-full">
-      {/* The search field, capped to the filter panel's width like the real
-          one. */}
       <div className="h-9 min-w-0 flex-1 animate-pulse rounded-lg bg-muted md:max-w-[calc(var(--sidebar-width)-var(--sidebar-width-icon)-1rem-1.0625rem)]" />
-      {/* Sort, which sits beside the field on desktop and drops to the second
-          row on a phone — the same split the real control makes. w-44 is the
-          width SortControl settles at from its trigger's min-w-36 plus the
-          direction button and the divider between them. */}
       <div className="hidden h-9 w-44 animate-pulse rounded-lg bg-muted md:block" />
     </div>
 
     <div className="ml-auto flex items-center gap-2 max-md:ml-0 max-md:w-full max-md:justify-between md:shrink-0 md:gap-3">
-      {/* The real count span is flex-1, so it owns the slack and pushes what
-          follows to the right edge; the pulse block inside keeps a text-sized
-          bar rather than stretching across that whole slack. */}
       <div className="flex-1">
         <div className="h-5 w-20 animate-pulse rounded bg-muted" />
       </div>
-      {/* Sort's phone position; see the desktop twin above. */}
       <div className="h-9 w-44 animate-pulse rounded-lg bg-muted md:hidden" />
-      {/* The view tabs. */}
       <div className="h-9 w-20 animate-pulse rounded-lg bg-muted" />
-      {/* The real controls, like the rail's: these three look the same on every
-          render and two of them work already — the theme switches and About
-          opens while the catalog is still arriving. Favorite is live too; it
-          reads the URL, which is there from the first paint. */}
       <div className="hidden items-center gap-1 md:flex">
         <div className={RAIL_HEADER_CELL}>
           <ThemeToggle variant="header" />
@@ -86,11 +62,6 @@ const HEADER_SKELETON = (
   </>
 );
 
-// The real rail, not a skeleton: its buttons are the same nine icons on every
-// render, so there is nothing to wait for and a shimmer there would only make
-// the sidebar flicker into the same shape it already had. `inert` makes the
-// whole run unclickable and drops it out of the tab order until the catalog
-// arrives; emptyFilter gives every group a zero count, so no badge shows.
 function PendingRail() {
   return (
     <div inert className="flex flex-col gap-1 opacity-60">
@@ -105,14 +76,8 @@ function PendingRail() {
   );
 }
 
-// The filter panel while the catalog loads, shaped like the Style group it
-// always resolves into: the same p-4, the same gaps, the same grids. Only the
-// text and icons are stand-ins, so the real sections arrive into the outline
-// they already occupy instead of pushing it around.
 const SIDEBAR_SKELETON = (
   <div className="flex w-full flex-col gap-12 p-4">
-    {/* CATEGORY: a header row (icon + title, with the Reset slot's width held
-        open on the right) over a 3-up grid of square cards. */}
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
@@ -130,8 +95,6 @@ const SIDEBAR_SKELETON = (
       </div>
     </div>
 
-    {/* STYLE: one header, then the four classification sub-lists, each an h3
-        over a 2-column grid of h-8 pills. */}
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-1.5">
         <div className="size-4 animate-pulse rounded bg-muted" />
@@ -157,9 +120,6 @@ const SIDEBAR_SKELETON = (
   </div>
 );
 
-// Everything that does not depend on the catalog renders for real — the rail's
-// icons, Theme, About, Favorite. Only what the catalog fills in (the search
-// field, sort, the count, the filter sections) shimmers until it arrives.
 export function ListPending() {
   return (
     <FilterLayout
@@ -174,18 +134,8 @@ export function ListPending() {
   );
 }
 
-// Real, non-virtualized FontCards, so a crawler or non-JS fetch of `/` sees
-// ~24 actual fonts in the SSR HTML instead of an empty shell.
-//
-// The wrapper classes mirror the virtualized grid's row container so nothing
-// jumps on the swap, and the props below are exactly what Catalog passes on a
-// default first render, so the server and first-client trees agree.
 export function FirstPagePending({ firstPage }: { firstPage: FontRecord[] }) {
   const { text: previewText } = usePreview();
-  // The column count must match FontGrid exactly or the layout reflows when
-  // Catalog takes over, and FontGrid measures its CONTAINER, not the viewport.
-  // Container queries rather than JS: measuring in an effect would leave the
-  // first paint showing a guess. Breakpoints mirror columnsFor's.
 
   if (firstPage.length === 0) return <ListPending />;
 
@@ -196,9 +146,6 @@ export function FirstPagePending({ firstPage }: { firstPage: FontRecord[] }) {
       header={HEADER_SKELETON}
     >
       <Column footer={<PreviewBar />}>
-        {/* Both layouts are rendered; CSS shows the one matching data-view, so
-            the SSR'd list already matches the visitor's saved preference. See
-            pending-grid-only / pending-row-only in styles.css. */}
         <div className="pending-grid-only @container flex-1">
           <div className="grid @min-[1024px]:grid-cols-3 @min-[768px]:grid-cols-2 grid-cols-1 gap-4 pb-4">
             {firstPage.map((font) => (
@@ -234,8 +181,6 @@ export function FirstPagePending({ firstPage }: { firstPage: FontRecord[] }) {
   );
 }
 
-// Module-level so they stay referentially stable and FontCard's memo bails out.
-// The favorite toggle is a no-op: favorites are still hydrating.
 const NOOP = () => {};
 const EMPTY_AXES: Record<string, number> = {};
 const FIRST_PAGE_SELECTION = {

@@ -32,20 +32,6 @@ export function ColorSection({
   );
 }
 
-// Color-table formats, AND-combined: a font can carry several at once, so
-// selecting two narrows to the fonts providing both and the per-format counts
-// overlap (summing above the colorful total).
-//
-// The pill id is one table of a pair (COLR, CBDT); its partner is counted
-// separately in the facet index but folded into the label, so it gets no pill.
-//
-// All four render, even those no published font uses: they stay clickable and
-// yield an empty result rather than hiding a filter that would reappear the day
-// Google ships such a font.
-//
-// `disabled` fades the grid under Monochrome, which by definition carries no
-// color table. A hand-typed ?color=monochrome&cfmt=COLR can still arrive
-// pre-selected; the empty result is then correct and Reset escapes it.
 export function ColorFormatSection({
   items,
   selected,

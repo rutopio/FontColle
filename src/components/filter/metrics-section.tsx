@@ -28,21 +28,13 @@ import { PillButton } from "./pill-button";
 import { Section } from "./section";
 import { SectionHeader } from "./section-header";
 
-// A fixed list, not top-N by count, so these four are always the visible ones.
 const UPM_DEFAULT = new Set(["1000", "2048", "1024", "2000"]);
 
-// A slider with both thumbs on the domain edges filters nothing and is not
-// stored. The snap (upm) and log (fileSize) scales are mapped to and from the
-// track here, so the stored value is always the real metric value.
-
-// So the editable readout shows a clean number and round-trips losslessly.
 function roundTo(v: number, step: number): number {
   const inv = 1 / step;
   return Math.round(v * inv) / inv;
 }
 
-// Linear metrics map straight through; fileSize works in log10(bytes); upm is
-// an index into its sorted values.
 interface TrackMap {
   min: number;
   max: number;
@@ -57,7 +49,6 @@ function trackMap(spec: MetricSpec): TrackMap {
     return {
       min: lg(spec.min),
       max: lg(spec.max),
-      // ~120 steps across the log range for smooth dragging.
       step: (lg(spec.max) - lg(spec.min)) / 120,
       toTrack: lg,
       fromTrack: (t) => 10 ** t,
@@ -99,7 +90,6 @@ function MetricRangeRow({
     commit(map.fromTrack(arr[0]), map.fromTrack(arr[1]));
   };
 
-  // Clicking the already-selected quartile clears back to full extent.
   const pickQuartile = (q: MetricRange) => {
     if (value && rangesEqual(value, q)) onChange(undefined);
     else commit(q[0], q[1]);
@@ -161,9 +151,6 @@ function MetricRangeRow({
         step={map.step}
         getAriaLabel={(i) => `${spec.label} ${i === 0 ? "minimum" : "maximum"}`}
       />
-      {/* Quartile quick-select: each pill sets the slider to a range holding
-          ~1/4 of the catalog (Q1 = smallest, Q4 = largest). The trailing All
-          pill clears the range back to full extent. */}
       <div className="grid grid-cols-5 gap-1">
         {quartiles.map((q, i) => {
           const active = value != null && rangesEqual(value, q);
@@ -172,9 +159,6 @@ function MetricRangeRow({
               // biome-ignore lint/suspicious/noArrayIndexKey: fixed 4-quartile list
               key={i}
             >
-              {/* The quartile pill is itself the trigger, no nested button,
-                  so base-ui merges its hover/focus onto this <button> while
-                  keeping our onClick. */}
               <TooltipTrigger
                 render={
                   <button
@@ -239,9 +223,6 @@ export function MetricsSection({
         sort="count"
         onToggleSort={() => {}}
       />
-      {/* Six slider rows, the sub-items inside this one section, so gap-8;
-          the Metrics/Units/Hint sections themselves are spaced by the sidebar's
-          gap-12, not here. */}
       <div className="flex flex-col gap-8">
         {METRIC_ORDER.map((key) => (
           <MetricRangeRow

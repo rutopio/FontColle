@@ -3,18 +3,12 @@ import { REPO_HOST_LABELS } from "@/lib/fonts/filter";
 import { PillButton } from "./pill-button";
 import { SectionHeader } from "./section-header";
 
-// Repository-host filter: GitHub / GitLab / SourceHut / None, two per row.
-// Multi-select with OR semantics, a family matches when its repository_url's
-// host is one of the selected buckets. Every family maps to exactly one bucket
-// (no repo -> None), so the four pills partition the catalog. Order is fixed
-// (None trails), from the facet index.
 export function RepositorySection({
   items,
   selected,
   onToggle,
   onReset,
 }: {
-  // [hostId, count], e.g. ["github", 1993]. Fixed order.
   items: [string, number][];
   selected: string[];
   onToggle: (v: string) => void;

@@ -22,10 +22,6 @@ import { facetLabel, subTagLabel, weightLabel, widthLabel } from "./constants";
 const classificationSubList = (path: string): string =>
   CLASSIFICATION_SECTIONS.find((s) => path.startsWith(s.prefix))?.title ?? "";
 
-// Classifications fold into one chip per rail panel, matching the sidebar,
-// where the sub-lists share a single header and OR/AND mode. The sub-list name
-// survives as a prefix on each value ("Sans Serif: Rounded"), since "Modern"
-// and "Humanist" appear under more than one sub-list.
 const classificationSection = (path: string): string =>
   classificationGroupOf(path) === "mood" ? "Mood" : "Style";
 
@@ -37,11 +33,9 @@ const classificationValue = (path: string): string => {
 
 export interface FilterChip {
   id: string;
-  section: string; // muted prefix ("Weight", "Script"…)
+  section: string;
   value: string;
   key: keyof FilterState;
-  // The stored value (array entry or metric key). Absent for the boolean
-  // `hasHinting`, which has no per-value identity.
   rawValue?: string;
 }
 
@@ -50,8 +44,6 @@ const COLOR_LABEL: Record<string, string> = {
   monochrome: "Monochrome",
 };
 
-// In the sidebar's section order. The text query is excluded: it has its own
-// input to clear.
 export function describeActiveFilters(f: FilterState): FilterChip[] {
   const chips: FilterChip[] = [];
   const push = (
@@ -64,7 +56,6 @@ export function describeActiveFilters(f: FilterState): FilterChip[] {
 
   for (const v of f.categories)
     push(`category:${v}`, "Category", v, "categories", v);
-  // `tags` holds only the Font type radio, so its chip reads as that section.
   for (const v of f.tags)
     push(`facet:${v}`, "Font type", facetLabel(v), "tags", v);
   for (const v of f.style)
@@ -88,8 +79,6 @@ export function describeActiveFilters(f: FilterState): FilterChip[] {
   for (const v of f.widths)
     push(`width:${v}`, "Width", widthLabel(v), "widths", v);
   for (const v of f.axes) push(`axis:${v}`, "Variable axes", v, "axes", v);
-  // The raw 4-letter tag, matching the sidebar pills. featureName would expand
-  // "ccmp" to "Glyph Composition / Decomposition", too long for an inline chip.
   for (const v of f.features) push(`feat:${v}`, "Features", v, "features", v);
   for (const v of f.designers) push(`dsr:${v}`, "Designer", v, "designers", v);
   for (const v of f.vendors)
@@ -109,8 +98,6 @@ export function describeActiveFilters(f: FilterState): FilterChip[] {
     );
   for (const v of f.upm) push(`upm:${v}`, "Units per em", v, "upm", v);
   if (f.instances) {
-    // A range matching a bucket reads as its label (">18"); any other range
-    // the slider produced reads as its bounds.
     const id = instanceBucketOf(f.instances);
     const bucket = INSTANCE_BUCKETS.find((b) => b.id === id);
     const [lo, hi] = f.instances;
@@ -140,8 +127,6 @@ export function describeActiveFilters(f: FilterState): FilterChip[] {
   return chips;
 }
 
-// Only the toggleable sections vary, reading their live OR/AND mode; every
-// other multi-value section combines with OR in applyFilters.
 const MODE_KEY_SET = new Set<string>(MODE_KEYS);
 
 function sectionJoiner(f: FilterState, key: keyof FilterState): "and" | "or" {
@@ -155,7 +140,7 @@ export interface FilterChipGroup {
   section: string;
   values: { id: string; value: string }[];
   joiner: "and" | "or";
-  removeAll: FilterState; // the filter with this whole section cleared
+  removeAll: FilterState;
 }
 
 export function groupActiveFilters(f: FilterState): FilterChipGroup[] {
@@ -165,8 +150,6 @@ export function groupActiveFilters(f: FilterState): FilterChipGroup[] {
     { group: FilterChipGroup; chips: FilterChip[] }
   >();
 
-  // By displayed section name, not state key: the classification key holds
-  // several distinct sections, each of which clears as its own chip.
   for (const chip of describeActiveFilters(f)) {
     let entry = bySection.get(chip.section);
     if (!entry) {
@@ -175,7 +158,7 @@ export function groupActiveFilters(f: FilterState): FilterChipGroup[] {
         section: chip.section,
         values: [],
         joiner: sectionJoiner(f, chip.key),
-        removeAll: f, // finalized below once the section's chips are known
+        removeAll: f,
       };
       entry = { group, chips: [] };
       bySection.set(chip.section, entry);
@@ -190,8 +173,6 @@ export function groupActiveFilters(f: FilterState): FilterChipGroup[] {
   return groups;
 }
 
-// Array fields drop only this section's values, so a sibling section sharing
-// the `style` key survives; the two scalar fields reset outright.
 function removeSection(f: FilterState, chips: FilterChip[]): FilterState {
   const key = chips[0].key;
   if (key === "hasHinting") return { ...f, hasHinting: undefined };

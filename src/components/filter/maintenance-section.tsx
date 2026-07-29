@@ -3,18 +3,12 @@ import { ACTIVITY_LABELS } from "@/lib/fonts/filter";
 import { PillButton } from "./pill-button";
 import { SectionHeader } from "./section-header";
 
-// Maintenance-activity filter: Latest / Active / Recent / Dormant, two per row.
-// Multi-select with OR semantics, a family matches when its activity bucket is
-// one of the selected ones. Every family falls into exactly one bucket (by how
-// long ago it last shipped), so the four pills partition the catalog. Order is
-// fixed, from the facet index.
 export function MaintenanceSection({
   items,
   selected,
   onToggle,
   onReset,
 }: {
-  // [bucketId, count], e.g. ["active", 512]. Fixed order.
   items: [string, number][];
   selected: string[];
   onToggle: (v: string) => void;

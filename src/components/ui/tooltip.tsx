@@ -4,16 +4,6 @@ import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip"
 
 import { cn } from "@/lib/utils"
 
-// delay: the pause before the FIRST tooltip opens, so sweeping the pointer
-// across a toolbar on the way somewhere else doesn't fire every label it
-// crosses. Once one is open the provider marks the next ones `data-instant`
-// and they appear with no delay and no animation (see TooltipContent), which
-// makes moving along a row of controls feel immediate without giving up the
-// protection on the initial hover.
-//
-// closeDelay is short but non-zero: it bridges the gap between a trigger and
-// its own tooltip, so the label doesn't flicker out when the pointer crosses
-// the few pixels between them.
 function TooltipProvider({
   delay = 400,
   closeDelay = 100,
@@ -62,10 +52,6 @@ function TooltipContent({
         <TooltipPrimitive.Popup
           data-slot="tooltip-content"
           className={cn(
-            // data-instant:duration-0 — a tooltip opened while another was
-            // already showing skips the animation outright. Replaying the
-            // scale-in for every label as the pointer walks a toolbar reads as
-            // lag; snapping reads as the same tooltip following the cursor.
             "z-50 inline-flex w-fit max-w-xs origin-(--transform-origin) items-center gap-1.5 rounded-md bg-foreground px-3 py-1.5 text-xs text-background duration-[var(--motion-fast)] ease-[var(--ease-snap)] data-instant:duration-0 has-data-[slot=kbd]:pr-1.5 data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 **:data-[slot=kbd]:relative **:data-[slot=kbd]:isolate **:data-[slot=kbd]:z-50 **:data-[slot=kbd]:rounded-sm data-[state=delayed-open]:animate-in data-[state=delayed-open]:fade-in-0 data-[state=delayed-open]:zoom-in-95 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
             className
           )}

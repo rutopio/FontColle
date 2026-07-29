@@ -7,11 +7,6 @@ export function variationSettings(coords: Record<string, number>): string {
     .join(", ");
 }
 
-/** `wght` maps to `font-weight`, so browsers can synthesize and smooth it; the
- *  rest go to `font-variation-settings`.
- *
- *  letterSpacing resets to `normal`: the app tracks its UI wide on <html>, and
- *  non-zero letter-spacing suppresses ligatures. */
 export function previewStyle({
   name,
   loaded,
@@ -29,16 +24,12 @@ export function previewStyle({
     fontWeight: coords.wght ? Math.round(coords.wght) : undefined,
     fontStyle: italic ? "italic" : undefined,
     fontVariationSettings: settings || undefined,
-    // See opticalSizing: an explicit opsz coord is inert under the default.
     fontOpticalSizing: opticalSizing(coords),
     letterSpacing: "normal",
   };
 }
 
-/** Browsers default `font-optical-sizing` to `auto`, which ties the `opsz` axis
- *  to the rendered font-size and silently overrides any `opsz` in
- *  `font-variation-settings`. `none` hands the axis back to an explicit coord;
- *  otherwise `auto` stays, being the right default. */
+/** `none` when an explicit opsz coord is set, so it isn't overridden by auto. */
 export function opticalSizing(coords: Record<string, number>): "auto" | "none" {
   return "opsz" in coords ? "none" : "auto";
 }

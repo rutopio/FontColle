@@ -23,17 +23,12 @@ const REPO_URL = "https://github.com/rutopio/FontColle";
 const AUTHOR_URL = "https://chingru.com";
 const SPONSOR_URL = "https://buymeacoffee.com/chingru";
 
-// Title is passed in rather than imported, because the Dialog and Sheet shells
-// each need their own primitive for the popup to be labelled correctly.
 function AboutHeading({
   Title,
 }: {
   Title: typeof DialogTitle | typeof SheetTitle;
 }) {
   return (
-    // Matches BrandMark's proportions but is not BrandMark: that one is a
-    // <Link to="/">, which would navigate the page out from under the popup,
-    // and the name has to be the shell's Title primitive to label it.
     <div className="flex flex-wrap items-center justify-center gap-2 text-primary">
       <LogoIcon className="size-8" />
       <Title className="translate-y-0.5 font-mono text-xl tracking-tight">
@@ -43,8 +38,6 @@ function AboutHeading({
   );
 }
 
-// The tagline stays the shell's Description primitive even though it reads as
-// body copy, so the popup keeps its accessible description.
 function AboutBody({
   Description,
 }: {
@@ -79,9 +72,6 @@ function AboutBody({
         </p>
       </div>
 
-      {/* Two equal columns. The repo sits on the right and keeps the solid
-          variant as the primary destination; supporting is the optional one, so
-          they differ by variant rather than by size. */}
       <div className="grid grid-cols-2 gap-2">
         <Button
           nativeButton={false}
@@ -123,8 +113,6 @@ function AboutBody({
   );
 }
 
-// A popup rather than a page, so the view underneath stays mounted. Two shells
-// for one content, mirroring how SortControl swaps at the same breakpoint.
 export function AboutDialog() {
   const { open, setOpen } = useAbout();
   const mobile = useIsMobile();
@@ -135,7 +123,6 @@ export function AboutDialog() {
         <SheetContent
           side="bottom"
           className="gap-4 px-4 pt-6"
-          // Clear of the home indicator on gesture-nav phones.
           style={{
             paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))",
           }}

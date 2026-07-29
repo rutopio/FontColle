@@ -14,26 +14,18 @@ import { EASE_OUT, MOTION_S } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { SectionHeader } from "./section-header";
 
-// From Google Fonts' axisregistry. A tag the registry doesn't cover renders
-// with no info icon.
 const AXES: Record<
   string,
   {
     name: string;
     description: string;
-    // axes.json also carries `fallbacks`, undeclared here because this panel
-    // only shows the description. The detail page's Use tab reads them.
   }
 > = axesData;
 
 const TOP_N = 4;
 const PCT_PRESETS = [0, 25, 50, 75, 100];
 
-// Selecting a pill shrinks it and fades a 0-100% slider into the freed space.
-// That slider stays mounted, faded out when unselected, so the width animation
-// can play, and it is a SIBLING of the pill, not nested: a native
-// <input type="range"> is illegal inside a <button>, and dragging one would
-// otherwise also toggle the pill.
+// Slider is a sibling of the pill, not nested: range inputs and buttons can't nest inside buttons.
 export function VariableAxesSection({
   icon,
   items,
@@ -57,20 +49,15 @@ export function VariableAxesSection({
   disabled?: boolean;
   mode?: MatchMode;
   onToggleMode?: () => void;
-  // Bumped when a Weight/Width pick cleared the axis selection.
   flashKey?: number;
 }) {
   const [showMore, setShowMore] = useState(false);
   const tailId = useId();
   const hasSelection = items.some(([value]) => selected.includes(value));
 
-  // By count only, never by selection, so selecting a tail axis never reorders
-  // the list and the pill plays its shrink animation in place.
   const common = useMemo(() => items.slice(0, TOP_N), [items]);
   const rare = useMemo(() => items.slice(TOP_N), [items]);
 
-  // A selected tail axis would vanish when collapsed, so pin it below the top
-  // rows, outside the collapsing region. Empty while expanded.
   const pinned = useMemo(
     () => (showMore ? [] : rare.filter(([tag]) => selected.includes(tag))),
     [rare, selected, showMore]
@@ -87,13 +74,10 @@ export function VariableAxesSection({
           type="button"
           onClick={() => onToggle(tag)}
           disabled={disabled}
-          // Motion animates flex-basis; border/background stay CSS transitions,
-          // being colour micro-changes rather than layout.
           initial={false}
           animate={{ flexBasis: on ? "33.333333%" : "100%" }}
           transition={{ duration: MOTION_S.base, ease: EASE_OUT }}
           className={cn(
-            // Height matches PillButton, for the same tap target.
             "flex min-h-9 min-w-0 flex-1 items-center justify-between gap-1 rounded-md border px-2.5 py-2 text-xs transition-[border-color,background-color] duration-[var(--motion-fast)] ease-[var(--ease-snap)] md:min-h-8 md:py-1",
             disabled && "cursor-not-allowed",
             on ? "border-primary bg-muted" : "border-input",
@@ -102,11 +86,6 @@ export function VariableAxesSection({
         >
           <span className="flex min-w-0 items-baseline gap-1.5">
             <span className="font-mono text-foreground">{tag}</span>
-            {/* The full name fades out once selected: the pill shrinks to 1/3
-                to make room for the slider, too narrow to hold it. Weight also
-                eases via the variable font's wght axis (Inter Variable) so the
-                brief moment before it fades reads as regular -> semibold, not a
-                hard font-weight jump. */}
             {info ? (
               <span
                 className={cn(
@@ -124,12 +103,6 @@ export function VariableAxesSection({
             {count}
           </span>
         </motion.button>
-        {/* Sibling of the pill button, never nested inside it: TooltipTrigger
-                  renders its own <button>, and a <button> inside the pill's
-                  <button> would be invalid HTML and would double-fire onToggle. */}
-        {/* Unmounted once the axis is selected (not just faded): opacity-0 still
-                  reserved its box + the row's gap, narrowing the slider. Gone
-                  now, so the slider gets the full freed width. */}
         {info && !on ? (
           <Tooltip>
             <TooltipTrigger
@@ -139,26 +112,11 @@ export function VariableAxesSection({
             >
               <InfoIcon className="size-3.5" />
             </TooltipTrigger>
-            {/* Description only. The axis's named stops (wght's Thin 100 …
-                Black 900 and friends) used to be listed underneath, but on the
-                common axes that runs to nine entries and buries the sentence
-                that actually explains what the axis does. The slider reads as a
-                relative percent anyway, so the exact named values weren't
-                helping it. */}
             <TooltipContent className="max-w-xs normal-case">
               {info.description}
             </TooltipContent>
           </Tooltip>
         ) : null}
-        {/* Always mounted so both directions animate: the pill's flex-basis
-                  and this container's flex-basis transition together (the pill
-                  shrinks / expands, this grows / collapses), while opacity fades
-                  the slider in behind the shrink (delay) and out ahead of the
-                  push-back. pointer-events-none keeps it inert while hidden. */}
-        {/* Motion animates flex-basis + opacity + padding opposite the pill:
-            it grows from 0 to 2/3 and fades in as the pill shrinks. The fade
-            trails the shrink on select (opacity delay) and leads the push-back
-            on clear (shorter duration), matching the original hand-tuned feel. */}
         <motion.div
           initial={false}
           animate={{
@@ -187,8 +145,6 @@ export function VariableAxesSection({
             max={100}
             className="[&_[data-slot=slider-control]]:py-0"
           />
-          {/* Fixed-width, right-aligned so the slider track doesn't shift
-                    as the % readout changes digit count (5% -> 100%). */}
           <span className="flex w-10 shrink-0 justify-end">
             <EditableValue
               value={Math.round(pct)}
@@ -228,10 +184,6 @@ export function VariableAxesSection({
         {common.map(renderRow)}
         {rare.length > 0 && (
           <>
-            {/* Motion collapses the rare tail by animating height auto <-> 0;
-                overflow-hidden clips it while closed. The id sits on this
-                always-mounted wrapper rather than the motion child, so the
-                toggle's aria-controls resolves while the tail is collapsed. */}
             <div id={tailId}>
               <AnimatePresence initial={false}>
                 {showMore && (
@@ -250,8 +202,6 @@ export function VariableAxesSection({
                 )}
               </AnimatePresence>
             </div>
-            {/* Selected tail axes, kept visible below the top rows while the
-                tail is collapsed. */}
             {pinned.map(renderRow)}
             <button
               type="button"

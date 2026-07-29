@@ -1,20 +1,3 @@
-// Builds the WHOLE dataset from nothing: the one-time manual seed the daily
-// workflow can't do, since that diffs the previous fonts.json and reads the
-// existing R2 manifest, neither of which exists yet. Shells out to the existing
-// scripts in order with fail-fast, so a bootstrap can't skip a backfill or run
-// steps out of order. See docs/data-pipeline.md for what each step does.
-//
-//   node scripts/seed-from-scratch.mjs             # local dataset only, no R2
-//   node scripts/seed-from-scratch.mjs --publish   # + seed R2 (remote write)
-//   node scripts/seed-from-scratch.mjs --force      # overwrite an existing fonts.json
-//
-// Env required up front (fails early if missing):
-//   GOOGLE_FONTS_API_KEY  ranking + about + display names
-//   GITHUB_TOKEN          repo tree enumeration + version history (60 req/hr otherwise)
-//   CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID   only when --publish
-//
-// No new npm deps: node built-ins + the scripts it calls.
-
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import path from "node:path";
@@ -24,11 +7,9 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const HARVESTER = path.join(ROOT, "scripts/harvester");
 const FONTS_JSON = path.join(ROOT, "src/data/fonts.json");
 
-// A missing file is fine: CI passes the vars directly.
 try {
   process.loadEnvFile(path.join(ROOT, ".env"));
 } catch {
-  // no .env — vars must already be in the environment (as in CI)
 }
 
 const args = process.argv.slice(2);
@@ -40,7 +21,6 @@ function die(msg) {
   process.exit(1);
 }
 
-// Fail before doing any work if the environment or state is wrong.
 const requiredEnv = ["GOOGLE_FONTS_API_KEY", "GITHUB_TOKEN"];
 if (publish) requiredEnv.push("CLOUDFLARE_API_TOKEN", "CLOUDFLARE_ACCOUNT_ID");
 const missing = requiredEnv.filter((k) => !process.env[k]);
@@ -54,7 +34,6 @@ if (existsSync(FONTS_JSON) && !force) {
 }
 
 let step = 0;
-// Run a command, streaming its output; abort the whole seed on non-zero exit.
 function run(label, cmd, cmdArgs, opts = {}) {
   step += 1;
   console.log(`\n[seed] ── step ${step}: ${label} ──`);
@@ -73,10 +52,6 @@ function run(label, cmd, cmdArgs, opts = {}) {
 const py = process.env.PYTHON ?? "python3";
 const node = process.execPath;
 
-// 1. Enumerate every family, harvest + parse each. list_all_families() (in
-//    daily_update.py) is the authority on which families exist; pipe its
-//    "<license>\t<family_dir>" lines into harvest.py. Also fills ttf_cache/,
-//    which glyph coverage reads in step 9.
 const enumScript =
   "import daily_update; " +
   "[print(f'{lic}\\t{d}') for d, lic in daily_update.list_all_families().items()]";
@@ -97,18 +72,12 @@ run("harvest all families", py, ["harvest.py", "-"], {
   input: familyList,
 });
 
-// 2. Developer API signals BEFORE building the dataset (else every family is
-//    marked published, unranked).
 run("fetch published signals", py, ["fetch_published.py"], { cwd: HARVESTER });
 
-// 3. Raw harvest -> dataset. Writes fonts.json + scripts.json + languages.json.
 run("to_dataset", py, ["to_dataset.py", "stress_output.json", FONTS_JSON], {
   cwd: HARVESTER,
 });
 
-// 4-8. Whole-catalog backfills for fields to_record() leaves null (no --ids, so
-//      they cover every family). Order is loose except glyph coverage, which
-//      reads ttf_cache/ and so must come after the harvest (step 1).
 for (const [label, script] of [
   ["tags", "backfill_tags.py"],
   ["form category", "backfill_form_category.py"],
@@ -123,10 +92,8 @@ for (const [label, script] of [
   run(`backfill ${label}`, py, [script], { cwd: HARVESTER });
 }
 
-// 9. Render every OG card.
 run("gen OG cards", node, ["scripts/gen-og-images.mjs", "--force"]);
 
-// 10. Seed R2 (remote write) — only with --publish.
 if (publish) {
   run("publish --seed to R2", node, ["scripts/publish-assets.mjs", "--seed"]);
 } else {

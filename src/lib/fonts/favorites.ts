@@ -1,15 +1,10 @@
 import { useCallback, useSyncExternalStore } from "react";
 
-// Shaped for a possible one-time upload+merge into an account-synced v2, so
-// keep it a flat, stable array of family ids.
 const KEY = "font-colle.favorites.v1";
 
 interface FavStore {
   favorites: string[];
 }
-
-// The server and hydration render the empty list; the first client pass after
-// hydration reads the stored one.
 
 const EMPTY: string[] = [];
 const listeners = new Set<() => void>();
@@ -35,8 +30,6 @@ function read(): string[] {
   }
 }
 
-// Snapshot cache: useSyncExternalStore compares snapshots with Object.is, so
-// reads must keep returning the same array until a write replaces it.
 let cache: string[] | null = null;
 const getSnapshot = () => {
   if (cache === null) cache = read();

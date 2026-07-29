@@ -1,23 +1,6 @@
-// Remote MCP server: the same three actions the in-browser WebMCP tools expose
-// (see lib/webmcp/tools.ts), reachable over HTTP so a desktop client like Claude
-// Desktop or Cursor can use the catalog without opening the site.
-//
-// Streamable HTTP transport, JSON-RPC 2.0 over a single POST /mcp endpoint. Only
-// the three methods a tools-only server needs are implemented: initialize,
-// tools/list, tools/call (plus notifications/initialized, which takes no reply).
-//
-// Data comes from /catalog-slim.json (~2 MB) via the ASSETS binding, never
-// /catalog.json (~10 MB): parsing the full catalog in a Worker blows the CPU
-// limit (Error 1102). The slim projection carries every field these tools
-// filter on.
 import type { FontRecord } from "@/lib/fonts/types";
 
-// What catalog-slim.json actually carries. Declared separately from FontRecord,
-// which would invite reading fields the projection drops.
-//
-// Two fields are reshaped rather than merely dropped: `axes` is flattened from
-// FontAxis objects to bare tag strings, and `weights` is numeric. Both are
-// declared, not Pick-ed, or the inherited type wouldn't match the wire bytes.
+// Slim projection of FontRecord used by catalog-slim.json.
 type SlimFont = Pick<
   FontRecord,
   | "id"
@@ -33,7 +16,6 @@ type SlimFont = Pick<
 
 const SERVER_NAME = "fontcolle";
 const SERVER_VERSION = "1.0.0";
-// The MCP revision this server implements. Echoed back from initialize.
 const PROTOCOL_VERSION = "2025-06-18";
 
 const CATEGORIES = [
@@ -47,8 +29,6 @@ const CATEGORIES = [
   "Emoji",
 ];
 
-// A filter can match ~800 records, which no model wants. `count` carries the
-// true total.
 const MAX_RESULTS = 50;
 
 interface JsonRpcRequest {
@@ -58,8 +38,6 @@ interface JsonRpcRequest {
   params?: Record<string, unknown>;
 }
 
-// JSON-RPC error codes used here. -32601/-32700 are standard; -32602 covers a
-// call naming an unknown tool or missing a required argument.
 const PARSE_ERROR = -32700;
 const METHOD_NOT_FOUND = -32601;
 const INVALID_PARAMS = -32602;
@@ -159,8 +137,6 @@ interface AssetsBinding {
   fetch: (request: Request) => Promise<Response>;
 }
 
-// Per-isolate memo of the parsed slim catalog. A Worker isolate serves many
-// requests, so the ~2 MB parse happens once per cold start rather than per call.
 let catalogCache: SlimFont[] | undefined;
 
 async function loadCatalog(
@@ -168,8 +144,6 @@ async function loadCatalog(
   origin: string
 ): Promise<SlimFont[]> {
   if (catalogCache) return catalogCache;
-  // Fetch through the ASSETS binding, not the public URL: a Worker fetching its
-  // own hostname would recurse back into this handler.
   const res = await assets.fetch(
     new Request(new URL("/catalog-slim.json", origin))
   );
@@ -184,8 +158,6 @@ function strings(value: unknown): string[] {
   return value.filter((v): v is string => typeof v === "string" && v !== "");
 }
 
-// Weights arrive as numbers in the slim catalog but a model may send either, so
-// accept both spellings and compare numerically.
 function numbers(value: unknown): number[] {
   const raw = Array.isArray(value) ? value : value == null ? [] : [value];
   return raw
@@ -220,8 +192,6 @@ function searchFonts(fonts: SlimFont[], args: Record<string, unknown>) {
     if (typeof args.variable === "boolean" && font.isVariable !== args.variable)
       return false;
     if (args.monospace === true && !font.isMonospace) return false;
-    // AND semantics across each multi-value facet, matching the site's default
-    // combine mode for these sections.
     if (features.length && !features.every((f) => font.features.includes(f)))
       return false;
     if (axes.length && !axes.every((a) => font.axes.includes(a))) return false;
@@ -230,9 +200,6 @@ function searchFonts(fonts: SlimFont[], args: Record<string, unknown>) {
     if (weights.length && !weights.every((w) => font.weights.includes(w)))
       return false;
     if (query) {
-      // Plain substring match, not the site's fuzzy uFuzzy pass: loading the
-      // fuzzy index in the Worker costs CPU this endpoint does not have, and an
-      // agent sends deliberate terms rather than typos.
       const hay = `${font.name} ${font.designer ?? ""}`.toLowerCase();
       if (!hay.includes(query)) return false;
     }
@@ -250,15 +217,11 @@ function searchFonts(fonts: SlimFont[], args: Record<string, unknown>) {
   };
 }
 
-// Reads the full per-family asset rather than the slim projection: this is the
-// one call that should return metrics, instances and version history.
 async function getFont(
   assets: AssetsBinding,
   origin: string,
   id: string
 ): Promise<unknown> {
-  // Ids are lowercase slugs (see lib/fonts/slug.ts). Reject anything else
-  // before it reaches the asset path.
   if (!/^[a-z0-9]+$/.test(id))
     throw new Error(
       `Invalid id "${id}". Ids are lowercase, e.g. "robotoslab".`
@@ -295,9 +258,6 @@ const err = (id: JsonRpcRequest["id"], code: number, message: string) => ({
   error: { code, message },
 });
 
-// A tool result carries its payload as text content. `isError: true` reports a
-// tool-level failure (bad id, say) without failing the JSON-RPC call itself,
-// which is what lets the model read the message and retry.
 const toolText = (value: unknown, isError = false) => ({
   content: [{ type: "text", text: JSON.stringify(value) }],
   isError,
@@ -347,12 +307,10 @@ export async function handleMcpRequest(
     case "initialize":
       return ok(id, {
         protocolVersion: PROTOCOL_VERSION,
-        // Tools only: this server exposes no resources, prompts, or sampling.
         capabilities: { tools: { listChanged: false } },
         serverInfo: { name: SERVER_NAME, version: SERVER_VERSION },
       });
 
-    // Notifications carry no id and must not be answered.
     case "notifications/initialized":
       return null;
 
@@ -387,9 +345,6 @@ export async function mcpEndpoint(
   const url = new URL(request.url);
   if (url.pathname !== "/mcp") return undefined;
 
-  // Opened up deliberately: desktop MCP clients run from other origins, and
-  // this is a read-only, unauthenticated view of already-public data, so a
-  // hostile origin reaches nothing it could not fetch directly.
   const cors = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -399,9 +354,6 @@ export async function mcpEndpoint(
   if (request.method === "OPTIONS")
     return new Response(null, { status: 204, headers: cors });
 
-  // GET is what the Streamable HTTP transport uses to open an SSE stream for
-  // server-initiated messages. This server only ever answers requests, so it
-  // declines the stream per spec rather than holding a connection open.
   if (request.method !== "POST")
     return new Response(
       JSON.stringify(err(null, METHOD_NOT_FOUND, "Use POST for JSON-RPC.")),
@@ -428,7 +380,6 @@ export async function mcpEndpoint(
   }
 
   const response = await handleMcpRequest(body, assets, url.origin);
-  // A notification gets 202 with no body, which is what the transport expects.
   if (!response) return new Response(null, { status: 202, headers: cors });
 
   return new Response(JSON.stringify(response), {

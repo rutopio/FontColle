@@ -9,9 +9,7 @@ export interface ClassificationGroup {
   items: [string, number][];
 }
 
-// ONE SectionHeader over all the sub-lists, because they all write to the one
-// `style` key and share its OR/AND mode: a per-sub-list header would host that
-// toggle on whichever rendered first and silently govern the rest.
+// One header — sub-lists share the same `style` key and OR/AND mode.
 export function ClassificationSection({
   title,
   icon,

@@ -16,13 +16,9 @@ import { MAX_PRESETS, usePresets } from "@/lib/fonts/presets";
 import { cn } from "@/lib/utils";
 import { groupActiveFilters } from "./describe";
 
-// A default name built from the same groups the chip row shows ("Serif + Latn
-// +2"), so the suggestion always speaks the UI's own vocabulary.
 function suggestName(filter: FilterState): string {
   const groups = groupActiveFilters(filter);
   const query = filter.query.trim();
-  // One value per group, with the remainder counted once at the end, so the
-  // name stays short no matter how many pills are stacked.
   const parts = groups.map((g) => g.values[0].value);
   if (query) parts.unshift(query);
   const extra =
@@ -33,8 +29,6 @@ function suggestName(filter: FilterState): string {
   return extra > 0 ? `${head} +${extra}` : head;
 }
 
-// The single entry point for creating a preset, at the end of the chip row
-// because that is where the conditions being saved are already spelled out.
 export function SavePresetPopover({
   filter,
   currentSearch,
@@ -44,7 +38,6 @@ export function SavePresetPopover({
 }) {
   const { presets, save } = usePresets();
   const [open, setOpen] = useState(false);
-  // Seeded on open, so the suggestion reflects the filter at that moment.
   const [name, setName] = useState("");
   const full = presets.length >= MAX_PRESETS;
 
@@ -58,8 +51,6 @@ export function SavePresetPopover({
     if (!trimmed || full) return;
     save(trimmed, currentSearch);
     setOpen(false);
-    // The new preset lands in the Preset panel, usually off screen, so without
-    // this the only feedback is the form closing — which reads as cancelling.
     toast.success("Preset saved", { description: trimmed });
   };
 
@@ -84,8 +75,6 @@ export function SavePresetPopover({
         </PopoverHeader>
         {!full && (
           <>
-            {/* Autofocus is safe: the field only exists once the user has
-                explicitly opened this popover, and naming is the sole step. */}
             <Input
               autoFocus
               aria-label="Preset name"

@@ -4,9 +4,6 @@ import type { MatchMode } from "@/lib/fonts/filter";
 import { vendorLabel } from "@/lib/fonts/labels";
 import { FacetSearchSection } from "./facet-search-section";
 
-// A Vendor pill reads "ParaType", not "PYRS": the label is the foundry name
-// from Microsoft's registry, with the raw code in the tooltip and still
-// searchable. Unregistered codes fall back to the code.
 export function DesignerSection({
   designers,
   vendors,
@@ -28,11 +25,8 @@ export function DesignerSection({
   onToggleVendor: (v: string) => void;
   onResetDesigners: () => void;
   onResetVendors: () => void;
-  // Designer only: a family can credit several collaborators, so "all" means
-  // something. A font carries ONE vendor id, so AND there would always be empty.
   designerMode: MatchMode;
   onToggleDesignerMode: () => void;
-  // Folded vendor code -> the code as fonts embed it, for the tooltip.
   vendorCasing: Map<string, string>;
 }) {
   const designerItems = useMemo(

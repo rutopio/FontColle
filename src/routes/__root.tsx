@@ -23,15 +23,8 @@ import { absoluteUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
 import { useWebMcp } from "@/lib/webmcp/register";
 import appCss from "@/styles.css?url";
 
-// Runs before first paint, so an SSR'd light shell doesn't flash before a dark
-// preference hydrates. Only an explicit choice turns on dark; with no saved
-// value we stay light rather than following prefers-color-scheme.
+// Blocking scripts to avoid FOUC: apply theme/view preference before paint.
 const themeScript = `try{if(localStorage.theme==='dark')document.documentElement.classList.add('dark')}catch(e){}`;
-
-// Same for the grid/row preference: the pending list renders server-side,
-// where localStorage is unreachable, so without this a row-mode visitor gets
-// 288px grid cards and watches them swap to 144px rows. Stamping <html> lets
-// CSS pick the layout with no measurement pass. Mirrors index/route.tsx's key.
 const viewScript = `try{var v=localStorage['font-colle.view'];document.documentElement.dataset.view=v==='row'?'row':'grid'}catch(e){document.documentElement.dataset.view='grid'}`;
 
 export const Route = createRootRouteWithContext<{
@@ -43,11 +36,7 @@ export const Route = createRootRouteWithContext<{
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: SITE_NAME },
       { name: "description", content: SITE_DESCRIPTION },
-      // No media split: the app always renders light on first paint, dark being
-      // opt-in and never inherited from the system.
       { name: "theme-color", content: "#ffffff" },
-      // og:image and og:url need an absolute origin, so they degrade to nothing
-      // when SITE_URL is unset rather than emit a wrong domain.
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: SITE_NAME },
       { property: "og:title", content: SITE_NAME },
@@ -69,7 +58,6 @@ export const Route = createRootRouteWithContext<{
       { name: "twitter:description", content: SITE_DESCRIPTION },
     ],
     links: [
-      // Preloaded so it arrives before first paint and the swap is invisible.
       {
         rel: "preload",
         href: "/fonts/albert-sans.woff2",
@@ -85,14 +73,10 @@ export const Route = createRootRouteWithContext<{
         crossOrigin: "anonymous",
       },
       { rel: "stylesheet", href: appCss },
-      // SVG first, .ico as the universal fallback.
       { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
       { rel: "icon", href: "/favicon.ico", sizes: "any" },
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
       { rel: "manifest", href: "/manifest.json" },
-      // The llms.txt convention has no registered rel, so this uses
-      // type=text/markdown title=llms.txt, the pattern agents look for. On
-      // every page's head, so it is found from any entry point.
       {
         rel: "alternate",
         type: "text/markdown",
@@ -118,9 +102,6 @@ function RootError({ reset }: ErrorComponentProps) {
   );
 }
 
-// Registers the WebMCP tools; a no-op unless navigator.modelContext exists.
-// Its own component because RootDocument also renders during SSR, where hooks
-// that touch navigator must not run.
 function WebMcpTools() {
   useWebMcp();
   return null;
@@ -137,30 +118,20 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        {/* reducedMotion="user" makes every motion/react component honor the
-            system prefers-reduced-motion setting (disabling transform/layout
-            animations), matching the CSS animations already gated in styles.css. */}
         <MotionConfig reducedMotion="user">
           <TooltipProvider delay={300}>
             <FilterProvider>
               <PreviewProvider>
                 <AboutProvider>
                   {children}
-                  {/* Mounted here so it overlays whichever page is underneath,
-                      leaving that page's icon rail exactly as it was. */}
                   <AboutDialog />
                   <WebMcpTools />
                 </AboutProvider>
               </PreviewProvider>
             </FilterProvider>
           </TooltipProvider>
-          {/* Global toast host: copy confirmations (e.g. the Glyphs grid) fire
-              toast() from anywhere and render here. */}
           <Toaster position="top-center" />
         </MotionConfig>
-        {/* Dev-only breakpoint badge. It guards on PROD itself, so it is not
-            wrapped in the DEV block below — keeping it outside means it is not
-            tied to the devtools' mount. */}
         <ScreenSize />
         {import.meta.env.DEV && (
           <TanStackDevtools

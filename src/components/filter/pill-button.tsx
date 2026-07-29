@@ -1,9 +1,5 @@
 import { cn } from "@/lib/utils";
 
-// The multi-select pill. Radio-style filters use SegmentedPills instead, so
-// their flush single-border group reads apart from these separate boxes, and
-// the variable-axes pill is bespoke: its flex-basis slider animation needs
-// classes this can't carry.
 export function PillButton({
   value,
   count,
@@ -17,12 +13,10 @@ export function PillButton({
 }: {
   value: string;
   count: number;
-  // The toggle always passes the raw `value`.
   label: string;
   selected: boolean;
   onToggle: (value: string) => void;
   spread?: boolean;
-  // For tags like "liga", not human labels like "Latin".
   mono?: boolean;
   disabled?: boolean;
   className?: string;

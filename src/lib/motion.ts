@@ -1,11 +1,4 @@
-// The app's motion scale, stepped by how much travel the element does:
-//
-//   fast  — tooltips, chips, button feedback. Small travel, seen constantly.
-//   base  — popovers, selects, dropdowns. Anchored to a trigger.
-//   slow  — sheets, dialogs, route changes. Full-viewport travel.
-//
-// Dual-sourced with src/styles.css, whose `--motion-*` custom properties must
-// carry these same numbers. Keep the two in sync.
+// Keep in sync with --motion-* in src/styles.css.
 export const MOTION = {
   fast: 120,
   base: 180,
@@ -18,8 +11,5 @@ export const MOTION_S = {
   slow: MOTION.slow / 1000,
 } as const;
 
-// The app's ease-out, as motion/react's cubic-bezier tuple. Use in place of
-// `ease: "easeOut"`. Mirrors --ease-out in src/styles.css — keep the four
-// numbers identical, or a JS-driven element and its CSS-driven neighbour will
-// drift apart mid-travel.
+// Mirrors --ease-out in src/styles.css.
 export const EASE_OUT = [0.23, 1, 0.32, 1] as const;

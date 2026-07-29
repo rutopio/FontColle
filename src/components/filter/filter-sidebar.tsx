@@ -54,15 +54,10 @@ interface Props {
   index: FacetIndex;
   filter: FilterState;
   onChange: (next: FilterState) => void;
-  // "preset" swaps the whole panel out; any other id is a section to scroll to.
   group: FilterGroupId;
-  // Omitted where no rail is showing.
   onActiveGroupChange?: (id: FilterGroupId) => void;
-  // A 0-100 position per axis tag; each font maps it onto its own range.
   axisValues: Record<string, number>;
   onAxisValueChange: (tag: string, pct: number) => void;
-  // Replaces the filter half of the URL search wholesale, leaving sort/fav
-  // alone. Separate from onChange because a preset is already in search shape.
   onApplyPreset: (search: FilterSearch) => void;
 }
 
@@ -76,8 +71,6 @@ export function FilterSidebar({
   onAxisValueChange,
   onApplyPreset,
 }: Props) {
-  // A section whose selection was just silently cleared by a mutually-exclusive
-  // pick elsewhere. The bumped key drives a one-shot header flash.
   const [flash, setFlash] = useState<{
     section: "weights" | "widths" | "axes";
     key: number;
@@ -85,7 +78,6 @@ export function FilterSidebar({
   const flashKeyFor = (s: "weights" | "widths" | "axes") =>
     flash?.section === s ? flash.key : undefined;
 
-  // Every rule lives in filter-actions.ts, pure and testable.
   const toggle = (key: Parameters<typeof actions.toggle>[1], value: string) =>
     onChange(actions.toggle(filter, key, value));
   const toggleAxis = (tag: string) => {
@@ -108,7 +100,6 @@ export function FilterSidebar({
   const selectFontType = (value: string) =>
     onChange(actions.selectFontType(filter, value));
 
-  // Italic is a separate section below, not a Category card.
   const categoryCount = (v: string) =>
     index.categories.find(([c]) => c === v)?.[1] ?? 0;
   const categoryCards = [
@@ -142,9 +133,6 @@ export function FilterSidebar({
   const colorSelected = actions.colorSelection(filter);
   const fontTypeSelected = actions.fontTypeSelection(filter);
 
-  // Split by the group they render under. Both feed a single
-  // ClassificationSection, so the shared OR/AND mode and reset sit on one
-  // header rather than on whichever sub-list came first.
   const styleClassifications = useMemo(
     () => index.style.filter((s) => s.group === "style"),
     [index.style]
@@ -168,12 +156,8 @@ export function FilterSidebar({
 
   const currentSearch = useMemo(() => filterToSearch(filter), [filter]);
 
-  // Always open at the top; don't let router scroll restoration carry the
-  // sidebar's position across list <-> detail navigation.
   const viewportRef = useScrollReset<HTMLDivElement>();
 
-  // Preset is the exception: not a facet, so it replaces the panel wholesale
-  // rather than being one more section in this scroll.
   const showingPreset = group === "preset";
   const { registerSection } = useSectionScrollspy({
     viewportRef,
@@ -186,14 +170,8 @@ export function FilterSidebar({
     enabled: !showingPreset,
   });
 
-  // Base UI's ScrollArea re-evaluates overflow on scroll, but not when
-  // AnimatePresence swaps the panel content, so leaving the tall filter list
-  // for the shorter Preset panel strands a scrollbar over content that no
-  // longer overflows.
+  // Force ScrollArea to re-evaluate overflow after AnimatePresence swap.
   const resetScrollbar = () => {
-    // The incoming panel isn't laid out on the frame the exit completes, so
-    // nudge a scroll event across several frames: at least one then lands after
-    // the new content is measured and Base UI drops the scrollbar.
     let frame = 0;
     const nudge = () => {
       viewportRef.current?.dispatchEvent(
@@ -213,9 +191,6 @@ export function FilterSidebar({
             onToggle={toggleCategory}
             onReset={() => clearSection("categories", index.categories)}
           />
-          {/* Serif/Sans/Slab/Script share the one `style` key,
-                    so they render as sub-lists under a single "Style" header
-                    that hosts their shared OR/AND toggle and reset. */}
           <ClassificationSection
             title="Style"
             icon={DiscoBallIcon}
@@ -234,7 +209,6 @@ export function FilterSidebar({
           />
         </>
       )}
-      {/* Same shape as Style above, and the same shared OR/AND mode. */}
       {id === "mood" && (
         <ClassificationSection
           title="Mood"
@@ -309,8 +283,6 @@ export function FilterSidebar({
             onToggle={selectItalic}
             onReset={() => onChange({ ...filter, italic: [] })}
           />
-          {/* How many named styles the family ships: a range over the
-                    counts the catalog actually has. */}
           <InstancesSection
             histogram={index.instances}
             value={filter.instances}
@@ -439,12 +411,7 @@ export function FilterSidebar({
   return (
     <aside className="flex h-full w-full min-w-0 flex-col text-sidebar-foreground">
       <ScrollArea viewportRef={viewportRef} className="min-h-0 flex-1">
-        {/* Cross-fade + slight rise when Preset swaps in or out. mode="wait" so
-            the old panel fully leaves before the new one enters, avoiding
-            overlap in the shared scroll viewport. Keyed on which panel is
-            showing, not on the group: switching group now scrolls the list
-            rather than replacing it, and a remount would kill the scroll. */}
-        <AnimatePresence
+          <AnimatePresence
           mode="wait"
           initial={false}
           onExitComplete={resetScrollbar}
@@ -453,14 +420,9 @@ export function FilterSidebar({
             key={showingPreset ? "preset" : "filters"}
             className={cn(
               "flex flex-col p-4",
-              // Preset's empty state centres vertically, so it needs a height
-              // to centre in; the tall filter list has no use for one.
               showingPreset
                 ? "min-h-full gap-12"
-                : // One rule per rail group, not between the sections inside
-                  // them, so the line reads as the boundary the rail names.
-                  // Equal margin above and padding below centres it in the gap.
-                  "[&>section+section]:mt-7 [&>section+section]:border-border [&>section+section]:border-t [&>section+section]:pt-7"
+                : "[&>section+section]:mt-7 [&>section+section]:border-border [&>section+section]:border-t [&>section+section]:pt-7"
             )}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -469,8 +431,6 @@ export function FilterSidebar({
           >
             {showingPreset ? (
               <PresetSection
-                // Encoded here rather than passed down, so the active-preset
-                // highlight is computed from the same call that a save writes.
                 currentSearch={currentSearch}
                 onApply={onApplyPreset}
               />
@@ -484,10 +444,6 @@ export function FilterSidebar({
                   aria-labelledby={`filter-group-${g.id}`}
                   className="flex flex-col gap-12"
                 >
-                  {/* Not shown: the rail already names the group you are in, and
-                      a second running header repeated that. Kept in the tree
-                      because it is this section's accessible name — dropping it
-                      would leave nine unlabelled regions in the panel. */}
                   <h2 id={`filter-group-${g.id}`} className="sr-only">
                     {g.label}
                   </h2>

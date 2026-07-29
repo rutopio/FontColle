@@ -13,8 +13,6 @@ import { RARE_THRESHOLD } from "./constants";
 import { PillButton } from "./pill-button";
 import { SectionHeader, type SortMode } from "./section-header";
 
-// Rare values, below RARE_THRESHOLD or outside a given top-N, collapse behind
-// a "more" expander.
 export function Section({
   title,
   icon,
@@ -43,13 +41,9 @@ export function Section({
   onToggleMode?: () => void;
   grid?: boolean;
   spread?: boolean;
-  // The toggle still passes the raw value.
   label?: (value: string) => string;
   expandAll?: boolean;
-  // Overrides RARE_THRESHOLD: only these show by default.
   topNSet?: Set<string> | null;
-  // Sort the non-count mode numerically, for values like units-per-em where
-  // "1000" must rank above "16", not below it.
   numericSort?: boolean;
 }) {
   const [sort, setSort] = useState<SortMode>("count");
@@ -94,8 +88,6 @@ export function Section({
   );
 }
 
-// Exported so a panel with several sub-lists under one header can reuse the
-// rare-value collapsing without nesting SectionHeaders.
 export function Pills({
   items,
   selected,
@@ -114,13 +106,10 @@ export function Pills({
   onToggle: (v: string) => void;
   grid?: boolean;
   spread?: boolean;
-  // For four-letter tags like "liga", not human labels like "Latin".
   mono?: boolean;
   label?: (value: string) => string;
-  // Empty string suppresses the tooltip for that value.
   title?: (value: string) => string;
   columns?: 2 | 3;
-  // Overrides RARE_THRESHOLD. Selected values outside it are pulled up.
   topNSet?: Set<string> | null;
   expandAll?: boolean;
 }) {
@@ -149,18 +138,12 @@ export function Pills({
         onToggle={onToggle}
         spread={!!spread}
         mono={mono}
-        // Equal-width grid cells, each free to shrink and clip its label. Under
-        // a tooltip trigger the pill fills the wrapper rather than the cell.
         className={cn(grid && "min-w-0", tip && "w-full")}
       />
     );
     if (!tip) return <Fragment key={value}>{pill}</Fragment>;
     return (
       <Tooltip key={value}>
-        {/* Trigger is a wrapper (not the pill's own <button>, which can't nest a
-            second button, and not display:contents, which has no box for base-ui
-            to position the popup against). The wrapper takes the grid/flex
-            item's place and the pill fills it, so layout is unchanged. */}
         <TooltipTrigger
           render={(props) => (
             <div {...props} className={cn("flex", grid && "min-w-0")}>
@@ -173,7 +156,6 @@ export function Pills({
     );
   };
 
-  // Both column classes are spelled out: Tailwind can't see interpolated ones.
   const rowClass = grid
     ? columns === 2
       ? "grid grid-cols-2 gap-1.5"
@@ -185,10 +167,6 @@ export function Pills({
       <div className={rowClass}>{common.map(renderPill)}</div>
       {rare.length > 0 && (
         <>
-          {/* Motion collapses the rare row by animating height auto <-> 0;
-              overflow-hidden clips the content while it slides. The id sits on
-              this always-mounted wrapper rather than the motion child, so the
-              toggle's aria-controls resolves while the row is collapsed. */}
           <div id={rareId}>
             <AnimatePresence initial={false}>
               {showRare && (

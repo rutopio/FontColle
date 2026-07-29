@@ -36,11 +36,6 @@ export function TabsList({
                 "relative z-0 flex w-fit items-center justify-center gap-x-0.5 text-muted-foreground",
                 "data-[orientation=vertical]:flex-col",
                 variant === "default"
-                    // Full-strength muted, no /72 alpha: this list sits on
-                    // bg-muted, and fading the text against that lighter
-                    // backdrop dropped inactive tabs to 2.5:1. The active tab
-                    // is already distinguished by its raised white indicator
-                    // plus data-active:text-foreground.
                     ? "rounded-lg bg-muted p-0.5"
                     : "data-[orientation=vertical]:px-1 data-[orientation=horizontal]:py-1 *:data-[slot=tabs-tab]:hover:bg-accent",
                 className,
@@ -51,12 +46,6 @@ export function TabsList({
             {children}
             <TabsPrimitive.Indicator
                 className={cn(
-                    // ease-in-out, not the app's ease-snap: the indicator is
-                    // travelling between two on-screen positions rather than
-                    // entering or leaving, so it should accelerate away and
-                    // decelerate in. Width is animated alongside translate
-                    // because the bar has no content to distort, which is what
-                    // would rule a layout property out elsewhere.
                     "absolute bottom-0 left-0 h-(--active-tab-height) w-(--active-tab-width) translate-x-(--active-tab-left) -translate-y-(--active-tab-bottom) transition-[width,translate] duration-[var(--motion-base)] ease-in-out",
                     variant === "underline"
                         ? "z-10 bg-primary data-[orientation=horizontal]:h-0.5 data-[orientation=vertical]:w-0.5 data-[orientation=vertical]:-translate-x-px data-[orientation=horizontal]:translate-y-px"

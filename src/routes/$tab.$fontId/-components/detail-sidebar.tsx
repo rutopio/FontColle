@@ -21,11 +21,8 @@ import type { FontRecord } from "@/lib/fonts/types";
 import { EASE_OUT, MOTION_S } from "@/lib/motion";
 import { useScrollReset } from "@/lib/use-scroll-reset";
 
-// Exported: the Tester's own size control offers the same range.
 export const SIZE_MIN = 12;
 export const SIZE_MAX = 72;
-// EditableValue filters out-of-range presets, so anything outside SIZE_MIN /
-// SIZE_MAX would be dead.
 export const SIZE_PRESETS = [
   12, 14, 16, 18, 20, 24, 28, 32, 36, 40, 48, 52, 60, 72,
 ];
@@ -34,8 +31,6 @@ const AXIS_PRESETS: Record<string, number[]> = {
   wdth: [50, 62.5, 75, 87.5, 100, 112.5, 125, 150, 200],
 };
 
-// Always rendered, hidden via invisible+disabled while inactive, so the title
-// row height stays constant.
 function ResetButton({
   active,
   onClick,
@@ -62,16 +57,9 @@ function ResetButton({
   );
 }
 
-// A native range input styled to match the shared Slider primitive at its "sm"
-// size. Native rather than the primitive because that one hides its Thumb, and
-// these sliders need a per-thumb aria-label plus aria-valuetext with units,
-// which the wrapper's props (spread onto Root, not the Thumb) can't carry.
+// Native range input: the Slider primitive's Thumb is hidden, and these need
+// per-thumb aria-label + aria-valuetext which the wrapper can't carry.
 const RANGE_SLIDER_CLASS = [
-  // my-2 reproduces the spacing the primitive gets from its Control's py-2.
-  // A margin, not padding: the input's background paints over its padding box,
-  // so py-2 would render a taller track instead of adding space around it.
-  // No bg-*: the track's background is the inline fill gradient per value (see
-  // rangeFillStyle), which a utility class would override.
   "my-2 h-1.5 w-full cursor-pointer appearance-none rounded-full outline-none",
   "[&::-webkit-slider-thumb]:size-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-foreground [&::-webkit-slider-thumb]:bg-background [&::-webkit-slider-thumb]:shadow-sm",
   "[&::-moz-range-thumb]:size-3 [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border [&::-moz-range-thumb]:border-foreground [&::-moz-range-thumb]:bg-background [&::-moz-range-thumb]:shadow-sm",
@@ -79,9 +67,6 @@ const RANGE_SLIDER_CLASS = [
   "focus-visible:[&::-moz-range-thumb]:ring-[3px] focus-visible:[&::-moz-range-thumb]:ring-ring/50",
 ].join(" ");
 
-// Stands in for the primitive's Indicator: a native range input has no
-// equivalent pseudo-element both engines style, so this paints the filled
-// portion as a hard-stop gradient on the track itself.
 function rangeFillStyle(
   value: number,
   min: number,
@@ -116,20 +101,14 @@ export function DetailSidebar({
   onToggleFeature,
   onResetFeatures,
 }: {
-  // Only keys the panel transition, so switching tabs replays the fade-and-rise
-  // instead of mutating in place.
   panelKey: string;
   size: number;
   onSizeChange: (value: number) => void;
-  // Hidden on the Tester tab, whose editor sets a size per block type in
-  // its own toolbar, so one shared size would control nothing.
   showSize?: boolean;
   axes: FontRecord["axes"];
   axisState: Record<string, number>;
   onAxisChange: (tag: string, value: number) => void;
   onResetAxes: () => void;
-  // Hidden on the Instances tab, where every row is pinned to its own named
-  // instance's coords, so a shared axis slider would control nothing.
   showAxes?: boolean;
   features: string[];
   featureState: Record<string, boolean>;
@@ -139,7 +118,6 @@ export function DetailSidebar({
   const axesDirty = axes.some(
     (a) => axisState[a.tag] !== (a.default ?? a.min ?? 0)
   );
-  // Order: W3C default-on features first, then alphabetical within each group.
   const sorted = useMemo(
     () =>
       [...features].sort((a, b) => {
@@ -154,17 +132,11 @@ export function DetailSidebar({
     (tag) => featureState[tag] !== DEFAULT_ON.has(tag)
   );
 
-  // Always open at the top; don't let router scroll restoration carry the
-  // sidebar's position across list <-> detail navigation.
   const viewportRef = useScrollReset<HTMLDivElement>();
 
   return (
     <aside className="flex h-full w-full min-w-0 flex-col text-sidebar-foreground">
       <ScrollArea viewportRef={viewportRef} className="min-h-0 flex-1">
-        {/* Same fade-and-rise the list's FilterSidebar plays when the rail
-            switches panels, keyed on the tab so a Tester <-> Instances switch
-            animates. Inside the ScrollArea, so the scroll container itself
-            stays put while its content swaps. */}
         <motion.div
           key={panelKey}
           className="flex flex-col gap-8 p-4"
@@ -172,7 +144,6 @@ export function DetailSidebar({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: MOTION_S.fast, ease: EASE_OUT }}
         >
-          {/* gap-1.5 + the slider's my-2, matching the metric range sliders. */}
           {showSize && (
             <div className="flex flex-col gap-1.5">
               <div className="flex items-center justify-between gap-2">
@@ -220,9 +191,6 @@ export function DetailSidebar({
                 {axes.map((a) => (
                   <div key={a.tag} className="flex flex-col gap-1.5">
                     <div className="flex items-baseline justify-between gap-2">
-                      {/* The raw four-letter tag sits in an outline badge so it
-                          reads as the axis's code rather than part of its
-                          name. */}
                       <span className="flex items-baseline gap-1.5 text-sm">
                         {a.name ?? a.tag}
                         <Badge

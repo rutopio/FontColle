@@ -9,15 +9,8 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 
-// The site-wide Not Found screen, shown for unmatched routes and for a missing
-// font on the detail route. Deliberately standalone, no filter sidebar or rail,
-// like the detail License view, so it centers a single Empty state with a way
-// back home. The FontColle mark + wordmark stand in for the generic empty icon,
-// keeping the brand present off the main app.
 export function NotFound({
   title = "Page not found",
-  // Each string renders as its own line, so both sentences read as separate
-  // lines instead of wrapping mid-sentence.
   description = [
     "The page you're looking for doesn't exist",
     "or may have moved.",
@@ -27,8 +20,6 @@ export function NotFound({
   description?: string[];
 }) {
   return (
-    // bg-background: this renders outside the shell, straight onto body, which
-    // carries the sidebar tint that frames the centred app.
     <main className="flex min-h-full w-full flex-col items-center justify-center bg-background p-6">
       <Empty>
         <EmptyHeader>

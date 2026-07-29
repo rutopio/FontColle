@@ -28,9 +28,6 @@ function SheetOverlay({ className, ...props }: SheetPrimitive.Backdrop.Props) {
     <SheetPrimitive.Backdrop
       data-slot="sheet-overlay"
       className={cn(
-        // Matched to the panel's duration, not shorter: a backdrop that
-        // finishes first leaves the sheet travelling over an already-settled
-        // dim, which reads as two separate events.
         "fixed inset-0 z-50 bg-black/10 transition-opacity duration-[var(--motion-slow)] ease-[var(--ease-snap)] data-ending-style:opacity-0 data-starting-style:opacity-0 supports-backdrop-filter:backdrop-blur-xs",
         className
       )}

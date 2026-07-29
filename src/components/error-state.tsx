@@ -9,23 +9,16 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 
-// The site-wide error screen, shown when a route loader throws (e.g. the static
-// catalog fails to load). Mirrors NotFound's standalone centered Empty layout,
-// same BrandMark and no sidebar/rail, but leads with a Retry button (re-runs the
-// failed loader) alongside the way home.
 export function ErrorState({
   onRetry,
   title = "Something went wrong",
   description = ["We couldn't load the fonts just now.", "Please try again."],
 }: {
-  // Re-run the failed loader. Wired to the router's reset in the errorComponent.
   onRetry?: () => void;
   title?: string;
   description?: string[];
 }) {
   return (
-    // bg-background: this renders outside the shell, straight onto body, which
-    // carries the sidebar tint that frames the centred app.
     <main className="flex min-h-full w-full flex-col items-center justify-center bg-background p-6">
       <Empty>
         <EmptyHeader>

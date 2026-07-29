@@ -41,7 +41,6 @@ import { cn } from "@/lib/utils";
 import { SIZE_MAX, SIZE_MIN, SIZE_PRESETS } from "./detail-sidebar";
 import { instanceStyle, isTesterBlock, TESTER_NODES } from "./tester-nodes";
 
-// Values match Lexical's node keys, so a read-back maps straight onto this list.
 type BlockType = "normal" | "h1" | "h2" | "h3";
 const BLOCK_OPTIONS: { value: BlockType; label: string }[] = [
   { value: "h1", label: "Heading 1" },
@@ -50,9 +49,6 @@ const BLOCK_OPTIONS: { value: BlockType; label: string }[] = [
   { value: "normal", label: "Normal text" },
 ];
 
-// A real rich-text editor (Lexical), deliberately independent of the shared
-// usePreview() string: it mixes block styles in one document, the way the
-// Google Fonts specimen does, which one plain string can't represent.
 export function Tester({
   fontStyle,
   seedLines,
@@ -60,14 +56,8 @@ export function Tester({
   fontName,
   fontLoaded,
 }: {
-  // The document default; a block given a named instance overrides the axes
-  // for itself. Carries no font-size, which is per block type.
   fontStyle: CSSProperties;
-  // A font with nothing to continue (emoji, blank) supplies fewer lines, and
-  // the extra headings are simply not created.
   seedLines: string[];
-  // Also the source of the weights the family really ships, which the heading
-  // defaults snap to.
   instances: FontInstance[];
   fontName: string;
   fontLoaded: boolean;
@@ -78,10 +68,6 @@ export function Tester({
     onError: (error: Error) => {
       throw error;
     },
-    // Each heading carries the named instance matching its wanted weight rather
-    // than a CSS font-weight, so the block renders a real cut instead of a
-    // synthesized one, and its Instance chip reads as active when the caret
-    // lands in it.
     editorState: () => {
       const root = $getRoot();
       if (root.getFirstChild() !== null) return;
@@ -98,12 +84,7 @@ export function Tester({
         block.append($createTextNode(line));
         root.append(block);
       }
-      // Land the caret in the first block so the toolbar has a target on
-      // arrival: without this syncFromSelection bails at its !$isRangeSelection
-      // guard and every control reads empty until the user clicks a line.
-      //
-      // selectStart(), not editor.focus(): focusing on mount would scroll the
-      // editor into view and raise the software keyboard on mobile.
+      // selectStart(), not focus(): avoid scroll-into-view and mobile keyboard.
       root.getFirstChild()?.selectStart();
     },
   };
@@ -120,8 +101,6 @@ export function Tester({
   );
 }
 
-// Published as CSS custom properties and consumed by the h1/h2/h3/p rules in
-// styles.css, so one document can mix block types at their own sizes.
 const DEFAULT_SIZE: Record<BlockType, number> = {
   h1: 48,
   h2: 28,
@@ -129,8 +108,6 @@ const DEFAULT_SIZE: Record<BlockType, number> = {
   normal: 18,
 };
 
-// Only a wish: a family that doesn't ship the cut falls back to Regular below
-// rather than letting the browser fake it.
 const HEADING_WEIGHT: Record<"h1" | "h2" | "h3", number> = {
   h1: 700,
   h2: 600,
@@ -139,9 +116,6 @@ const HEADING_WEIGHT: Record<"h1" | "h2" | "h3", number> = {
 
 const REGULAR_WEIGHT = 400;
 
-// `label` takes the block's direction because "left" is the start of an LTR
-// line but the END of an RTL one, so the same button means opposite things to
-// a screen-reader user depending on what they're editing.
 const ALIGNMENTS: {
   id: Exclude<ElementFormatType, "" | "justify" | "start" | "end">;
   icon: typeof TextAlignLeftIcon;
@@ -160,9 +134,7 @@ const ALIGNMENTS: {
   },
 ];
 
-// Lexical's unset format ("") renders as `text-align: start`, which the browser
-// resolves against the block's own direction — the wanted default, so it needs
-// resolving only here, at read time, to light the right button.
+// Resolves Lexical's unset format ("") against block direction.
 function alignedAs(
   format: ElementFormatType,
   rtl: boolean
@@ -174,10 +146,7 @@ function alignedAs(
   return null;
 }
 
-// Falls back to the nearest weight the family actually ships: asking for a
-// missing cut leaves the browser to synthesize a fake, misrepresenting the
-// typeface. Over half the catalog ships a single weight, so this is the common
-// case, not an edge one.
+// Snaps to the nearest weight the family ships to avoid browser synthesis.
 function headingInstance(
   instances: FontInstance[],
   tag: "h1" | "h2" | "h3"
@@ -204,10 +173,7 @@ function TesterInner({
 }) {
   const [editor] = useLexicalComposerContext();
   const [block, setBlock] = useState<BlockType>("normal");
-  // "" is Lexical's unset format; see alignedStart for how it is displayed.
   const [align, setAlign] = useState<ElementFormatType>("");
-  // Read off the DOM element Lexical rendered, which sets dir from the text's
-  // first strong character. Decides which end button the unset format lights.
   const [rtl, setRtl] = useState(false);
   const [blockStyle, setBlockStyle] = useState("");
   const [activeKeys, setActiveKeys] = useState<string[]>([]);
@@ -232,8 +198,6 @@ function TesterInner({
     setBlock(next);
     setBlockStyle(isTesterBlock(element) ? element.getStyle() : "");
     setAlign($isElementNode(element) ? element.getFormatType() : "");
-    // Off the rendered element, not the node: Lexical derives dir from the
-    // first strong character, the same rule dir=auto uses elsewhere.
     const dom = editor.getElementByKey(element.getKey());
     setRtl(dom ? getComputedStyle(dom).direction === "rtl" : false);
     setActiveKeys(
@@ -266,9 +230,7 @@ function TesterInner({
     );
   }, [editor, syncFromSelection]);
 
-  // A DOM attribute, NOT a Lexical node property: writing pure presentation
-  // into the editor state would put a highlight in the undo history and dirty
-  // the document on every click.
+  // DOM attribute, not Lexical state, to avoid polluting the undo history.
   useEffect(() => {
     const marked = activeKeys
       .map((key) => editor.getElementByKey(key))
@@ -290,15 +252,12 @@ function TesterInner({
     setBlock(value);
   };
 
-  // Clicking the active chip again drops the block to the document default.
   const applyInstance = (inst: FontInstance) => {
     const next = instanceStyle(inst.coords, inst.italic);
     const clearing = next === blockStyle;
     editor.update(() => {
       const selection = $getSelection();
       if (!$isRangeSelection(selection)) return;
-      // getNodes() returns text nodes, so walk up to each one's top-level
-      // element and de-duplicate to get the blocks to restyle.
       const blocks = new Set(
         selection
           .getNodes()
@@ -313,7 +272,6 @@ function TesterInner({
     setBlockStyle(clearing ? "" : next);
   };
 
-  // Colour is left to the theme, so the document reads in both modes.
   const editorStyle: CSSProperties = {
     ...fontStyle,
     "--pg-size-h1": `${sizes.h1}px`,
@@ -324,11 +282,7 @@ function TesterInner({
 
   return (
     <div className="flex flex-col gap-3">
-      {/* TOOLBAR: block style, size. */}
       <div className="flex flex-wrap items-center gap-x-8 gap-y-2">
-        {/* Slider and Select render their own controls (not native
-            input/select), so these are plain <div>s with an aria-label on the
-            control, not <label>s. */}
         <div className="flex items-center gap-2 text-xs">
           <span>Style</span>
           <Select
@@ -360,9 +314,6 @@ function TesterInner({
             onValueChange={(v) => setSize(v as number)}
             className="w-32"
           />
-          {/* Click-to-edit readout with the same presets as the sidebar's Font
-              Size, so a heading can be typed straight to 48 instead of dragged
-              there. Fixed width so the slider doesn't shift as digits change. */}
           <span className="flex w-8 shrink-0 justify-end">
             <EditableValue
               value={size}
@@ -376,10 +327,6 @@ function TesterInner({
           </span>
         </div>
 
-        {/* ALIGNMENT: applies to the block(s) the selection touches, the same
-            scope as Style. The two end buttons are labelled by the block's own
-            direction, so an RTL paragraph reads "Align right" on the button
-            that keeps its text at the start of the line. */}
         <div className="flex items-center gap-2 text-xs">
           <span>Align</span>
           <ButtonGroup>
@@ -409,9 +356,6 @@ function TesterInner({
         </div>
       </div>
 
-      {/* INSTANCE CHIPS: apply a named instance to the block the caret is in,
-          the same scope the Style dropdown works on. Clicking the lit chip
-          again clears it, so a block can go back to the document default. */}
       {instances.length > 0 && (
         <div className="mb-4 flex flex-wrap items-center gap-2">
           <span className="text-xs">Instance</span>
@@ -443,14 +387,7 @@ function TesterInner({
         </div>
       )}
 
-      {/* Full-bleed: negative margins cancel the Column body's own padding
-          (p-4, md:p-6) so the rule spans the whole column instead of stopping
-          at the text edge. The values have to track that padding at both
-          breakpoints, hence the md: variant. */}
       <Separator className="-mx-4 data-horizontal:w-auto md:-mx-6" />
-      {/* EDITOR: the document surface. Only vertical padding: the toolbar and
-          the document share the column's left edge, so an inset here would
-          make the text hang off it. Colour comes from the theme. */}
       <div className="py-2">
         <RichTextPlugin
           contentEditable={

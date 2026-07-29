@@ -1,8 +1,5 @@
 import type { FontRecord } from "./types";
 
-// Mirrors the harvester's Python logic, so a record carrying only raw axes and
-// features gets the same facet tags as the static dataset.
-
 const FEATURE_FACETS: Record<string, string> = {
   smcp: "small-caps",
   c2sc: "small-caps",
@@ -34,7 +31,6 @@ export function deriveFacets(font: FontRecord): string[] {
   const hasSlantOrItalAxis = font.axes.some(
     (a) => a.tag === "ital" || a.tag === "slnt"
   );
-  // Older records predate the explicit italic flag, hence the name check.
   const hasItalicInstance = font.instances.some(
     (i) => i.italic || (i.name ?? "").toLowerCase().includes("ital")
   );
@@ -49,16 +45,10 @@ export function deriveFacets(font: FontRecord): string[] {
     if (f) facets.add(f);
   }
 
-  // Plain-language trait tags. The Tag panel that surfaced them is retired, so
-  // nothing renders these today; they stay because they cost only a derivation
-  // from existing fields and a shared URL from before its removal still
-  // decodes them (see FilterSearch.tag).
   if (font.isMonospace) facets.add("monospace");
   if (font.colorTables.length > 0) facets.add("colorful");
   if (font.isNoto) facets.add("noto-family");
 
-  // Coarse subset-based script tags, likewise unrendered. The Writing system
-  // section is the live entry point, and covers scripts by real cmap coverage.
   if (font.subsets.includes("latin")) facets.add("latin");
   if (
     font.subsets.some(

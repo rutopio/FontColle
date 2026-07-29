@@ -14,12 +14,6 @@ import { FilterGroupButton, FilterRail } from "./filter-rail";
 import { FilterSidebar } from "./filter-sidebar";
 import { type FilterGroupId, PRESET_GROUP } from "./groups";
 
-// The sole way to filter on mobile, where the desktop rail and panel collapse
-// to an unreachable Sheet (see app-sidebar). Filter state is shared, so it
-// needs no Apply button.
-//
-// Built on Base UI's Drawer, not ui/sheet: this covers 85% of the screen, and
-// a panel that large has to be dismissable by dragging it down.
 export function FilterDrawer({
   index,
   filter,
@@ -44,9 +38,6 @@ export function FilterDrawer({
 
   return (
     <Drawer open={open} onOpenChange={setOpen} swipeDirection="down">
-      {/* FAB: sits above the preview-dock footer (bottom-20) and below the
-          drawer backdrop (z-40 vs the backdrop's z-50). safe-area padding
-          clears the iOS home indicator. */}
       <button
         type="button"
         onClick={() => setOpen(true)}
@@ -66,12 +57,8 @@ export function FilterDrawer({
         )}
       </button>
 
-      {/* max-h overrides the component default so 85dvh is the real height:
-          the popup frame stays fixed and only FilterSidebar's ScrollArea
-          scrolls, which is what keeps the drag and the scroll from fighting. */}
       <DrawerContent className="h-[85dvh] max-h-[85dvh] gap-0 p-0">
         <DrawerHandle />
-        {/* DrawerTitle also satisfies the dialog's required accessible name. */}
         <div className="flex items-center gap-2 border-border border-b px-4 py-3">
           <FunnelIcon className="size-4 text-primary" weight="fill" />
           <DrawerTitle>Filters</DrawerTitle>
@@ -81,11 +68,6 @@ export function FilterDrawer({
             </span>
           )}
         </div>
-        {/* Horizontal group switcher, then the group's sections. The rail lives
-            in its own padded strip; FilterSidebar brings its own ScrollArea.
-            Preset is appended here rather than rendered with Favorite as on
-            desktop: the drawer has no sidebar footer, so this strip is mobile's
-            only way into the panel, and leaving it out would strand presets. */}
         <div className="flex border-border border-b px-3 pt-2">
           <FilterRail
             active={group}

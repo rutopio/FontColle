@@ -1,28 +1,20 @@
 import { useCallback, useSyncExternalStore } from "react";
 import { type FilterSearch, parseFilterSearch } from "./filter";
 
-// A preset stores the FilterSearch OBJECT, not a query string, so decoding
-// stays parseFilterSearch's job: a preset written before a param existed (or
-// after one was retired) degrades exactly like a shared URL, no migration path.
 const KEY = "font-colle.presets.v1";
 
 export interface FilterPreset {
   id: string;
   name: string;
-  // The filter half only: a preset is a set of conditions, not a view, so
-  // applying one leaves the reader's own sort and favorites alone.
   search: FilterSearch;
 }
 
-// save() refuses past this rather than silently evicting.
 export const MAX_PRESETS = 20;
 
 interface PresetStore {
   presets: FilterPreset[];
 }
 
-// The server and hydration render the empty list; the first client pass after
-// hydration reads the stored one. Mirrors ./favorites.
 const EMPTY: FilterPreset[] = [];
 const listeners = new Set<() => void>();
 const emit = () => {
@@ -35,8 +27,6 @@ const subscribe = (cb: () => void) => {
   };
 };
 
-/** Runs the search half through parseFilterSearch, so a hand-edited or stale
- *  entry can only ever yield known keys with string values. */
 function revivePreset(raw: unknown): FilterPreset | null {
   if (typeof raw !== "object" || raw === null) return null;
   const { id, name, search } = raw as Record<string, unknown>;
@@ -65,8 +55,6 @@ function read(): FilterPreset[] {
   }
 }
 
-// Snapshot cache: useSyncExternalStore compares snapshots with Object.is, so
-// reads must keep returning the same array until a write replaces it.
 let cache: FilterPreset[] | null = null;
 const getSnapshot = () => {
   if (cache === null) cache = read();
@@ -84,19 +72,13 @@ function write(next: FilterPreset[]) {
   emit();
 }
 
-// Unique within one device's hand-made list is enough, so no need for
-// crypto.randomUUID (absent on some older mobile browsers over http).
 const newId = () =>
   `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
-/** Both sides come from filterToSearch / parseFilterSearch, which omit empty
- *  keys, so a key-by-key compare over the union is exact. */
 export function sameSearch(a: FilterSearch, b: FilterSearch): boolean {
   const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
   for (const k of keys) {
     const ka = k as keyof FilterSearch;
-    // parseFilterSearch writes `undefined` for absent keys rather than omitting
-    // them, so the union can contain keys neither side really has.
     if ((a[ka] ?? undefined) !== (b[ka] ?? undefined)) return false;
   }
   return true;
@@ -109,7 +91,6 @@ export function usePresets() {
     getServerSnapshot
   );
 
-  // Returns false when full, so the caller can say so.
   const save = useCallback((name: string, search: FilterSearch) => {
     const prev = getSnapshot();
     if (prev.length >= MAX_PRESETS) return false;
@@ -121,9 +102,6 @@ export function usePresets() {
     write(getSnapshot().filter((p) => p.id !== id));
   }, []);
 
-  // Undo for the delete toast. Re-inserts by index keeping the original id,
-  // rather than going through save(), which appends and mints a new id: that
-  // would move the row and break the identity the active-preset check uses.
   const restore = useCallback((preset: FilterPreset, index: number) => {
     const next = getSnapshot().slice();
     if (next.some((p) => p.id === preset.id)) return;

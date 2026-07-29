@@ -7,10 +7,6 @@ import { Pills } from "./section";
 import { SectionHeader } from "./section-header";
 import { filterGroupsByQuery, useSearchSort } from "./use-facet-search";
 
-// 272 distinct tags, grouped by what they do rather than left as one
-// count-sorted wall. Per-sub-list expanders keep the 81 character variants and
-// 64 unregistered tags from swamping the panel while leaving them reachable.
-// The search matches both the raw tag and its name, so "ligature" finds dlig.
 export function FeatureSection({
   features,
   selectedFeatures,
@@ -28,8 +24,6 @@ export function FeatureSection({
 }) {
   const { sort, toggleSort, query, setQuery, q } = useSearchSort();
 
-  // filterGroupsByQuery rebuilds each group's topNSet, so a match never stays
-  // hidden behind a "N more" expander.
   const groups = useMemo(() => {
     const ordered =
       sort === "alpha"
@@ -80,8 +74,6 @@ export function FeatureSection({
                 grid
                 spread
                 mono
-                // An unknown tag maps to itself, so its tooltip would just
-                // repeat the label.
                 title={(tag) => {
                   const name = featureName(tag);
                   return name === tag ? "" : name;

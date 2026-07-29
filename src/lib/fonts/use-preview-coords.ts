@@ -5,16 +5,9 @@ import type { FontRecord } from "./types";
 export interface PreviewCoords {
   weight: number;
   variationCoords: Record<string, number>;
-  // Only the "italic" pick turns this on; "upright" and no pick leave it off.
   italic: boolean;
 }
 
-/** `axisValues` is a 0-100% position per axis, mapped onto this font's own
- *  range. The wght/wdth sliders override the Weight/Width steps.
- *
- *  Renders the LAST-clicked step, the tail of the array, since toggle appends:
- *  clicking Light -> Bold -> Regular previews each in turn even though all
- *  three stay in the filter. */
 export function usePreviewCoords(
   font: FontRecord,
   selection: FilterSelection,
@@ -51,8 +44,6 @@ export function usePreviewCoords(
     return { axisWeight: weight, variationCoords: coords };
   }, [font.axes, selectedAxes, axisValues]);
 
-  // The wdth slider (in variationCoords) is the more explicit control, so it
-  // wins over the Width-step coord when both are set.
   if (widthCoord != null && !("wdth" in variationCoords)) {
     variationCoords.wdth = widthCoord;
   }

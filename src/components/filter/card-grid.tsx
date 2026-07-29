@@ -4,8 +4,6 @@ import { CardButton } from "./card-button";
 import { SectionHeader } from "./section-header";
 import { WeightSpecimen, WidthSpecimen } from "./specimen-icon";
 
-// Every card renders at once, with no rare-value collapse: these value sets are
-// small and fixed.
 export function CardGrid({
   title,
   icon: Icon,
@@ -27,7 +25,6 @@ export function CardGrid({
   onReset: () => void;
   label: (value: string) => string;
   axis: "wght" | "wdth";
-  // Bumped when the sibling axis cleared this section's pick.
   flashKey?: number;
   mode?: MatchMode;
   onToggleMode?: () => void;
@@ -46,7 +43,6 @@ export function CardGrid({
         mode={mode}
         onToggleMode={onToggleMode}
       />
-      {/* Multi-select OR/AND per the section mode. */}
       <div className="grid grid-cols-3 gap-3">
         {items.map(([value, count]) => (
           <CardButton

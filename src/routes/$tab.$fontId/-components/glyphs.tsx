@@ -14,9 +14,6 @@ import {
   type Range,
 } from "./glyph-block-grid";
 
-// One Unicode block at a time, showing only the codepoints the font contains.
-// The block list lives in BlockPicker; the chart itself is BlockGrid.
-
 export function GlyphsPanel({
   font,
   fontLoaded,
@@ -50,17 +47,10 @@ export function GlyphsPanel({
     }
   }, []);
 
-  // Always Adobe Blank, never NotDef, so a stray absent cell stays blank.
-  //
-  // letterSpacing is reset for the same reason the preview helpers do it: the
-  // app tracks its UI wide on <html>, and an inherited value would append that
-  // spacing to every glyph, nudging each off the centre of its cell.
   const glyphStyle: CSSProperties = {
     fontFamily: `"${font.name}", "Adobe Blank"`,
     letterSpacing: "normal",
   };
-  // Accepted only to re-render once the face is ready, so the browser repaints
-  // real glyphs over the blank ones.
   void fontLoaded;
 
   return (
@@ -88,8 +78,6 @@ export function GlyphsPanel({
   );
 }
 
-// Both this and BlockGrid read useGlyphCompact, so they cannot disagree about
-// which layout is current and the real grid swaps in with no shift.
 function GlyphGridSkeleton() {
   const COLS = useGlyphCompact() ? COLS_MOBILE : COLS_DESKTOP;
   const labelW = COLS === COLS_DESKTOP ? LABEL_W : 0;
@@ -100,7 +88,6 @@ function GlyphGridSkeleton() {
 
   return (
     <div role="status" aria-busy="true" aria-label="Loading glyphs">
-      {/* Header row of column labels, desktop only, matches BlockGrid. */}
       {COLS === COLS_DESKTOP && (
         <div
           className="grid gap-px pb-1"

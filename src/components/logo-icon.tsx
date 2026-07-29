@@ -1,8 +1,5 @@
 import { cn } from "@/lib/utils";
 
-// The FontColle mark: a shop-front arch with shelf lines. currentColor for
-// stroke so callers set the color via text-*; size via className (defaults to
-// size-6). Reused wherever the brand icon is needed.
 export function LogoIcon({ className }: { className?: string }) {
   return (
     <svg

@@ -12,10 +12,8 @@ import {
 import { cn } from "@/lib/utils";
 import { SectionHeader } from "./section-header";
 
-// The slider works in STOP INDEX space, not raw counts: the distribution is
-// extremely skewed (1..12 covers almost the whole catalog while the tail runs
-// to 74), so on a linear track everything below 12 would crowd into the first
-// sixth and be undraggable. The stored value is always the real count.
+// Slider indices map to stop positions, not raw counts — the distribution is
+// heavily skewed toward low values.
 export function InstancesSection({
   histogram,
   value,
@@ -25,7 +23,6 @@ export function InstancesSection({
   value: InstanceRange | undefined;
   onChange: (next: InstanceRange | undefined) => void;
 }) {
-  // Falls back to the domain edges, so an empty histogram still renders.
   const stops = useMemo(() => {
     const xs = histogram.map(([n]) => n).filter((n) => n > 0);
     return xs.length ? xs : [INSTANCE_MIN, INSTANCE_MAX];
@@ -50,8 +47,6 @@ export function InstancesSection({
     );
   const matched = countIn(lo, hi);
 
-  // A range spanning the whole domain filters nothing, so it clears instead,
-  // keeping All lit rather than showing a no-op filter.
   const commit = (nlo: number, nhi: number) => {
     const a = Math.min(nlo, nhi);
     const b = Math.max(nlo, nhi);
@@ -64,7 +59,6 @@ export function InstancesSection({
     commit(stops[arr[0]] ?? INSTANCE_MIN, stops[arr[1]] ?? INSTANCE_MAX);
   };
 
-  // Clicking the active bucket clears, so the row never forces a trip to All.
   const pick = (id: string) => {
     if (id === active) return onChange(undefined);
     const r = instanceRangeOf(id);
@@ -99,7 +93,6 @@ export function InstancesSection({
           `Instance count ${i === 0 ? "minimum" : "maximum"}`
         }
       />
-      {/* Bucket presets + All, mirroring the metric rows' quartile buttons. */}
       <div className="grid grid-cols-5 gap-1">
         {INSTANCE_BUCKETS.map((b) => (
           <button

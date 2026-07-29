@@ -1,14 +1,3 @@
-// Build-time generator: one Open Graph image per family, set in the family's
-// OWN typeface, written to public/og/<id>.png so the share route serves a
-// static asset with zero runtime work.
-//
-// No runtime font loader is involved: this fetches each family's plain .ttf
-// from the CSS2 API (subset via text= to just the glyphs the name needs),
-// traces the name to an SVG <path> with opentype.js, then rasterizes with
-// resvg. The font exists only at build time; the artifact is a flat PNG.
-//
-// Run: pnpm gen:og. Mirrors scripts/gen-specimen-svgs.mjs.
-
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -17,29 +6,22 @@ import opentype from "opentype.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT_DIR = resolve(ROOT, "public/og");
-// The full catalog (harvester output). Only published families get a font page,
-// so only those need a card. Pulled from R2 by sync-assets.mjs when absent.
 const FONTS_JSON = resolve(ROOT, "src/data/fonts.json");
 
-// Open Graph recommended 1.91:1 canvas.
 const W = 1200;
 const H = 630;
 
-// Light canvas, black text, matches the site's default (light) chrome.
 const BG = "#ffffff";
 const FG = "#0a0a0a";
 
-// The family name is scaled to fit inside this centered box (never upscaled).
 const PAD_X = 100;
 const NAME_BOX_TOP = 40;
-const NAME_BOX_H = 430; // upper area; the wordmark strip sits below it
+const NAME_BOX_H = 430;
 const NAME_MAX_SIZE = 200;
 
-// An ancient UA makes the CSS2 API serve plain .ttf instead of .woff2, so we can
-// hand the bytes straight to opentype.js (which doesn't decompress woff2).
+// Old UA to get .ttf instead of .woff2 (opentype.js can't decompress woff2).
 const UA = "Mozilla/4.0";
 
-// The four strokes from src/components/logo-icon.tsx, matching the sidebar.
 const ICON_PATHS = [
   "M3 21H21V12C21 9.61305 20.0518 7.32387 18.364 5.63604C16.6761 3.94821 14.3869 3 12 3C9.61305 3 7.32387 3.94821 5.63604 5.63604C3.94821 7.32387 3 9.61305 3 12V21Z",
   "M3 17L21 17",
@@ -47,8 +29,6 @@ const ICON_PATHS = [
   "M13 13V9H20",
 ];
 
-// Paper Mono (the site's font-mono face) embedded for the wordmark. resvg
-// rasterizes the <text> using this @font-face, so we never decode woff2.
 const PAPER_MONO_B64 = readFileSync(
   resolve(ROOT, "public/fonts/paper-mono.woff2")
 ).toString("base64");
@@ -56,10 +36,6 @@ const FONT_FACE =
   `@font-face{font-family:'Paper Mono';` +
   `src:url(data:font/woff2;base64,${PAPER_MONO_B64}) format('woff2');}`;
 
-// `text` subsets the face to just those characters. That endpoint serves an
-// extension-less /l/font?kit= URL, so match on the format() hint rather than a
-// file suffix — and it must not be the woff2 src, which opentype.js can't
-// decode.
 async function fontUrl(family, text) {
   const fam = family.trim().replace(/\s+/g, "+");
   const q = text ? `&text=${encodeURIComponent(text)}` : "";
@@ -77,8 +53,6 @@ async function fontUrl(family, text) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-// Fetch + parse a family's subset face, retrying on transient network / CSS2
-// rate-limit hiccups (the batch makes ~2k requests). Throws after the last try.
 async function loadFont(family, text, tries = 3) {
   let last;
   for (let i = 0; i < tries; i++) {
@@ -100,8 +74,6 @@ async function loadFont(family, text, tries = 3) {
   throw last;
 }
 
-// Trace `text` in `font`, then place it centered inside the box, scaled to fit
-// on both axes (never upscaled past maxSize). Returns an SVG <path> string.
 function centeredText(font, text, { boxX, boxY, boxW, boxH, maxSize }) {
   const scaleFor = (s) => s / font.unitsPerEm;
   const glyphs = font.stringToGlyphs(text);
@@ -133,14 +105,11 @@ function centeredText(font, text, { boxX, boxY, boxW, boxH, maxSize }) {
   return `<path transform="translate(${tx.toFixed(2)} ${ty.toFixed(2)})" d="${path.toPathData(2)}" fill="${FG}"/>`;
 }
 
-// The icon and wordmark on one row, centered. The word is a <text> element,
-// laid out by resvg via the embedded font; the icon is a stroked path group.
 function wordmark() {
-  const iconSize = 56; // icon viewBox is 24 units
+  const iconSize = 56;
   const iconScale = iconSize / 24;
-  const gap = 16; // horizontal gap between icon and word
+  const gap = 16;
   const wordSize = 44;
-  // Paper Mono is monospaced; "FontColle" is 9 chars, ~0.6em advance each.
   const wordW = "FontColle".length * wordSize * 0.6;
 
   const rowCenterY = H - 104;
@@ -161,23 +130,16 @@ function wordmark() {
   return icon + word;
 }
 
-// The home page's card: icon stacked above the wordmark, optically centered.
-// Larger than the bottom strip's mark, being the subject not an attribution.
 function brandLockup() {
   const iconSize = 200;
-  const iconScale = iconSize / 24; // icon viewBox is 24 units
-  const gap = 48; // vertical gap between icon and word
+  const iconScale = iconSize / 24;
+  const gap = 48;
   const wordSize = 96;
-
-  // Cap height, not the full em box, so the optical centre lands where the eye
-  // expects it.
   const wordVisualH = wordSize * 0.72;
   const stackH = iconSize + gap + wordVisualH;
   const top = (H - stackH) / 2;
 
   const iconX = (W - iconSize) / 2;
-  // Stroke scales with the icon, so divide the UI stroke back out or it
-  // balloons instead of matching the sidebar mark.
   const icon =
     `<g transform="translate(${iconX.toFixed(2)} ${top.toFixed(2)}) scale(${iconScale.toFixed(3)})" ` +
     `fill="none" stroke="${FG}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">` +
@@ -221,10 +183,6 @@ async function main() {
   writeFileSync(resolve(OUT_DIR, "_default.png"), toPng(card(brandLockup())));
   console.log("wrote _default.png");
 
-  // Only published families get a font page, so only those need a card.
-  // `--force` re-renders all; the default skips existing PNGs so an interrupted
-  // run resumes cheaply. `--ids=<file>` restricts to the ids listed, which the
-  // daily update uses with force to refresh only the changed subset.
   const force = process.argv.includes("--force");
   const idsArg = process.argv.find((a) => a.startsWith("--ids="));
   const onlyIds = idsArg
@@ -251,7 +209,6 @@ async function main() {
     }
     if (n % 100 === 0) console.log(`  …${n}/${fonts.length}`);
     try {
-      // Subset to the name's own characters; that's all the card renders.
       const font = await loadFont(name, name);
       const nameSvg = centeredText(font, name, nameBox);
       writeFileSync(
@@ -260,7 +217,6 @@ async function main() {
       );
       ok++;
     } catch (err) {
-      // Fallback: render the name in Paper Mono so the card still exists.
       try {
         const nameSvg =
           `<text x="${W / 2}" y="${NAME_BOX_TOP + NAME_BOX_H / 2}" text-anchor="middle" ` +

@@ -1,13 +1,3 @@
-// A tiny, dependency-free syntax highlighter for the Use-tab code snippets,
-// which are short, generated, and cover only four shapes (CSS, HTML <link>, a
-// JS import line, a Bash install command). Pure and synchronous, so it runs
-// during SSR with no async load and no hydration flash — which a full grammar
-// engine like Shiki or Prism would cost hundreds of KB to match.
-//
-// Each language is a list of [class, regex] rules tried in order at the cursor;
-// first match wins and advances. Anything unmatched is emitted as a plain
-// character. Token classes map to the `--syntax-*` CSS vars.
-
 export type TokenClass =
   | "comment"
   | "tag"
@@ -26,8 +16,6 @@ export interface Token {
 
 type Rule = [TokenClass, RegExp];
 
-// Build sticky (y) versions once. Order matters: comments and strings first so
-// their contents aren't re-tokenised as keywords/punctuation.
 const rules: Record<string, Rule[]> = {
   css: [
     ["comment", /\/\*[\s\S]*?\*\//y],
@@ -59,14 +47,12 @@ const rules: Record<string, Rule[]> = {
   ],
 };
 
-// An unknown language yields one plain token, so callers always get output.
 export function highlight(code: string, lang?: string): Token[] {
   const langRules = lang ? rules[lang] : undefined;
   if (!langRules) return [{ text: code }];
 
   const tokens: Token[] = [];
   let pos = 0;
-  // Buffer unmatched characters, so they flush as one token, not one per char.
   let plain = "";
   const flush = () => {
     if (plain) {

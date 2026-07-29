@@ -1,4 +1,3 @@
-// From Unicode's Blocks.txt, restricted to the BMP (U+0000..U+FFFF).
 export interface UnicodeBlock {
   name: string;
   start: number;
@@ -180,13 +179,11 @@ export const BMP_BLOCKS: readonly UnicodeBlock[] = [
   { name: "Specials", start: 0xfff0, end: 0xffff },
 ];
 
-// Blocks are non-overlapping and ordered, so a linear scan over ~160 is fine.
 export function blockOf(cp: number): UnicodeBlock | undefined {
   return BMP_BLOCKS.find((b) => cp >= b.start && cp <= b.end);
 }
 
-// A "U+XXXX"/"0xXXXX" prefix reads as hex; anything else is taken literally as
-// its first codepoint, so bare "ab" is never ambiguously the hex 0x00AB.
+// Bare "ab" is its first codepoint, not hex 0x00AB.
 export function parseGlyphQuery(input: string): number | null {
   const q = input.trim();
   if (!q) return null;

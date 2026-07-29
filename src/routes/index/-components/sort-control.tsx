@@ -23,10 +23,6 @@ import {
 } from "@/lib/fonts/sort";
 import { cn } from "@/lib/utils";
 
-// A directionless group disables the toggle and exposes only its `asc` order.
-//
-// With an active search query the results rank by relevance, so the control
-// reads "Relevance" and is disabled: its label has to match the real order.
 export function SortControl({
   sort,
   onChange,
@@ -51,8 +47,6 @@ export function SortControl({
   }
 
   const directionless = isDirectionless(group);
-  // Directionless groups only expose `asc`; keep the current direction when both
-  // groups support it.
   const dirLabel = asc ? group.ascLabel : (group.descLabel ?? group.ascLabel);
 
   const selectGroup = (g: string | null) => {
@@ -62,9 +56,6 @@ export function SortControl({
 
   return (
     <div className="flex h-9 items-center rounded-lg border border-input bg-background dark:bg-input/30">
-      {/* Same slot, two presentations: a dropdown on desktop, a bottom sheet on
-          touch, where a native select popup is an awkward target. The frame and
-          the direction toggle are identical either way. */}
       {mobile ? (
         <GroupDrawer group={group.group} onSelect={selectGroup} />
       ) : (
@@ -75,9 +66,6 @@ export function SortControl({
           >
             <SelectValue>{group.group}</SelectValue>
           </SelectTrigger>
-          {/* Right-align the popup to the trigger so its right border
-                    lands on the group's divider hairline, not out past the
-                    direction button. */}
           <SelectContent
             align="end"
             alignOffset={-3}
@@ -91,9 +79,6 @@ export function SortControl({
           </SelectContent>
         </Select>
       )}
-      {/* Solid 1px divider: a `border-l` renders lighter than the group's outer
-          border (sub-pixel anti-aliasing), so use a real hairline in the same
-          token as the frame. */}
       <div className="h-full w-px shrink-0 bg-input" />
       <button
         type="button"
@@ -117,7 +102,6 @@ export function SortControl({
   );
 }
 
-// The same trigger the Select renders, but tapping opens a bottom sheet.
 function GroupDrawer({
   group,
   onSelect,
@@ -129,8 +113,6 @@ function GroupDrawer({
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      {/* Mirrors SelectTrigger's own box (min-w-36, justify-between, the same
-          px and caret) so swapping presentations doesn't move the frame. */}
       <button
         type="button"
         onClick={() => setOpen(true)}
@@ -163,7 +145,6 @@ function GroupDrawer({
                   setOpen(false);
                 }}
                 aria-pressed={on}
-                // min-h-12 keeps every row a comfortable touch target.
                 className={cn(
                   "flex min-h-12 items-center justify-between gap-3 rounded-md px-3 text-left text-sm transition-colors",
                   on

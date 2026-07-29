@@ -1,11 +1,3 @@
-// Registers the WebMCP tools with the browser, if it supports WebMCP at all.
-//
-// The proposal is still moving and two call shapes are in the wild: the older
-// batch `provideContext({ tools })` and the newer per-tool `registerTool()`
-// with an AbortSignal for teardown. Both are probed, newest first, so the site
-// works under whichever the visitor's browser implements. No browser ships this
-// on stable today, so the normal path is the early return.
-
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { useEffect } from "react";
@@ -26,8 +18,6 @@ function modelContext(): ModelContext | undefined {
     .modelContext;
 }
 
-/** Expose the site's tools to an in-browser agent for as long as the app is
- *  mounted. No-op without WebMCP support, which is every stable browser today. */
 export function useWebMcp(): void {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -39,9 +29,6 @@ export function useWebMcp(): void {
     const controller = new AbortController();
     const tools = buildTools({ router, queryClient });
 
-    // Tool execution hits the router and the catalog query, and a rejected
-    // promise here would surface as an unhandled rejection rather than a tool
-    // error, so failures are reported back to the agent as text instead.
     const guarded = tools.map((tool) => ({
       ...tool,
       execute: async (args: Record<string, unknown>) => {
@@ -70,9 +57,7 @@ export function useWebMcp(): void {
       void ctx.provideContext({ tools: guarded });
     }
 
-    // registerTool unregisters via the signal. provideContext has no teardown
-    // in the proposal, so re-providing an empty tool list is the closest
-    // equivalent; it only runs on unmount, which in this SPA means teardown.
+    // provideContext has no teardown API; re-provide an empty list on unmount.
     return () => {
       controller.abort();
       if (typeof ctx.registerTool !== "function")

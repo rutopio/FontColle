@@ -7,19 +7,11 @@ import {
   type SerializedElementNode,
 } from "lexical";
 
-// Lexical's ElementNode already stores a per-node `__style` string (setStyle /
-// getStyle), but the stock ParagraphNode and HeadingNode never write it to the
-// DOM: their createDOM only emits text-align. These two subclasses close that
-// gap, so a single paragraph can carry its own font-variation-settings and
-// font-style while its siblings keep the document's.
-//
-// They're registered through initialConfig's `replace`/`with`, which swaps them
-// in wherever Lexical itself would construct the stock node (typing Enter,
-// $setBlocksType, paste), so nothing else in the editor has to know they exist.
+// ParagraphNode/HeadingNode subclasses that write __style to the DOM.
+// Stock nodes only emit text-align; these also apply font-variation-settings
+// so each block can carry its own named instance.
 
-// cssText is assigned, not appended: the style is the node's full declaration,
-// and appending would let stale properties from an earlier instance survive.
-// super's own output (text-align) runs first, so it is captured and re-applied.
+// Overwrites cssText but preserves text-align set by super.createDOM.
 function applyNodeStyle(dom: HTMLElement, style: string): void {
   const { textAlign } = dom.style;
   dom.style.cssText = style;
@@ -33,8 +25,6 @@ export class TesterParagraphNode extends ParagraphNode {
 
   static clone(node: TesterParagraphNode): TesterParagraphNode {
     const clone = new TesterParagraphNode(node.__key);
-    // __style isn't part of the constructor, so carry it across by hand;
-    // without this every reconcile would drop the paragraph's instance.
     clone.__style = node.__style;
     return clone;
   }
@@ -52,8 +42,6 @@ export class TesterParagraphNode extends ParagraphNode {
     return false;
   }
 
-  // The base class serializes __style already; these two overrides only exist
-  // to keep the type tag ours, so a reloaded document rebuilds the subclass.
   static importJSON(serialized: SerializedElementNode): TesterParagraphNode {
     return new TesterParagraphNode().updateFromJSON(serialized);
   }
@@ -81,8 +69,6 @@ export class TesterHeadingNode extends HeadingNode {
   }
 
   updateDOM(prevNode: this, dom: HTMLElement): boolean {
-    // HeadingNode's own updateDOM returns false unconditionally (a tag change
-    // recreates the node), so there's no super result worth forwarding.
     if (prevNode.__style !== this.__style) applyNodeStyle(dom, this.__style);
     return false;
   }
@@ -104,17 +90,7 @@ export const TESTER_NODES = [
   },
 ];
 
-// The CSS a named instance renders as. It must OVERRIDE everything the editor
-// root's preview style sets, not add to it: anything left out here is inherited
-// from the root instead of coming from the instance. So it mirrors
-// previewStyle's mapping deliberately:
-//  - wght goes to font-weight as well as the variation settings, so the browser
-//    picks the right named face and the heading rules' font-weight:700 doesn't
-//    win by default;
-//  - font-style is explicit because italic is a separate cut on most families
-//    rather than an axis, so the coords alone would never slant the text;
-//  - font-optical-sizing, because an explicit opsz coord is inert while the
-//    browser's default `auto` drives the axis from font-size.
+// Mirrors previewStyle's mapping: must override all inherited properties.
 export function instanceStyle(
   coords: Record<string, number>,
   italic: boolean

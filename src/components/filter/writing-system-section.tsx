@@ -4,10 +4,6 @@ import type { MatchMode } from "@/lib/fonts/filter";
 import { scriptLabel, scriptPopulation } from "@/lib/fonts/labels";
 import { FacetSearchSection } from "./facet-search-section";
 
-// Two rankings pull apart here, deliberately: speaker population picks which
-// pills show, but FacetSearchSection orders them by font count. So Simplified
-// Han (1.3B writers, 10 fonts) earns a pill yet lands last. Ranking exposure by
-// font count instead would bury every non-Latin system.
 export function WritingSystemSection({
   scripts,
   selectedScripts,
@@ -31,8 +27,6 @@ export function WritingSystemSection({
 
   return (
     <FacetSearchSection
-      // NOT "Script": the Category cards already use that word for the Google
-      // Fonts /Script/ class, and that string is a stored filter value.
       title="Writing system"
       icon={GlobeIcon}
       items={items}

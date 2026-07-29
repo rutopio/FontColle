@@ -7,15 +7,8 @@ import { Pills } from "./section";
 import { SectionHeader } from "./section-header";
 import { filterGroupsByQuery, useSearchSort } from "./use-facet-search";
 
-// How many languages each continent shows before the "N more" expander.
 const TOP_N_PER_REGION = 10;
 
-// Languages: 980 of them, so they're grouped by continent (the same buckets the
-// detail page's language accordion uses) rather than listed as one wall. Each
-// region shows its 10 most-spoken languages up front; the rest, 438 of them in
-// Africa alone, collapse behind that region's own expander, and the search box
-// reaches every one. Grouping is many-to-many, so a language spoken on several
-// continents appears under each of them.
 export function LanguageSection({
   languages,
   selectedLanguages,
@@ -33,9 +26,6 @@ export function LanguageSection({
 }) {
   const { sort, toggleSort, query, setQuery, q } = useSearchSort();
 
-  // Search matches the human name ("English") and the raw id ("en_Latn").
-  // filterGroupsByQuery rebuilds each region's topNSet from its matches, so a
-  // hit is never left collapsed behind an expander.
   const groups = useMemo(() => {
     const ordered =
       sort === "alpha"

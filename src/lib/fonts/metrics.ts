@@ -1,5 +1,3 @@
-// One place the sidebar sliders and applyFilters both read from, so the ratios
-// they compare are computed identically.
 import type { FontRecord } from "./types";
 
 export type MetricKey =
@@ -15,21 +13,14 @@ export type MetricRange = [number, number];
 export interface MetricSpec {
   key: MetricKey;
   label: string;
-  // The domains deliberately clip outliers, so a thumb resting on an edge means
-  // "unbounded on that side" and a full-extent slider excludes nothing.
   min: number;
   max: number;
   step: number;
   scale: "linear" | "log";
-  // p25/p50/p75 over the published catalog, driving the four quartile pills so
-  // each holds ~1/4 of the fonts (an even split of the clipped domain would
-  // leave the edge buckets near-empty).
   quantiles: [number, number, number];
-  hint: string; // shown in the metric's info-icon tooltip
+  hint: string;
 }
 
-// Domains sized from the p1/median/p99 distribution over the catalog, so the
-// sliders resolve the dense middle while clipping the long tails.
 export const METRIC_SPECS: Record<MetricKey, MetricSpec> = {
   xHeight: {
     key: "xHeight",
@@ -71,8 +62,6 @@ export const METRIC_SPECS: Record<MetricKey, MetricSpec> = {
     quantiles: [0.497, 0.563, 0.635],
     hint: "Average character width relative to the em (OS/2 average). Higher means a wider, more spacious font; lower is condensed and fits more per line.",
   },
-  // Already a ratio, so derive() passes it through. The long Didone tail past
-  // the 8.5 clip still matches when the top thumb rests on the edge.
   contrast: {
     key: "contrast",
     label: "Contrast",
@@ -83,7 +72,6 @@ export const METRIC_SPECS: Record<MetricKey, MetricSpec> = {
     quantiles: [1.21, 1.32, 2.09],
     hint: "Stroke-weight difference between the thick and thin parts of letters, at the regular weight. Near 1.0 is monolinear (even strokes, most sans and mono); higher means sharper thick/thin contrast, up to Didone display serifs.",
   },
-  // 16KB … 64MB, log-scaled. Stored/compared in raw bytes.
   fileSize: {
     key: "fileSize",
     label: "File size",
@@ -104,7 +92,6 @@ function humanBytes(bytes: number): string {
   return `${Math.round(bytes / 1024)}KB`;
 }
 
-/** Shared, so a range reads the same in the readouts and the chips. */
 export function formatMetricValue(key: MetricKey, v: number): string {
   return key === "fileSize" ? humanBytes(v) : v.toFixed(2);
 }
@@ -121,7 +108,6 @@ export const METRIC_ORDER: MetricKey[] = [
 const ratio = (n: number | null, d: number | null): number | null =>
   n != null && d != null && d > 0 ? n / d : null;
 
-/** Null when a required raw field is missing. */
 export function derive(font: FontRecord, key: MetricKey): number | null {
   const upm = font.unitsPerEm;
   switch (key) {
@@ -137,8 +123,6 @@ export function derive(font: FontRecord, key: MetricKey): number | null {
       return font.fileSize != null && font.fileSize > 0 ? font.fileSize : null;
     case "lineHeight": {
       if (upm == null || upm <= 0) return null;
-      // fsSelection bit 7 (useTypoMetrics) picks the typo* trio; otherwise the
-      // hhea* trio governs line height. winDescent is stored positive.
       const asc = font.useTypoMetrics ? font.typoAscender : font.hheaAscender;
       const desc = font.useTypoMetrics
         ? font.typoDescender
@@ -150,8 +134,7 @@ export function derive(font: FontRecord, key: MetricKey): number | null {
   }
 }
 
-/** A thumb on the domain edge is unbounded on that side, so outliers past it
- *  still match. A null derived value never matches. */
+/** A thumb on the domain edge is unbounded on that side. */
 export function matchesRange(
   font: FontRecord,
   spec: MetricSpec,
@@ -174,13 +157,10 @@ export function quartileRanges(spec: MetricSpec): MetricRange[] {
   ];
 }
 
-/** Epsilon compare, since the stored values are rounded. */
 export function rangesEqual(a: MetricRange, b: MetricRange): boolean {
   return Math.abs(a[0] - b[0]) < 1e-6 && Math.abs(a[1] - b[1]) < 1e-6;
 }
 
-/** Only a thumb off a domain edge filters anything. Inactive ranges are
- *  dropped from state and the URL. */
 export function isRangeActive(
   spec: MetricSpec,
   [lo, hi]: MetricRange

@@ -25,8 +25,6 @@ const FADE = {
 
 export type SortMode = "count" | "alpha";
 
-// Renders nothing without a note, so a section opts in by passing one.
-// Separate from SectionHeader because Category draws its own header.
 export function InfoTip({
   title,
   children,
@@ -44,7 +42,6 @@ export function InfoTip({
       >
         <InfoIcon className="size-3.5" />
       </TooltipTrigger>
-      {/* normal-case: section titles are uppercased, the note must not be. */}
       <TooltipContent className="max-w-xs normal-case">
         {children}
       </TooltipContent>
@@ -89,7 +86,6 @@ export function SortToggle({
 }: {
   sort: SortMode;
   onToggle: () => void;
-  // Numeric values sort largest-first, not A–Z; label it accordingly.
   numeric?: boolean;
 }) {
   const byValueLabel = numeric ? "value" : "name";
@@ -104,8 +100,6 @@ export function SortToggle({
   );
 }
 
-// Rendered only for sections that pass a mode, i.e. where both rules mean
-// something.
 export function MatchModeToggle({
   mode,
   onToggle,
@@ -129,8 +123,6 @@ export function MatchModeToggle({
   );
 }
 
-// The action slot always renders, invisible when empty, so a Reset appearing
-// on first selection doesn't shift every section below it down by a row.
 export function SectionHeader({
   title,
   icon: Icon,
@@ -156,8 +148,6 @@ export function SectionHeader({
   info?: React.ReactNode;
   mode?: MatchMode;
   onToggleMode?: () => void;
-  // Bumps each time a sibling section's mutually-exclusive pick silently
-  // cleared this one's selection. 0 = never flashed.
   flashKey?: number;
 }) {
   return (
@@ -166,13 +156,7 @@ export function SectionHeader({
         key={flashKey}
         initial={flashKey ? { color: "var(--color-amber-500)" } : false}
         animate={{ color: "var(--color-primary)" }}
-        // 0.9s, deliberately outside the motion scale: a one-shot colour hint,
-        // not a UI transition, so it has to outlast the glance that follows a
-        // sibling section clearing this one's selection.
         transition={{ duration: 0.9, ease: EASE_OUT }}
-        // min-w-0 + truncate: the action slot is shrink-0, so without this the
-        // title is the only flexible item and wraps to a second line the moment
-        // a selection adds the Any/All toggle beside Reset.
         className="flex min-w-0 items-center gap-1.5 font-medium text-primary text-sm uppercase"
       >
         <Icon className="size-4 shrink-0" />
@@ -180,11 +164,6 @@ export function SectionHeader({
         <InfoTip title={title}>{info}</InfoTip>
       </motion.h2>
       <div className="flex shrink-0 items-center gap-0.5">
-        {/* OR/AND toggle, left of the reset/sort slot. Only for sections that
-            pass a mode, and only once something is selected, combining is
-            moot with zero or one pick, so it appears alongside Reset. Fades
-            with the same timing as the Reset/Sort slot so the two never look
-            like they animate on different clocks. */}
         <AnimatePresence initial={false}>
           {mode && onToggleMode && hasSelection ? (
             <motion.div key="mode" {...FADE}>
@@ -192,9 +171,7 @@ export function SectionHeader({
             </motion.div>
           ) : null}
         </AnimatePresence>
-        {/* Reserve the action slot's height/width up front with an invisible
-          Reset, then cross-fade the live action (Reset <-> Sort) over it so a
-          button appearing on first selection never shifts the layout. */}
+        {/* Invisible placeholder reserves layout space for the action slot. */}
         <div className="relative shrink-0">
           <HeaderButton
             onClick={() => {}}

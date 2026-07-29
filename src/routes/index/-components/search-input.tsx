@@ -9,13 +9,6 @@ export interface SearchSuggestion {
   name: string;
 }
 
-// Local draft state plus an IME composition guard, so typing 注音/拼音
-// assembles a character before it reaches the filter: committing every
-// keystroke to the URL would interrupt composition.
-//
-// The field is also a combobox. The dropdown is a plain absolute panel, not a
-// Popover, so focus never leaves the input, and the active row is tracked with
-// aria-activedescendant for screen readers.
 export function SearchInput({
   query,
   onQueryChange,
@@ -31,16 +24,10 @@ export function SearchInput({
 }) {
   const [draft, setDraft] = useState(query);
   const composing = useRef(false);
-  // -1 is "none yet", where Enter falls back to the top match.
   const [active, setActive] = useState(-1);
-  // Separate from "has suggestions", so tabbing away hides the panel even
-  // mid-query. A row's click fires before blur, so the pick still lands.
   const [open, setOpen] = useState(false);
   const listId = useId();
 
-  // Adopt outside changes (a reset) by comparing the last-seen prop during
-  // render. Not a key-remount: our own commits round-trip through `query` too,
-  // and remounting mid-typing would drop focus and break IME composition.
   const [prevQuery, setPrevQuery] = useState(query);
   if (query !== prevQuery) {
     setPrevQuery(query);
@@ -61,13 +48,6 @@ export function SearchInput({
     if (hit) onPick(hit.id);
   };
 
-  // The desktop cap lines the field's right edge up with the filter panel's
-  // below it. Both start from the same left origin, so the width is the panel
-  // box — --sidebar-width less the rail it shares its row with and its own 8px
-  // margins — minus the header's px-4 and 1px border, which inset the field
-  // from that origin. It cannot be a :root token: --sidebar-width-icon is set
-  // inline on the shell container, so a calc() declared above it resolves
-  // empty.
   return (
     <div className="relative min-w-0 flex-1 bg-background md:max-w-[calc(var(--sidebar-width)-var(--sidebar-width-icon)-1rem)]">
       <MagnifyingGlassIcon className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -91,7 +71,6 @@ export function SearchInput({
           onQueryChange(e.currentTarget.value);
         }}
         onKeyDown={(e) => {
-          // Blur after clearing, so a second Escape isn't swallowed.
           if (e.key === "Escape") {
             if (showList) {
               e.preventDefault();
@@ -105,7 +84,6 @@ export function SearchInput({
             }
             return;
           }
-          // Ignored mid-composition, so the IME keeps its own arrows.
           if (composing.current) return;
           if (showList && (e.key === "ArrowDown" || e.key === "ArrowUp")) {
             e.preventDefault();
@@ -118,7 +96,6 @@ export function SearchInput({
             });
             return;
           }
-          // Ignored mid-composition, so the IME's own Enter isn't hijacked.
           if (e.key === "Enter" && suggestions.length > 0) {
             e.preventDefault();
             pick(active);
@@ -127,27 +104,14 @@ export function SearchInput({
         }}
         placeholder="Search family or designer"
         aria-label="Search fonts by family or designer"
-        // pr-8 reserves room for the "/" badge, so it tracks the badge's own md
-        // gate: below md there is no badge and the query gets the width back.
         className={cn("h-9 pl-8", !draft && "md:pr-8")}
       />
-      {/* Advertises the "/"-to-focus shortcut. Hidden once the field has text,
-          where it would crowd the query and the native clear button, and below
-          md, which is the phone layout (same 768px cutoff as useIsMobile and
-          the sidebar): there is no physical keyboard to press "/" on, so the
-          hint is dead weight taking room from a narrow field. */}
       {!draft && (
         <Kbd className="absolute top-1/2 right-2.5 hidden -translate-y-1/2 md:inline-flex">
           /
         </Kbd>
       )}
-      {/* Autocomplete panel. Absolutely positioned under the field so focus
-          stays in the input (a Popover would move it). mousedown, not click, so
-          the pick fires before the input's blur closes the list. */}
       {showList && (
-        // div, not ul/li: the combobox pattern wants role=listbox/option, which
-        // the a11y lint rejects on ul/li. Options are tabIndex=-1, focus
-        // staying in the input.
         <div
           id={listId}
           role="listbox"
@@ -162,7 +126,6 @@ export function SearchInput({
               tabIndex={-1}
               aria-selected={i === active}
               onMouseDown={(e) => {
-                // Keep focus in the input.
                 e.preventDefault();
                 onPick(s.id);
                 setOpen(false);

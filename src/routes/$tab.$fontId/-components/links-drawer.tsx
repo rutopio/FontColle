@@ -11,11 +11,6 @@ import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import type { FontRecord } from "@/lib/fonts/types";
 import { FAB_MOTION, FAB_SHIFT, fabBottom, fabLift } from "./fab-motion";
 
-// Mobile-only access to the header's outbound links, which don't fit beside
-// the title on a phone.
-//
-// This FAB holds the lower slot on every tab so it never moves as tabs change;
-// ControlsDrawer stacks above it where a tab has controls.
 export function LinksDrawer({
   font,
   dockVisible,
@@ -30,8 +25,6 @@ export function LinksDrawer({
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      {/* Same right-4 column and z-40 (below the Sheet's z-50 overlay) as the
-          Filter FAB. safe-area padding clears the iOS home indicator. */}
       <motion.button
         {...FAB_MOTION}
         animate={{ ...FAB_MOTION.animate, ...fabLift(dockVisible) }}
@@ -48,14 +41,8 @@ export function LinksDrawer({
       <SheetContent side="bottom" className="gap-0 p-0">
         <div className="flex items-center gap-2 border-border border-b px-4 py-3">
           <LinkIcon className="size-4 text-primary" weight="bold" />
-          {/* Also satisfies the dialog's required accessible name. */}
           <SheetTitle>Links</SheetTitle>
         </div>
-        {/* Big tappable cards side by side, mirroring the Weight/Width filter
-            grids (CardButton): icon above label, equal widths. flex-1 rather
-            than a fixed 3-column grid so a family with no repo (or one on a
-            host with no releases page) gets wider cards instead of empty
-            tracks. */}
         <div
           className="flex gap-3 p-4"
           style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom))" }}
@@ -91,9 +78,6 @@ export function LinksDrawer({
   );
 }
 
-// Looks like the filter grids' CardButton but is a real <a>: these navigate
-// rather than toggle, so no button element and no aria-pressed. The passed
-// aria-label only adds the family name for screen readers.
 function LinkCard({
   href,
   icon: CardIcon,

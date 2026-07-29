@@ -1,8 +1,5 @@
 import { cn } from "@/lib/utils";
 
-// A large, square, tappable filter card: a specimen glyph above a label and a
-// family count. Shared by the Category cards and the Weight/Width grids, which
-// differ only in the specimen they render (passed as children).
 export function CardButton({
   label,
   count,
@@ -15,7 +12,6 @@ export function CardButton({
   count: number;
   selected: boolean;
   onToggle: () => void;
-  // The specimen glyph rendered at the top of the card.
   children: React.ReactNode;
   className?: string;
 }) {

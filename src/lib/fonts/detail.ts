@@ -4,9 +4,7 @@ import { deriveFacets } from "./facets";
 import { slugKey } from "./slug";
 import type { FontRecord } from "./types";
 
-// Isomorphic: the detail loader runs on both sides. On the server a Worker
-// fetching its own URL would recurse instead of hitting static assets, hence
-// the ASSETS binding.
+// Server uses ASSETS binding to avoid self-referencing fetch.
 const assetFetch = createIsomorphicFn()
   .server(async (path: string, signal?: AbortSignal) => {
     const { env } = await import("cloudflare:workers");
@@ -14,9 +12,6 @@ const assetFetch = createIsomorphicFn()
     return env.ASSETS.fetch(new Request(`${origin}${path}`, { signal }));
   })
   .client((path: string, signal?: AbortSignal) => fetch(path, { signal }));
-
-// Each family has its own public/catalog/<id>.json, so the SSR loader fetches
-// just the one it needs and never loads the whole catalog.
 
 export interface DesignerSibling {
   id: string;
@@ -29,8 +24,6 @@ interface DesignerIndexRow {
   designer: string | null;
 }
 
-// Matching is per-name, so a family pulls in every sibling crediting the same
-// person regardless of co-designers.
 function splitDesigners(designer: string | null): string[] {
   return (designer ?? "")
     .split(",")
@@ -38,7 +31,6 @@ function splitDesigners(designer: string | null): string[] {
     .filter(Boolean);
 }
 
-// Null when the slug has no published family; the loader 404s on that.
 export async function fetchFontById(
   slug: string,
   signal?: AbortSignal

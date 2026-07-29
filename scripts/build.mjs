@@ -1,15 +1,6 @@
-// `vite build` never exits: @cloudflare/vite-plugin spins up a miniflare
-// preview server whose bindings keep the event loop alive after the build
-// resolves. Every artifact is written by then, so force the exit. Do NOT
-// revert this to a plain `vite build`.
+// @cloudflare/vite-plugin keeps the event loop alive after build; force exit.
 process.env.NODE_ENV ??= "production";
 
-// The data assets live in R2, not git (see docs/data-pipeline.md), so a fresh
-// clone — notably Cloudflare Workers Builds, which clones on every push — must
-// pull them first.
-//
-// A fork without R2 credentials can't. The sync failing then falls back to the
-// committed 24-record sample, so the build still produces a working catalog.
 import { copyFileSync, existsSync } from "node:fs";
 
 const url = (p) => new URL(p, import.meta.url);
@@ -35,16 +26,12 @@ if (assetPaths.some((p) => !existsSync(url(p)))) {
   }
 }
 
-// Before the build, so the static file is picked up as an asset.
 const { genSitemap } = await import("./gen-sitemap.mjs");
 await genSitemap();
 
-// Before the build, so the client fetches a static CDN asset rather than the
-// Worker rebuilding this per request (Error 1102).
 const { genCatalog } = await import("./gen-catalog.mjs");
 await genCatalog();
 
-// From the slim catalog genCatalog just wrote.
 const { genFacets } = await import("./gen-facets.mjs");
 await genFacets();
 

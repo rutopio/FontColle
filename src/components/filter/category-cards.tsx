@@ -5,8 +5,6 @@ import { CardButton } from "./card-button";
 import { HeaderButton, InfoTip } from "./section-header";
 import { CategorySpecimen } from "./specimen-icon";
 
-// Same cross-fade the SectionHeader Reset uses, so Category's Reset animates on
-// the exact same clock as every other section's.
 const FADE = {
   initial: { opacity: 0 },
   animate: { opacity: 1 },
@@ -14,19 +12,12 @@ const FADE = {
   transition: { duration: MOTION_S.fast, ease: EASE_OUT },
 } as const;
 
-// One Category card. Most are primary classes, but a few are cross-cutting
-// traits surfaced as cards too (Italic -> has-italic facet, Slab -> /Slab/*
-// classification). `value` doubles as the specimen key (category-<value>.svg).
 export interface CategoryCard {
   value: string;
   count: number;
   selected: boolean;
 }
 
-// Category filter as large square, tappable cards. Each card writes "Aa" in a
-// typeface representative of that category (a static SVG specimen, no webfont
-// load); Emoji uses an icon. Cards are toggles, not radios; the caller decides
-// which filter key each card's value maps to.
 export function CategoryCards({
   cards,
   onToggle,
@@ -49,8 +40,6 @@ export function CategoryCards({
             }
           </InfoTip>
         </h2>
-        {/* Reserve the slot's height up front with an invisible Reset, then
-            cross-fade the live one in on first selection so nothing shifts. */}
         <div className="relative shrink-0">
           <HeaderButton
             onClick={() => {}}

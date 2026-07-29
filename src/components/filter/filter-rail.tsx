@@ -8,8 +8,6 @@ import {
   groupActiveCount,
 } from "./groups";
 
-// Exported so the sidebar footer can render the Preset group, which lives
-// outside FILTER_GROUPS, with identical chrome rather than a copy that drifts.
 export function FilterGroupButton({
   group,
   active,
@@ -28,12 +26,6 @@ export function FilterGroupButton({
       type="button"
       onClick={() => onSelect(group.id)}
       aria-pressed={active}
-      // No aria-label: an override has to repeat the visible text verbatim or it
-      // trips WCAG 2.5.3 (Label in Name), and the badge renders the count as
-      // visible text right after the label ("Language" + "1"), which no
-      // hand-written string matches cleanly. Letting the name come from the
-      // content keeps the two in lockstep; the sr-only span below supplies the
-      // wording the badge alone can't convey.
       className={cn(
         cn(RAIL_BTN, "focus-visible:ring-inset"),
         horizontal ? "w-16 shrink-0 px-1" : "",
@@ -42,8 +34,6 @@ export function FilterGroupButton({
           : "hover:bg-sidebar-accent/50 hover:text-foreground"
       )}
     >
-      {/* Phosphor weight is a prop, not CSS, so hover-swaps the icon:
-          the base icon hides on hover and the bold twin shows. */}
       <group.icon
         className="size-5 group-hover/rail-btn:hidden"
         weight="regular"
@@ -53,9 +43,6 @@ export function FilterGroupButton({
         weight="duotone"
       />
       <span className="text-[10px] leading-none">{group.label}</span>
-      {/* Before the sr-only text, not after: the badge is absolutely positioned
-          so DOM order costs nothing visually, but it keeps the digit from
-          landing after "selected" when a screen reader reads the name. */}
       {count > 0 && (
         <span
           aria-hidden="true"
@@ -71,8 +58,6 @@ export function FilterGroupButton({
   );
 }
 
-// Badged with each group's selected count, so a selection stays visible while
-// its group is scrolled away. Preset renders in the sidebar footer instead.
 export function FilterRail({
   active,
   filter,

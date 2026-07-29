@@ -18,18 +18,13 @@ import {
 import { cn } from "@/lib/utils";
 import { SectionHeader } from "./section-header";
 
-// Counts search params rather than re-deriving a FilterState: every key present
-// in a stored search is exactly one active section.
 const conditionCount = (search: FilterSearch) =>
   Object.values(search).filter((v) => v !== undefined).length;
 
-// Creating a preset happens at the chip row's "Save to Preset" popover, the
-// single entry point, so naming happens beside the conditions being named.
 export function PresetSection({
   currentSearch,
   onApply,
 }: {
-  // Compared against each stored preset to mark the active one.
   currentSearch: FilterSearch;
   onApply: (search: FilterSearch) => void;
 }) {

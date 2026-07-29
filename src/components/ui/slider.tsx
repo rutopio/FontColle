@@ -9,9 +9,6 @@ function Slider({
     size = "default",
     ...props
 }: SliderPrimitive.Root.Props<number> & {
-    // "sm" matches range-slider's 12px thumb, for the narrow sidebar columns
-    // where a 16px one reads heavy. "default" is the roomier 16px control used
-    // on full-width surfaces like the Use page.
     size?: "default" | "sm";
 }) {
     const sm = size === "sm";
@@ -21,10 +18,6 @@ function Slider({
             className={cn("relative flex w-full touch-none items-center", className)}
             {...props}
         >
-            {/* Horizontal padding = half the thumb, so the track ends inset by the
-                thumb radius and the thumb sits inside the slider's own box instead
-                of spilling past its edge at the 0%/100% positions, where a clipping
-                ancestor (e.g. an animating Collapsible) would cut it off. */}
             <SliderPrimitive.Control
                 data-slot="slider-control"
                 className={cn(

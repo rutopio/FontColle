@@ -9,7 +9,6 @@ import {
 import type { FontRecord } from "@/lib/fonts/types";
 import { cn } from "@/lib/utils";
 
-// Identical between FontCard and FontRow, so it lives here once.
 export function FontActions({
   font,
   isFavorite,
@@ -19,9 +18,6 @@ export function FontActions({
   font: FontRecord;
   isFavorite: boolean;
   onToggleFavorite: (id: string) => void;
-  // Rows share one continuous right edge, so a dropped button pulls the heart
-  // and Google icon rightward and breaks the column. Cards each align to their
-  // own edge and need no placeholder.
   reserveRepoSlot?: boolean;
 }) {
   return (
@@ -37,7 +33,6 @@ export function FontActions({
           className="-m-2 p-2 text-muted-foreground transition-colors hover:text-foreground"
         >
           <HoverBoldIcon
-            // Keyed so hearting remounts the icon and replays the pop.
             key={isFavorite ? "on" : "off"}
             icon={HeartIcon}
             weight={isFavorite ? "fill" : "regular"}
@@ -51,9 +46,7 @@ export function FontActions({
           {isFavorite ? "Remove from favorites" : "Add to favorites"}
         </TooltipContent>
       </Tooltip>
-      {/* A button, not an <a>: the whole card is already a <Link> (an
-        <a>), and <a> can't nest <a> (hydration error). Open Google Fonts
-        in a new tab and stop the click from triggering card navigation. */}
+      {/* Buttons, not links: the card is already a <Link> and nested <a> is invalid. */}
       <Tooltip>
         <TooltipTrigger
           type="button"
@@ -73,8 +66,6 @@ export function FontActions({
         </TooltipTrigger>
         <TooltipContent>View on Google Fonts</TooltipContent>
       </Tooltip>
-      {/* Only when the family has a known upstream repo. A button, not an
-        <a>, for the same nested-<a> reason as the download button. */}
       {font.repositoryUrl && (
         <Tooltip>
           <TooltipTrigger
@@ -95,11 +86,6 @@ export function FontActions({
           <TooltipContent>View source repository</TooltipContent>
         </Tooltip>
       )}
-      {/* Placeholder for a family with no repo. size-5 matches the icon the
-          real button renders; the button's -m-2 p-2 cancels out, so its
-          footprint in this flex row is exactly the icon's box. aria-hidden and
-          empty: it reserves space without announcing a control that isn't
-          there. */}
       {!font.repositoryUrl && reserveRepoSlot && (
         <span aria-hidden className="size-5 shrink-0" />
       )}

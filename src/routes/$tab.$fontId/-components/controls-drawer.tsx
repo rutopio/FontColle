@@ -4,9 +4,6 @@ import { useState } from "react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { FAB_MOTION, FAB_SHIFT, fabBottom, fabLift } from "./fab-motion";
 
-// Mobile-only access to the detail sidebar controls: the desktop sidebar
-// collapses to an unreachable Sheet there (see app-sidebar), so this FAB opens
-// a drawer holding the very same panel. Stacks above LinksDrawer's FAB.
 export function ControlsDrawer({
   title,
   icon: FabIcon,
@@ -16,8 +13,6 @@ export function ControlsDrawer({
   title: string;
   icon: Icon;
   dockVisible: boolean;
-  // A render prop, so the panel can dismiss the drawer after a one-shot choice
-  // like picking a Unicode block.
   children: (close: () => void) => React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);

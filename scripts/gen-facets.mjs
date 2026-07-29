@@ -1,10 +1,3 @@
-// Pre-sharded slices, so an agent that can only read data into context (rather
-// than fetch and filter) pulls one small slice instead of the 2 MB slim catalog
-// (~580k tokens). Runs after gen-catalog.mjs, reading what it just wrote.
-//
-// The sharding dimensions are deliberately limited to ones that cut the result
-// set without combinatorially exploding. Anything finer is left to the agent to
-// rank after fetching a slice.
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
@@ -13,8 +6,6 @@ const ROOT = path.resolve(
   ".."
 );
 
-// Identity plus what you still rank on after narrowing. The metric detail
-// fields are only read once a family is chosen: fetch /catalog/{id}.json.
 const project = (f) => ({
   id: f.id,
   name: f.name,
@@ -34,8 +25,6 @@ const project = (f) => ({
   tags: f.tags ?? {},
 });
 
-// Latin is carried by nearly every family, so a "latin" slice ~= the whole
-// catalog and is not worth emitting. Skip it and its ext variant.
 const SKIP_SUBSETS = new Set(["menu", "latin", "latin-ext"]);
 const MIN_SUBSET_COUNT = 5;
 

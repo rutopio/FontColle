@@ -20,9 +20,6 @@ export type DetailTab =
   | "designer"
   | "license";
 
-// `slug` is the URL segment and matches the tab id everywhere EXCEPT `sample`,
-// whose code name predates the Instances label it renders under. `instances`
-// is the canonical tab, so it also leads the rail as the default view.
 export const TABS = [
   {
     id: "sample" as const,
@@ -72,8 +69,6 @@ export const tabFromSlug = (slug: string): DetailTab | undefined =>
   BY_SLUG.get(slug);
 export const slugFromTab = (id: DetailTab): TabSlug => BY_ID.get(id) as TabSlug;
 
-// Navigates via Link (replace, matching selectTab) rather than a callback, so
-// it needs no extra wiring from the page.
 export function DetailTabBar({
   active,
   fontId,
@@ -136,8 +131,6 @@ export function DetailRail({
                 : "hover:bg-sidebar-accent/50 hover:text-foreground"
             )}
           >
-            {/* Phosphor weight is a prop, not CSS, so hover-swaps the icon:
-                the base icon hides on hover and the bold twin shows. */}
             <tab.icon
               className="size-5 group-hover/rail-btn:hidden"
               weight="regular"

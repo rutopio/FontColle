@@ -13,15 +13,10 @@ interface Props {
   previewText: string;
   isFavorite: boolean;
   onToggleFavorite: (id: string) => void;
-  // Drives the live preview and which trait badges render highlighted.
   selection: FilterSelection;
-  // Session slider positions (0-100%) per axis, not part of the filter: each
-  // font maps the percent onto its own range.
   axisValues: Record<string, number>;
 }
 
-// memo: cards mount by the hundreds in the virtualized grid, and toggling one
-// favorite changes only that card's prop, so the rest bail out.
 export const FontCard = memo(function FontCard({
   font,
   previewText,
@@ -30,7 +25,6 @@ export const FontCard = memo(function FontCard({
   selection,
   axisValues,
 }: Props) {
-  // Shared with FontRow, so both preview the sidebar's picks identically.
   const { fontLoaded, previewStyle, previewRef } = useFontFacePreview(
     font,
     selection,
@@ -42,14 +36,7 @@ export const FontCard = memo(function FontCard({
       ref={previewRef}
       to="/$tab/$fontId"
       params={{ tab: "instances", fontId: fontSlug(font.id) }}
-      // Opts this navigation alone into a View Transition, so the family name
-      // morphs into the detail page's heading. Per-link rather than the
-      // router's defaultViewTransition, which would also catch the detail
-      // page's own tab switches, where nothing should morph.
       viewTransition
-      // Press feedback for touch, which has no hover to confirm the tap before
-      // the route change lands. Gentler than a button's 0.97: a 288px-tall card
-      // travels the same optical distance at a much smaller ratio.
       className="flex h-72 flex-col gap-4 overflow-hidden rounded-lg border bg-card p-5 transition-[color,background-color,transform] duration-[var(--motion-fast)] ease-[var(--ease-snap)] hover:bg-muted focus-visible:border-foreground focus-visible:outline-none active:scale-[0.99]"
     >
       <div className="flex flex-col gap-1">
@@ -67,9 +54,8 @@ export const FontCard = memo(function FontCard({
       </div>
 
       {fontLoaded ? (
-        <p
-          // Derive direction from the text, so RTL scripts render right-to-left.
-          dir="auto"
+              <p
+                  dir="auto"
           style={previewStyle}
           className="min-h-16 flex-1 overflow-hidden break-words text-2xl leading-snug"
         >

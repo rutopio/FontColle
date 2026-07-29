@@ -1,12 +1,5 @@
 import { useCallback, useSyncExternalStore } from "react";
 
-// For preferences that survive reloads but must never leak into a shared URL.
-// The server and hydration render `initial`; the first client pass reads the
-// stored value.
-//
-// Writes are best-effort: quota and private-mode errors fall back to the
-// in-memory overlay, so the value still updates for this session.
-
 const listeners = new Set<() => void>();
 const emit = () => {
   for (const l of listeners) l();
@@ -18,7 +11,6 @@ const subscribe = (cb: () => void) => {
   };
 };
 
-// Mirrors localStorage where it works; reads prefer the real stored value.
 const memory = new Map<string, string>();
 
 export function useLocalStorageState(

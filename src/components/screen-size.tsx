@@ -1,12 +1,3 @@
-// Dev-only breakpoint readout. The import.meta.env.PROD guard is statically
-// replaced by Vite, so the whole component folds away at build time.
-//
-// Offset bottom-right to clear the Devtools trigger and, below md, the FAB
-// stack that owns that column.
-//
-// Keep the steps in sync with the theme block in styles.css, which adds
-// --breakpoint-3xl on top of Tailwind's defaults: a missing step makes the
-// badge under-report, showing the step below it across two screens.
 export function ScreenSize() {
   if (import.meta.env.PROD) {
     return null;

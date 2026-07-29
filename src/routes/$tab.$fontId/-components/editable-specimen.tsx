@@ -1,10 +1,5 @@
 import { type CSSProperties, useState } from "react";
 
-// ALWAYS a real text field, never a button that swaps into one on click.
-// Mounting the input on click means resolving the click point to a character
-// offset to seed the caret, which returns null whenever the point misses the
-// text node (a truncated line, the row's padding, keyboard activation), and
-// still gives up drag-select, double-click-a-word, IME composition and undo.
 export function EditableSpecimen({
   text,
   style,
@@ -12,19 +7,13 @@ export function EditableSpecimen({
   ariaLabel,
   className,
 }: {
-  // The RESOLVED specimen: the shared preview string when the user has typed
-  // one, else the family's own default.
   text: string;
   style: CSSProperties;
   onEditText: (value: string) => void;
   ariaLabel: string;
   className: string;
 }) {
-  // While focused the field owns its value, so typing survives the round-trip
-  // through shared state. Two things would otherwise fight the user mid-word:
-  // the shared text is stored trimmed, so a trailing space would vanish as it
-  // was typed, and an emptied field falls back to the family's default, so
-  // clearing the line would refill it.
+  // While focused, owns its value to avoid trim/default conflicts mid-typing.
   const [draft, setDraft] = useState<string | null>(null);
 
   return (
@@ -35,7 +24,6 @@ export function EditableSpecimen({
         setDraft(e.target.value);
         onEditText(e.target.value.trim());
       }}
-      // Hands control back to the shared text.
       onFocus={(e) => setDraft(e.target.value)}
       onBlur={() => setDraft(null)}
       onKeyDown={(e) => {

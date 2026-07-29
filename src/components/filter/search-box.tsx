@@ -10,9 +10,7 @@ import {
 } from "@/components/ui/empty";
 import { cn } from "@/lib/utils";
 
-// A raw <input>, not the shadcn <Input>: these callers want a lighter, icon-led
-// field, not the primitive's form chrome. `text-base` on mobile stops iOS
-// Safari zooming on focus.
+// text-base on mobile prevents iOS Safari zoom-on-focus.
 const SIZES = {
   md: { icon: "left-2.5 size-4", pad: "py-1.5 pl-8 sm:text-sm" },
   sm: { icon: "left-2 size-3.5", pad: "h-8 pl-7 sm:text-xs" },

@@ -1,13 +1,3 @@
-// One-off generator: official display names and descriptions for variable-font
-// axes, so the UI can tooltip them without bundling the registry's Python
-// package.
-//
-// Source: https://github.com/googlefonts/axisregistry, one *.textproto per axis
-// under Lib/axisregistry/data/. `description` is one or more ADJACENT quoted
-// literals that textproto concatenates implicitly, joined here in file order.
-//
-// Run: node scripts/gen-axes-data.mjs
-
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -22,7 +12,6 @@ const API_URL =
 const RAW_BASE =
   "https://raw.githubusercontent.com/googlefonts/axisregistry/main/Lib/axisregistry/data/";
 
-// Not the full textproto grammar: axis descriptions only use \" and \\.
 function unescapeProtoString(s) {
   return s.replace(/\\(.)/g, "$1");
 }
@@ -32,7 +21,6 @@ function parseTextproto(text) {
   const nameMatch = text.match(/^display_name:\s*"((?:\\.|[^"\\])*)"/m);
   if (!tagMatch || !nameMatch) return null;
 
-  // The literals sit either on the `description:` line or indented below it.
   const descMatch = text.match(
     /^description:[ \t]*\n?[ \t]*((?:"(?:\\.|[^"\\])*"[ \t]*\n?[ \t]*)+)/m
   );
@@ -44,14 +32,11 @@ function parseTextproto(text) {
     description = fragments.join("");
   }
 
-  // Scalar range fields (numbers, unquoted). Absent in some axes' textprotos.
   const num = (field) => {
     const m = text.match(new RegExp(`^${field}:\\s*(-?[\\d.]+)`, "m"));
     return m ? Number(m[1]) : null;
   };
 
-  // Repeated `fallback { name value }` blocks labelling positions on the axis,
-  // kept in declared order.
   const fallbacks = [];
   for (const blk of text.matchAll(/fallback\s*\{([^}]*)\}/g)) {
     const body = blk[1];

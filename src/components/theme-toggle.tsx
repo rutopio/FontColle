@@ -8,16 +8,11 @@ import {
 } from "@/components/rail-button";
 import { cn } from "@/lib/utils";
 
-// Theme is just the `dark` class on <html>; a blocking script in __root's
-// <head> applies the saved choice before paint. An unset value stays light.
 export function ThemeToggle({
   variant = "rail",
 }: {
-  // "rail" is the icon-over-label tile, "bar" the compact mobile top-bar icon,
-  // "header" the same tile sized for a page header's run of cells.
   variant?: "rail" | "bar" | "header";
 }) {
-  // Light on the server and first client render, or hydration mismatches.
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
@@ -26,34 +21,22 @@ export function ThemeToggle({
 
   const toggle = () => {
     const next = !isDark;
-    // The class first, before React hears about it: this is what repaints the
-    // page, and it must not wait on a re-render of the whole provider tree
-    // under __root, which is what made the switch feel like it lagged the
-    // click. setIsDark only drives this button's own sun/moon cross-fade.
     document.documentElement.classList.toggle("dark", next);
     setIsDark(next);
     try {
       localStorage.theme = next ? "dark" : "light";
-    } catch {
-      // Private mode / storage disabled: still toggles for this session.
-    }
+    } catch {}
   };
 
-  // Names the theme the click switches TO.
   const target = isDark ? "Light" : "Dark";
   const bar = variant === "bar";
   const header = variant === "header";
   const chrome = bar ? RAIL_BAR_BTN : header ? RAIL_HEADER_BTN : RAIL_BTN;
-  // The header's cell owns the hover tint (and the group the icon swap
-  // watches), so this must not stack a second hover on top of it.
   const hover = header ? undefined : RAIL_BTN_OFF;
 
   return (
     <nav
       aria-label="Theme"
-      // w-full in the header: the cell sizes the control, and without it this
-      // wrapper shrink-wraps the label and the tile inside floats in the middle
-      // of the cell rather than filling it the way a rail button does.
       className={header ? "w-full" : bar ? undefined : "flex flex-col gap-1"}
     >
       <button
@@ -62,11 +45,6 @@ export function ThemeToggle({
         aria-label={`Switch to ${target.toLowerCase()} theme`}
         className={cn(chrome, hover)}
       >
-        {/* Sun and Moon both stay mounted and stacked; `isDark` cross-fades
-            between them (opacity + scale + blur) so the theme switch reads as a
-            transition, not a hard swap. reduced-motion collapses the transform
-            to a plain opacity fade (see styles.css). The base/duotone pair keeps
-            the same hover-weight swap the rail buttons use. */}
         <span className="relative grid size-5 place-items-center">
           <IconFace icon={SunIcon} shown={isDark} />
           <IconFace icon={MoonIcon} shown={!isDark} />
@@ -81,8 +59,6 @@ export function ThemeToggle({
   );
 }
 
-// The blur is worth it here, unlike HoverBoldIcon: these two layers are
-// different glyphs, so defocusing hides the shape change.
 function IconFace({
   icon: Icon,
   shown,

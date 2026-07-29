@@ -2,9 +2,6 @@ import { describe, expect, it } from "vitest";
 import { type SortKey, sortFonts } from "./sort";
 import type { FontRecord } from "./types";
 
-// Minimal FontRecord stub carrying only the fields sortFonts reads. Cast keeps
-// the fixtures readable; every sort comparator here touches only name,
-// designer, dateAdded, popularityRank, trendingRank, glyphCount, axes.
 function font(over: Partial<FontRecord>): FontRecord {
   return {
     name: "Z",
@@ -60,14 +57,12 @@ describe("sortFonts, creator (designer)", () => {
   const fonts = [
     font({ name: "X", designer: "Zoe" }),
     font({ name: "Y", designer: "Ann" }),
-    font({ name: "N", designer: null }), // missing sorts last (￿ sentinel)
+    font({ name: "N", designer: null }),
   ];
   it("creator-asc A→Z with nulls last", () => {
     expect(sortedNames(fonts, "creator-asc")).toEqual(["Y", "X", "N"]);
   });
   it("creator-desc Z→A (null still trails in the reversed compare)", () => {
-    // byCreator(b,a) reverses the name comparison; the ￿ sentinel makes the
-    // null-designer row the "largest", so reversing puts it first here.
     expect(sortedNames(fonts, "creator-desc")).toEqual(["N", "X", "Y"]);
   });
 });

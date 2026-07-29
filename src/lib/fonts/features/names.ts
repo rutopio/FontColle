@@ -1,21 +1,17 @@
-// Which features engines apply by default, per the W3C CSS Fonts spec. Setting
-// font-feature-settings overrides that default wholesale, so a default-on
-// feature is only ever emitted when the user turns it OFF.
+// font-feature-settings overrides browser defaults wholesale — only emit diffs.
 export const DEFAULT_ON = new Set([
-  "calt", // Contextual Alternates
-  "liga", // Standard Ligatures
-  "clig", // Contextual Ligatures
-  "rlig", // Required Ligatures
-  "kern", // Kerning (font-kerning: auto)
-  "mark", // Mark Positioning
-  "mkmk", // Mark-to-Mark Positioning
-  "locl", // Localized Forms
-  "ccmp", // Glyph Composition / Decomposition
-  "rclt", // Required Contextual Alternates
+  "calt",
+  "liga",
+  "clig",
+  "rlig",
+  "kern",
+  "mark",
+  "mkmk",
+  "locl",
+  "ccmp",
+  "rclt",
 ]);
 
-// Per the OpenType 1.9.1 registered feature list. An unknown tag falls back to
-// itself, so the list is always complete.
 const FEATURE_NAMES: Record<string, string> = {
   aalt: "Access All Alternates",
   abvf: "Above-base Forms",
@@ -155,8 +151,7 @@ export function featureName(tag: string): string {
 }
 
 /**
- * Emits only entries that differ from the browser default, so untouched
- * default-on features keep the engine's own behaviour.
+ * Only entries that differ from the browser default.
  */
 export function buildFeatureSettings(
   overrides: Record<string, boolean>

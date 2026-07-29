@@ -8,8 +8,6 @@ import { EASE_OUT, MOTION_S } from "@/lib/motion";
 import { useScrollReset } from "@/lib/use-scroll-reset";
 import { cn } from "@/lib/utils";
 
-// Mirrors DetailSidebar's aside/ScrollArea shell, so it slots into the same
-// FilterLayout sidebar.
 export function GlyphsSidebar({
   blocks,
   loading,
@@ -23,22 +21,16 @@ export function GlyphsSidebar({
   loading: boolean;
   active: string;
   onSelect: (name: string) => void;
-  // Returns whether the query resolved to a covered glyph.
   onSearch: (query: string) => boolean;
   searchMiss: boolean;
-  // Omitted in the desktop sidebar, which is always on screen.
   onDismiss?: () => void;
 }) {
-  // Always open at the top; don't let router scroll restoration carry the
-  // sidebar's position across navigation.
   const viewportRef = useScrollReset<HTMLDivElement>();
   const [query, setQuery] = useState("");
 
   return (
     <aside className="flex h-full w-full min-w-0 flex-col text-sidebar-foreground">
       <ScrollArea viewportRef={viewportRef} className="min-h-0 flex-1">
-        {/* Matches DetailSidebar (and the list's FilterSidebar): the panel
-            fades and rises when the rail switches to this tab. */}
         <motion.div
           className="flex flex-col gap-4 p-4"
           initial={{ opacity: 0, y: 8 }}
@@ -49,12 +41,9 @@ export function GlyphsSidebar({
             <SquaresFourIcon className="size-4" />
             Unicode blocks
           </h2>
-          {/* Character search: type a character or a "U+XXXX" code to jump to its
-              block and highlight the cell. */}
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              // A miss keeps the drawer up, so its message stays visible.
               if (onSearch(query)) onDismiss?.();
             }}
           >
@@ -94,9 +83,6 @@ export function GlyphsSidebar({
                     }}
                     aria-pressed={on}
                     className={cn(
-                      // min-h-11 meets the touch pointer-target guidance, where
-                      // this list lives in a drawer; desktop keeps the tighter
-                      // row.
                       "flex min-h-11 items-center justify-between gap-2 rounded px-2 py-1 text-left text-xs transition-colors md:min-h-8",
                       on
                         ? "bg-black/10 font-medium text-foreground dark:bg-white/12"

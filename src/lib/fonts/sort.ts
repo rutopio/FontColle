@@ -16,10 +16,6 @@ export type SortKey =
 
 export const DEFAULT_SORT: SortKey = "popularity";
 
-// The sort control splits into a group picker and a direction toggle. Each
-// group maps its two directions to a concrete SortKey; `asc` is the
-// "SortAscending" direction (A→Z, oldest, fewest). A group with no `desc` is
-// directionless and disables the toggle.
 export type SortGroup = {
   group: string;
   asc: SortKey;
@@ -30,7 +26,6 @@ export type SortGroup = {
 
 export const SORT_GROUPS: SortGroup[] = [
   {
-    // A precomputed ranking with no natural reverse.
     group: "Popularity",
     asc: "popularity",
     ascLabel: "Most popular",
@@ -56,7 +51,6 @@ export const SORT_GROUPS: SortGroup[] = [
   },
   {
     group: "Date added",
-    // `asc` stays consistent across groups: A→Z, newest, and most.
     asc: "date-newest",
     desc: "date-oldest",
     ascLabel: "Newest",
@@ -83,7 +77,6 @@ export function sortGroupOf(key: SortKey): { group: SortGroup; asc: boolean } {
     if (group.asc === key) return { group, asc: true };
     if (group.desc === key) return { group, asc: false };
   }
-  // Fallback to the default's group (popularity is always present).
   return { group: SORT_GROUPS[0], asc: true };
 }
 
@@ -97,7 +90,6 @@ const byCreator = (a: FontRecord, b: FontRecord) =>
     sensitivity: "base",
   });
 
-// Missing values sort last regardless of direction.
 const numCmp = (av: number | null, bv: number | null, desc: boolean) => {
   if (av == null && bv == null) return 0;
   if (av == null) return 1;
@@ -118,7 +110,6 @@ export function sortFonts(fonts: FontRecord[], key: SortKey): FontRecord[] {
   const out = [...fonts];
   switch (key) {
     case "popularity":
-      // Lower rank = more popular; unranked (null) sort last, then by name.
       return out.sort(
         (a, b) =>
           numCmp(a.popularityRank, b.popularityRank, false) || byName(a, b)
