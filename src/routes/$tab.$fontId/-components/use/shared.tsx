@@ -71,7 +71,7 @@ export function Pill({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "cursor-pointer rounded-md border px-2.5 py-1 font-mono text-xs transition-[color,background-color,border-color,transform] active:scale-[0.97]",
+        "cursor-pointer rounded-md border px-2.5 py-1 font-mono text-xs transition-[color,background-color,border-color,transform] duration-[var(--motion-fast)] ease-[var(--ease-snap)] active:scale-[0.97]",
         active
           ? "border-primary bg-muted text-foreground"
           : "text-muted-foreground hover:border-foreground hover:text-foreground"

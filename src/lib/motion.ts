@@ -11,5 +11,6 @@ export const MOTION_S = {
   slow: MOTION.slow / 1000,
 } as const;
 
-// Mirrors --ease-out in src/styles.css.
+// Mirrors --ease-snap in src/styles.css (named that, not --ease-out, to avoid
+// re-curving Tailwind's own --ease-out token — see the note there).
 export const EASE_OUT = [0.23, 1, 0.32, 1] as const;
