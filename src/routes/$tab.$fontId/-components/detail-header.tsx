@@ -63,8 +63,16 @@ export function DetailHeader({ font }: { font: FontRecord }) {
         </div>
       </div>
       <div className="flex w-full flex-wrap items-center gap-2 md:ml-auto md:w-auto md:shrink-0 md:flex-nowrap">
-        <FontTraits font={font} selection={emptyFilter} />
-        {font.license && <Badge variant="outline">{font.license}</Badge>}
+        <FontTraits
+          font={font}
+          selection={emptyFilter}
+          badgeClassName="bg-background"
+        />
+        {font.license && (
+          <Badge variant="outline" className="bg-background">
+            {font.license}
+          </Badge>
+        )}
       </div>
 
       <div className="hidden shrink-0 items-center gap-1 md:flex">
