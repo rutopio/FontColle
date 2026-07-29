@@ -2,12 +2,14 @@ import { Link } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
 import type { Ref } from "react";
 import { AboutLink } from "@/components/about-link";
-import { AppSidebar } from "@/components/app-sidebar";
 import { FavoriteToggle } from "@/components/favorite-toggle";
+import {
+  FilterPanelColumn,
+  FilterRailColumn,
+} from "@/components/filter-columns";
 import { LogoIcon } from "@/components/logo-icon";
 import { RouteFade } from "@/components/route-fade";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { EASE_OUT, MOTION_S } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./theme-toggle";
@@ -42,14 +44,12 @@ export function FilterLayout({
   sidebar,
   children,
   header,
-  panelOpen = true,
   favoriteFontId,
 }: {
   rail?: React.ReactNode;
   sidebar: React.ReactNode;
   children: React.ReactNode;
   header?: React.ReactNode;
-  panelOpen?: boolean;
   favoriteFontId?: string;
 }) {
   return (
@@ -61,44 +61,43 @@ export function FilterLayout({
         Skip to content
       </a>
       <div
-        className="container relative flex h-full flex-col"
+        className="container relative flex h-full flex-col md:gap-2"
         style={SHELL_WIDTHS}
       >
         <MobileTopBar favoriteFontId={favoriteFontId} />
         {header ? (
-          <div className="relative z-20 shrink-0 md:mr-2 md:ml-[calc(var(--sidebar-width-icon)+0.5rem)]">
+          <div className="relative z-20 shrink-0">
             <ColumnHeader>{header}</ColumnHeader>
           </div>
         ) : null}
-        <SidebarProvider
-          className="relative min-h-0 flex-1 md:-mt-18"
-          open={panelOpen}
-          style={SHELL_WIDTHS}
-        >
-          <AppSidebar rail={rail ? <RouteFade>{rail}</RouteFade> : undefined}>
-            <AnimatePresence initial={false}>
-              {sidebar ? (
-                <motion.div
-                  key="panel"
-                  className="flex min-h-0 w-full flex-1 flex-col"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: MOTION_S.fast, ease: EASE_OUT }}
-                >
+        <div className="relative flex min-h-0 flex-1 gap-2">
+          <FilterRailColumn>
+            {rail ? <RouteFade>{rail}</RouteFade> : null}
+          </FilterRailColumn>
+          <AnimatePresence initial={false}>
+            {sidebar ? (
+              <motion.div
+                key="panel"
+                className="flex h-full min-h-0 flex-col"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: MOTION_S.fast, ease: EASE_OUT }}
+              >
+                <FilterPanelColumn>
                   <RouteFade className="flex min-h-0 w-full flex-1 flex-col">
                     {sidebar}
                   </RouteFade>
-                </motion.div>
-              ) : null}
-            </AnimatePresence>
-          </AppSidebar>
-          <SidebarInset className="min-w-0 md:mt-20 md:mr-2 md:mb-2 md:ml-0 md:bg-transparent md:peer-data-[state=collapsed]:ml-2">
+                </FilterPanelColumn>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
+          <div className="flex min-w-0 flex-1 flex-col">
             <RouteFade distance={16} className="flex min-h-0 flex-1 flex-col">
               {children}
             </RouteFade>
-          </SidebarInset>
-        </SidebarProvider>
+          </div>
+        </div>
       </div>
     </>
   );
@@ -106,7 +105,17 @@ export function FilterLayout({
 
 function ColumnHeader({ children }: { children: React.ReactNode }) {
   return (
-    <header className="mt-2 flex min-h-16 shrink-0 items-center gap-2 max-md:mt-0 md:h-16 md:py-0">
+    <header className="flex shrink-0 items-center gap-2 max-md:mt-0 md:py-0">
+      <Link
+        to="/"
+        aria-label="FontColle, all fonts"
+        className="group/logo hidden w-[calc(var(--sidebar-width-icon)-0.5rem)] shrink-0 flex-col items-center justify-center gap-1 rounded-xl p-2 text-primary outline-none transition-colors focus-visible:ring-2 focus-visible:ring-sidebar-ring md:flex dark:hover:bg-white/6"
+      >
+        <LogoIcon className="size-7 transition-[stroke-width] group-hover/logo:[stroke-width:2]" />
+        {/* <span className="font-mono text-[9px] group-hover/logo:font-bold">
+                    FontColle
+                </span> */}
+      </Link>
       <div className="flex flex-1 flex-wrap items-center gap-3 md:flex-nowrap">
         {children}
       </div>
@@ -159,7 +168,7 @@ export function Column({
   return (
     <div className="relative min-w-0 flex-1">
       <div className="absolute inset-0 flex flex-col">
-        <div className="flex min-h-0 flex-1 flex-col bg-background md:overflow-hidden md:rounded-xl md:border md:border-border">
+        <div className="flex min-h-0 flex-1 flex-col bg-background md:overflow-hidden md:rounded-lg md:border md:border-border">
           {subheader}
           <ScrollArea
             viewportRef={scrollViewportRef}

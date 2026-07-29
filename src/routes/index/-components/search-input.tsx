@@ -49,7 +49,7 @@ export function SearchInput({
   };
 
   return (
-    <div className="relative min-w-0 flex-1 bg-background md:max-w-[calc(var(--sidebar-width)-var(--sidebar-width-icon)-1rem)]">
+    <div className="relative min-w-0 flex-1 bg-background md:w-[calc(var(--sidebar-width)-var(--sidebar-width-icon)-0.5rem)] md:flex-none">
       <MagnifyingGlassIcon className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
       <Input
         ref={inputRef}

@@ -11,7 +11,7 @@ export const RAIL_BTN = `${RAIL_BTN_BASE} ${RAIL_TILE}`;
 
 export const RAIL_BAR_BTN = `${RAIL_BTN_BASE} flex size-11 items-center justify-center`;
 
-export const RAIL_HEADER_BTN = `${RAIL_BTN_CHROME} ${RAIL_TILE} ${RAIL_BTN_OFF} w-[calc(var(--sidebar-width-icon)-1.625rem)] min-w-0 px-1`;
+export const RAIL_HEADER_BTN = `${RAIL_BTN_CHROME} ${RAIL_BTN_OFF} flex size-9 shrink-0 items-center justify-center`;
 
 export const RAIL_HEADER_CELL = "group/rail-btn flex shrink-0 items-center";
 

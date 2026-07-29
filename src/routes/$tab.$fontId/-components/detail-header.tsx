@@ -9,7 +9,6 @@ import { RAIL_HEADER_BTN, RAIL_HEADER_CELL } from "@/components/rail-button";
 import { repoHostIcon } from "@/components/repo-host-icon";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { emptyFilter } from "@/lib/fonts/filter/state";
 import type { FontRecord } from "@/lib/fonts/types";
 import { backWithViewTransition } from "@/lib/view-transition";
@@ -36,7 +35,7 @@ export function DetailHeader({ font }: { font: FontRecord }) {
               }
               className={RAIL_HEADER_BTN}
             >
-              <BackFace />
+              <ArrowLeftIcon className="size-5 shrink-0" />
             </button>
           ) : (
             <Link
@@ -45,22 +44,22 @@ export function DetailHeader({ font }: { font: FontRecord }) {
               aria-label="Back to all fonts"
               className={RAIL_HEADER_BTN}
             >
-              <BackFace />
+              <ArrowLeftIcon className="size-5 shrink-0" />
             </Link>
           )}
         </div>
-        <Separator
-          orientation="vertical"
-          className="hidden data-vertical:h-[3.125rem] md:block"
-        />
-        <div className="flex min-w-0 flex-col gap-1 pl-3">
+        <div className="flex min-w-0 items-baseline gap-2">
           <h1
             className="truncate font-semibold text-lg leading-tight"
             style={{ fontFamily: `"${font.name}", sans-serif` }}
           >
             {font.name}
           </h1>
-          {font.designer && <p className="truncate text-xs">{font.designer}</p>}
+          {font.designer && (
+            <p className="truncate text-muted-foreground text-xs">
+              {font.designer}
+            </p>
+          )}
         </div>
       </div>
       <div className="flex w-full flex-wrap items-center gap-2 md:ml-auto md:w-auto md:shrink-0 md:flex-nowrap">
@@ -69,20 +68,14 @@ export function DetailHeader({ font }: { font: FontRecord }) {
       </div>
 
       <div className="hidden shrink-0 items-center gap-1 md:flex">
-        <Separator
-          orientation="vertical"
-          className="data-vertical:h-[3.125rem]"
-        />
         <HeaderLink
           href={`https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`}
-          label="Google"
           aria-label={`View ${font.name} on Google Fonts`}
           icon={GoogleLogoIcon}
         />
         {font.repositoryUrl && (
           <HeaderLink
             href={font.repositoryUrl}
-            label="Repo"
             aria-label={`View ${font.name}'s source repository`}
             icon={RepoIcon}
           />
@@ -101,23 +94,12 @@ export function DetailHeader({ font }: { font: FontRecord }) {
   );
 }
 
-function BackFace() {
-  return (
-    <>
-      <ArrowLeftIcon className="size-5 shrink-0" />
-      <span className="max-w-full truncate text-[10px] leading-none">Back</span>
-    </>
-  );
-}
-
 function HeaderLink({
   href,
-  label,
   icon: Icon,
   "aria-label": ariaLabel,
 }: {
   href: string;
-  label: string;
   icon: React.ComponentType<{ className?: string }>;
   "aria-label": string;
 }) {
@@ -131,9 +113,6 @@ function HeaderLink({
         className={RAIL_HEADER_BTN}
       >
         <Icon className="size-5 shrink-0" />
-        <span className="max-w-full truncate text-[10px] leading-none">
-          {label}
-        </span>
       </a>
     </div>
   );

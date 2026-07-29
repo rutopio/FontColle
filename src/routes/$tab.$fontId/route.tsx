@@ -263,7 +263,6 @@ function DetailPage() {
 
   return (
     <FilterLayout
-      panelOpen={hasControls}
       favoriteFontId={font.id}
       rail={<DetailRail active={tab} onSelect={selectTab} />}
       sidebar={hasControls ? renderSidebarPanel() : null}

@@ -13,12 +13,12 @@ import { cn } from "@/lib/utils";
 function HeartLabel({
   active,
   red,
-  bar,
+  iconOnly,
   label,
 }: {
   active: boolean;
   red?: boolean;
-  bar?: boolean;
+  iconOnly?: boolean;
   label: string;
 }) {
   return (
@@ -38,7 +38,7 @@ function HeartLabel({
         )}
         weight="duotone"
       />
-      {!bar && (
+      {!iconOnly && (
         <span className="max-w-full truncate text-[10px] leading-none">
           {label}
         </span>
@@ -102,7 +102,7 @@ function FavoriteMark({
   return (
     <nav
       aria-label="Favorite"
-      className={header ? "w-full" : bare ? undefined : "flex flex-col gap-1"}
+      className={header || bare ? undefined : "flex flex-col gap-1"}
     >
       <button
         type="button"
@@ -111,7 +111,7 @@ function FavoriteMark({
         aria-label={on ? "Remove from favorites" : "Add to favorites"}
         className={cn(chrome, hover)}
       >
-        <HeartLabel active={on} bar={bare} label="Add" red />
+        <HeartLabel active={on} iconOnly={bare || header} label="Add" red />
       </button>
     </nav>
   );
@@ -136,7 +136,7 @@ function FavoriteViewLink({
   return (
     <nav
       aria-label="Favorites"
-      className={header ? "w-full" : bare ? undefined : "flex flex-col gap-1"}
+      className={header || bare ? undefined : "flex flex-col gap-1"}
     >
       <Link
         to="/"
@@ -148,7 +148,7 @@ function FavoriteViewLink({
           red ? cn(fav && "text-red-500", hover) : fav ? RAIL_BTN_ON : hover
         )}
       >
-        <HeartLabel active={fav} bar={bare} label="Favorite" />
+        <HeartLabel active={fav} iconOnly={bare || header} label="Favorite" />
       </Link>
     </nav>
   );

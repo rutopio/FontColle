@@ -81,11 +81,6 @@ const HEADER_SKELETON = (
         </div>
       </div>
 
-      <Separator
-        orientation="vertical"
-        className="hidden data-vertical:h-[3.125rem] md:block"
-      />
-
       <div className="hidden shrink-0 items-center gap-1 md:flex">
         <div className={RAIL_HEADER_CELL}>
           <ThemeToggle variant="header" />

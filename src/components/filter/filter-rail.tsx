@@ -1,4 +1,4 @@
-import { RAIL_BTN } from "@/components/rail-button";
+import { RAIL_BTN, RAIL_BTN_OFF, RAIL_BTN_ON } from "@/components/rail-button";
 import type { FilterState } from "@/lib/fonts/filter";
 import { cn } from "@/lib/utils";
 import {
@@ -29,9 +29,7 @@ export function FilterGroupButton({
       className={cn(
         cn(RAIL_BTN, "focus-visible:ring-inset"),
         horizontal ? "w-16 shrink-0 px-1" : "",
-        active
-          ? "bg-black/10 text-sidebar-accent-foreground dark:bg-white/12"
-          : "hover:bg-sidebar-accent/50 hover:text-foreground"
+        active ? RAIL_BTN_ON : RAIL_BTN_OFF
       )}
     >
       <group.icon

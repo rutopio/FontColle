@@ -37,7 +37,7 @@ export function ThemeToggle({
   return (
     <nav
       aria-label="Theme"
-      className={header ? "w-full" : bar ? undefined : "flex flex-col gap-1"}
+      className={header || bar ? undefined : "flex flex-col gap-1"}
     >
       <button
         type="button"
@@ -49,7 +49,7 @@ export function ThemeToggle({
           <IconFace icon={SunIcon} shown={isDark} />
           <IconFace icon={MoonIcon} shown={!isDark} />
         </span>
-        {!bar && (
+        {!(bar || header) && (
           <span className="max-w-full truncate text-[10px] leading-none">
             {target}
           </span>

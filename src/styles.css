@@ -319,6 +319,8 @@
   @variant md {
     padding-left: 2rem;
     padding-right: 2rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
   }
 
   @variant 3xl {
@@ -550,8 +552,8 @@
   *,
   *::before,
   *::after {
-    transition-property: opacity, color, background-color, border-color,
-      box-shadow, fill, stroke !important;
+    transition-property:
+      opacity, color, background-color, border-color, box-shadow, fill, stroke !important;
     scroll-behavior: auto !important;
   }
 

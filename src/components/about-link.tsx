@@ -25,7 +25,7 @@ export function AboutLink({
   return (
     <nav
       aria-label="About"
-      className={header ? "w-full" : bar ? undefined : "flex flex-col gap-1"}
+      className={header || bar ? undefined : "flex flex-col gap-1"}
     >
       <button
         type="button"
@@ -40,7 +40,7 @@ export function AboutLink({
           className="hidden size-5 group-hover/rail-btn:block"
           weight="duotone"
         />
-        {!bar && (
+        {!(bar || header) && (
           <span className="max-w-full truncate text-[10px] leading-none">
             About
           </span>
