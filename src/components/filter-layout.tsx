@@ -10,6 +10,7 @@ import {
 import { LogoIcon } from "@/components/logo-icon";
 import { RouteFade } from "@/components/route-fade";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { EASE_OUT, MOTION_S } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./theme-toggle";
@@ -25,10 +26,11 @@ function MobileTopBar({ favoriteFontId }: { favoriteFontId?: string }) {
         <LogoIcon className="size-5" />
         <span className="font-mono text-xs">FontColle</span>
       </Link>
+      {/* Same order as the desktop header clusters: theme, about, favorite. */}
       <div className="flex items-center gap-1">
-        <FavoriteToggle fontId={favoriteFontId} variant="bar" />
         <ThemeToggle variant="bar" />
         <AboutLink variant="bar" />
+        <FavoriteToggle fontId={favoriteFontId} variant="bar" />
       </div>
     </div>
   );
@@ -54,6 +56,8 @@ export function FilterLayout({
   header?: React.ReactNode;
   favoriteFontId?: string;
 }) {
+  const isMobile = useIsMobile();
+
   return (
     <>
       <a
@@ -76,8 +80,14 @@ export function FilterLayout({
           <FilterRailColumn>
             {rail ? <RouteFade>{rail}</RouteFade> : null}
           </FilterRailColumn>
+          {/* Desktop only, and gated in JS rather than by a `md:` class: the
+              width below is an inline style Framer Motion writes every frame,
+              which no class can override. Hidden with CSS the wrapper still
+              reserved --panel-width, leaving the content column a sliver of a
+              phone screen. Mobile reaches the same filters through
+              FilterDrawer. */}
           <AnimatePresence initial={false}>
-            {sidebar ? (
+            {sidebar && !isMobile ? (
               <motion.div
                 key="panel"
                 className="flex h-full min-h-0 shrink-0 flex-col overflow-hidden"
@@ -126,11 +136,15 @@ export function FilterLayout({
 
 function ColumnHeader({ children }: { children: React.ReactNode }) {
   return (
-    <header className="flex shrink-0 items-center gap-2 max-md:mt-0 md:py-0">
+    // Below md the header is a plain bar on the page: its own background, a
+    // rule under it and padding of its own, since there is no card frame out
+    // here to supply any of that. From md up the columns take over and it goes
+    // back to a bare strip above them.
+    <header className="flex shrink-0 items-center gap-2 max-md:border-border max-md:border-b max-md:bg-background max-md:px-3 max-md:py-2 md:py-0">
       <Link
         to="/"
         aria-label="FontColle, all fonts"
-        className="group/logo hidden w-(--rail-width) shrink-0 flex-col items-center justify-center gap-1 rounded-xl p-2 text-primary outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring md:flex dark:hover:bg-white/6"
+        className="group/logo hidden w-(--rail-width) shrink-0 flex-col items-center justify-center gap-1 rounded-xl p-1 text-primary outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring md:flex dark:hover:bg-white/6"
       >
         <LogoIcon className="size-7" />
         {/* <span className="font-mono text-[9px] group-hover/logo:font-bold">
