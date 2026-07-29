@@ -34,9 +34,11 @@ function MobileTopBar({ favoriteFontId }: { favoriteFontId?: string }) {
   );
 }
 
+/* Actual rendered widths of the two fixed columns. Main takes what is left via
+   flex-1, so neither value is derived from the other or from a shell total. */
 const SHELL_WIDTHS = {
-  "--sidebar-width-icon": "5rem",
-  "--sidebar-width": "25rem",
+  "--rail-width": "5rem",
+  "--panel-width": "20rem",
 } as React.CSSProperties;
 
 export function FilterLayout({
@@ -56,7 +58,7 @@ export function FilterLayout({
     <>
       <a
         href="#main"
-        className="sr-only fixed top-2 left-2 z-[100] -translate-y-full rounded-md bg-background px-4 py-2 font-medium text-sm shadow ring-2 ring-sidebar-ring transition-transform focus:not-sr-only focus:translate-y-0"
+        className="sr-only fixed top-2 left-2 z-[100] -translate-y-full rounded-md bg-background px-4 py-2 font-medium text-sm shadow ring-2 ring-ring transition-transform focus:not-sr-only focus:translate-y-0"
       >
         Skip to content
       </a>
@@ -109,7 +111,7 @@ function ColumnHeader({ children }: { children: React.ReactNode }) {
       <Link
         to="/"
         aria-label="FontColle, all fonts"
-        className="group/logo hidden w-[calc(var(--sidebar-width-icon)-0.5rem)] shrink-0 flex-col items-center justify-center gap-1 rounded-xl p-2 text-primary outline-none transition-colors focus-visible:ring-2 focus-visible:ring-sidebar-ring md:flex dark:hover:bg-white/6"
+        className="group/logo hidden w-(--rail-width) shrink-0 flex-col items-center justify-center gap-1 rounded-xl p-2 text-primary outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring md:flex dark:hover:bg-white/6"
       >
         <LogoIcon className="size-7 transition-[stroke-width] group-hover/logo:[stroke-width:2]" />
         {/* <span className="font-mono text-[9px] group-hover/logo:font-bold">
