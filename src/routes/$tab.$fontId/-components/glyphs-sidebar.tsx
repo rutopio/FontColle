@@ -66,7 +66,7 @@ export function GlyphsSidebar({
             )}
           </form>
           {loading ? (
-            <p className="text-muted-foreground text-xs">Loading…</p>
+            <p className="shimmer text-muted-foreground text-xs">Loading…</p>
           ) : blocks.length === 0 ? (
             <p className="text-muted-foreground text-xs">No glyph coverage.</p>
           ) : (
