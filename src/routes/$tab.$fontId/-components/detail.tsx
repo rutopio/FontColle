@@ -139,125 +139,129 @@ export function Detail({
   }, [font.name, font.axes, axisState, italic, featureSettings, fontLoaded]);
 
   return (
-    <Column
-      scrollViewportRef={scrollRef}
-      subheader={<DetailTabBar active={tab} fontId={fontSlug(font.id)} />}
-      footer={<PreviewBar />}
-      footerHidden={tab !== "sample"}
-    >
-      {tab === "tester" && (
-        <Tester
-          fontStyle={testerFontStyle}
-          seedLines={seedLines}
-          instances={font.instances}
-          fontName={font.name}
-          fontLoaded={fontLoaded}
-        />
-      )}
+    <>
+      <Column
+        scrollViewportRef={scrollRef}
+        subheader={<DetailTabBar active={tab} fontId={fontSlug(font.id)} />}
+        footer={<PreviewBar />}
+        footerHidden={tab !== "sample"}
+      >
+        {tab === "tester" && (
+          <Tester
+            fontStyle={testerFontStyle}
+            seedLines={seedLines}
+            instances={font.instances}
+            fontName={font.name}
+            fontLoaded={fontLoaded}
+          />
+        )}
 
-      {tab === "sample" && font.instances.length > 0 && (
-        <div className="flex flex-col">
-          {font.instances.map((inst) => (
-            <InstanceRow
-              key={`row:${inst.italic ? "i" : "u"}:${inst.name}`}
-              inst={inst}
-              specimen={specimen}
-              fontName={font.name}
-              fontLoaded={fontLoaded}
-              size={size}
-              featureSettings={featureSettings}
-              varyingAxisTags={varyingAxisTags}
-              onEditText={setText}
-            />
-          ))}
-        </div>
-      )}
+        {tab === "sample" && font.instances.length > 0 && (
+          <div className="flex flex-col">
+            {font.instances.map((inst) => (
+              <InstanceRow
+                key={`row:${inst.italic ? "i" : "u"}:${inst.name}`}
+                inst={inst}
+                specimen={specimen}
+                fontName={font.name}
+                fontLoaded={fontLoaded}
+                size={size}
+                featureSettings={featureSettings}
+                varyingAxisTags={varyingAxisTags}
+                onEditText={setText}
+              />
+            ))}
+          </div>
+        )}
 
-      {tab === "glyphs" && (
-        <GlyphsPanel
-          font={font}
-          fontLoaded={fontLoaded}
-          blockName={glyphBlock}
-          ranges={glyphRanges}
-          loading={glyphLoading}
-          scrollRef={scrollRef}
-          highlightCp={glyphHighlightCp}
-        />
-      )}
+        {tab === "glyphs" && (
+          <GlyphsPanel
+            font={font}
+            fontLoaded={fontLoaded}
+            blockName={glyphBlock}
+            ranges={glyphRanges}
+            loading={glyphLoading}
+            scrollRef={scrollRef}
+            highlightCp={glyphHighlightCp}
+          />
+        )}
 
-      {tab === "use" && (
-        <UsePanel font={font} axisState={axisState} italic={italic} />
-      )}
+        {tab === "use" && (
+          <UsePanel font={font} axisState={axisState} italic={italic} />
+        )}
 
-      {tab === "detail" && (
-        <>
-          <MetricsPanel font={font} />
+        {tab === "detail" && (
+          <>
+            <MetricsPanel font={font} />
 
-          <div className="grid gap-4 md:grid-cols-4">
-            <Panel label="Specs" className="md:col-span-1">
-              <SpecTable rows={specRows} />
-            </Panel>
-            <Panel
-              label="Subsets"
-              count={subsets.length || undefined}
-              className="flex flex-col md:col-span-1"
-              bodyClassName="flex-1"
-            >
-              <ColumnList items={subsets} />
-            </Panel>
-            {font.scripts.length > 0 && (
+            <div className="grid gap-4 md:grid-cols-4">
+              <Panel label="Specs" className="md:col-span-1">
+                <SpecTable rows={specRows} />
+              </Panel>
               <Panel
-                label="Writing systems"
-                count={font.scripts.length}
+                label="Subsets"
+                count={subsets.length || undefined}
                 className="flex flex-col md:col-span-1"
                 bodyClassName="flex-1"
               >
-                <ColumnList items={font.scripts.map(scriptLabel)} />
+                <ColumnList items={subsets} />
               </Panel>
-            )}
-
-            <Panel
-              label="Version history"
-              count={
-                versionHistory.length > 0 ? versionHistory.length : undefined
-              }
-              className="md:col-span-1"
-            >
-              {versionHistory.length > 0 ? (
-                <Table>
-                  <TableBody>
-                    {[...versionHistory].reverse().map((v) => (
-                      <TableRow key={v.version}>
-                        <TableCell className="px-0 py-1.5 font-mono text-sm">
-                          v{v.version}
-                        </TableCell>
-                        <TableCell className="px-0 py-1.5 text-right font-mono text-muted-foreground text-sm">
-                          {formatDate(v.date)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              ) : (
-                <p className="text-muted-foreground text-sm">
-                  No version history.
-                </p>
+              {font.scripts.length > 0 && (
+                <Panel
+                  label="Writing systems"
+                  count={font.scripts.length}
+                  className="flex flex-col md:col-span-1"
+                  bodyClassName="flex-1"
+                >
+                  <ColumnList items={font.scripts.map(scriptLabel)} />
+                </Panel>
               )}
-            </Panel>
-          </div>
 
-          {font.languages.length > 0 && <LanguageSupport font={font} />}
-        </>
-      )}
+              <Panel
+                label="Version history"
+                count={
+                  versionHistory.length > 0 ? versionHistory.length : undefined
+                }
+                className="md:col-span-1"
+              >
+                {versionHistory.length > 0 ? (
+                  <Table>
+                    <TableBody>
+                      {[...versionHistory].reverse().map((v) => (
+                        <TableRow key={v.version}>
+                          <TableCell className="px-0 py-1.5 font-mono text-sm">
+                            v{v.version}
+                          </TableCell>
+                          <TableCell className="px-0 py-1.5 text-right font-mono text-muted-foreground text-sm">
+                            {formatDate(v.date)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <p className="text-muted-foreground text-sm">
+                    No version history.
+                  </p>
+                )}
+              </Panel>
+            </div>
 
-      {tab === "designer" && (
-        <DesignerPanel font={font} siblingsByDesigner={siblingsByDesigner} />
-      )}
+            {font.languages.length > 0 && <LanguageSupport font={font} />}
+          </>
+        )}
 
-      {tab === "license" && <LicensePanel font={font} />}
+        {tab === "designer" && (
+          <DesignerPanel font={font} siblingsByDesigner={siblingsByDesigner} />
+        )}
 
+        {tab === "license" && <LicensePanel font={font} />}
+      </Column>
+      {/* Outside Column: the ScrollArea's scroll-fade is a mask, which applies
+          to its whole subtree, so a fixed FAB inside it faded out at the edges
+          no matter its z-index. */}
       <LinksDrawer font={font} dockVisible={tab === "sample"} />
-    </Column>
+    </>
   );
 }
 
