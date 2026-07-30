@@ -23,65 +23,73 @@ import {
 } from "@/lib/fonts/sort";
 import { cn } from "@/lib/utils";
 
+// Relevance only ranks something against a query, so it is offered as a sort
+// group only while one is active. It carries no SortKey: picking it means
+// "no explicit sort", which is what lets searchByQuery's own order stand.
+export const RELEVANCE_GROUP = "Relevance";
+
 export function SortControl({
   sort,
   onChange,
+  onRelevance,
   relevance = false,
+  sortedByRelevance = false,
 }: {
   sort: SortKey;
   onChange: (next: SortKey) => void;
+  /** Clears the explicit sort, restoring relevance order. */
+  onRelevance?: () => void;
+  /** A query is active, so Relevance is an available choice. */
   relevance?: boolean;
+  /** Relevance is the live selection, not merely available. */
+  sortedByRelevance?: boolean;
 }) {
   const { group, asc } = sortGroupOf(sort);
   const mobile = useIsMobile();
 
-  const directionless = relevance || isDirectionless(group);
+  const onRelevanceNow = relevance && sortedByRelevance;
+  const directionless = onRelevanceNow || isDirectionless(group);
   const dirLabel = asc ? group.ascLabel : (group.descLabel ?? group.ascLabel);
 
-  // Both controls go disabled under relevance, which drops them out of the tab
-  // order and takes the wrapper's title with them. State the reason in the
-  // accessible name so it isn't carried by opacity alone.
-  const sortByLabel = relevance
-    ? "Sort by: locked to search relevance"
-    : "Sort by";
+  const current = onRelevanceNow ? RELEVANCE_GROUP : group.group;
+  const groups = relevance
+    ? [RELEVANCE_GROUP, ...SORT_GROUPS.map((g) => g.group)]
+    : SORT_GROUPS.map((g) => g.group);
 
   const selectGroup = (g: string | null) => {
+    if (g === RELEVANCE_GROUP) {
+      onRelevance?.();
+      return;
+    }
     const next = SORT_GROUPS.find((x) => x.group === g);
     if (next) onChange(!asc && next.desc ? next.desc : next.asc);
   };
 
   return (
-    <div
-      className="flex h-9 items-center rounded-lg border border-input bg-background dark:bg-input/30"
-      title={relevance ? "Sorted by search relevance" : undefined}
-    >
+    <div className="flex h-9 items-center rounded-lg border border-input bg-background dark:bg-input/30">
       {mobile ? (
         <GroupDrawer
-          group={relevance ? "Relevance" : group.group}
-          disabled={relevance}
-          label={sortByLabel}
+          group={current}
+          groups={groups}
+          label="Sort by"
           onSelect={selectGroup}
         />
       ) : (
-        <Select
-          value={group.group}
-          onValueChange={selectGroup}
-          disabled={relevance}
-        >
+        <Select value={current} onValueChange={selectGroup}>
           <SelectTrigger
             className="h-full rounded-none border-0 bg-transparent shadow-none before:hidden focus-visible:ring-0 dark:bg-transparent dark:hover:bg-transparent"
-            aria-label={sortByLabel}
+            aria-label="Sort by"
           >
-            <SelectValue>{relevance ? "Relevance" : group.group}</SelectValue>
+            <SelectValue>{current}</SelectValue>
           </SelectTrigger>
           <SelectContent
             align="end"
             alignOffset={-3}
             alignItemWithTrigger={false}
           >
-            {SORT_GROUPS.map((g) => (
-              <SelectItem key={g.group} value={g.group}>
-                {g.group}
+            {groups.map((g) => (
+              <SelectItem key={g} value={g}>
+                {g}
               </SelectItem>
             ))}
           </SelectContent>
@@ -97,11 +105,11 @@ export function SortControl({
           }
         }}
         aria-label={
-          relevance
-            ? "Sort direction: locked to search relevance"
+          onRelevanceNow
+            ? "Sort direction: unavailable while sorted by relevance"
             : `Sort direction: ${dirLabel}`
         }
-        title={relevance ? "Sorted by search relevance" : dirLabel}
+        title={onRelevanceNow ? "Relevance has no sort direction" : dirLabel}
         className="flex h-full items-center px-2.5 transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-40 dark:hover:bg-input/50"
       >
         {asc ? (
@@ -116,12 +124,12 @@ export function SortControl({
 
 function GroupDrawer({
   group,
-  disabled = false,
+  groups,
   label,
   onSelect,
 }: {
   group: string;
-  disabled?: boolean;
+  groups: string[];
   label: string;
   onSelect: (group: string) => void;
 }) {
@@ -131,11 +139,10 @@ function GroupDrawer({
     <Sheet open={open} onOpenChange={setOpen}>
       <button
         type="button"
-        disabled={disabled}
         onClick={() => setOpen(true)}
         aria-label={label}
         aria-expanded={open}
-        className="inline-flex h-full w-full min-w-36 select-none items-center justify-between gap-2 px-[calc(--spacing(3)-1px)] text-left text-sm outline-none disabled:pointer-events-none disabled:opacity-64"
+        className="inline-flex h-full w-full min-w-36 select-none items-center justify-between gap-2 px-[calc(--spacing(3)-1px)] text-left text-sm outline-none"
       >
         {group}
         <CaretUpDownIcon className={selectTriggerIconClassName} />
@@ -152,14 +159,14 @@ function GroupDrawer({
             paddingBottom: "calc(0.5rem + env(safe-area-inset-bottom))",
           }}
         >
-          {SORT_GROUPS.map((g) => {
-            const on = g.group === group;
+          {groups.map((g) => {
+            const on = g === group;
             return (
               <button
-                key={g.group}
+                key={g}
                 type="button"
                 onClick={() => {
-                  onSelect(g.group);
+                  onSelect(g);
                   setOpen(false);
                 }}
                 aria-pressed={on}
@@ -170,7 +177,7 @@ function GroupDrawer({
                     : "active:bg-muted"
                 )}
               >
-                <span className="truncate">{g.group}</span>
+                <span className="truncate">{g}</span>
                 {on && <CheckIcon className="size-4 shrink-0 text-primary" />}
               </button>
             );

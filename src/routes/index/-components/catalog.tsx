@@ -146,18 +146,33 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
       ? matched.filter((f) => favDep.includes(f.id))
       : matched;
     if (!shownFilter.query.trim()) return sortFonts(filtered, sort);
-    return searchByQuery(filtered, shownFilter.query);
-  }, [fonts, shownFilter, sort, favDep]);
+    // searchByQuery both matches and ranks by relevance. Keep its order only
+    // while the sort is unset; an explicit pick must win over relevance.
+    const matches = searchByQuery(filtered, shownFilter.query);
+    return search.sort ? sortFonts(matches, sort) : matches;
+  }, [fonts, shownFilter, sort, search.sort, favDep]);
 
   useListScrollRestore(scrollRef, listScrollY);
+
+  const hasQuery = filter.query.trim().length > 0;
 
   const setSort = (next: SortKey) => {
     navigate({
       search: {
         ...filterToSearch(filter),
-        sort: next === DEFAULT_SORT ? undefined : next,
+        // While searching, an absent `sort` means relevance, so the default key
+        // has to stay in the URL or picking Popularity would read as relevance.
+        sort: next === DEFAULT_SORT && !hasQuery ? undefined : next,
         fav: search.fav,
       },
+      replace: true,
+    });
+  };
+
+  // Dropping `sort` hands the order back to searchByQuery's relevance ranking.
+  const setRelevance = () => {
+    navigate({
+      search: { ...filterToSearch(filter), sort: undefined, fav: search.fav },
       replace: true,
     });
   };
@@ -209,7 +224,6 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
   };
 
   const activeCount = activeFilterCount(filter);
-  const hasQuery = filter.query.trim().length > 0;
 
   const openFont = useCallback(
     (id: string) => {
@@ -282,7 +296,9 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
               <SortControl
                 sort={sort}
                 onChange={setSort}
-                relevance={filter.query.trim().length > 0}
+                onRelevance={setRelevance}
+                relevance={hasQuery}
+                sortedByRelevance={!search.sort}
               />
             </div>
             {(activeCount > 0 || hasQuery) && (
@@ -306,7 +322,9 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
               <SortControl
                 sort={sort}
                 onChange={setSort}
-                relevance={filter.query.trim().length > 0}
+                onRelevance={setRelevance}
+                relevance={hasQuery}
+                sortedByRelevance={!search.sort}
               />
             </div>
             <ViewTabs view={view} onChange={setView} />
