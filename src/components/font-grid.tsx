@@ -83,9 +83,8 @@ export function FontGrid({
 
   const renderCell = (font: FontRecord) =>
     view === "row" ? (
-      <div className="flex flex-col">
+      <div key={font.id} className="flex flex-col">
         <FontRow
-          key={font.id}
           font={font}
           previewText={previewText}
           isFavorite={favSet.has(font.id)}
