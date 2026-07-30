@@ -18,7 +18,9 @@ export function FontActions({
 }) {
   return (
     <div className="flex shrink-0 items-center gap-4">
-      <Tooltip content={isFavorite ? "Remove from favorites" : "Add to favorites"}>
+      <Tooltip
+        content={isFavorite ? "Remove from favorites" : "Add to favorites"}
+      >
         <button
           type="button"
           onClick={(e: React.MouseEvent) => {

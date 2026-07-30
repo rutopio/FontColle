@@ -10,7 +10,11 @@ import {
   HeaderButtonGroup,
   HeaderButtonGroupItem,
 } from "@/components/header-button-group";
-import { RAIL_BTN_OFF, RAIL_HEADER_BTN, RAIL_HEADER_CELL } from "@/components/rail-button";
+import {
+  RAIL_BTN_OFF,
+  RAIL_HEADER_BTN,
+  RAIL_HEADER_CELL,
+} from "@/components/rail-button";
 import { repoHostIcon } from "@/components/repo-host-icon";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Badge } from "@/components/ui/badge";
@@ -94,16 +98,28 @@ export function DetailHeader({ font }: { font: FontRecord }) {
             </HeaderButtonGroupItem>
           )}
           <Separator aria-hidden orientation="vertical" className="mx-2 h-5" />
-          <HeaderButtonGroupItem index={font.repositoryUrl ? 2 : 1} className={RAIL_HEADER_CELL}>
+          <HeaderButtonGroupItem
+            index={font.repositoryUrl ? 2 : 1}
+            className={RAIL_HEADER_CELL}
+          >
             <ThemeToggle variant="header" />
           </HeaderButtonGroupItem>
-          <HeaderButtonGroupItem index={font.repositoryUrl ? 3 : 2} className={RAIL_HEADER_CELL}>
+          <HeaderButtonGroupItem
+            index={font.repositoryUrl ? 3 : 2}
+            className={RAIL_HEADER_CELL}
+          >
             <AboutLink variant="header" />
           </HeaderButtonGroupItem>
-          <HeaderButtonGroupItem index={font.repositoryUrl ? 4 : 3} className={RAIL_HEADER_CELL}>
+          <HeaderButtonGroupItem
+            index={font.repositoryUrl ? 4 : 3}
+            className={RAIL_HEADER_CELL}
+          >
             <GithubLink variant="header" />
           </HeaderButtonGroupItem>
-          <HeaderButtonGroupItem index={font.repositoryUrl ? 5 : 4} className={RAIL_HEADER_CELL}>
+          <HeaderButtonGroupItem
+            index={font.repositoryUrl ? 5 : 4}
+            className={RAIL_HEADER_CELL}
+          >
             <FavoriteToggle fontId={font.id} variant="header" />
           </HeaderButtonGroupItem>
         </HeaderButtonGroup>

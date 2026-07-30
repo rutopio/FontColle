@@ -1,6 +1,10 @@
 import { ArrowUpIcon, XIcon } from "@phosphor-icons/react";
 import { useRef, useState } from "react";
-import { RAIL_BTN_OFF, RAIL_HEADER_BTN, RAIL_HEADER_CELL } from "@/components/rail-button";
+import {
+  RAIL_BTN_OFF,
+  RAIL_HEADER_BTN,
+  RAIL_HEADER_CELL,
+} from "@/components/rail-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { usePreview } from "@/lib/preview/context";

@@ -6,15 +6,16 @@ import {
   XIcon,
 } from "@phosphor-icons/react";
 import { motion } from "motion/react";
-import type { CSSProperties } from "react";
 import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { EditableValue } from "@/components/ui/editable-value";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Slider } from "@/components/ui/slider";
 import { Tooltip } from "@/components/ui/tooltip";
 import { DEFAULT_ON, featureName } from "@/lib/fonts/features";
 import type { FontRecord } from "@/lib/fonts/types";
 import { EASE_OUT, MOTION_S } from "@/lib/motion";
+import { useBlockAxes } from "@/lib/tester/block-axes";
 import { useScrollReset } from "@/lib/use-scroll-reset";
 
 export const SIZE_MIN = 12;
@@ -53,26 +54,18 @@ function ResetButton({
   );
 }
 
-// Native range input: the Slider primitive's Thumb is hidden, and these need
-// per-thumb aria-label + aria-valuetext which the wrapper can't carry.
-const RANGE_SLIDER_CLASS = [
-  "my-2 h-1.5 w-full cursor-pointer appearance-none rounded-full outline-none",
-  "[&::-webkit-slider-thumb]:size-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-foreground [&::-webkit-slider-thumb]:bg-background [&::-webkit-slider-thumb]:shadow-sm",
-  "[&::-moz-range-thumb]:size-3 [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border [&::-moz-range-thumb]:border-foreground [&::-moz-range-thumb]:bg-background [&::-moz-range-thumb]:shadow-sm",
-  "focus-visible:[&::-webkit-slider-thumb]:ring-3 focus-visible:[&::-webkit-slider-thumb]:ring-ring/50",
-  "focus-visible:[&::-moz-range-thumb]:ring-3 focus-visible:[&::-moz-range-thumb]:ring-ring/50",
-].join(" ");
+/** Axis granularity, from how far the axis travels. A wide axis (wght spans
+ *  500, GRAD 250) has no use for half units — the difference is invisible and
+ *  it would take a thousand arrow presses to cross. Narrow ones (slnt spans 28)
+ *  need the finer step to stay adjustable. */
+function axisStep(min: number, max: number): number {
+  return max - min > 50 ? 1 : 0.5;
+}
 
-function rangeFillStyle(
-  value: number,
-  min: number,
-  max: number
-): CSSProperties {
-  const pct = max > min ? ((value - min) / (max - min)) * 100 : 0;
-  const clamped = Math.min(100, Math.max(0, pct));
-  return {
-    background: `linear-gradient(to right, var(--color-foreground) ${clamped}%, var(--color-muted) ${clamped}%)`,
-  };
+/** Round for display so the readout matches what the slider can actually
+ *  land on: whole numbers on a step-1 axis, halves on a step-0.5 one. */
+function roundToStep(value: number, step: number): number {
+  return Math.round(value / step) * step;
 }
 
 function featureToggleClass(on: boolean) {
@@ -114,6 +107,13 @@ export function DetailSidebar({
   const axesDirty = axes.some(
     (a) => axisState[a.tag] !== (a.default ?? a.min ?? 0)
   );
+
+  // On the tester tab the axes belong to whichever block the caret is in, so
+  // they wait for a selection. The provider is absent on every other tab,
+  // where the sliders keep driving the page-wide preview.
+  const blockAxesCtx = useBlockAxes();
+  const blockTarget = blockAxesCtx?.target ?? null;
+  const axesDisabled = blockAxesCtx != null && blockTarget == null;
   const sorted = useMemo(
     () =>
       [...features].sort((a, b) => {
@@ -157,16 +157,14 @@ export function DetailSidebar({
                   ariaLabel="Preview font size"
                 />
               </div>
-              <input
-                type="range"
+              <Slider
+                label="Preview font size"
                 min={SIZE_MIN}
                 max={SIZE_MAX}
                 value={size}
-                onChange={(e) => onSizeChange(Number(e.target.value))}
-                aria-label="Preview font size"
-                aria-valuetext={`${size} px`}
-                className={RANGE_SLIDER_CLASS}
-                style={rangeFillStyle(size, SIZE_MIN, SIZE_MAX)}
+                onChange={(v) => onSizeChange(v as number)}
+                showValue={false}
+                tooltipSide="bottom"
               />
             </div>
           )}
@@ -178,55 +176,65 @@ export function DetailSidebar({
                   Variable axes
                 </h2>
                 <ResetButton
-                  active={axesDirty}
+                  active={axesDirty && blockAxesCtx == null}
                   onClick={onResetAxes}
                   label="Reset variable axes to defaults"
                 />
               </div>
+              {axesDisabled && (
+                <p className="text-muted-foreground text-xs">
+                  Select a line to adjust its axes.
+                </p>
+              )}
               <div className="flex flex-col gap-3">
-                {axes.map((a) => (
-                  <div key={a.tag} className="flex flex-col gap-1.5">
-                    <div className="flex items-baseline justify-between gap-2">
-                      <span className="flex items-baseline gap-1.5 text-sm">
-                        {a.name ?? a.tag}
-                        <Badge
-                          variant="outline"
-                          className="font-mono font-normal text-muted-foreground text-xs"
-                        >
-                          {a.tag}
-                        </Badge>
-                      </span>
-                      <EditableValue
-                        value={Math.round(axisState[a.tag])}
-                        min={a.min ?? 0}
-                        max={a.max ?? 100}
-                        presets={AXIS_PRESETS[a.tag]}
-                        onChange={(v) => onAxisChange(a.tag, v)}
-                        ariaLabel={`${a.name ?? a.tag} value`}
+                {axes.map((a) => {
+                  const min = a.min ?? 0;
+                  const max = a.max ?? 100;
+                  const step = axisStep(min, max);
+                  // With a tester block selected the sliders drive that block;
+                  // an axis the block doesn't name falls back to the page value
+                  // so the handle starts where the text actually renders.
+                  const value = blockTarget
+                    ? (blockTarget.coords[a.tag] ?? axisState[a.tag])
+                    : axisState[a.tag];
+                  const setValue = blockTarget
+                    ? (v: number) => blockTarget.setAxis(a.tag, v)
+                    : (v: number) => onAxisChange(a.tag, v);
+                  return (
+                    <div key={a.tag} className="flex flex-col gap-1.5">
+                      <div className="flex items-baseline justify-between gap-2">
+                        <span className="flex items-baseline gap-1.5 text-sm">
+                          {a.name ?? a.tag}
+                          <Badge
+                            variant="outline"
+                            className="font-mono font-normal text-muted-foreground text-xs"
+                          >
+                            {a.tag}
+                          </Badge>
+                        </span>
+                        <EditableValue
+                          value={roundToStep(value, step)}
+                          min={min}
+                          max={max}
+                          presets={AXIS_PRESETS[a.tag]}
+                          onChange={setValue}
+                          ariaLabel={`${a.name ?? a.tag} value`}
+                        />
+                      </div>
+                      <Slider
+                        label={`${a.name ?? a.tag} axis`}
+                        min={min}
+                        max={max}
+                        value={value}
+                        step={step}
+                        onChange={(v) => setValue(v as number)}
+                        disabled={axesDisabled}
+                        showValue={false}
+                        tooltipSide="bottom"
                       />
                     </div>
-                    <input
-                      type="range"
-                      min={a.min ?? 0}
-                      max={a.max ?? 100}
-                      value={axisState[a.tag]}
-                      step={0.5}
-                      onChange={(e) =>
-                        onAxisChange(a.tag, Number(e.target.value))
-                      }
-                      aria-label={`${a.name ?? a.tag} axis`}
-                      aria-valuetext={`${a.name ?? a.tag} ${Math.round(
-                        axisState[a.tag]
-                      )}`}
-                      className={RANGE_SLIDER_CLASS}
-                      style={rangeFillStyle(
-                        axisState[a.tag],
-                        a.min ?? 0,
-                        a.max ?? 100
-                      )}
-                    />
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}

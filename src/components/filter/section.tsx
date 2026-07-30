@@ -139,9 +139,7 @@ export function Pills({
     if (!tip) return <Fragment key={value}>{pill}</Fragment>;
     return (
       <Tooltip key={value} content={tip} className="normal-case">
-        <div className={cn("flex", grid && "min-w-0")}>
-          {pill}
-        </div>
+        <div className={cn("flex", grid && "min-w-0")}>{pill}</div>
       </Tooltip>
     );
   };

@@ -36,9 +36,15 @@ import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import { previewStyle } from "@/lib/fonts/preview-style";
 import type { FontInstance } from "@/lib/fonts/types";
+import { useBlockAxes } from "@/lib/tester/block-axes";
 import { cn } from "@/lib/utils";
 import { SIZE_MAX, SIZE_MIN, SIZE_PRESETS } from "./detail-sidebar";
-import { instanceStyle, isTesterBlock, TESTER_NODES } from "./tester-nodes";
+import {
+  coordsFromStyle,
+  instanceStyle,
+  isTesterBlock,
+  TESTER_NODES,
+} from "./tester-nodes";
 
 type BlockType = "normal" | "h1" | "h2" | "h3";
 const BLOCK_OPTIONS: { value: BlockType; label: string }[] = [
@@ -238,6 +244,48 @@ function TesterInner({
       for (const el of marked) delete el.dataset.pgActive;
     };
   }, [editor, activeKeys]);
+
+  // Publish the selected blocks to the sidebar's axis sliders. Writing an axis
+  // rebuilds the whole style from the block's current coords, so dragging one
+  // axis never drops the others, and italic survives because it is read back
+  // off the same style string.
+  const setBlockAxis = useCallback(
+    (tag: string, value: number) => {
+      editor.update(() => {
+        const selection = $getSelection();
+        if (!$isRangeSelection(selection)) return;
+        const blocks = new Set(
+          selection
+            .getNodes()
+            .map((n) =>
+              n.getKey() === "root" ? n : n.getTopLevelElementOrThrow()
+            )
+        );
+        for (const b of blocks) {
+          if (!isTesterBlock(b)) continue;
+          const style = b.getStyle();
+          const next = { ...coordsFromStyle(style), [tag]: value };
+          b.setStyle(instanceStyle(next, /italic/.test(style)));
+        }
+      });
+    },
+    [editor]
+  );
+
+  const blockAxesCtx = useBlockAxes();
+  const setBlockAxesTarget = blockAxesCtx?.setTarget;
+  useEffect(() => {
+    if (!setBlockAxesTarget) return;
+    if (activeKeys.length === 0) {
+      setBlockAxesTarget(null);
+      return;
+    }
+    setBlockAxesTarget({
+      coords: coordsFromStyle(blockStyle),
+      setAxis: setBlockAxis,
+    });
+    return () => setBlockAxesTarget(null);
+  }, [setBlockAxesTarget, activeKeys, blockStyle, setBlockAxis]);
 
   const applyBlock = (value: BlockType) => {
     editor.update(() => {

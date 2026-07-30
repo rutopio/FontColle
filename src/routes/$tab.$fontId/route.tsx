@@ -20,6 +20,7 @@ import { fontSlug } from "@/lib/fonts/slug";
 import type { FontRecord } from "@/lib/fonts/types";
 import { blockOf, parseGlyphQuery } from "@/lib/fonts/unicode-blocks";
 import { absoluteUrl, pageTitle } from "@/lib/site";
+import { BlockAxesProvider } from "@/lib/tester/block-axes";
 import { backWithViewTransition } from "@/lib/view-transition";
 import { ControlsDrawer } from "./-components/controls-drawer";
 import { Detail } from "./-components/detail";
@@ -265,7 +266,12 @@ function DetailPage() {
       })
     : undefined;
 
-  return (
+  // Only the tester binds its axes to a selected block; every other tab keeps
+  // the page-wide behaviour, so the provider is mounted just for that tab.
+  const withBlockAxes = (node: React.ReactNode) =>
+    tab === "tester" ? <BlockAxesProvider>{node}</BlockAxesProvider> : node;
+
+  return withBlockAxes(
     <FilterLayout
       favoriteFontId={font.id}
       rail={<DetailRail active={tab} onSelect={selectTab} />}

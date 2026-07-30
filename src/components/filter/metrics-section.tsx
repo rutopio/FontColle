@@ -170,7 +170,12 @@ function MetricRangeRow({
             <Tooltip
               // biome-ignore lint/suspicious/noArrayIndexKey: fixed 4-quartile list
               key={i}
-              content={<>{formatMetricValue(spec.key, q[0])} – {formatMetricValue(spec.key, q[1])}</>}
+              content={
+                <>
+                  {formatMetricValue(spec.key, q[0])} –{" "}
+                  {formatMetricValue(spec.key, q[1])}
+                </>
+              }
               side="bottom"
               className="font-mono normal-case"
             >

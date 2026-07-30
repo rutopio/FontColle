@@ -22,12 +22,12 @@ import {
 } from "@/components/filter/groups";
 import { PresetToggle } from "@/components/filter/preset-toggle";
 import { Column, FilterLayout } from "@/components/filter-layout";
+import { FontGrid, type ViewMode } from "@/components/font-grid";
+import { GithubLink } from "@/components/github-link";
 import {
   HeaderButtonGroup,
   HeaderButtonGroupItem,
 } from "@/components/header-button-group";
-import { FontGrid, type ViewMode } from "@/components/font-grid";
-import { GithubLink } from "@/components/github-link";
 import { PreviewBar } from "@/components/preview-dock";
 import { RAIL_HEADER_CELL } from "@/components/rail-button";
 import { ThemeToggle } from "@/components/theme-toggle";

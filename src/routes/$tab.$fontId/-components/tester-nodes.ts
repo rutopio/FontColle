@@ -104,6 +104,21 @@ export function instanceStyle(
   return `${parts.join("; ")};`;
 }
 
+/** Inverse of the font-variation-settings half of instanceStyle: reads a
+ *  block's inline style back into axis coords, so the sliders can show what
+ *  the selected block is actually set to. Returns {} for a block with no
+ *  style of its own, which reads as "inheriting the page defaults". */
+export function coordsFromStyle(style: string): Record<string, number> {
+  const match = /font-variation-settings:\s*([^;]+)/.exec(style);
+  if (!match) return {};
+  const coords: Record<string, number> = {};
+  for (const part of match[1].split(",")) {
+    const m = /"([^"]+)"\s*(-?[\d.]+)/.exec(part);
+    if (m) coords[m[1]] = Number(m[2]);
+  }
+  return coords;
+}
+
 export function isTesterBlock(
   node: LexicalNode
 ): node is TesterParagraphNode | TesterHeadingNode {

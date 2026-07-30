@@ -18,7 +18,7 @@ import { ThemeToggle } from "./theme-toggle";
 
 function MobileTopBar({ favoriteFontId }: { favoriteFontId?: string }) {
   return (
-    <div className="flex h-12 shrink-0 items-center justify-between border-border border-b bg-background px-3 md:hidden">
+    <div className="flex h-12 shrink-0 items-center justify-between border-border border-b bg-canvas px-3 md:hidden">
       <Link
         to="/"
         aria-label="FontColle, all fonts"

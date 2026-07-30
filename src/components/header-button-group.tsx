@@ -1,16 +1,16 @@
 "use client";
 
+import { AnimatePresence, motion } from "motion/react";
 import {
-  useRef,
+  createContext,
+  type HTMLAttributes,
+  useContext,
   useEffect,
   useMemo,
-  createContext,
-  useContext,
-  type HTMLAttributes,
+  useRef,
 } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { spring } from "@/lib/springs";
 import { useProximityHover } from "@/hooks/use-proximity-hover";
+import { spring } from "@/lib/springs";
 
 interface HeaderButtonGroupContextValue {
   registerItem: (index: number, element: HTMLElement | null) => void;
@@ -27,8 +27,14 @@ function HeaderButtonGroup({
 }: HTMLAttributes<HTMLDivElement>) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const { activeIndex, itemRects, sessionRef, handlers, registerItem, isMeasured } =
-    useProximityHover(containerRef, { axis: "x" });
+  const {
+    activeIndex,
+    itemRects,
+    sessionRef,
+    handlers,
+    registerItem,
+    isMeasured,
+  } = useProximityHover(containerRef, { axis: "x" });
 
   const activeRect =
     activeIndex !== null && isMeasured ? itemRects[activeIndex] : null;
