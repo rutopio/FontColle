@@ -2,10 +2,12 @@ import {
   ArrowElbowDownLeftIcon,
   MagnifyingGlassIcon,
 } from "@phosphor-icons/react";
-import { useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Kbd } from "@/components/ui/kbd";
 import { cn } from "@/lib/utils";
+
+const DEBOUNCE_MS = 200;
 
 export interface SearchSuggestion {
   id: string;
@@ -27,6 +29,7 @@ export function SearchInput({
 }) {
   const [draft, setDraft] = useState(query);
   const composing = useRef(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const [active, setActive] = useState(-1);
   const [open, setOpen] = useState(false);
   const listId = useId();
@@ -37,10 +40,23 @@ export function SearchInput({
     setDraft(query);
   }
 
+  useEffect(() => () => clearTimeout(debounceRef.current), []);
+
+  const flush = useCallback(
+    (value: string) => {
+      clearTimeout(debounceRef.current);
+      onQueryChange(value);
+    },
+    [onQueryChange]
+  );
+
   const commit = (value: string) => {
     setDraft(value);
     setActive(-1);
-    if (!composing.current) onQueryChange(value);
+    if (!composing.current) {
+      clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => onQueryChange(value), DEBOUNCE_MS);
+    }
   };
 
   const showList = open && draft.trim().length > 0 && suggestions.length > 0;
@@ -75,7 +91,7 @@ export function SearchInput({
         }}
         onCompositionEnd={(e) => {
           composing.current = false;
-          onQueryChange(e.currentTarget.value);
+          flush(e.currentTarget.value);
         }}
         onKeyDown={(e) => {
           if (e.key === "Escape") {
@@ -86,7 +102,9 @@ export function SearchInput({
             }
             if (draft) {
               e.preventDefault();
-              commit("");
+              setDraft("");
+              setActive(-1);
+              flush("");
               e.currentTarget.blur();
             }
             return;
@@ -103,10 +121,15 @@ export function SearchInput({
             });
             return;
           }
-          if (e.key === "Enter" && suggestions.length > 0) {
-            e.preventDefault();
-            pick(active);
-            setOpen(false);
+          if (e.key === "Enter") {
+            if (suggestions.length > 0) {
+              e.preventDefault();
+              pick(active);
+              setOpen(false);
+              return;
+            }
+            // Nothing to pick: the user is asking for these results now.
+            flush(draft);
           }
         }}
         placeholder="Search family or designer"

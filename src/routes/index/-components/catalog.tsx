@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import {
   Fragment,
   useCallback,
+  useDeferredValue,
   useEffect,
   useMemo,
   useRef,
@@ -140,18 +141,24 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
   const sort = (search.sort as SortKey) ?? DEFAULT_SORT;
   const favOnly = search.fav === "1";
 
+  /* Searching runs two full passes over ~2000 families, ~300ms together, and
+     as an urgent render that blocked the keystroke that caused it. Deferring
+     lets React paint the new character first and compute the list in an
+     interruptible pass, which a later keystroke can throw away. No timer, so
+     results still start updating on the very first keystroke. */
+  const deferredFilter = useDeferredValue(shownFilter);
   const favDep = favOnly ? favorites : null;
   const results = useMemo(() => {
-    const matched = applyFilters(fonts, shownFilter);
+    const matched = applyFilters(fonts, deferredFilter);
     const filtered = favDep
       ? matched.filter((f) => favDep.includes(f.id))
       : matched;
-    if (!shownFilter.query.trim()) return sortFonts(filtered, sort);
+    if (!deferredFilter.query.trim()) return sortFonts(filtered, sort);
     // searchByQuery both matches and ranks by relevance. Keep its order only
     // while the sort is unset; an explicit pick must win over relevance.
-    const matches = searchByQuery(filtered, shownFilter.query);
+    const matches = searchByQuery(filtered, deferredFilter.query);
     return search.sort ? sortFonts(matches, sort) : matches;
-  }, [fonts, shownFilter, sort, search.sort, favDep]);
+  }, [fonts, deferredFilter, sort, search.sort, favDep]);
 
   useListScrollRestore(scrollRef, listScrollY);
 
@@ -238,12 +245,12 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
   );
 
   const searchSuggestions = useMemo<SearchSuggestion[]>(() => {
-    const q = filter.query.trim();
+    const q = deferredFilter.query.trim();
     if (!q) return [];
     return searchByQuery(fonts, q)
       .slice(0, 8)
       .map((f) => ({ id: f.id, name: f.name }));
-  }, [fonts, filter.query]);
+  }, [fonts, deferredFilter.query]);
 
   const suggestions = useMemo(() => {
     if (results.length > 0 || !hasQuery) return [];
