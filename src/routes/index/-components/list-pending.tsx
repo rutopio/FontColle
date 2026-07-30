@@ -34,11 +34,14 @@ const CATEGORY_CARDS = [
   "graphics",
 ];
 const STYLE_SUBGROUPS = [
-  { id: "sans-serif", pills: 7 },
-  { id: "serif", pills: 7 },
-  { id: "slab", pills: 3 },
-  { id: "script", pills: 4 },
-];
+  { id: "sans-serif", count: 7 },
+  { id: "serif", count: 7 },
+  { id: "slab", count: 3 },
+  { id: "script", count: 4 },
+].map((sub) => ({
+  ...sub,
+  pillKeys: Array.from({ length: sub.count }, (_, i) => `pill:${sub.id}:${i}`),
+}));
 
 // Inert real-sized controls so the header doesn't shift when the catalog loads.
 const PENDING_SORT = () => {};
@@ -116,31 +119,46 @@ function PendingRail() {
   );
 }
 
-// Sidebar spacing mirrors the real filter groups.
+// Category and Style live in the same filter group, so they share gap-12 with
+// no divider (see filter-sidebar.tsx).
 const SIDEBAR_SKELETON = (
-  <div className="flex w-full flex-col p-4 [&>div+div]:mt-7 [&>div+div]:border-border [&>div+div]:border-t [&>div+div]:pt-7">
+  <div className="flex w-full flex-col gap-12 p-4">
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between gap-2">
         <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase">
           <ShapesIcon className="size-4" />
           Category
         </h2>
+        <div
+          className="invisible flex items-center gap-1 px-2 py-1 font-mono text-xs"
+          aria-hidden="true"
+        >
+          Reset
+        </div>
       </div>
       <div className="grid grid-cols-3 gap-1.5">
         {CATEGORY_CARDS.map((card) => (
           <div
             key={`card:${card}`}
-            className="aspect-square animate-pulse rounded-lg bg-muted"
+            className="h-22 animate-pulse rounded-md bg-muted"
           />
         ))}
       </div>
     </div>
 
     <div className="flex flex-col gap-4">
-      <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase">
-        <DiscoBallIcon className="size-4" />
-        Style
-      </h2>
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="flex min-w-0 items-center gap-1.5 font-medium text-primary text-sm uppercase">
+          <DiscoBallIcon className="size-4 shrink-0" />
+          <span className="truncate">Style</span>
+        </h2>
+        <div
+          className="invisible flex items-center gap-1 px-2 py-1 font-mono text-xs"
+          aria-hidden="true"
+        >
+          Reset
+        </div>
+      </div>
       <div className="flex flex-col gap-8">
         {STYLE_SUBGROUPS.map((sub) => (
           <div key={`sub:${sub.id}`} className="flex flex-col gap-2">
@@ -148,11 +166,10 @@ const SIDEBAR_SKELETON = (
               {sub.id}
             </h3>
             <div className="grid grid-cols-2 gap-1.5">
-              {Array.from({ length: sub.pills }, (_, i) => (
+              {sub.pillKeys.map((key) => (
                 <div
-                  // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length static placeholder grid, no reordering.
-                  key={`pill:${sub.id}:${i}`}
-                  className="h-8 animate-pulse rounded-lg bg-muted"
+                  key={key}
+                  className="h-8 animate-pulse rounded-md bg-muted"
                 />
               ))}
             </div>
@@ -215,15 +232,17 @@ export function FirstPagePending({ firstPage }: { firstPage: FontRecord[] }) {
         </div>
         <div className="pending-row-only flex-1">
           {firstPage.map((font) => (
-            <FontRow
-              key={font.id}
-              font={font}
-              previewText={previewText}
-              isFavorite={false}
-              onToggleFavorite={NOOP}
-              selection={FIRST_PAGE_SELECTION}
-              axisValues={EMPTY_AXES}
-            />
+            <div key={font.id} className="flex flex-col">
+              <FontRow
+                font={font}
+                previewText={previewText}
+                isFavorite={false}
+                onToggleFavorite={NOOP}
+                selection={FIRST_PAGE_SELECTION}
+                axisValues={EMPTY_AXES}
+              />
+              <Separator className="mx-4 aria-[orientation=horizontal]:w-auto" />
+            </div>
           ))}
           <SkeletonGrid view="row" />
         </div>
