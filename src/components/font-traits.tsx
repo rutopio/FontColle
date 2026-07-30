@@ -20,7 +20,8 @@ export function FontTraits({
           key={trait.label}
           variant={trait.active ? "secondary" : "outline"}
           className={cn(
-            "text-[10px]",
+            // Match the search input's corner so the catalog chrome shares one radius.
+            "rounded-lg text-[10px]",
             // The outline variant is transparent, so a hovered card or row
             // tinted the badge along with itself. Fill it so it stays a chip
             // on its own canvas; `secondary` is already opaque.
