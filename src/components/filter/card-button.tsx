@@ -21,7 +21,7 @@ export function CardButton({
       onClick={onToggle}
       aria-pressed={selected}
       className={cn(
-        "relative flex cursor-pointer flex-col items-center gap-2 rounded-md border p-2 text-center shadow-xs outline-none transition-[color,box-shadow,border-color,background-color,transform] duration-[var(--motion-fast)] ease-[var(--ease-snap)] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 active:scale-[0.98]",
+        "relative flex cursor-pointer flex-col items-center gap-2 rounded-md border p-2 text-center shadow-xs outline-none transition-[color,box-shadow,border-color,background-color,transform] duration-fast ease-snap focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-[0.98]",
         selected ? "border-primary bg-muted" : "hover:bg-muted",
         className
       )}

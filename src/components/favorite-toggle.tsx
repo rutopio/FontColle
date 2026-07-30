@@ -39,7 +39,7 @@ function HeartLabel({
         weight="duotone"
       />
       {!iconOnly && (
-        <span className="max-w-full truncate text-[10px] leading-none">
+        <span className="max-w-full truncate text-3xs leading-none">
           {label}
         </span>
       )}

@@ -115,7 +115,7 @@ function PresetRow({
         )}
       >
         <span className="truncate text-sm">{preset.name}</span>
-        <span className="shrink-0 font-mono text-[10px] opacity-60">
+        <span className="shrink-0 font-mono text-3xs opacity-60">
           {count}
         </span>
       </button>

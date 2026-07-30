@@ -21,7 +21,6 @@ import type { IconComponent } from "@/lib/icon-context";
 import { cn } from "@/lib/utils";
 import { spring, exitFallbackMs } from "@/lib/springs";
 import { useProximityHover } from "@/hooks/use-proximity-hover";
-import { Elevated } from "@/lib/elevated";
 
 // How long a selection holds the popup open so the acknowledgment animation is visible.
 const selectionAckMs = 300;
@@ -163,7 +162,7 @@ Select.displayName = "Select";
 const triggerVariants = cva(
     [
         "group inline-flex items-center justify-between gap-2 outline-none cursor-pointer",
-        "text-[13px] h-9 px-3 min-w-[160px]",
+        "text-sm h-9 px-3 min-w-[160px]",
         "transition-all duration-80",
         "disabled:opacity-50 disabled:pointer-events-none",
         "focus-visible:ring-1 focus-visible:ring-ring",
@@ -387,9 +386,8 @@ const SelectContent = forwardRef<HTMLDivElement, SelectContentProps>(
                         <SelectContentContext.Provider value={contentCtx}>
                             <SelectPrimitive.Popup
                                 render={
-                                    <Elevated
-                                        offset={2}
-                                        shadowLevel={3}
+                                    <div
+                                        className="bg-popover shadow-md ring-1 ring-foreground/10"
                                         ref={(node: HTMLDivElement | null) => {
                                             (
                                                 containerRef as React.MutableRefObject<HTMLDivElement | null>
@@ -589,7 +587,7 @@ const SelectItem = forwardRef<HTMLDivElement, SelectItemProps>(
                         data-value={value}
                         className={cn(
                             // Fixed h-9 so text-box trim doesn't shrink the row; shrink-0 prevents flex compression in long lists.
-                            "relative z-10 flex h-9 shrink-0 items-center gap-2 rounded-lg px-2 text-[13px] cursor-pointer outline-none select-none",
+                            "relative z-10 flex h-9 shrink-0 items-center gap-2 rounded-lg px-2 text-sm cursor-pointer outline-none select-none",
                             "transition-[color] duration-80",
                             isActive || isChecked
                                 ? "text-foreground"
@@ -680,7 +678,7 @@ const SelectLabel = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
         <div
             ref={ref}
             className={cn(
-                "px-2 py-1.5 shrink-0 text-[11px] text-muted-foreground",
+                "px-2 py-1.5 shrink-0 text-2xs text-muted-foreground",
                 className
             )}
             {...props}

@@ -59,8 +59,8 @@ const RANGE_SLIDER_CLASS = [
   "my-2 h-1.5 w-full cursor-pointer appearance-none rounded-full outline-none",
   "[&::-webkit-slider-thumb]:size-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-foreground [&::-webkit-slider-thumb]:bg-background [&::-webkit-slider-thumb]:shadow-sm",
   "[&::-moz-range-thumb]:size-3 [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border [&::-moz-range-thumb]:border-foreground [&::-moz-range-thumb]:bg-background [&::-moz-range-thumb]:shadow-sm",
-  "focus-visible:[&::-webkit-slider-thumb]:ring-[3px] focus-visible:[&::-webkit-slider-thumb]:ring-ring/50",
-  "focus-visible:[&::-moz-range-thumb]:ring-[3px] focus-visible:[&::-moz-range-thumb]:ring-ring/50",
+  "focus-visible:[&::-webkit-slider-thumb]:ring-3 focus-visible:[&::-webkit-slider-thumb]:ring-ring/50",
+  "focus-visible:[&::-moz-range-thumb]:ring-3 focus-visible:[&::-moz-range-thumb]:ring-ring/50",
 ].join(" ");
 
 function rangeFillStyle(
@@ -77,7 +77,7 @@ function rangeFillStyle(
 
 function featureToggleClass(on: boolean) {
   return [
-    "flex items-center justify-between gap-2.5 rounded-md border px-2.5 py-2 transition-[color,background-color,border-color,transform] duration-[var(--motion-fast)] ease-[var(--ease-snap)] hover:border-foreground active:scale-[0.97]",
+    "flex items-center justify-between gap-2.5 rounded-md border px-2.5 py-2 transition-[color,background-color,border-color,transform] duration-fast ease-snap hover:border-foreground active:scale-[0.97]",
     on ? "border-primary bg-muted" : "border-input",
   ].join(" ");
 }
@@ -271,7 +271,7 @@ export function DetailSidebar({
                       className={featureToggleClass(on)}
                     >
                       <span className="font-mono text-xs">{tag}</span>
-                      <span className="flex-1 truncate text-right text-[11px] text-muted-foreground">
+                      <span className="flex-1 truncate text-right text-2xs text-muted-foreground">
                         {featureName(tag)}
                       </span>
                     </button>

@@ -1,6 +1,7 @@
 import { StackSimpleIcon } from "@phosphor-icons/react";
 import { useMemo } from "react";
 import { Slider } from "@/components/ui/slider";
+import { Tooltip } from "@/components/ui/tooltip";
 import {
   INSTANCE_BUCKETS,
   INSTANCE_MAX,
@@ -94,28 +95,33 @@ export function InstancesSection({
       />
       <div className="grid grid-cols-5 gap-1">
         {INSTANCE_BUCKETS.map((b) => (
-          <button
+          <Tooltip
             key={b.id}
-            type="button"
-            onClick={() => pick(b.id)}
-            aria-pressed={active === b.id}
-            title={`${countIn(b.range[0], b.range[1])} fonts`}
-            className={cn(
-              "flex min-h-9 items-center justify-center rounded border py-0.5 text-center font-mono text-[11px] transition-colors md:min-h-8",
-              active === b.id
-                ? "border-primary bg-muted font-semibold text-foreground"
-                : "text-foreground hover:bg-muted"
-            )}
+            content={`${countIn(b.range[0], b.range[1])} fonts`}
+            side="bottom"
+            className="font-mono normal-case"
           >
-            {b.label}
-          </button>
+            <button
+              type="button"
+              onClick={() => pick(b.id)}
+              aria-pressed={active === b.id}
+              className={cn(
+                "flex min-h-9 items-center justify-center rounded border py-0.5 text-center font-mono text-2xs transition-colors md:min-h-8",
+                active === b.id
+                  ? "border-primary bg-muted font-semibold text-foreground"
+                  : "text-foreground hover:bg-muted"
+              )}
+            >
+              {b.label}
+            </button>
+          </Tooltip>
         ))}
         <button
           type="button"
           onClick={() => onChange(undefined)}
           aria-pressed={value == null}
           className={cn(
-            "flex min-h-9 items-center justify-center rounded border py-0.5 text-center text-[11px] transition-colors md:min-h-8",
+            "flex min-h-9 items-center justify-center rounded border py-0.5 text-center text-2xs transition-colors md:min-h-8",
             value == null
               ? "border-primary bg-muted font-semibold text-foreground"
               : "text-foreground hover:bg-muted"

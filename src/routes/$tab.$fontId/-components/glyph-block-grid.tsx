@@ -385,7 +385,7 @@ export function BlockGrid({
           ).map((label) => (
             <div
               key={`col:${label}`}
-              className="font-mono text-[10px] text-muted-foreground"
+              className="font-mono text-3xs text-muted-foreground"
             >
               {label}
             </div>
@@ -449,7 +449,7 @@ export function BlockGrid({
               }}
             >
               {COLS === COLS_DESKTOP && (
-                <div className="flex items-center justify-end pr-2 font-mono text-[10px] text-muted-foreground">
+                <div className="flex items-center justify-end pr-2 font-mono text-3xs text-muted-foreground">
                   {hex(block.start + rowStart - lead).slice(0, 3)}x
                 </div>
               )}

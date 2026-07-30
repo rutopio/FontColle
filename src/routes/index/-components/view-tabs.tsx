@@ -1,4 +1,4 @@
-import { RowsIcon, SquaresFourIcon } from "@phosphor-icons/react";
+import { GridFourIcon, ListIcon } from "@phosphor-icons/react";
 import type { ViewMode } from "@/components/font-grid";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -23,7 +23,7 @@ export function ViewTabs({
           className="h-full sm:h-full"
         >
           <span className="hidden sm:inline">Grid</span>
-          <SquaresFourIcon className="size-4" />
+          <GridFourIcon className="size-4" />
         </TabsTrigger>
         <TabsTrigger
           value="row"
@@ -31,7 +31,7 @@ export function ViewTabs({
           className="h-full sm:h-full"
         >
           <span className="hidden sm:inline">Row</span>
-          <RowsIcon className="size-4" />
+          <ListIcon className="size-4" />
         </TabsTrigger>
       </TabsList>
     </Tabs>

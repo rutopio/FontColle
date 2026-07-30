@@ -7,6 +7,7 @@ import { fontSlug } from "@/lib/fonts/slug";
 import { specimenFor } from "@/lib/fonts/specimen";
 import type { FontRecord } from "@/lib/fonts/types";
 import { useFontFacePreview } from "@/lib/fonts/use-font-face-preview";
+import { cn } from "@/lib/utils";
 
 interface Props {
   font: FontRecord;
@@ -15,6 +16,8 @@ interface Props {
   onToggleFavorite: (id: string) => void;
   selection: FilterSelection;
   axisValues: Record<string, number>;
+  /** Cells draw a bottom gridline; the final row drops it so the list ends clean. */
+  lastRow?: boolean;
 }
 
 export const FontCard = memo(function FontCard({
@@ -24,6 +27,7 @@ export const FontCard = memo(function FontCard({
   onToggleFavorite,
   selection,
   axisValues,
+  lastRow = false,
 }: Props) {
   const { fontLoaded, previewStyle, previewRef } = useFontFacePreview(
     font,
@@ -37,7 +41,10 @@ export const FontCard = memo(function FontCard({
       to="/$tab/$fontId"
       params={{ tab: "instances", fontId: fontSlug(font.id) }}
       viewTransition
-      className="flex h-72 flex-col gap-4 overflow-hidden border-border border-r border-b p-4 transition-[color,background-color] duration-fast ease-snap hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset"
+      className={cn(
+        "flex h-72 flex-col gap-4 overflow-hidden border-border border-r p-4 transition-[color,background-color] duration-fast ease-snap hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset",
+        !lastRow && "border-b"
+      )}
     >
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between gap-3">

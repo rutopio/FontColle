@@ -97,7 +97,7 @@ const Table = forwardRef<HTMLTableElement, TableProps>(
 
           <table
             ref={ref}
-            className={cn("w-full text-[13px] border-collapse", className)}
+            className={cn("w-full text-sm border-collapse", className)}
             {...props}
           >
             {children}

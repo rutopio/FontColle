@@ -44,7 +44,7 @@ function HeaderButtonGroup({
       <div
         ref={containerRef}
         data-proximity-group
-        className={className}
+        className={`isolate ${className ?? ""}`}
         onMouseEnter={handlers.onMouseEnter}
         onMouseMove={handlers.onMouseMove}
         onMouseLeave={handlers.onMouseLeave}
@@ -56,7 +56,7 @@ function HeaderButtonGroup({
               key={sessionRef.current}
               // rounded-lg, not shape.bg: the header icons sit beside the
               // search input, which is fixed at rounded-lg in both shape modes.
-              className="pointer-events-none absolute z-0 rounded-lg bg-accent/50"
+              className="pointer-events-none absolute -z-1 rounded-lg bg-accent/50"
               initial={{
                 opacity: 0,
                 top: activeRect.top,

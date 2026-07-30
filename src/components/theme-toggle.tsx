@@ -50,7 +50,7 @@ export function ThemeToggle({
           <IconFace icon={MoonIcon} shown={!isDark} />
         </span>
         {!(bar || header) && (
-          <span className="max-w-full truncate text-[10px] leading-none">
+          <span className="max-w-full truncate text-3xs leading-none">
             {target}
           </span>
         )}
@@ -68,7 +68,7 @@ function IconFace({
 }) {
   return (
     <span
-      className={`col-start-1 row-start-1 transition-[opacity,scale,filter] duration-[var(--motion-base)] ease-[var(--ease-snap)] ${
+      className={`col-start-1 row-start-1 transition-[opacity,scale,filter] duration-base ease-snap ${
         shown
           ? "scale-100 opacity-100 blur-0"
           : "pointer-events-none scale-50 opacity-0 blur-[4px]"

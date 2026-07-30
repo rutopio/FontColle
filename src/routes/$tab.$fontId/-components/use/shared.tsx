@@ -26,7 +26,7 @@ export function Step({
   return (
     <li className="flex flex-col gap-1.5">
       <div className="flex items-center gap-2">
-        <span className="flex size-5 items-center justify-center rounded-full bg-muted font-mono text-[11px] text-muted-foreground">
+        <span className="flex size-5 items-center justify-center rounded-full bg-muted font-mono text-2xs text-muted-foreground">
           {n}
         </span>
         <span className="text-sm">{label}</span>
@@ -70,7 +70,7 @@ export function Pill({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "cursor-pointer rounded-md border px-2.5 py-1 font-mono text-xs transition-[color,background-color,border-color,transform] duration-[var(--motion-fast)] ease-[var(--ease-snap)] active:scale-[0.97]",
+        "cursor-pointer rounded-md border px-2.5 py-1 font-mono text-xs transition-[color,background-color,border-color,transform] duration-fast ease-snap active:scale-[0.97]",
         active
           ? "border-primary bg-muted text-foreground"
           : "text-muted-foreground hover:border-foreground hover:text-foreground"

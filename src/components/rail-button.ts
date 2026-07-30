@@ -1,5 +1,5 @@
 const RAIL_BTN_CHROME =
-  "cursor-pointer rounded-md outline-none transition-[color,background-color,transform] duration-[var(--motion-fast)] ease-[var(--ease-snap)] focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.96]";
+  "cursor-pointer rounded-md outline-none transition-[color,background-color,transform] duration-fast ease-snap focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.96]";
 
 const RAIL_BTN_BASE = `group/rail-btn ${RAIL_BTN_CHROME}`;
 
@@ -11,7 +11,7 @@ export const RAIL_BTN = `${RAIL_BTN_BASE} ${RAIL_TILE}`;
 
 export const RAIL_BAR_BTN = `${RAIL_BTN_BASE} flex size-11 items-center justify-center`;
 
-export const RAIL_HEADER_BTN = `${RAIL_BTN_CHROME} ${RAIL_BTN_OFF} flex size-9 shrink-0 items-center justify-center`;
+export const RAIL_HEADER_BTN = `${RAIL_BTN_CHROME} flex size-9 shrink-0 items-center justify-center`;
 
 export const RAIL_HEADER_CELL = "group/rail-btn flex shrink-0 items-center";
 

@@ -29,7 +29,7 @@ function DrawerBackdrop({
     <DrawerPrimitive.Backdrop
       data-slot="drawer-backdrop"
       className={cn(
-        "fixed inset-0 z-50 bg-black opacity-[calc(0.1*(1-var(--drawer-swipe-progress,0)))] transition-opacity duration-[var(--motion-slow)] ease-[var(--ease-drawer)] supports-backdrop-filter:backdrop-blur-xs data-ending-style:opacity-0 data-starting-style:opacity-0 data-swiping:duration-0",
+        "fixed inset-0 z-50 bg-black opacity-[calc(0.1*(1-var(--drawer-swipe-progress,0)))] transition-opacity duration-slow ease-drawer supports-backdrop-filter:backdrop-blur-xs data-ending-style:opacity-0 data-starting-style:opacity-0 data-swiping:duration-0",
         className
       )}
       {...props}
@@ -69,7 +69,7 @@ function DrawerContent({
             // 0px fallback required: Base UI only registers the CSS property
             // behind a feature guard, so without it the transform is invalid.
             "[transform:translateY(var(--drawer-swipe-movement-y,0px))]",
-            "transition-transform duration-[var(--motion-slow)] ease-[var(--ease-drawer)]",
+            "transition-transform duration-slow ease-drawer",
             "data-swiping:will-change-transform data-swiping:select-none data-swiping:duration-0",
             "data-ending-style:[transform:translateY(100%)] data-starting-style:[transform:translateY(100%)]",
             "data-ending-style:duration-[calc(var(--drawer-swipe-strength,1)*var(--motion-slow))]",

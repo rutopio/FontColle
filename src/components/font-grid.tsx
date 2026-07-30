@@ -81,7 +81,7 @@ export function FontGrid({
     virtualizer.measure();
   }, [cols, view, virtualizer]);
 
-  const renderCell = (font: FontRecord) =>
+  const renderCell = (font: FontRecord, isLastRow = false) =>
     view === "row" ? (
       <div key={font.id} className="group/row flex flex-col">
         <FontRow
@@ -92,7 +92,9 @@ export function FontGrid({
           selection={selection}
           axisValues={axisValues}
         />
-        <Separator className="mx-4 transition-colors duration-fast ease-snap group-hover/row:bg-transparent aria-[orientation=horizontal]:w-auto" />
+        {!isLastRow && (
+          <Separator className="mx-4 transition-colors duration-fast ease-snap group-hover/row:bg-transparent aria-[orientation=horizontal]:w-auto" />
+        )}
       </div>
     ) : (
       <FontCard
@@ -103,6 +105,7 @@ export function FontGrid({
         onToggleFavorite={onToggleFavorite}
         selection={selection}
         axisValues={axisValues}
+        lastRow={isLastRow}
       />
     );
 
@@ -123,6 +126,7 @@ export function FontGrid({
           const start = row.index * cols;
           const rowFonts = fonts.slice(start, start + cols);
           if (rowFonts.length === 0) return null;
+          const isLastRow = row.index === rowCount - 1;
           return (
             <div
               key={rowKey(view, rowFonts[0]?.id ?? String(row.key))}
@@ -139,17 +143,18 @@ export function FontGrid({
               }}
             >
               {view === "row" ? (
-                <div>{rowFonts.map(renderCell)}</div>
+                <div>{rowFonts.map((f) => renderCell(f, isLastRow))}</div>
               ) : (
-                // -mr-px hides the trailing column's gridline, including on a
-                // final partial row where no cell sits in the last column.
+                // The row's last cell drops its right gridline, so only the
+                // interior verticals show. :last-child also covers a final
+                // partial row, where no cell reaches the last column.
                 <div
-                  className="-mr-px grid overflow-hidden"
+                  className="grid [&>:last-child]:border-r-0"
                   style={{
                     gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
                   }}
                 >
-                  {rowFonts.map(renderCell)}
+                  {rowFonts.map((f) => renderCell(f, isLastRow))}
                 </div>
               )}
             </div>
@@ -170,8 +175,10 @@ export function SkeletonGrid({ view }: { view: ViewMode }) {
       ))}
     </div>
   ) : (
-    <div className="@container overflow-hidden">
-      <div className="-mr-px grid @min-[1024px]:grid-cols-3 @min-[768px]:grid-cols-2 grid-cols-1">
+    <div className="@container">
+      {/* Column count is CSS-driven, so the interior verticals are added per
+          breakpoint: every cell gets one, then each row's last cell drops it. */}
+      <div className="grid @min-[1024px]:grid-cols-3 @min-[768px]:grid-cols-2 grid-cols-1 @min-[1024px]:[&>*:nth-child(2n)]:border-r @min-[768px]:[&>*:nth-child(2n)]:border-r-0 @min-[1024px]:[&>*:nth-child(3n)]:border-r-0 @min-[768px]:[&>*]:border-r">
         {keys.map((k) => (
           <SkeletonCard key={k} />
         ))}
@@ -182,9 +189,9 @@ export function SkeletonGrid({ view }: { view: ViewMode }) {
 
 function SkeletonCard() {
   return (
-    // Column count here is CSS-driven, so the right edge is drawn on every cell
-    // and the trailing one is clipped by the container's overflow-hidden.
-    <div className="flex h-72 flex-col gap-4 border-border border-r border-b p-4">
+    // The right gridline comes from the container, which knows the breakpoint's
+    // column count and can skip each row's trailing cell.
+    <div className="flex h-72 flex-col gap-4 border-border border-b p-4">
       <div className="flex flex-col gap-1">
         <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
         <div className="h-3.5 w-1/3 animate-pulse rounded bg-muted" />

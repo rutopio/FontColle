@@ -171,6 +171,7 @@ function MetricRangeRow({
               // biome-ignore lint/suspicious/noArrayIndexKey: fixed 4-quartile list
               key={i}
               content={<>{formatMetricValue(spec.key, q[0])} – {formatMetricValue(spec.key, q[1])}</>}
+              side="bottom"
               className="font-mono normal-case"
             >
               <button
@@ -178,7 +179,7 @@ function MetricRangeRow({
                 onClick={() => pickQuartile(q)}
                 aria-pressed={active}
                 className={cn(
-                  "flex min-h-9 items-center justify-center rounded border py-0.5 text-center text-[11px] transition-colors md:min-h-8",
+                  "flex min-h-9 items-center justify-center rounded border py-0.5 text-center text-2xs transition-colors md:min-h-8",
                   active
                     ? "border-primary bg-muted font-semibold text-foreground"
                     : "text-foreground hover:bg-muted"
@@ -194,7 +195,7 @@ function MetricRangeRow({
           onClick={() => onChange(undefined)}
           aria-pressed={value == null}
           className={cn(
-            "rounded border py-0.5 text-center text-[11px] transition-colors",
+            "rounded border py-0.5 text-center text-2xs transition-colors",
             value == null
               ? "border-primary bg-muted font-semibold text-foreground"
               : "text-foreground hover:bg-muted"

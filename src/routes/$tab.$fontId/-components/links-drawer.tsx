@@ -98,7 +98,7 @@ function LinkCard({
       rel="noreferrer"
       aria-label={ariaLabel}
       onClick={onNavigate}
-      className="flex flex-1 basis-0 cursor-pointer flex-col items-center gap-2 rounded-md border border-input p-3 text-center shadow-xs outline-none transition-[color,box-shadow,border-color,background-color,transform] duration-[var(--motion-fast)] ease-[var(--ease-snap)] hover:border-foreground/40 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 active:scale-[0.98]"
+      className="flex flex-1 basis-0 cursor-pointer flex-col items-center gap-2 rounded-md border border-input p-3 text-center shadow-xs outline-none transition-[color,box-shadow,border-color,background-color,transform] duration-fast ease-snap hover:border-foreground/40 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-[0.98]"
     >
       <CardIcon className="size-6 text-foreground" />
       <span className="w-full truncate font-medium text-muted-foreground text-xs leading-none">

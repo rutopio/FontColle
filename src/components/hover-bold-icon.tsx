@@ -19,7 +19,7 @@ export function HoverBoldIcon({
       <IconCmp
         weight="regular"
         className={cn(
-          "col-start-1 row-start-1 transition-opacity duration-[var(--motion-fast)] ease-[var(--ease-snap)] group-hover/hover-icon:opacity-0",
+          "col-start-1 row-start-1 transition-opacity duration-fast ease-snap group-hover/hover-icon:opacity-0",
           className
         )}
       />
@@ -27,7 +27,7 @@ export function HoverBoldIcon({
         weight="bold"
         aria-hidden
         className={cn(
-          "col-start-1 row-start-1 opacity-0 transition-opacity duration-[var(--motion-fast)] ease-[var(--ease-snap)] group-hover/hover-icon:opacity-100",
+          "col-start-1 row-start-1 opacity-0 transition-opacity duration-fast ease-snap group-hover/hover-icon:opacity-100",
           className
         )}
       />

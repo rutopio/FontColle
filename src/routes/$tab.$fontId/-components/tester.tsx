@@ -367,7 +367,7 @@ function TesterInner({
                 type="button"
                 onClick={() => applyInstance(inst)}
                 aria-pressed={active}
-                className={`rounded-md border px-3 py-1.5 text-xs transition-[color,background-color,border-color,transform] duration-[var(--motion-fast)] ease-[var(--ease-snap)] active:scale-[0.97] ${
+                className={`rounded-md border px-3 py-1.5 text-xs transition-[color,background-color,border-color,transform] duration-fast ease-snap active:scale-[0.97] ${
                   active
                     ? "border-primary bg-muted text-foreground"
                     : "hover:border-foreground"

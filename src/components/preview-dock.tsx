@@ -1,6 +1,6 @@
 import { ArrowUpIcon, XIcon } from "@phosphor-icons/react";
 import { useRef, useState } from "react";
-import { RAIL_HEADER_BTN, RAIL_HEADER_CELL } from "@/components/rail-button";
+import { RAIL_BTN_OFF, RAIL_HEADER_BTN, RAIL_HEADER_CELL } from "@/components/rail-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { usePreview } from "@/lib/preview/context";
@@ -64,7 +64,7 @@ export function PreviewBar({ onScrollTop }: { onScrollTop?: () => void }) {
             type="button"
             onClick={onScrollTop}
             aria-label="Scroll to top"
-            className={RAIL_HEADER_BTN}
+            className={`${RAIL_HEADER_BTN} ${RAIL_BTN_OFF}`}
           >
             <ArrowUpIcon className="size-5 group-hover/rail-btn:hidden" />
             <ArrowUpIcon

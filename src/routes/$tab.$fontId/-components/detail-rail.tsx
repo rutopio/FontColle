@@ -153,7 +153,7 @@ function DetailRailButton({
         className="hidden size-5 group-hover/rail-btn:block group-data-proximity-active/rail-btn:block"
         weight="duotone"
       />
-      <span className="font-heading text-[10px] leading-none">
+      <span className="font-heading text-3xs leading-none">
         {tab.label}
       </span>
     </button>

@@ -33,7 +33,7 @@ export function GithubLink({
         weight="duotone"
       />
       {!(bar || header) && (
-        <span className="max-w-full truncate text-[10px] leading-none">
+        <span className="max-w-full truncate text-3xs leading-none">
           GitHub
         </span>
       )}

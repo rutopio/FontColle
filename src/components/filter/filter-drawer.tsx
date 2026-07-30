@@ -50,7 +50,7 @@ export function FilterDrawer({
           <Badge
             aria-hidden="true"
             variant="secondary"
-            className="absolute -top-1 -right-1 min-w-5 px-1 font-mono text-[10px] outline-2 outline-primary"
+            className="absolute -top-1 -right-1 min-w-5 px-1 font-mono text-3xs outline-2 outline-primary"
           >
             {count}
           </Badge>

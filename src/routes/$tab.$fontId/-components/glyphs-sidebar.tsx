@@ -60,7 +60,7 @@ export function GlyphsSidebar({
               )}
             />
             {searchMiss && (
-              <p className="mt-1 text-[10px] text-destructive">
+              <p className="mt-1 text-3xs text-destructive">
                 This font doesn't cover that character.
               </p>
             )}
@@ -90,7 +90,7 @@ export function GlyphsSidebar({
                     )}
                   >
                     <span className="truncate">{block.name}</span>
-                    <span className="shrink-0 font-mono text-[10px] text-muted-foreground">
+                    <span className="shrink-0 font-mono text-3xs text-muted-foreground">
                       {count}
                     </span>
                   </button>

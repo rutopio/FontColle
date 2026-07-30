@@ -43,7 +43,7 @@ export function InstanceRow({
             <Badge
               key={tag}
               variant="outline"
-              className="shrink-0 font-mono text-[10px]"
+              className="shrink-0 font-mono text-3xs"
             >
               {tag} {value}
             </Badge>

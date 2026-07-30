@@ -83,11 +83,11 @@ export function FilterGroupButton({
         className="hidden size-5 group-hover/rail-btn:block group-data-proximity-active/rail-btn:block"
         weight="duotone"
       />
-      <span className="text-[10px] leading-none">{group.label}</span>
+      <span className="text-3xs leading-none">{group.label}</span>
       {count > 0 && (
         <span
           aria-hidden="true"
-          className="absolute top-1 right-1 flex size-4 items-center justify-center rounded-full bg-primary font-mono text-[9px] text-primary-foreground leading-none"
+          className="absolute top-1 right-1 flex size-4 items-center justify-center rounded-full bg-primary font-mono text-3xs text-primary-foreground leading-none"
         >
           {count}
         </span>

@@ -221,7 +221,7 @@ function AxisControl({
           </Tabs>
         )}
       </div>
-      <CollapsibleContent className="h-[var(--collapsible-panel-height)] overflow-hidden transition-[height] duration-[var(--motion-fast)] ease-[var(--ease-snap)] data-[ending-style]:h-0 data-[starting-style]:h-0">
+      <CollapsibleContent className="h-[var(--collapsible-panel-height)] overflow-hidden transition-[height] duration-fast ease-snap data-[ending-style]:h-0 data-[starting-style]:h-0">
         <div className="flex flex-col gap-2 pt-2">
           <div className="flex items-center gap-3">
             <Slider

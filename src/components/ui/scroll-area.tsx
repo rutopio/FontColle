@@ -44,7 +44,7 @@ function ScrollArea({
         ref={viewportRef}
         data-slot="scroll-area-viewport"
         className={cn(
-          "size-full overscroll-contain rounded-[inherit] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
+          "size-full overscroll-contain rounded-[inherit] outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
           // Must be on the viewport element (scroll(self) resolution).
           fade === true && "scroll-fade",
           typeof fade === "string" && FADE_CLASS[fade],

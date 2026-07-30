@@ -10,7 +10,7 @@ import {
   HeaderButtonGroup,
   HeaderButtonGroupItem,
 } from "@/components/header-button-group";
-import { RAIL_HEADER_BTN, RAIL_HEADER_CELL } from "@/components/rail-button";
+import { RAIL_BTN_OFF, RAIL_HEADER_BTN, RAIL_HEADER_CELL } from "@/components/rail-button";
 import { repoHostIcon } from "@/components/repo-host-icon";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Badge } from "@/components/ui/badge";
@@ -39,7 +39,7 @@ export function DetailHeader({ font }: { font: FontRecord }) {
               onClick={() =>
                 backWithViewTransition(() => router.history.back())
               }
-              className={RAIL_HEADER_BTN}
+              className={`${RAIL_HEADER_BTN} ${RAIL_BTN_OFF}`}
             >
               <ArrowLeftIcon className="size-5 shrink-0" />
             </button>
@@ -48,7 +48,7 @@ export function DetailHeader({ font }: { font: FontRecord }) {
               to="/"
               viewTransition
               aria-label="Back to all fonts"
-              className={RAIL_HEADER_BTN}
+              className={`${RAIL_HEADER_BTN} ${RAIL_BTN_OFF}`}
             >
               <ArrowLeftIcon className="size-5 shrink-0" />
             </Link>

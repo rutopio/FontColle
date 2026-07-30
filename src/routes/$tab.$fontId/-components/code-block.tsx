@@ -40,7 +40,7 @@ export function CodeBlock({
       )}
     >
       <div className="flex items-center justify-between border-b bg-muted/60 py-1 pr-1 pl-3">
-        <span className="select-none font-mono text-[10px] text-muted-foreground/70 uppercase tracking-wide">
+        <span className="select-none font-mono text-3xs text-muted-foreground/70 uppercase tracking-wide">
           {lang}
         </span>
         <button
