@@ -31,7 +31,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
@@ -289,14 +288,13 @@ function TesterInner({
             value={block}
             onValueChange={(v) => applyBlock(v as BlockType)}
           >
-            <SelectTrigger aria-label="Text style" className="h-8 w-36">
-              <SelectValue>
-                {BLOCK_OPTIONS.find((o) => o.value === block)?.label}
-              </SelectValue>
-            </SelectTrigger>
+            <SelectTrigger
+              aria-label="Text style"
+              className="h-8 w-36 min-w-0"
+            />
             <SelectContent>
-              {BLOCK_OPTIONS.map((o) => (
-                <SelectItem key={o.value} value={o.value}>
+              {BLOCK_OPTIONS.map((o, i) => (
+                <SelectItem key={o.value} index={i} value={o.value}>
                   {o.label}
                 </SelectItem>
               ))}

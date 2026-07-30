@@ -10,8 +10,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
-  selectTriggerIconClassName,
 } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -77,18 +75,16 @@ export function SortControl({
       ) : (
         <Select value={current} onValueChange={selectGroup}>
           <SelectTrigger
-            className="h-full rounded-none border-0 bg-transparent shadow-none before:hidden focus-visible:ring-0 dark:bg-transparent dark:hover:bg-transparent"
+            variant="borderless"
+            // The trigger is the left cell of a rounded-lg bordered group with
+            // a divider on its right, so only the left corners round — and at
+            // rounded-md, since the fill sits 1px inside the group's border.
+            className="h-9 min-w-36 rounded-none rounded-l-md focus-visible:ring-0"
             aria-label="Sort by"
-          >
-            <SelectValue>{current}</SelectValue>
-          </SelectTrigger>
-          <SelectContent
-            align="end"
-            alignOffset={-3}
-            alignItemWithTrigger={false}
-          >
-            {groups.map((g) => (
-              <SelectItem key={g} value={g}>
+          />
+          <SelectContent>
+            {groups.map((g, i) => (
+              <SelectItem key={g} index={i} value={g}>
                 {g}
               </SelectItem>
             ))}
@@ -145,7 +141,7 @@ function GroupDrawer({
         className="inline-flex h-full w-full min-w-36 select-none items-center justify-between gap-2 px-[calc(--spacing(3)-1px)] text-left text-sm outline-none"
       >
         {group}
-        <CaretUpDownIcon className={selectTriggerIconClassName} />
+        <CaretUpDownIcon className="-me-1 size-4.5 shrink-0 opacity-80 sm:size-4" />
       </button>
 
       <SheetContent side="bottom" className="gap-0 overflow-hidden p-0">
