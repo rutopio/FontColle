@@ -85,12 +85,14 @@ export const Route = createFileRoute("/$tab/$fontId")({
       names.length > 0 ? await fetchFontsByDesigners(names, font.id) : {};
     return { font, siblingsByDesigner };
   },
-  head: ({ loaderData }) => {
+  head: ({ loaderData, params }) => {
     const font = loaderData?.font;
     const name = font?.name;
     if (!name || !font) return {};
     const description = detailDescription(font);
-    const canonical = absoluteUrl(`/instances/${fontSlug(font.id)}`);
+    // Each tab is its own indexable URL, so it must self-canonicalize; pointing
+    // all seven at /instances/ told crawlers the other six were duplicates.
+    const canonical = absoluteUrl(`/${params.tab}/${fontSlug(font.id)}`);
     const ogImage = absoluteUrl(`/og/${font.id}.png`);
     return {
       meta: [
@@ -249,13 +251,15 @@ function DetailPage() {
       />
     );
 
-  const canonicalUrl = absoluteUrl(`/instances/${fontSlug(font.id)}`);
-  const jsonLd = canonicalUrl
+  // The family's own URL, deliberately NOT the per-tab canonical: this node
+  // describes the typeface, and every tab is one view of that same work.
+  const familyUrl = absoluteUrl(`/instances/${fontSlug(font.id)}`);
+  const jsonLd = familyUrl
     ? JSON.stringify({
         "@context": "https://schema.org",
         "@type": "CreativeWork",
         name: font.displayName ?? font.name,
-        url: canonicalUrl,
+        url: familyUrl,
         ...(font.designer ? { creator: font.designer } : {}),
         ...(font.license ? { license: font.license } : {}),
       })

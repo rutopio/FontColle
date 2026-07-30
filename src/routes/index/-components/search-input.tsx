@@ -1,4 +1,7 @@
-import { MagnifyingGlassIcon } from "@phosphor-icons/react";
+import {
+  ArrowElbowDownLeftIcon,
+  MagnifyingGlassIcon,
+} from "@phosphor-icons/react";
 import { useId, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Kbd } from "@/components/ui/kbd";
@@ -47,6 +50,10 @@ export function SearchInput({
     const hit = suggestions[index] ?? suggestions[0];
     if (hit) onPick(hit.id);
   };
+
+  // Enter falls back to the first row when nothing is highlighted, so the hint
+  // has to follow the same rule.
+  const enterTarget = active >= 0 ? active : 0;
 
   return (
     <div className="relative min-w-0 flex-1 bg-background md:w-(--panel-width) md:flex-none">
@@ -132,11 +139,19 @@ export function SearchInput({
               }}
               onMouseEnter={() => setActive(i)}
               className={cn(
-                "cursor-pointer truncate rounded-md px-2.5 py-1.5",
+                "flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5",
                 i === active ? "bg-muted" : "hover:bg-muted/60"
               )}
             >
-              {s.name}
+              <span className="min-w-0 flex-1 truncate">{s.name}</span>
+              {i === enterTarget && (
+                // Decorative: it mirrors the Enter handler for sighted users.
+                // Announcing it would append "Press Enter to open" to every
+                // option's accessible name, and the title is mouse-only anyway.
+                <Kbd aria-hidden="true" className="bg-background/80">
+                  <ArrowElbowDownLeftIcon />
+                </Kbd>
+              )}
             </div>
           ))}
         </div>

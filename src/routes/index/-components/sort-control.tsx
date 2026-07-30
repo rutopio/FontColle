@@ -35,19 +35,15 @@ export function SortControl({
   const { group, asc } = sortGroupOf(sort);
   const mobile = useIsMobile();
 
-  if (relevance) {
-    return (
-      <div
-        className="flex h-9 items-center rounded-lg border border-input px-3 text-sm dark:bg-input/30"
-        title="Sorted by search relevance"
-      >
-        Relevance
-      </div>
-    );
-  }
-
-  const directionless = isDirectionless(group);
+  const directionless = relevance || isDirectionless(group);
   const dirLabel = asc ? group.ascLabel : (group.descLabel ?? group.ascLabel);
+
+  // Both controls go disabled under relevance, which drops them out of the tab
+  // order and takes the wrapper's title with them. State the reason in the
+  // accessible name so it isn't carried by opacity alone.
+  const sortByLabel = relevance
+    ? "Sort by: locked to search relevance"
+    : "Sort by";
 
   const selectGroup = (g: string | null) => {
     const next = SORT_GROUPS.find((x) => x.group === g);
@@ -55,16 +51,28 @@ export function SortControl({
   };
 
   return (
-    <div className="flex h-9 items-center rounded-lg border border-input bg-background dark:bg-input/30">
+    <div
+      className="flex h-9 items-center rounded-lg border border-input bg-background dark:bg-input/30"
+      title={relevance ? "Sorted by search relevance" : undefined}
+    >
       {mobile ? (
-        <GroupDrawer group={group.group} onSelect={selectGroup} />
+        <GroupDrawer
+          group={relevance ? "Relevance" : group.group}
+          disabled={relevance}
+          label={sortByLabel}
+          onSelect={selectGroup}
+        />
       ) : (
-        <Select value={group.group} onValueChange={selectGroup}>
+        <Select
+          value={group.group}
+          onValueChange={selectGroup}
+          disabled={relevance}
+        >
           <SelectTrigger
             className="h-full rounded-none border-0 bg-transparent shadow-none before:hidden focus-visible:ring-0 dark:bg-transparent dark:hover:bg-transparent"
-            aria-label="Sort by"
+            aria-label={sortByLabel}
           >
-            <SelectValue>{group.group}</SelectValue>
+            <SelectValue>{relevance ? "Relevance" : group.group}</SelectValue>
           </SelectTrigger>
           <SelectContent
             align="end"
@@ -88,8 +96,12 @@ export function SortControl({
             onChange(asc ? (group.desc ?? group.asc) : group.asc);
           }
         }}
-        aria-label={`Sort direction: ${dirLabel}`}
-        title={dirLabel}
+        aria-label={
+          relevance
+            ? "Sort direction: locked to search relevance"
+            : `Sort direction: ${dirLabel}`
+        }
+        title={relevance ? "Sorted by search relevance" : dirLabel}
         className="flex h-full items-center px-2.5 transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-40 dark:hover:bg-input/50"
       >
         {asc ? (
@@ -104,9 +116,13 @@ export function SortControl({
 
 function GroupDrawer({
   group,
+  disabled = false,
+  label,
   onSelect,
 }: {
   group: string;
+  disabled?: boolean;
+  label: string;
   onSelect: (group: string) => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -115,9 +131,11 @@ function GroupDrawer({
     <Sheet open={open} onOpenChange={setOpen}>
       <button
         type="button"
+        disabled={disabled}
         onClick={() => setOpen(true)}
-        aria-label="Sort by"
-        className="inline-flex h-full w-full min-w-36 select-none items-center justify-between gap-2 px-[calc(--spacing(3)-1px)] text-left text-sm outline-none"
+        aria-label={label}
+        aria-expanded={open}
+        className="inline-flex h-full w-full min-w-36 select-none items-center justify-between gap-2 px-[calc(--spacing(3)-1px)] text-left text-sm outline-none disabled:pointer-events-none disabled:opacity-64"
       >
         {group}
         <CaretUpDownIcon className={selectTriggerIconClassName} />
