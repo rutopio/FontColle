@@ -16,13 +16,20 @@ function useMaxWidth(breakpoint: number) {
     return () => mql.removeEventListener("change", onChange);
   }, [breakpoint]);
 
-  return !!matches;
+  return matches;
 }
 
 export function useIsMobile() {
+  return !!useMaxWidth(MOBILE_BREAKPOINT);
+}
+
+// `undefined` until the measuring effect runs. Callers use this to tell a real
+// viewport change from the first correction of the pre-hydration guess, which
+// should not animate.
+export function useIsMobileState() {
   return useMaxWidth(MOBILE_BREAKPOINT);
 }
 
 export function useGlyphCompact() {
-  return useMaxWidth(GLYPH_COMPACT_BREAKPOINT);
+  return !!useMaxWidth(GLYPH_COMPACT_BREAKPOINT);
 }

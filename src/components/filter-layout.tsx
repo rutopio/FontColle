@@ -11,7 +11,7 @@ import { GithubLink } from "@/components/github-link";
 import { LogoIcon } from "@/components/logo-icon";
 import { RouteFade } from "@/components/route-fade";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobileState } from "@/hooks/use-mobile";
 import { EASE_OUT, MOTION_S } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./theme-toggle";
@@ -55,7 +55,11 @@ export function FilterLayout({
   header?: React.ReactNode;
   favoriteFontId?: string;
 }) {
-  const isMobile = useIsMobile();
+  // `undefined` until measured. It reads as desktop before then, so on a phone
+  // the panel mounts and is immediately removed; that exit must not animate.
+  const mobileState = useIsMobileState();
+  const isMobile = !!mobileState;
+  const viewportKnown = mobileState !== undefined;
 
   return (
     <>
@@ -79,12 +83,15 @@ export function FilterLayout({
           <FilterRailColumn>
             {rail ? <RouteFade>{rail}</RouteFade> : null}
           </FilterRailColumn>
-          {/* Desktop only — inline styles from Framer Motion can't be overridden by CSS classes. */}
+          {/* Desktop only. Motion writes an inline `width`, which no class can
+              override, so the breakpoint is enforced via `display` instead —
+              otherwise SSR ships a 20rem panel that squeezes the content column
+              until hydration measures the viewport. */}
           <AnimatePresence initial={false}>
             {sidebar && !isMobile ? (
               <motion.div
                 key="panel"
-                className="flex h-full min-h-0 shrink-0 flex-col overflow-hidden"
+                className="hidden h-full min-h-0 shrink-0 flex-col overflow-hidden md:flex"
                 initial={{ width: 0, opacity: 0 }}
                 animate={{
                   width: "var(--panel-width)",
@@ -102,11 +109,16 @@ export function FilterLayout({
                 exit={{
                   width: 0,
                   opacity: 0,
-                  transition: {
-                    duration: MOTION_S.slow,
-                    ease: EASE_OUT,
-                    opacity: { duration: MOTION_S.fast, ease: EASE_OUT },
-                  },
+                  // Before the viewport resolves this exit is the phone
+                  // correcting a wrong desktop guess, not a user collapsing
+                  // the panel — snap it shut instead of sweeping.
+                  transition: viewportKnown
+                    ? {
+                        duration: MOTION_S.slow,
+                        ease: EASE_OUT,
+                        opacity: { duration: MOTION_S.fast, ease: EASE_OUT },
+                      }
+                    : { duration: 0 },
                 }}
               >
                 <FilterPanelColumn>
