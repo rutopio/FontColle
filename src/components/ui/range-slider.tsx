@@ -7,9 +7,11 @@ import { cn } from "@/lib/utils";
 function RangeSlider({
   className,
   getAriaLabel,
+  onValueCommitted,
   ...props
 }: SliderPrimitive.Root.Props<readonly number[]> & {
   getAriaLabel?: (index: number) => string;
+  onValueCommitted?: (value: readonly number[]) => void;
 }) {
   return (
     <SliderPrimitive.Root
@@ -18,6 +20,7 @@ function RangeSlider({
         "relative flex w-full touch-none items-center",
         className
       )}
+      onValueCommitted={onValueCommitted as SliderPrimitive.Root.Props<readonly number[]>["onValueCommitted"]}
       {...props}
     >
       <SliderPrimitive.Control

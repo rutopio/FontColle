@@ -4,7 +4,7 @@ import {
   InfoIcon,
   RulerIcon,
 } from "@phosphor-icons/react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { EditableValue } from "@/components/ui/editable-value";
 import { RangeSlider } from "@/components/ui/range-slider";
 import {
@@ -74,8 +74,15 @@ function MetricRangeRow({
 }) {
   const map = useMemo(() => trackMap(spec), [spec]);
   const quartiles = useMemo(() => quartileRanges(spec), [spec]);
-  const [lo, hi] = value ?? [spec.min, spec.max];
-  const trackValue: [number, number] = [map.toTrack(lo), map.toTrack(hi)];
+  const [baseLo, baseHi] = value ?? [spec.min, spec.max];
+
+  const [localTrack, setLocalTrack] = useState<[number, number] | null>(null);
+  const trackValue: [number, number] = localTrack ?? [
+    map.toTrack(baseLo),
+    map.toTrack(baseHi),
+  ];
+  const lo = localTrack ? map.fromTrack(localTrack[0]) : baseLo;
+  const hi = localTrack ? map.fromTrack(localTrack[1]) : baseHi;
 
   const commit = (nlo: number, nhi: number) => {
     const range: MetricRange = [
@@ -85,8 +92,14 @@ function MetricRangeRow({
     onChange(isRangeActive(spec, range) ? range : undefined);
   };
 
-  const handle = (raw: number | readonly number[]) => {
+  const handleDrag = (raw: number | readonly number[]) => {
     const arr = Array.isArray(raw) ? raw : [raw, raw];
+    setLocalTrack([arr[0], arr[1]]);
+  };
+
+  const handleCommitted = (raw: number | readonly number[]) => {
+    const arr = Array.isArray(raw) ? raw : [raw, raw];
+    setLocalTrack(null);
     commit(map.fromTrack(arr[0]), map.fromTrack(arr[1]));
   };
 
@@ -145,7 +158,8 @@ function MetricRangeRow({
       </div>
       <RangeSlider
         value={trackValue}
-        onValueChange={handle}
+        onValueChange={handleDrag}
+        onValueCommitted={handleCommitted}
         min={map.min}
         max={map.max}
         step={map.step}
