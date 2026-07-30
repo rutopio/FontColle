@@ -74,7 +74,7 @@ export function VariableAxesSection({
           animate={{ flexBasis: on ? "33.333333%" : "100%" }}
           transition={{ duration: MOTION_S.base, ease: EASE_OUT }}
           className={cn(
-            "flex min-h-9 min-w-0 flex-1 items-center justify-between gap-1 rounded-md border px-2.5 py-2 text-xs transition-[border-color,background-color] duration-[var(--motion-fast)] ease-[var(--ease-snap)] md:min-h-8 md:py-1",
+            "flex min-h-9 min-w-0 flex-1 items-center justify-between gap-1 rounded-md border px-2.5 py-2 text-xs transition-[border-color,background-color] duration-fast ease-snap md:min-h-8 md:py-1",
             disabled && "cursor-not-allowed",
             on ? "border-primary bg-muted" : "border-input",
             !disabled && !on && "hover:bg-muted hover:text-primary"
@@ -85,7 +85,7 @@ export function VariableAxesSection({
             {info ? (
               <span
                 className={cn(
-                  "truncate text-muted-foreground text-xs transition-[font-variation-settings,opacity] duration-[var(--motion-fast)] ease-[var(--ease-snap)]",
+                  "truncate text-muted-foreground text-xs transition-[font-variation-settings,opacity] duration-fast ease-snap",
                   on
                     ? "opacity-0 [font-variation-settings:'wght'_600]"
                     : "[font-variation-settings:'wght'_400]"
@@ -136,6 +136,7 @@ export function VariableAxesSection({
             min={0}
             max={100}
             showValue={false}
+            hideHoverTooltip
             label={`${tag} relative position`}
             className="min-w-0 flex-1"
           />

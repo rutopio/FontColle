@@ -62,6 +62,12 @@ interface SliderProps
   thumbColor?: string;
   thumbBorderColor?: string;
   tooltipSide?: "top" | "bottom";
+  /**
+   * Suppress the on-hover value bubble. The bubble needs 16px of headroom
+   * above the track, so turning it off also reclaims that height — use it
+   * where the slider sits in a tight row and the value is shown elsewhere.
+   */
+  hideHoverTooltip?: boolean;
 }
 
 const THUMB_SIZE = 20;
@@ -176,7 +182,7 @@ function ValueDisplay({
   const renderValue = (index: number) => {
     if (editingIndex === index) {
       return (
-        <span className="inline-grid text-[13px]">
+        <span className="inline-grid text-sm">
               <span
             className="col-start-1 row-start-1 invisible"
             style={{ fontVariationSettings: fontWeights.medium }}
@@ -232,7 +238,7 @@ function ValueDisplay({
   return (
     <span
       className={cn(
-        "inline-grid shrink-0 text-[13px] leading-none text-muted-foreground transition-[font-variation-settings] duration-100",
+        "inline-grid shrink-0 text-sm leading-none text-muted-foreground transition-[font-variation-settings] duration-100",
         "tabular-nums"
       )}
       style={{
@@ -323,6 +329,7 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
       thumbColor,
       thumbBorderColor,
       tooltipSide = "top",
+      hideHoverTooltip = false,
       className,
       ...props
     },
@@ -730,6 +737,11 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
 
     const isInteracting = isHovered || isPressed;
 
+    // Vertical breathing room around the track. Normally 8px, which is also the
+    // headroom the hover bubble pops into; with the bubble off nothing needs it,
+    // so the whole slider collapses to exactly THUMB_SIZE.
+    const trackPad = hideHoverTooltip ? 0 : 8;
+
     const thumbAriaLabel = (index: number): string | undefined => {
       if (!isRange) return label;
       if (!label) return index === 0 ? "Minimum" : "Maximum";
@@ -811,7 +823,7 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
         className={cn(
           "flex flex-col gap-0 w-full select-none touch-none overflow-visible",
           valuePosition === "left" || valuePosition === "right"
-            ? "flex-row items-center gap-2 mb-2"
+            ? cn("flex-row items-center gap-2", !hideHoverTooltip && "mb-2")
             : "flex-col",
           disabled && "opacity-50 pointer-events-none",
           className
@@ -824,7 +836,7 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
           className="relative flex-1 overflow-visible"
           style={{
             height: (valuePosition === "left" || valuePosition === "right")
-              ? THUMB_SIZE + 16
+              ? THUMB_SIZE + trackPad * 2
               : THUMB_SIZE + (valuePosition === "tooltip" ? 16 : 0),
             paddingTop: valuePosition === "tooltip" && tooltipSide === "top" ? 16 : 0,
             paddingBottom: valuePosition === "tooltip" && tooltipSide === "bottom" ? 16 : 0,
@@ -918,8 +930,12 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
 
           <div
             ref={trackRef}
-            className="relative w-full cursor-ew-resize py-2"
-            style={{ height: THUMB_SIZE + 16, opacity: ready ? 1 : 0 }}
+            className="relative w-full cursor-ew-resize"
+            style={{
+              height: THUMB_SIZE + trackPad * 2,
+              paddingBlock: trackPad,
+              opacity: ready ? 1 : 0,
+            }}
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
@@ -934,7 +950,7 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
               onPointerCancel={handlePointerUp}
             />
             <AnimatePresence>
-              {hoverPreview && showHoverTooltip && !isPressed && valuePosition !== "tooltip" && (
+              {hoverPreview && showHoverTooltip && !isPressed && !hideHoverTooltip && valuePosition !== "tooltip" && (
                 <motion.div
                   key="hover-tooltip"
                   className="absolute -translate-x-1/2 pointer-events-none z-20"
@@ -962,7 +978,7 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
               initial={false}
               animate={{
                 height: TRACK_BG_HEIGHT,
-                top: 8 + (THUMB_SIZE - TRACK_BG_HEIGHT) / 2,
+                top: trackPad + (THUMB_SIZE - TRACK_BG_HEIGHT) / 2,
               }}
               transition={spring.fast}
               style={{
@@ -1008,7 +1024,7 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
               <motion.div
                 className="absolute left-0 right-0 pointer-events-none"
                 style={{
-                  top: 8 + (THUMB_SIZE - TRACK_BG_HEIGHT) / 2,
+                  top: trackPad + (THUMB_SIZE - TRACK_BG_HEIGHT) / 2,
                   height: TRACK_BG_HEIGHT,
                   WebkitMaskImage: stepDotsMask,
                   maskImage: stepDotsMask,
@@ -1458,12 +1474,12 @@ const SliderComfortable = forwardRef<HTMLDivElement, SliderComfortableProps>(
         {variant === "pips" && (
           <div className="absolute inset-0 flex items-center px-2 z-[2] pointer-events-none" aria-hidden>
             {label && (
-              <span className="text-[13px] px-2 bg-background text-transparent select-none">
+              <span className="text-sm px-2 bg-background text-transparent select-none">
                 {label}
               </span>
             )}
             <span
-              className="text-[13px] tabular-nums ml-auto px-2 bg-background text-transparent select-none"
+              className="text-sm tabular-nums ml-auto px-2 bg-background text-transparent select-none"
               style={{ minWidth: `${String(formatValue(max)).length}ch` }}
             >
               {formatValue(value)}
@@ -1506,7 +1522,7 @@ const SliderComfortable = forwardRef<HTMLDivElement, SliderComfortableProps>(
           <div className="absolute inset-0 flex items-center px-2 z-[4] pointer-events-none">
             {label && (
               <motion.span
-                className="text-[13px] px-2"
+                className="text-sm px-2"
                 initial={false}
                 animate={{ color: isActive ? "var(--foreground)" : "var(--muted-foreground)" }}
                 transition={spring.fast}
@@ -1515,7 +1531,7 @@ const SliderComfortable = forwardRef<HTMLDivElement, SliderComfortableProps>(
               </motion.span>
             )}
             <motion.span
-              className="text-[13px] tabular-nums ml-auto px-2"
+              className="text-sm tabular-nums ml-auto px-2"
               initial={false}
               animate={{ color: isActive ? "var(--foreground)" : "var(--muted-foreground)" }}
               transition={spring.fast}
@@ -1559,7 +1575,7 @@ const SliderComfortable = forwardRef<HTMLDivElement, SliderComfortableProps>(
 
         {variant === "scrubber" && label && (
           <motion.span
-            className="text-[13px] shrink-0 z-10"
+            className="text-sm shrink-0 z-10"
             initial={false}
             animate={{ color: isActive ? "var(--foreground)" : "var(--muted-foreground)" }}
             transition={spring.fast}
@@ -1572,7 +1588,7 @@ const SliderComfortable = forwardRef<HTMLDivElement, SliderComfortableProps>(
           <>
             <div className="flex-1" />
             <motion.span
-              className="text-[13px] shrink-0 tabular-nums text-right z-10"
+              className="text-sm shrink-0 tabular-nums text-right z-10"
               initial={false}
               animate={{ color: isActive ? "var(--foreground)" : "var(--muted-foreground)" }}
               transition={spring.fast}
