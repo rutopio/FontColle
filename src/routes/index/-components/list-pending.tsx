@@ -195,8 +195,8 @@ export function FirstPagePending({ firstPage }: { firstPage: FontRecord[] }) {
       header={HEADER_SKELETON}
     >
       <Column footer={<PreviewBar />}>
-        <div className="pending-grid-only @container flex-1">
-          <div className="grid @min-[1024px]:grid-cols-3 @min-[768px]:grid-cols-2 grid-cols-1 gap-4 pb-4">
+        <div className="pending-grid-only @container flex-1 overflow-hidden">
+          <div className="-mr-px grid @min-[1024px]:grid-cols-3 @min-[768px]:grid-cols-2 grid-cols-1">
             {firstPage.map((font) => (
               <FontCard
                 key={font.id}

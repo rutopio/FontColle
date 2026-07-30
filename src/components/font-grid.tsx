@@ -33,13 +33,13 @@ export function columnsFor(width: number, view: ViewMode): number {
   return 1;
 }
 
-const CARD_H = 288; // h-72
+// h-72 with border-box sizing: the 1px bottom gridline sits inside the 288px,
+// so rows must advance by exactly this or a bare strip opens above each line.
+const CARD_H = 288;
 const LINE_H = 128; // h-32
 
 const rowKey = (view: ViewMode, firstFontId: string) =>
   `${view}-${firstFontId}`;
-
-const GAP = 16; // Tailwind gap-4
 
 export function FontGrid({
   fonts,
@@ -72,7 +72,7 @@ export function FontGrid({
   const virtualizer = useVirtualizer({
     count: rowCount,
     getScrollElement: () => scrollRef.current,
-    estimateSize: () => (view === "row" ? LINE_H : CARD_H + GAP),
+    estimateSize: () => (view === "row" ? LINE_H : CARD_H),
     overscan: 4,
   });
 
@@ -141,8 +141,10 @@ export function FontGrid({
               {view === "row" ? (
                 <div>{rowFonts.map(renderCell)}</div>
               ) : (
+                // -mr-px hides the trailing column's gridline, including on a
+                // final partial row where no cell sits in the last column.
                 <div
-                  className="grid gap-4 pb-4"
+                  className="-mr-px grid overflow-hidden"
                   style={{
                     gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
                   }}
@@ -168,8 +170,8 @@ export function SkeletonGrid({ view }: { view: ViewMode }) {
       ))}
     </div>
   ) : (
-    <div className="@container">
-      <div className="grid @min-[1024px]:grid-cols-3 @min-[768px]:grid-cols-2 grid-cols-1 gap-4">
+    <div className="@container overflow-hidden">
+      <div className="-mr-px grid @min-[1024px]:grid-cols-3 @min-[768px]:grid-cols-2 grid-cols-1">
         {keys.map((k) => (
           <SkeletonCard key={k} />
         ))}
@@ -180,7 +182,9 @@ export function SkeletonGrid({ view }: { view: ViewMode }) {
 
 function SkeletonCard() {
   return (
-    <div className="flex h-72 flex-col gap-4 rounded-lg border bg-card p-4">
+    // Column count here is CSS-driven, so the right edge is drawn on every cell
+    // and the trailing one is clipped by the container's overflow-hidden.
+    <div className="flex h-72 flex-col gap-4 border-border border-r border-b p-4">
       <div className="flex flex-col gap-1">
         <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
         <div className="h-3.5 w-1/3 animate-pulse rounded bg-muted" />
