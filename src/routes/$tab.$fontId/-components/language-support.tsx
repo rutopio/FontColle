@@ -68,7 +68,7 @@ function RegionAccordion({
               transition={{ duration: MOTION_S.base, ease: EASE_OUT }}
               className="overflow-hidden"
             >
-              <div className="grid grid-cols-4 gap-x-3 gap-y-1 pb-3 text-sm">
+              <div className="grid grid-cols-1 gap-x-3 gap-y-1 pb-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
                 {ids.map((id) => (
                   <span key={id} className="truncate">
                     {languageLabel(id)}
