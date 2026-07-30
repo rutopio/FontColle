@@ -83,7 +83,7 @@ export function FontGrid({
 
   const renderCell = (font: FontRecord) =>
     view === "row" ? (
-      <div key={font.id} className="flex flex-col">
+      <div key={font.id} className="group/row flex flex-col">
         <FontRow
           font={font}
           previewText={previewText}
@@ -92,7 +92,7 @@ export function FontGrid({
           selection={selection}
           axisValues={axisValues}
         />
-        <Separator className="px-4" />
+        <Separator className="mx-4 transition-colors duration-fast ease-snap group-hover/row:bg-transparent aria-[orientation=horizontal]:w-auto" />
       </div>
     ) : (
       <FontCard
@@ -127,6 +127,9 @@ export function FontGrid({
             <div
               key={rowKey(view, rowFonts[0]?.id ?? String(row.key))}
               data-index={row.index}
+              // Virtual items are the only true siblings here (row view renders
+              // one row each), so the "row below is hovered" rule lives on them.
+              className="group/slot has-[+.group\/slot:hover]:[&_[data-slot=separator]]:bg-transparent"
               style={{
                 position: "absolute",
                 top: 0,
@@ -205,7 +208,7 @@ function SkeletonLine() {
         </div>
         <div className="mx-4 h-9 w-2/3 animate-pulse rounded bg-muted" />
       </div>
-      <Separator className="px-4" />
+      <Separator className="mx-4 aria-[orientation=horizontal]:w-auto" />
     </div>
   );
 }
