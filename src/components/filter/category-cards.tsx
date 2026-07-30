@@ -66,7 +66,7 @@ export function CategoryCards({
           </AnimatePresence>
         </div>
       </div>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-1.5">
         {cards.map((card) => (
           <CardButton
             key={card.value}

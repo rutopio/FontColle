@@ -43,7 +43,7 @@ export function CardGrid({
         mode={mode}
         onToggleMode={onToggleMode}
       />
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-1.5">
         {items.map(([value, count]) => (
           <CardButton
             key={value}
