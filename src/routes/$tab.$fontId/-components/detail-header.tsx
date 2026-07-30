@@ -63,11 +63,8 @@ export function DetailHeader({ font }: { font: FontRecord }) {
         </div>
       </div>
       <div className="flex w-full flex-wrap items-center gap-2 md:ml-auto md:w-auto md:shrink-0 md:flex-nowrap">
-        <FontTraits
-          font={font}
-          selection={emptyFilter}
-          badgeClassName="bg-background"
-        />
+        {/* FontTraits fills its outline badges itself. */}
+        <FontTraits font={font} selection={emptyFilter} />
         {font.license && (
           <Badge variant="outline" className="bg-background">
             {font.license}

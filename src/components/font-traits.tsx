@@ -19,7 +19,14 @@ export function FontTraits({
         <Badge
           key={trait.label}
           variant={trait.active ? "secondary" : "outline"}
-          className={cn("text-[10px]", badgeClassName)}
+          className={cn(
+            "text-[10px]",
+            // The outline variant is transparent, so a hovered card or row
+            // tinted the badge along with itself. Fill it so it stays a chip
+            // on its own canvas; `secondary` is already opaque.
+            !trait.active && "bg-background",
+            badgeClassName
+          )}
         >
           {trait.label}
         </Badge>
