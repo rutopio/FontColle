@@ -164,12 +164,11 @@ function MetricRangeRow({
         label={spec.label}
       />
       <div className="grid grid-cols-5 gap-1">
-        {quartiles.map((q, i) => {
+        {quartiles.map((q, qi) => {
           const active = value != null && rangesEqual(value, q);
           return (
             <Tooltip
-              // biome-ignore lint/suspicious/noArrayIndexKey: fixed 4-quartile list
-              key={i}
+              key={`${q[0]}-${q[1]}`}
               content={
                 <>
                   {formatMetricValue(spec.key, q[0])} –{" "}
@@ -190,7 +189,7 @@ function MetricRangeRow({
                     : "text-foreground hover:bg-muted"
                 )}
               >
-                Q{i + 1}
+                Q{qi + 1}
               </button>
             </Tooltip>
           );

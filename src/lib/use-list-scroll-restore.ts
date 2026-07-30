@@ -14,7 +14,6 @@ export function useListScrollRestore(
     return () => el.removeEventListener("scroll", onScroll);
   }, [scrollRef, listScrollY]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
   useEffect(() => {
     const target = listScrollY.current;
     if (target <= 0) return;
@@ -31,5 +30,5 @@ export function useListScrollRestore(
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, []);
+  }, [scrollRef, listScrollY]);
 }
