@@ -6,7 +6,7 @@ import {
 } from "@phosphor-icons/react";
 import { useMemo, useState } from "react";
 import { EditableValue } from "@/components/ui/editable-value";
-import { RangeSlider } from "@/components/ui/range-slider";
+import { Slider } from "@/components/ui/slider";
 import {
   Tooltip,
   TooltipContent,
@@ -156,14 +156,15 @@ function MetricRangeRow({
           </span>
         )}
       </div>
-      <RangeSlider
+      <Slider
         value={trackValue}
-        onValueChange={handleDrag}
-        onValueCommitted={handleCommitted}
+        onChange={handleDrag}
+        onCommit={handleCommitted}
         min={map.min}
         max={map.max}
         step={map.step}
-        getAriaLabel={(i) => `${spec.label} ${i === 0 ? "minimum" : "maximum"}`}
+        showValue={false}
+        label={spec.label}
       />
       <div className="grid grid-cols-5 gap-1">
         {quartiles.map((q, i) => {

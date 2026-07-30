@@ -138,12 +138,13 @@ export function VariableAxesSection({
           )}
         >
           <Slider
-            size="sm"
             value={pct}
-            onValueChange={(v) => onSliderChange(tag, v as number)}
+            onChange={(v) => onSliderChange(tag, v as number)}
             min={0}
             max={100}
-            className="[&_[data-slot=slider-control]]:py-0"
+            showValue={false}
+            label={`${tag} relative position`}
+            className="min-w-0 flex-1"
           />
           <span className="flex w-10 shrink-0 justify-end">
             <EditableValue

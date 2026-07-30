@@ -1,6 +1,6 @@
 import { StackSimpleIcon } from "@phosphor-icons/react";
 import { useMemo } from "react";
-import { RangeSlider } from "@/components/ui/range-slider";
+import { Slider } from "@/components/ui/slider";
 import {
   INSTANCE_BUCKETS,
   INSTANCE_MAX,
@@ -83,15 +83,14 @@ export function InstancesSection({
         </span>
         <span className="text-muted-foreground">{matched} fonts</span>
       </div>
-      <RangeSlider
+      <Slider
         value={trackValue}
-        onValueChange={handle}
+        onChange={handle}
         min={0}
         max={stops.length - 1}
         step={1}
-        getAriaLabel={(i) =>
-          `Instance count ${i === 0 ? "minimum" : "maximum"}`
-        }
+        showValue={false}
+        label="Instance count"
       />
       <div className="grid grid-cols-5 gap-1">
         {INSTANCE_BUCKETS.map((b) => (

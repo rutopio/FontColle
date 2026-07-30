@@ -247,9 +247,10 @@ function AxisControl({
               min={min}
               max={max}
               step={1}
-              onValueChange={(v) =>
-                onChange({ value: Array.isArray(v) ? v[0] : v })
-              }
+              onChange={(v) => onChange({ value: Array.isArray(v) ? v[0] : v })}
+              showValue={false}
+              label={`${axisName(axis.tag)} value`}
+              className="min-w-0 flex-1"
             />
             <span className="w-12 shrink-0 text-right">
               <EditableValue

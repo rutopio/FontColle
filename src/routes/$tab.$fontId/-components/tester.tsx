@@ -305,11 +305,12 @@ function TesterInner({
         <div className="flex items-center gap-2 text-xs">
           <span>Size</span>
           <Slider
-            aria-label="Font size"
+            label="Font size"
             min={SIZE_MIN}
             max={SIZE_MAX}
             value={size}
-            onValueChange={(v) => setSize(v as number)}
+            onChange={(v) => setSize(v as number)}
+            showValue={false}
             className="w-32"
           />
           <span className="flex w-8 shrink-0 justify-end">
