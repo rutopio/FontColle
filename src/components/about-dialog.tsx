@@ -17,9 +17,8 @@ import {
 } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAbout } from "@/lib/about/context";
-import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
+import { REPO_URL, SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
 
-const REPO_URL = "https://github.com/rutopio/FontColle";
 const AUTHOR_URL = "https://chingru.com";
 const SPONSOR_URL = "https://buymeacoffee.com/chingru";
 

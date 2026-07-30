@@ -7,6 +7,7 @@ import {
   FilterPanelColumn,
   FilterRailColumn,
 } from "@/components/filter-columns";
+import { GithubLink } from "@/components/github-link";
 import { LogoIcon } from "@/components/logo-icon";
 import { RouteFade } from "@/components/route-fade";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -26,10 +27,11 @@ function MobileTopBar({ favoriteFontId }: { favoriteFontId?: string }) {
         <LogoIcon className="size-5" />
         <span className="font-mono text-xs">FontColle</span>
       </Link>
-      {/* Same order as the desktop header clusters: theme, about, favorite. */}
+      {/* Same order as the desktop header clusters. */}
       <div className="flex items-center gap-1">
         <ThemeToggle variant="bar" />
         <AboutLink variant="bar" />
+        <GithubLink variant="bar" />
         <FavoriteToggle fontId={favoriteFontId} variant="bar" />
       </div>
     </div>

@@ -5,10 +5,12 @@ import { useEffect, useState } from "react";
 import { AboutLink } from "@/components/about-link";
 import { FavoriteToggle } from "@/components/favorite-toggle";
 import { FontTraits } from "@/components/font-traits";
+import { GithubLink } from "@/components/github-link";
 import { RAIL_HEADER_BTN, RAIL_HEADER_CELL } from "@/components/rail-button";
 import { repoHostIcon } from "@/components/repo-host-icon";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { emptyFilter } from "@/lib/fonts/filter/state";
 import type { FontRecord } from "@/lib/fonts/types";
 import { backWithViewTransition } from "@/lib/view-transition";
@@ -48,6 +50,7 @@ export function DetailHeader({ font }: { font: FontRecord }) {
             </Link>
           )}
         </div>
+        <Separator aria-hidden orientation="vertical" className="mx-2 h-5" />
         <div className="flex min-w-0 items-baseline gap-2">
           <h1
             className="truncate font-semibold text-lg leading-tight"
@@ -55,11 +58,7 @@ export function DetailHeader({ font }: { font: FontRecord }) {
           >
             {font.name}
           </h1>
-          {font.designer && (
-            <p className="truncate text-muted-foreground text-xs">
-              {font.designer}
-            </p>
-          )}
+          {font.designer && <p className="truncate text-xs">{font.designer}</p>}
         </div>
       </div>
       <div className="flex w-full flex-wrap items-center gap-2 md:ml-auto md:w-auto md:shrink-0 md:flex-nowrap">
@@ -73,6 +72,7 @@ export function DetailHeader({ font }: { font: FontRecord }) {
       </div>
 
       <div className="hidden shrink-0 items-center gap-1 md:flex">
+        <Separator aria-hidden orientation="vertical" className="mx-2 h-5" />
         <HeaderLink
           href={`https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`}
           aria-label={`View ${font.name} on Google Fonts`}
@@ -85,11 +85,15 @@ export function DetailHeader({ font }: { font: FontRecord }) {
             icon={RepoIcon}
           />
         )}
+        <Separator aria-hidden orientation="vertical" className="mx-2 h-5" />
         <div className={RAIL_HEADER_CELL}>
           <ThemeToggle variant="header" />
         </div>
         <div className={RAIL_HEADER_CELL}>
           <AboutLink variant="header" />
+        </div>
+        <div className={RAIL_HEADER_CELL}>
+          <GithubLink variant="header" />
         </div>
         <div className={RAIL_HEADER_CELL}>
           <FavoriteToggle fontId={font.id} variant="header" />

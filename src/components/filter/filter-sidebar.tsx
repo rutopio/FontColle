@@ -410,7 +410,17 @@ export function FilterSidebar({
 
   return (
     <aside className="flex h-full w-full min-w-0 flex-col text-foreground">
-      <ScrollArea fade viewportRef={viewportRef} className="min-h-0 flex-1">
+      {/* Remounts across the preset/filters boundary: Base UI latches
+          data-has-overflow-y from the tall filters column and never clears it
+          for the short preset panel, leaving a full-height thumb with nothing
+          to scroll. Not keyed on the group, so filter groups keep their
+          scroll position. */}
+      <ScrollArea
+        key={showingPreset ? "preset" : "filters"}
+        fade
+        viewportRef={viewportRef}
+        className="min-h-0 flex-1"
+      >
         <AnimatePresence
           mode="wait"
           initial={false}

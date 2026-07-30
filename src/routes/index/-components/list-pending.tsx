@@ -8,6 +8,7 @@ import { Column, FilterLayout } from "@/components/filter-layout";
 import { FontCard } from "@/components/font-card";
 import { SkeletonGrid } from "@/components/font-grid";
 import { FontRow } from "@/components/font-row";
+import { GithubLink } from "@/components/github-link";
 import { PreviewBar } from "@/components/preview-dock";
 import { RAIL_HEADER_CELL } from "@/components/rail-button";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -83,11 +84,15 @@ const HEADER_SKELETON = (
       </div>
 
       <div className="hidden shrink-0 items-center gap-1 md:flex">
+        <Separator aria-hidden orientation="vertical" className="mx-2 h-5" />
         <div className={RAIL_HEADER_CELL}>
           <ThemeToggle variant="header" />
         </div>
         <div className={RAIL_HEADER_CELL}>
           <AboutLink variant="header" />
+        </div>
+        <div className={RAIL_HEADER_CELL}>
+          <GithubLink variant="header" />
         </div>
         <div className={RAIL_HEADER_CELL}>
           <FavoriteToggle variant="header" />

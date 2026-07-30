@@ -138,7 +138,11 @@ describe("font-family subscriptions", () => {
 
   it("unsubscribing drops the watcher so it is not notified later", () => {
     const onInter = vi.fn();
-    const unsubscribe = __loaderInternals.subscribeFamily("Inter", 400, onInter);
+    const unsubscribe = __loaderInternals.subscribeFamily(
+      "Inter",
+      400,
+      onInter
+    );
     expect(__loaderInternals.watcherCount("Inter")).toBe(1);
 
     unsubscribe();
@@ -197,8 +201,8 @@ describe("font-family subscriptions", () => {
       // The css2 <link> lands a moment later, as it does mid-fling.
       await vi.advanceTimersByTimeAsync(150);
       env.register("Inter");
-      env.check.mockImplementation((probe: string) =>
-        probe === '400 16px "Inter"'
+      env.check.mockImplementation(
+        (probe: string) => probe === '400 16px "Inter"'
       );
 
       await vi.advanceTimersByTimeAsync(300);

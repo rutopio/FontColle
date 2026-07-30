@@ -2,12 +2,10 @@ import { RowsIcon, SquaresFourIcon } from "@phosphor-icons/react";
 import type { ViewMode } from "@/components/font-grid";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-/* Height only. The colours are the default variant's own — a --muted slot with
-   a --background pill — so this control matches every other TabsList in the
-   app. An earlier version inverted them into a white slot with a tinted pill
-   to sit closer to SortControl's frame; that put the selected state 0.03
-   lightness off its own slot and stopped reading as selected at all. */
-const TABS_LIST = "h-9";
+/* The one TabsList sitting on --canvas rather than a card, where the stock
+   --muted slot lands 0.015 off the page and disappears. accent/50 is what the
+   rail's buttons hover to, so the two match over the canvas. */
+const TABS_LIST = "h-9 bg-accent/50";
 
 export function ViewTabs({
   view,
