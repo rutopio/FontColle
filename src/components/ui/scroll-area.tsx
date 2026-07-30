@@ -5,13 +5,34 @@ import type * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+// Spelled out so Tailwind's scanner sees each class; a template string built
+// from `fade` would never be generated.
+const FADE_CLASS = {
+  y: "scroll-fade-y",
+  x: "scroll-fade-x",
+  t: "scroll-fade-t",
+  b: "scroll-fade-b",
+  l: "scroll-fade-l",
+  r: "scroll-fade-r",
+  s: "scroll-fade-s",
+  e: "scroll-fade-e",
+} as const
+
 function ScrollArea({
   className,
   children,
   viewportRef,
+  fade,
+  viewportClassName,
   ...props
 }: ScrollAreaPrimitive.Root.Props & {
   viewportRef?: React.Ref<HTMLDivElement>
+  /**
+   * Fade the scrollable edges with the `scroll-fade` mask utilities. `true` is
+   * the vertical fade; pass an axis or edge for the others.
+   */
+  fade?: boolean | "y" | "x" | "t" | "b" | "l" | "r" | "s" | "e"
+  viewportClassName?: string
 }) {
   return (
     <ScrollAreaPrimitive.Root
@@ -22,7 +43,14 @@ function ScrollArea({
       <ScrollAreaPrimitive.Viewport
         ref={viewportRef}
         data-slot="scroll-area-viewport"
-        className="size-full overscroll-contain rounded-[inherit] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+        className={cn(
+          "size-full overscroll-contain rounded-[inherit] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
+          // Must land on the viewport, not the root: the utility keys off
+          // `scroll(self)`, so it only resolves on the element that scrolls.
+          fade === true && "scroll-fade",
+          typeof fade === "string" && FADE_CLASS[fade],
+          viewportClassName
+        )}
       >
         {children}
       </ScrollAreaPrimitive.Viewport>

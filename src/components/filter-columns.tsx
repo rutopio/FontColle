@@ -10,7 +10,7 @@ export function FilterRailColumn({ children }: { children?: React.ReactNode }) {
 
   return (
     <div className="hidden h-full min-h-0 w-(--rail-width) shrink-0 flex-col overflow-hidden md:flex">
-      <ScrollArea className="min-h-0 flex-1">
+      <ScrollArea fade className="min-h-0 flex-1">
         <div className="flex flex-col">{children}</div>
       </ScrollArea>
     </div>

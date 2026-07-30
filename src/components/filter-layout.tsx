@@ -206,6 +206,7 @@ export function Column({
         <div className="flex min-h-0 flex-1 flex-col bg-background md:overflow-hidden md:rounded-lg md:border md:border-border">
           {subheader}
           <ScrollArea
+            fade
             viewportRef={scrollViewportRef}
             className="min-h-0 flex-1"
           >

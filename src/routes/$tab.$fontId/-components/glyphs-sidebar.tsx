@@ -30,7 +30,7 @@ export function GlyphsSidebar({
 
   return (
     <aside className="flex h-full w-full min-w-0 flex-col text-foreground">
-      <ScrollArea viewportRef={viewportRef} className="min-h-0 flex-1">
+      <ScrollArea fade viewportRef={viewportRef} className="min-h-0 flex-1">
         <motion.div
           className="flex flex-col gap-4 p-4"
           initial={{ opacity: 0, y: 8 }}
