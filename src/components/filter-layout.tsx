@@ -144,7 +144,7 @@ function ColumnHeader({ children }: { children: React.ReactNode }) {
       <Link
         to="/"
         aria-label="FontColle, all fonts"
-        className="group/logo hidden w-(--rail-width) shrink-0 flex-col items-center justify-center gap-1 rounded-xl p-1 text-primary outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring md:flex dark:hover:bg-white/6"
+        className="group/logo hidden w-(--rail-width) shrink-0 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl p-1 text-primary outline-none focus-visible:ring-2 focus-visible:ring-ring md:flex"
       >
         <LogoIcon className="size-7" />
         {/* <span className="font-mono text-[9px] group-hover/logo:font-bold">

@@ -20,7 +20,7 @@ export function AboutLink({
   const hover = header ? undefined : RAIL_BTN_OFF;
   const expanded = bar
     ? "aria-expanded:text-foreground"
-    : "aria-expanded:bg-black/10 aria-expanded:text-foreground dark:aria-expanded:bg-white/12";
+    : "aria-expanded:bg-accent aria-expanded:text-accent-foreground";
 
   return (
     <nav

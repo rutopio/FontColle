@@ -58,7 +58,7 @@ export function CodeBlock({
                 ? "Copy failed"
                 : "Copy code"
           }
-          className="flex size-6 cursor-pointer items-center justify-center rounded text-muted-foreground opacity-0 outline-none transition-opacity hover:bg-black/10 hover:text-foreground focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring group-hover/code:opacity-100 dark:hover:bg-white/12"
+          className="flex size-6 cursor-pointer items-center justify-center rounded text-muted-foreground opacity-0 outline-none transition-opacity hover:bg-accent hover:text-accent-foreground focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring group-hover/code:opacity-100"
         >
           {/* Keyed on status so the check/x remounts and replays the pop; the
               idle copy icon stays still so it doesn't pop on reset. */}
@@ -71,7 +71,7 @@ export function CodeBlock({
           ) : status === "failed" ? (
             <XIcon
               key="failed"
-              className="size-3.5 animate-copy-pop text-red-500"
+              className="size-3.5 animate-copy-pop text-destructive"
               weight="bold"
             />
           ) : (

@@ -56,11 +56,11 @@ export function GlyphsSidebar({
               aria-invalid={searchMiss || undefined}
               inputClassName={cn(
                 "focus:border-input focus-visible:ring-2 focus-visible:ring-ring",
-                searchMiss && "border-red-500"
+                searchMiss && "border-destructive"
               )}
             />
             {searchMiss && (
-              <p className="mt-1 text-[10px] text-red-500">
+              <p className="mt-1 text-[10px] text-destructive">
                 This font doesn't cover that character.
               </p>
             )}
@@ -85,7 +85,7 @@ export function GlyphsSidebar({
                     className={cn(
                       "flex min-h-11 items-center justify-between gap-2 rounded px-2 py-1 text-left text-xs transition-colors md:min-h-8",
                       on
-                        ? "bg-black/10 font-medium text-foreground dark:bg-white/12"
+                        ? "bg-accent font-medium text-accent-foreground"
                         : "hover:bg-accent/50 hover:text-foreground"
                     )}
                   >

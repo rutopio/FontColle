@@ -45,7 +45,7 @@ export function CopyButton({
             : label
       }
       className={cn(
-        "flex size-6 cursor-pointer items-center justify-center rounded text-muted-foreground outline-none transition-colors hover:bg-black/10 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring dark:hover:bg-white/12",
+        "flex size-6 cursor-pointer items-center justify-center rounded text-muted-foreground outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring",
         className
       )}
     >
@@ -60,7 +60,7 @@ export function CopyButton({
       ) : status === "failed" ? (
         <XIcon
           key="failed"
-          className="size-3.5 animate-copy-pop text-red-500"
+          className="size-3.5 animate-copy-pop text-destructive"
           weight="bold"
         />
       ) : (

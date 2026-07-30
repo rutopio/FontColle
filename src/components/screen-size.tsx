@@ -7,7 +7,7 @@ export function ScreenSize() {
     <output
       aria-hidden
       style={{ bottom: "calc(4.5rem + env(safe-area-inset-bottom))" }}
-      className="pointer-events-none fixed right-22 z-50 flex h-8 min-w-8 items-center justify-center rounded-full bg-gray-800 px-2 font-mono text-white text-xs md:right-4"
+      className="pointer-events-none fixed right-22 z-50 flex h-8 min-w-8 items-center justify-center rounded-full bg-primary px-2 font-mono text-primary-foreground text-xs md:right-4"
     >
       <span className="block sm:hidden">xs</span>
       <span className="hidden sm:block md:hidden">sm</span>

@@ -93,7 +93,7 @@ export function DetailTabBar({
             className={cn(
               "flex shrink-0 items-center gap-1.5 rounded-md px-3 py-1.5 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
               on
-                ? "bg-black/10 font-medium text-foreground dark:bg-white/12"
+                ? "bg-accent font-medium text-accent-foreground"
                 : "hover:bg-accent/50 hover:text-foreground"
             )}
           >

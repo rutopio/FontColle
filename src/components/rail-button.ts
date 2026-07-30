@@ -15,7 +15,12 @@ export const RAIL_HEADER_BTN = `${RAIL_BTN_CHROME} ${RAIL_BTN_OFF} flex size-9 s
 
 export const RAIL_HEADER_CELL = "group/rail-btn flex shrink-0 items-center";
 
-const RAIL_ON_SURFACE = "bg-black/10 dark:bg-white/12";
+/* The selected tile. --accent is the token for exactly this (hover, focus and
+   active surfaces), and pairing it with text-accent-foreground below completes
+   the convention pair the hardcoded black/white overlay had left half-broken.
+   Full strength, against the /50 the unselected tiles hover to, so selected
+   still reads a clear step above merely hovered. */
+const RAIL_ON_SURFACE = "bg-accent";
 
 export const RAIL_BTN_ON = `${RAIL_ON_SURFACE} text-accent-foreground`;
 

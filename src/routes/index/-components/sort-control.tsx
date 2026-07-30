@@ -173,8 +173,8 @@ function GroupDrawer({
                 className={cn(
                   "flex min-h-12 items-center justify-between gap-3 rounded-md px-3 text-left text-sm transition-colors",
                   on
-                    ? "bg-black/10 font-medium dark:bg-white/12"
-                    : "active:bg-muted"
+                    ? "bg-accent font-medium text-accent-foreground"
+                    : "active:bg-accent/50"
                 )}
               >
                 <span className="truncate">{g}</span>

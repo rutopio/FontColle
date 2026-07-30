@@ -37,7 +37,7 @@ export const FontCard = memo(function FontCard({
       to="/$tab/$fontId"
       params={{ tab: "instances", fontId: fontSlug(font.id) }}
       viewTransition
-      className="flex h-72 flex-col gap-4 overflow-hidden rounded-lg border bg-card p-4 transition-[color,background-color,transform] duration-[var(--motion-fast)] ease-[var(--ease-snap)] hover:bg-muted focus-visible:border-foreground focus-visible:outline-none active:scale-[0.99]"
+      className="flex h-72 flex-col gap-4 overflow-hidden rounded-lg border bg-card p-4 transition-[color,background-color,transform] duration-[var(--motion-fast)] ease-[var(--ease-snap)] hover:bg-accent/50 focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 active:scale-[0.99]"
     >
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between gap-3">

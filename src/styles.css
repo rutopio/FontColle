@@ -105,6 +105,16 @@
   --color-card: var(--card);
   --color-foreground: var(--foreground);
   --color-background: var(--background);
+  /* shadcn's --chart-1..5 and its eight --sidebar-* tokens are deliberately
+     absent, here and in the :root/.dark blocks below: the app has no charts,
+     and the sidebar paints itself from --canvas and --card rather than its own
+     namespace. Copying a registry component that wants them means adding the
+     pair it needs, not that something was lost. */
+  /* shadcn's radius ladder, verbatim: multiplicative off --radius, which sits
+     at lg. The steps fan out as --radius grows, which is what keeps the large
+     rungs reading as deliberately round rather than as lg with a few pixels
+     added. Kept identical to upstream so a component copied in from the
+     registry lands on the shape it was designed with. */
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -114,6 +124,10 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* shadcn's Stone base color, unmodified. Stone rather than the docs' Neutral:
+   the values carry a little warm chroma (the 0.004 49.25 on --foreground, say)
+   where Neutral is a flat 0, which suits a page that is mostly type specimens.
+   Both are official base colors, so this is a palette choice, not a fork. */
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.147 0.004 49.25);
@@ -132,13 +146,23 @@
      Kept at the palette value by explicit request — revisit if the contrast
      audit matters again. The dark theme's value is well above AA. */
   --muted-foreground: oklch(0.553 0.013 58.071);
-  --accent: oklch(0.97 0.001 106.424);
+  /* Deepened from Stone's 0.97, the one token moved off the palette. Stone
+     ships --secondary, --muted and --accent at the same value, which works
+     while they stay apart on the page but collapses where hover and selected
+     sit next to each other: at 0.97 an accent/50 hover and a full-strength
+     accent selection differed by 0.015 lightness, near invisible on white.
+     0.90 puts the selected surface past the hardcoded black/10 overlay it
+     replaced (~0.93), without reintroducing a literal colour, and leaves the
+     accent/50 hover at 0.95 — still a visible step off the page.
+     --secondary and --muted stay at the palette value: they are separated by
+     their foreground and by where they appear, not by their own contrast. */
+  --accent: oklch(0.9 0.001 106.424);
   --accent-foreground: oklch(0.216 0.006 56.043);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.923 0.003 48.717);
   --input: oklch(0.923 0.003 48.717);
   --ring: oklch(0.709 0.01 56.259);
-  --radius: 0.625rem;
+  --radius: 0.45rem;
 
   /* The motion scale, mirrored by MOTION in src/lib/motion.ts — change both
      together. Three steps, picked by how far the element travels and how often
@@ -198,7 +222,10 @@
   --secondary-foreground: oklch(0.985 0.001 106.423);
   --muted: oklch(0.268 0.007 34.298);
   --muted-foreground: oklch(0.709 0.01 56.259);
-  --accent: oklch(0.268 0.007 34.298);
+  /* The dark counterpart to the light theme's deepened accent (see the note
+     there): lifted from Stone's 0.268, away from --card at 0.216 rather than
+     toward it, so a selected row reads as raised on the card it sits on. */
+  --accent: oklch(0.37 0.007 34.298);
   --accent-foreground: oklch(0.985 0.001 106.423);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
