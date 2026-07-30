@@ -78,8 +78,11 @@ const HEADER_SKELETON = (
         <div className="opacity-60 md:hidden">
           <SortControl sort={DEFAULT_SORT} onChange={PENDING_SORT} />
         </div>
-        <div className="opacity-60">
+        <div className="pending-grid-only opacity-60">
           <ViewTabs view="grid" onChange={PENDING_SORT} />
+        </div>
+        <div className="pending-row-only opacity-60">
+          <ViewTabs view="row" onChange={PENDING_SORT} />
         </div>
       </div>
 
@@ -180,7 +183,14 @@ export function ListPending() {
       header={HEADER_SKELETON}
     >
       <Column footer={<PreviewBar />}>
-        <SkeletonGrid view="grid" />
+        {/* Both layouts, same as FirstPagePending: the server cannot read the
+            view preference, so data-view on <html> picks one before paint. */}
+        <div className="pending-grid-only flex-1">
+          <SkeletonGrid view="grid" />
+        </div>
+        <div className="pending-row-only flex-1">
+          <SkeletonGrid view="row" />
+        </div>
       </Column>
     </FilterLayout>
   );

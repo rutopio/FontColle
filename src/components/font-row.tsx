@@ -71,13 +71,13 @@ export const FontRow = memo(function FontRow({
         <p
           dir="auto"
           style={previewStyle}
-          className="truncate px-4 text-3xl leading-loose"
+          className="truncate px-4 text-3xl leading-tight"
         >
           {previewText || specimenFor(font)}
         </p>
       ) : (
         <div
-          className="mx-4 h-15 w-2/3 animate-pulse rounded bg-muted"
+          className="mx-4 h-9 w-2/3 animate-pulse rounded bg-muted"
           aria-hidden
         />
       )}

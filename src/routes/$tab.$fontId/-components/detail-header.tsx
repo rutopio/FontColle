@@ -61,7 +61,7 @@ export function DetailHeader({ font }: { font: FontRecord }) {
           {font.designer && <p className="truncate text-xs">{font.designer}</p>}
         </div>
       </div>
-      <div className="flex w-full flex-wrap items-center gap-2 md:ml-auto md:w-auto md:shrink-0 md:flex-nowrap">
+      <div className="hidden w-full flex-wrap items-center gap-2 md:ml-auto md:flex md:w-auto md:shrink-0 md:flex-nowrap">
         {/* FontTraits fills its outline badges itself. */}
         <FontTraits font={font} selection={emptyFilter} />
         {font.license && (

@@ -315,6 +315,19 @@
   }
 }
 
+/* scroll-fade without scroll-driven animations. Where `animation-timeline` is
+   unsupported — WebKit before Safari 26, which is every browser on older iOS,
+   Chrome included — shadcn's utility falls back to fading BOTH edges at a
+   fixed size, so a list sitting at the very top still had its first row
+   dissolving into the header. The bottom edge stays: a list is usually long
+   enough that it is telling the truth. The top one is only right after the
+   user has scrolled, which is exactly what this fallback cannot detect. */
+@supports not (animation-timeline: scroll()) {
+  [data-slot="scroll-area-viewport"] {
+    --scroll-fade-t: 0px;
+  }
+}
+
 /* Grid/row switch for the SSR'd pending list. The real list reads the
    preference from localStorage, which the server can't see, so the pending
    markup renders both layouts and these hide the one that doesn't match

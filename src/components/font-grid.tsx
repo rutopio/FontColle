@@ -211,7 +211,7 @@ function SkeletonLine() {
         <div className="px-4">
           <div className="h-4 w-40 max-w-[60%] animate-pulse rounded bg-muted" />
         </div>
-        <div className="mx-4 h-15 w-2/3 animate-pulse rounded bg-muted" />
+        <div className="mx-4 h-9 w-2/3 animate-pulse rounded bg-muted" />
       </div>
       <Separator className="px-4" />
     </div>

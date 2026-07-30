@@ -58,7 +58,7 @@ import { useListScrollRestore } from "@/lib/use-list-scroll-restore";
 import { useLocalStorageState } from "@/lib/use-local-storage-state";
 import { SearchInput, type SearchSuggestion } from "./search-input";
 import { SortControl } from "./sort-control";
-import { ViewTabs } from "./view-tabs";
+import { VIEW_TABS_WIDTH, ViewTabs } from "./view-tabs";
 
 const Route = getRouteApi("/");
 
@@ -306,7 +306,7 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
               <Button
                 variant="outline"
                 onClick={reset}
-                className="h-9 text-destructive"
+                className={`h-9 text-destructive ${VIEW_TABS_WIDTH}`}
               >
                 Reset
                 <Kbd className="hidden md:inline-flex">Esc</Kbd>
