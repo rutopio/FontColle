@@ -40,11 +40,7 @@ export function ActiveFilterChips({
       transition={{ duration: 0 }}
       style={{ overflow: "hidden" }}
       className={cn(
-        /* Overflow clips the chips as AnimatePresence fades them out against a
-           height animating to 0. That also clips their 1px border, which only
-           reads once hover swaps it to the high-contrast one, so inset the box
-           by a pixel and pull the layout back by the same amount. marginBottom
-           is animated above, so only the three other sides are offset here. */
+        // Inset by 1px so chip borders aren't clipped during height collapse.
         "-mx-px -mt-px p-px",
         "flex flex-wrap gap-1.5 [--chip-row-gap:1rem] md:[--chip-row-gap:1.5rem]",
         align === "center" ? "max-w-2xl justify-center" : "justify-start"

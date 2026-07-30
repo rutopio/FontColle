@@ -2,8 +2,6 @@ import type { FontRecord } from "@/lib/fonts/types";
 import { sanitizeHtml } from "@/lib/sanitize-html";
 import { Panel } from "./panel";
 
-// The source is HTML, hence sanitizeHtml. Renders an empty-state line rather
-// than nothing, so the two-column Designer view keeps both columns.
 export function AboutPanel({ font }: { font: FontRecord }) {
   const html = sanitizeHtml(font.about);
   return (

@@ -15,9 +15,6 @@ import {
   weightList,
 } from "./shared";
 
-// METHOD 3, Bunny Fonts: a GDPR-compliant drop-in for the Google Fonts API,
-// serving the same families from its own CDN. Bunny ships STATIC weights only,
-// which is why this panel is just a weight + style picker.
 export function BunnyMethod({ font }: { font: FontRecord }) {
   const slug = fontsourceSlug(font.name);
   const weights = weightList(font.weights);
@@ -42,7 +39,6 @@ export function BunnyMethod({ font }: { font: FontRecord }) {
     <Panel label="Privacy-first & GDPR-friendly CDN" bodyClassName="max-w-2xl">
       <MethodIntro blurb="A drop-in for the Google Fonts API that serves the same families without logging IPs or setting cookies." />
       {font.isVariable && (
-        // Say so, rather than silently offering weights for a variable family.
         <p className="mb-3 rounded-md bg-muted/50 px-2.5 py-1.5 text-xs">
           Bunny serves static weights only, this variable family's axes aren't
           available here. Use the Google Fonts method above for the full axes.

@@ -48,7 +48,6 @@ export const FontRow = memo(function FontRow({
                 {font.designer}
               </span>
             )}
-            {/* Hidden at md where sidebar takes too much width; shown at lg. */}
             <FontTraits
               font={font}
               selection={selection}

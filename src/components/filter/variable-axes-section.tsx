@@ -3,11 +3,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useId, useMemo, useState } from "react";
 import { EditableValue } from "@/components/ui/editable-value";
 import { Slider } from "@/components/ui/slider";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip } from "@/components/ui/tooltip";
 import axesData from "@/data/axes.json";
 import type { MatchMode } from "@/lib/fonts/filter";
 import { EASE_OUT, MOTION_S } from "@/lib/motion";
@@ -104,17 +100,14 @@ export function VariableAxesSection({
           </span>
         </motion.button>
         {info && !on ? (
-          <Tooltip>
-            <TooltipTrigger
+          <Tooltip content={info.description} className="max-w-xs normal-case">
+            <button
               type="button"
               aria-label={`About ${info.name}`}
               className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
             >
               <InfoIcon className="size-3.5" />
-            </TooltipTrigger>
-            <TooltipContent className="max-w-xs normal-case">
-              {info.description}
-            </TooltipContent>
+            </button>
           </Tooltip>
         ) : null}
         <motion.div

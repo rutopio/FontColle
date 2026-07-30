@@ -27,7 +27,6 @@ function MobileTopBar({ favoriteFontId }: { favoriteFontId?: string }) {
         <LogoIcon className="size-5" />
         <span className="font-mono text-xs">FontColle</span>
       </Link>
-      {/* Same order as the desktop header clusters. */}
       <div className="flex items-center gap-1">
         <ThemeToggle variant="bar" />
         <AboutLink variant="bar" />
@@ -38,8 +37,6 @@ function MobileTopBar({ favoriteFontId }: { favoriteFontId?: string }) {
   );
 }
 
-/* Actual rendered widths of the two fixed columns. Main takes what is left via
-   flex-1, so neither value is derived from the other or from a shell total. */
 const SHELL_WIDTHS = {
   "--rail-width": "4.5rem",
   "--panel-width": "20rem",
@@ -82,12 +79,7 @@ export function FilterLayout({
           <FilterRailColumn>
             {rail ? <RouteFade>{rail}</RouteFade> : null}
           </FilterRailColumn>
-          {/* Desktop only, and gated in JS rather than by a `md:` class: the
-              width below is an inline style Framer Motion writes every frame,
-              which no class can override. Hidden with CSS the wrapper still
-              reserved --panel-width, leaving the content column a sliver of a
-              phone screen. Mobile reaches the same filters through
-              FilterDrawer. */}
+          {/* Desktop only — inline styles from Framer Motion can't be overridden by CSS classes. */}
           <AnimatePresence initial={false}>
             {sidebar && !isMobile ? (
               <motion.div
@@ -138,10 +130,6 @@ export function FilterLayout({
 
 function ColumnHeader({ children }: { children: React.ReactNode }) {
   return (
-    // Below md the header is a plain bar on the page: its own background, a
-    // rule under it and padding of its own, since there is no card frame out
-    // here to supply any of that. From md up the columns take over and it goes
-    // back to a bare strip above them.
     <header className="flex shrink-0 items-center gap-2 max-md:border-border max-md:border-b max-md:bg-background max-md:px-3 max-md:py-2 md:py-0">
       <Link
         to="/"
@@ -149,9 +137,6 @@ function ColumnHeader({ children }: { children: React.ReactNode }) {
         className="group/logo hidden w-(--rail-width) shrink-0 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl p-1 text-primary outline-none focus-visible:ring-2 focus-visible:ring-ring md:flex"
       >
         <LogoIcon className="size-7" />
-        {/* <span className="font-mono text-[9px] group-hover/logo:font-bold">
-                    FontColle
-                </span> */}
       </Link>
       <div className="flex flex-1 flex-wrap items-center gap-3 md:flex-nowrap">
         {children}

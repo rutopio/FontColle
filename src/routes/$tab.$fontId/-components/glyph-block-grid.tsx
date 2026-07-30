@@ -1,4 +1,5 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { AnimatePresence, motion } from "motion/react";
 import type { CSSProperties, RefObject } from "react";
 import {
   useCallback,
@@ -11,6 +12,7 @@ import {
 import { useGlyphCompact } from "@/hooks/use-mobile";
 import { hasCodepoint } from "@/lib/fonts/glyph-coverage";
 import type { UnicodeBlock } from "@/lib/fonts/unicode-blocks";
+import { spring } from "@/lib/springs";
 import { cn } from "@/lib/utils";
 
 export type Range = [number, number];
@@ -135,10 +137,51 @@ export function BlockGrid({
     if (popRef.current) popRef.current.style.display = "none";
   };
 
+  /* Proximity hover: one shared highlight that slides between cells instead of
+     a per-cell :hover. Only present glyphs get one; empty pads and
+     missing-glyph cells are skipped so the highlight never lands on a
+     non-interactive square. */
+  const [hoverIdx, setHoverIdx] = useState<number | null>(null);
+  const sessionRef = useRef(0);
+
+  /* Columns are derived arithmetically — the horizontal pitch is exactly
+     `cellSize + GAP` (the grid's `gap-px`). Rows are not: `cellSize` is the
+     pre-measurement estimate, and the virtualizer settles on a slightly
+     different real height, so deriving `top` from it drifts a fraction of a
+     pixel per row and visibly misaligns deep into a block. Take the row's
+     start/size from the virtualizer, which measured it, and subtract
+     `scrollMargin` to match the coordinate space each row is placed in. */
+  const hoverRow =
+    hoverIdx == null
+      ? null
+      : rowVirtualizer
+          .getVirtualItems()
+          .find((vrow) => vrow.index === Math.floor(hoverIdx / COLS));
+  const hoverRect =
+    hoverIdx == null || !hoverRow
+      ? null
+      : {
+          left:
+            labelW + (labelW ? GAP : 0) + (hoverIdx % COLS) * (cellSize + GAP),
+          top: hoverRow.start - scrollMargin,
+          width: cellSize,
+          height: hoverRow.size,
+        };
+
   const onMove = (e: React.MouseEvent) => {
-    const cp = cpOf(e);
-    if (cp == null) hide();
-    else showAt(cp, e.clientX, e.clientY);
+    const el = (e.target as HTMLElement).closest<HTMLElement>("[data-cp]");
+    if (!el) {
+      hide();
+      setHoverIdx(null);
+      return;
+    }
+    setHoverIdx(Number(el.dataset.idx));
+    showAt(Number(el.dataset.cp), e.clientX, e.clientY);
+  };
+
+  const onGridLeave = () => {
+    hide();
+    setHoverIdx(null);
   };
 
   const onFocus = (e: React.FocusEvent) => {
@@ -306,16 +349,19 @@ export function BlockGrid({
     return null;
   };
 
-  const glyphCell = (cp: number) => (
+  const glyphCell = (cp: number, idx: number) => (
     <button
       type="button"
       key={cp}
       data-cp={cp}
+      data-idx={idx}
       tabIndex={cp === rovingCp ? 0 : -1}
       title={`U+${hex(cp)}: click to copy`}
       aria-label={`U+${hex(cp)} ${String.fromCodePoint(cp)}, copy character`}
       className={cn(
-        "flex items-center justify-center border-primary bg-card leading-none outline-none hover:border focus-visible:border-2 focus-visible:border-primary",
+        // Keeps its own bg-card, unchanged on hover, so nothing pops a frame
+        // ahead of the spring; the highlight layers above it instead.
+        "relative z-10 flex items-center justify-center border-primary bg-card leading-none outline-none focus-visible:border-2 focus-visible:border-primary",
         highlightCp === cp && "animate-pulse border-2 border-primary"
       )}
       style={{ ...style, fontSize: cellSize * 0.4 }}
@@ -356,13 +402,36 @@ export function BlockGrid({
           height: rowVirtualizer.getTotalSize(),
           position: "relative",
         }}
+        onMouseEnter={() => {
+          // A new hover session fades the highlight in; moves within the same
+          // session keep the key stable so it slides instead of re-fading.
+          sessionRef.current += 1;
+        }}
         onMouseMove={onMove}
-        onMouseLeave={hide}
+        onMouseLeave={onGridLeave}
         onClick={onClick}
         onKeyDown={onKeyDown}
         onFocus={onFocus}
         onBlur={hide}
       >
+        <AnimatePresence>
+          {hoverRect && (
+            <motion.div
+              key={sessionRef.current}
+              /* Layers above the cells rather than behind them: the cells paint
+                 an opaque bg-card and the gaps between them are transparent
+                 down to the page, so a highlight behind would be hidden and a
+                 row-level background would erase the grid lines. A translucent
+                 fill reads the same and keeps the glyph legible. */
+              className="pointer-events-none absolute z-20 rounded-lg bg-accent/60"
+              initial={{ opacity: 0, ...hoverRect }}
+              animate={{ opacity: 1, ...hoverRect }}
+              exit={{ opacity: 0, transition: spring.fast.exit }}
+              transition={{ ...spring.fast, opacity: { duration: 0.08 } }}
+            />
+          )}
+        </AnimatePresence>
+
         {rowVirtualizer.getVirtualItems().map((vrow) => {
           const rowStart = vrow.index * COLS; // grid index of this row's col 0
           return (
@@ -390,7 +459,7 @@ export function BlockGrid({
                   const packedCp = present[idx];
                   if (packedCp === undefined)
                     return <div key={`tail:${idx}`} className="bg-card" />;
-                  return glyphCell(packedCp);
+                  return glyphCell(packedCp, idx);
                 }
                 if (idx < lead)
                   return <div key={`pad:${idx}`} className="bg-card" />;
@@ -398,7 +467,7 @@ export function BlockGrid({
                 if (cp > block.end)
                   return <div key={`tail:${idx}`} className="bg-card" />;
                 return isRenderable(cp) && hasCodepoint(ranges, cp) ? (
-                  glyphCell(cp)
+                  glyphCell(cp, idx)
                 ) : (
                   <div key={cp} title={`U+${hex(cp)}`} className="bg-muted" />
                 );

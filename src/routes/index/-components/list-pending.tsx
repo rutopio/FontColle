@@ -40,13 +40,7 @@ const STYLE_SUBGROUPS = [
   { id: "script", pills: 4 },
 ];
 
-/* The header's controls all render at their real size and in their real state
-   while the catalog loads, so nothing moves when it arrives. Only the result
-   count is a skeleton — it is the one thing that genuinely has no value yet.
-   The controls are inert rather than individually disabled: SearchInput and
-   SortControl take no `disabled` prop, and adding one to both just to gray them
-   out here would be a wider change than the placeholder is worth. Same trick as
-   PendingRail below. */
+// Inert real-sized controls so the header doesn't shift when the catalog loads.
 const PENDING_SORT = () => {};
 const EMPTY_SUGGESTIONS: SearchSuggestion[] = [];
 
@@ -71,9 +65,7 @@ const HEADER_SKELETON = (
       <div className="flex-1">
         <div className="h-5 w-20 animate-pulse rounded bg-muted" />
       </div>
-      {/* `contents` so these two stay direct flex children of the row above,
-          matching the real header's layout exactly. Opacity has no effect on a
-          `contents` box, so each child dims itself. */}
+      {/* `contents` keeps flex layout; children dim themselves (opacity ignores contents). */}
       <div inert className="contents">
         <div className="opacity-60 md:hidden">
           <SortControl sort={DEFAULT_SORT} onChange={PENDING_SORT} />
@@ -124,14 +116,10 @@ function PendingRail() {
   );
 }
 
-/* Section rhythm mirrors the real sidebar, which separates its groups with
-   `mt-7 border-t pt-7` rather than a flex gap — so the second block starts on
-   the same y and nothing shifts when the filters arrive. */
+// Sidebar spacing mirrors the real filter groups.
 const SIDEBAR_SKELETON = (
   <div className="flex w-full flex-col p-4 [&>div+div]:mt-7 [&>div+div]:border-border [&>div+div]:border-t [&>div+div]:pt-7">
     <div className="flex flex-col gap-2">
-      {/* Static labels: they read the same before and after the catalog lands,
-          so render them outright instead of pulsing a bar the same size. */}
       <div className="flex items-center justify-between gap-2">
         <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase">
           <ShapesIcon className="size-4" />
@@ -183,8 +171,7 @@ export function ListPending() {
       header={HEADER_SKELETON}
     >
       <Column footer={<PreviewBar />}>
-        {/* Both layouts, same as FirstPagePending: the server cannot read the
-            view preference, so data-view on <html> picks one before paint. */}
+        {/* SSR picks grid vs row via data-view on <html>. */}
         <div className="pending-grid-only flex-1">
           <SkeletonGrid view="grid" />
         </div>

@@ -45,8 +45,7 @@ function ScrollArea({
         data-slot="scroll-area-viewport"
         className={cn(
           "size-full overscroll-contain rounded-[inherit] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
-          // Must land on the viewport, not the root: the utility keys off
-          // `scroll(self)`, so it only resolves on the element that scrolls.
+          // Must be on the viewport element (scroll(self) resolution).
           fade === true && "scroll-fade",
           typeof fade === "string" && FADE_CLASS[fade],
           viewportClassName

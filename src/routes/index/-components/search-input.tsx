@@ -67,8 +67,6 @@ export function SearchInput({
     if (hit) onPick(hit.id);
   };
 
-  // Enter falls back to the first row when nothing is highlighted, so the hint
-  // has to follow the same rule.
   const enterTarget = active >= 0 ? active : 0;
 
   return (
@@ -128,7 +126,6 @@ export function SearchInput({
               setOpen(false);
               return;
             }
-            // Nothing to pick: the user is asking for these results now.
             flush(draft);
           }
         }}
@@ -168,9 +165,7 @@ export function SearchInput({
             >
               <span className="min-w-0 flex-1 truncate">{s.name}</span>
               {i === enterTarget && (
-                // Decorative: it mirrors the Enter handler for sighted users.
-                // Announcing it would append "Press Enter to open" to every
-                // option's accessible name, and the title is mouse-only anyway.
+                // Decorative hint mirroring Enter; aria-hidden to avoid noisy option labels.
                 <Kbd aria-hidden="true" className="bg-background/80">
                   <ArrowElbowDownLeftIcon />
                 </Kbd>

@@ -9,7 +9,6 @@ export interface ClassificationGroup {
   items: [string, number][];
 }
 
-// One header — sub-lists share the same `style` key and OR/AND mode.
 export function ClassificationSection({
   title,
   icon,

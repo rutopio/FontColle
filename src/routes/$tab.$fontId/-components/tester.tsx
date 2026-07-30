@@ -133,7 +133,6 @@ const ALIGNMENTS: {
   },
 ];
 
-// Resolves Lexical's unset format ("") against block direction.
 function alignedAs(
   format: ElementFormatType,
   rtl: boolean
@@ -145,7 +144,7 @@ function alignedAs(
   return null;
 }
 
-// Snaps to the nearest weight the family ships to avoid browser synthesis.
+// Snap to nearest shipped weight to avoid browser synthesis.
 function headingInstance(
   instances: FontInstance[],
   tag: "h1" | "h2" | "h3"
@@ -311,6 +310,7 @@ function TesterInner({
             value={size}
             onChange={(v) => setSize(v as number)}
             showValue={false}
+            tooltipSide="bottom"
             className="w-32"
           />
           <span className="flex w-8 shrink-0 justify-end">

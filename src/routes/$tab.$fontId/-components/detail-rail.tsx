@@ -8,7 +8,11 @@ import {
   UserIcon,
 } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
-import { RAIL_BTN, RAIL_BTN_OFF, RAIL_BTN_ON } from "@/components/rail-button";
+import { AnimatePresence, motion } from "motion/react";
+import { useEffect, useRef } from "react";
+import { RAIL_BTN, RAIL_BTN_ON } from "@/components/rail-button";
+import { useProximityHover } from "@/hooks/use-proximity-hover";
+import { spring } from "@/lib/springs";
 import { cn } from "@/lib/utils";
 
 export type DetailTab =
@@ -106,6 +110,56 @@ export function DetailTabBar({
   );
 }
 
+function DetailRailButton({
+  tab,
+  on,
+  onSelect,
+  proximityActive,
+  proximityIndex,
+  registerItem,
+}: {
+  tab: (typeof TABS)[number];
+  on: boolean;
+  onSelect: (id: DetailTab) => void;
+  proximityActive: boolean;
+  proximityIndex: number;
+  registerItem: (index: number, element: HTMLElement | null) => void;
+}) {
+  const btnRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    registerItem(proximityIndex, btnRef.current);
+    return () => registerItem(proximityIndex, null);
+  }, [proximityIndex, registerItem]);
+
+  return (
+    <button
+      ref={btnRef}
+      type="button"
+      onClick={() => onSelect(tab.id)}
+      aria-pressed={on}
+      aria-label={`${tab.label} view`}
+      data-proximity-active={proximityActive || undefined}
+      className={cn(
+        cn(RAIL_BTN, "focus-visible:ring-inset"),
+        on ? RAIL_BTN_ON : "hover:text-foreground"
+      )}
+    >
+      <tab.icon
+        className="size-5 group-hover/rail-btn:hidden group-data-proximity-active/rail-btn:hidden"
+        weight="regular"
+      />
+      <tab.icon
+        className="hidden size-5 group-hover/rail-btn:block group-data-proximity-active/rail-btn:block"
+        weight="duotone"
+      />
+      <span className="font-heading text-[10px] leading-none">
+        {tab.label}
+      </span>
+    </button>
+  );
+}
+
 export function DetailRail({
   active,
   onSelect,
@@ -113,36 +167,67 @@ export function DetailRail({
   active: DetailTab;
   onSelect: (id: DetailTab) => void;
 }) {
+  const navRef = useRef<HTMLElement>(null);
+  const {
+    activeIndex,
+    sessionRef,
+    handlers,
+    registerItem,
+    itemRects,
+    isMeasured,
+  } = useProximityHover(navRef);
+
+  const hoverRect =
+    isMeasured && activeIndex !== null ? itemRects[activeIndex] : null;
+
   return (
-    <nav aria-label="Detail views" className="flex flex-col gap-1">
-      {TABS.map((tab) => {
-        const on = tab.id === active;
-        return (
-          <button
-            key={tab.id}
-            type="button"
-            onClick={() => onSelect(tab.id)}
-            aria-pressed={on}
-            aria-label={`${tab.label} view`}
-            className={cn(
-              cn(RAIL_BTN, "focus-visible:ring-inset"),
-              on ? RAIL_BTN_ON : RAIL_BTN_OFF
-            )}
-          >
-            <tab.icon
-              className="size-5 group-hover/rail-btn:hidden"
-              weight="regular"
-            />
-            <tab.icon
-              className="hidden size-5 group-hover/rail-btn:block"
-              weight="duotone"
-            />
-            <span className="font-heading text-[10px] leading-none">
-              {tab.label}
-            </span>
-          </button>
-        );
-      })}
+    <nav
+      ref={navRef}
+      aria-label="Detail views"
+      onMouseMove={handlers.onMouseMove}
+      onMouseEnter={handlers.onMouseEnter}
+      onMouseLeave={handlers.onMouseLeave}
+      className="relative flex flex-col gap-1"
+    >
+      <AnimatePresence>
+        {hoverRect && (
+          <motion.div
+            key={sessionRef.current}
+            className="pointer-events-none absolute rounded-md bg-accent/50"
+            initial={{
+              opacity: 0,
+              top: hoverRect.top,
+              left: hoverRect.left,
+              width: hoverRect.width,
+              height: hoverRect.height,
+            }}
+            animate={{
+              opacity: 1,
+              top: hoverRect.top,
+              left: hoverRect.left,
+              width: hoverRect.width,
+              height: hoverRect.height,
+            }}
+            exit={{ opacity: 0, transition: spring.fast.exit }}
+            transition={{
+              ...spring.fast,
+              opacity: { duration: 0.08 },
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      {TABS.map((tab, index) => (
+        <DetailRailButton
+          key={tab.id}
+          tab={tab}
+          on={tab.id === active}
+          onSelect={onSelect}
+          proximityIndex={index}
+          registerItem={registerItem}
+          proximityActive={activeIndex === index}
+        />
+      ))}
     </nav>
   );
 }

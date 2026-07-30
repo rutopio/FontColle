@@ -19,13 +19,11 @@ export function DesignerPanel({
   font: FontRecord;
   siblingsByDesigner: Record<string, DesignerSibling[]>;
 }) {
-  // One string in the record, but Google Fonts credits several, comma-joined.
   const designers = (font.designer ?? "")
     .split(",")
     .map((d) => d.trim())
     .filter(Boolean);
 
-  // The metadata endpoint keys profiles by name, so match on the trimmed one.
   const profileByName = new Map(
     (font.designerProfiles ?? [])
       .filter((p) => p.name)
@@ -34,7 +32,6 @@ export function DesignerPanel({
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
-      {/* LEFT, one block per credited designer: bio + their other families. */}
       <Panel
         label={designers.length > 1 ? "Designers" : "Designer"}
         count={designers.length || undefined}
@@ -63,9 +60,6 @@ export function DesignerPanel({
                         <span>{name}</span>
                       </div>
                       <div className="flex shrink-0 items-center gap-1">
-                        {/* Filter the list to just this
-                                                    designer: reset every filter,
-                                                    then select their capsule. */}
                         <Button
                           variant="ghost"
                           size="sm"
@@ -153,13 +147,11 @@ export function DesignerPanel({
         )}
       </Panel>
 
-      {/* RIGHT, the family "about" prose. */}
       <AboutPanel font={font} />
     </div>
   );
 }
 
-// First and last words, so "Erik Spiekermann" -> "ES".
 function initials(name: string): string {
   const words = name.split(/\s+/).filter(Boolean);
   if (words.length === 0) return "";

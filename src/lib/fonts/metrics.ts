@@ -108,17 +108,21 @@ export const METRIC_ORDER: MetricKey[] = [
 const ratio = (n: number | null, d: number | null): number | null =>
   n != null && d != null && d > 0 ? n / d : null;
 
+// Round to 2 decimals to match UI precision.
+const round2 = (v: number | null): number | null =>
+  v == null ? null : Math.round(v * 100) / 100;
+
 export function derive(font: FontRecord, key: MetricKey): number | null {
   const upm = font.unitsPerEm;
   switch (key) {
     case "xHeight":
-      return ratio(font.xHeight, upm);
+      return round2(ratio(font.xHeight, upm));
     case "capHeight":
-      return ratio(font.capHeight, upm);
+      return round2(ratio(font.capHeight, upm));
     case "avgWidth":
-      return ratio(font.avgCharWidth, upm);
+      return round2(ratio(font.avgCharWidth, upm));
     case "contrast":
-      return font.contrast;
+      return round2(font.contrast);
     case "fileSize":
       return font.fileSize != null && font.fileSize > 0 ? font.fileSize : null;
     case "lineHeight": {
@@ -129,7 +133,7 @@ export function derive(font: FontRecord, key: MetricKey): number | null {
         : font.hheaDescender;
       const gap = font.useTypoMetrics ? font.typoLineGap : font.hheaLineGap;
       if (asc == null || desc == null || gap == null) return null;
-      return (asc - desc + gap) / upm;
+      return round2((asc - desc + gap) / upm);
     }
   }
 }

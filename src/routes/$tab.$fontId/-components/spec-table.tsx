@@ -9,12 +9,14 @@ export interface SpecRow {
 
 export function SpecTable({ rows }: { rows: SpecRow[] }) {
   return (
-    <Table>
+    // -mx-3 cancels the cells' default px-3: the text stays flush with the
+    // panel's other content while the hover highlight extends past it.
+    <Table className="-mx-3 w-[calc(100%+1.5rem)]">
       <TableBody>
-        {rows.map((row) => (
-          <TableRow key={row.label}>
-            <TableCell className="px-0 py-1.5 text-sm">{row.label}</TableCell>
-            <TableCell className="px-0 py-1.5 text-right">
+        {rows.map((row, i) => (
+          <TableRow key={row.label} index={i}>
+            <TableCell className="py-1.5 text-sm">{row.label}</TableCell>
+            <TableCell className="py-1.5 text-right">
               <span className="flex items-center justify-end gap-2">
                 {row.badge && (
                   <Badge variant="secondary" className="font-mono">

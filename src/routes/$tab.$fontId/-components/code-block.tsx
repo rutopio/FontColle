@@ -4,8 +4,6 @@ import { toast } from "sonner";
 import { highlight } from "@/lib/code/highlight";
 import { cn } from "@/lib/utils";
 
-// A copyable code snippet. The copy button flips to a check for ~1.5s, or a
-// red X for the same window when the clipboard write fails.
 export function CodeBlock({
   code,
   lang,
@@ -29,7 +27,6 @@ export function CodeBlock({
       setStatus("copied");
       toast.success(lang ? `Copied ${lang} snippet` : "Copied to clipboard");
     } catch {
-      // The clipboard is unavailable in an insecure context or when denied.
       setStatus("failed");
       toast.error("Copy failed");
     }
@@ -42,8 +39,6 @@ export function CodeBlock({
         className
       )}
     >
-      {/* First row: the language label in small caps, with the copy button
-          tucked to its right. A hairline separates it from the code below. */}
       <div className="flex items-center justify-between border-b bg-muted/60 py-1 pr-1 pl-3">
         <span className="select-none font-mono text-[10px] text-muted-foreground/70 uppercase tracking-wide">
           {lang}
@@ -60,8 +55,6 @@ export function CodeBlock({
           }
           className="flex size-6 cursor-pointer items-center justify-center rounded text-muted-foreground opacity-0 outline-none transition-opacity hover:bg-accent hover:text-accent-foreground focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring group-hover/code:opacity-100"
         >
-          {/* Keyed on status so the check/x remounts and replays the pop; the
-              idle copy icon stays still so it doesn't pop on reset. */}
           {status === "copied" ? (
             <CheckIcon
               key="copied"
@@ -79,9 +72,6 @@ export function CodeBlock({
           )}
         </button>
       </div>
-      {/* Wrap long lines instead of scrolling horizontally: pre-wrap keeps the
-          indentation, break-all lets long unbroken tokens (URLs, @import links)
-          break mid-string so nothing overflows the card. */}
       <pre className="whitespace-pre-wrap break-all p-3 font-mono text-xs leading-relaxed">
         <code>
           {highlight(code, lang).map((tok, i) =>

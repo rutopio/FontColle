@@ -21,9 +21,6 @@ import {
 } from "@/lib/fonts/sort";
 import { cn } from "@/lib/utils";
 
-// Relevance only ranks something against a query, so it is offered as a sort
-// group only while one is active. It carries no SortKey: picking it means
-// "no explicit sort", which is what lets searchByQuery's own order stand.
 export const RELEVANCE_GROUP = "Relevance";
 
 export function SortControl({
@@ -35,11 +32,8 @@ export function SortControl({
 }: {
   sort: SortKey;
   onChange: (next: SortKey) => void;
-  /** Clears the explicit sort, restoring relevance order. */
   onRelevance?: () => void;
-  /** A query is active, so Relevance is an available choice. */
   relevance?: boolean;
-  /** Relevance is the live selection, not merely available. */
   sortedByRelevance?: boolean;
 }) {
   const { group, asc } = sortGroupOf(sort);
@@ -76,9 +70,6 @@ export function SortControl({
         <Select value={current} onValueChange={selectGroup}>
           <SelectTrigger
             variant="borderless"
-            // The trigger is the left cell of a rounded-lg bordered group with
-            // a divider on its right, so only the left corners round — and at
-            // rounded-md, since the fill sits 1px inside the group's border.
             className="h-9 min-w-36 rounded-none rounded-l-md focus-visible:ring-0"
             aria-label="Sort by"
           />

@@ -130,7 +130,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <MotionConfig reducedMotion="user">
-          <TooltipProvider delay={300}>
+          <TooltipProvider delayDuration={300}>
             <FilterProvider>
               <PreviewProvider>
                 <AboutProvider>

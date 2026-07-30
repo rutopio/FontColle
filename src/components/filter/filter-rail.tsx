@@ -1,12 +1,15 @@
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
+import { useEffect, useRef } from "react";
 import {
   RAIL_BTN,
   RAIL_BTN_OFF,
   RAIL_BTN_ON_SLIDING,
   RAIL_INDICATOR,
 } from "@/components/rail-button";
+import { useProximityHover } from "@/hooks/use-proximity-hover";
 import type { FilterState } from "@/lib/fonts/filter";
 import { EASE_OUT, MOTION_S } from "@/lib/motion";
+import { spring } from "@/lib/springs";
 import { cn } from "@/lib/utils";
 import {
   FILTER_GROUPS,
@@ -15,10 +18,6 @@ import {
   groupActiveCount,
 } from "./groups";
 
-/* One indicator per rail instance. Every button in the same instance shares the
-   layoutId, so motion slides the surface between them instead of cross-fading.
-   The list rail and the drawer rail are separate instances and must not share
-   an id, or a mount of one would animate from the other's position. */
 const RailIndicator = ({ layoutId }: { layoutId: string }) => (
   <motion.span
     aria-hidden="true"
@@ -35,6 +34,9 @@ export function FilterGroupButton({
   onSelect,
   horizontal,
   indicatorId,
+  proximityActive,
+  proximityIndex,
+  registerItem,
 }: {
   group: FilterGroup;
   active: boolean;
@@ -42,25 +44,43 @@ export function FilterGroupButton({
   onSelect: (id: FilterGroupId) => void;
   horizontal?: boolean;
   indicatorId: string;
+  proximityActive?: boolean;
+  proximityIndex?: number;
+  registerItem?: (index: number, element: HTMLElement | null) => void;
 }) {
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const hasProximity = registerItem != null && proximityIndex != null;
+
+  useEffect(() => {
+    if (!hasProximity) return;
+    registerItem(proximityIndex, btnRef.current);
+    return () => registerItem(proximityIndex, null);
+  }, [hasProximity, proximityIndex, registerItem]);
+
   return (
     <button
+      ref={hasProximity ? btnRef : undefined}
       type="button"
       onClick={() => onSelect(group.id)}
       aria-pressed={active}
+      data-proximity-active={proximityActive || undefined}
       className={cn(
         cn(RAIL_BTN, "isolate focus-visible:ring-inset"),
         horizontal ? "w-16 shrink-0 px-1" : "",
-        active ? RAIL_BTN_ON_SLIDING : RAIL_BTN_OFF
+        active
+          ? RAIL_BTN_ON_SLIDING
+          : hasProximity
+            ? "hover:text-foreground"
+            : RAIL_BTN_OFF
       )}
     >
       {active && <RailIndicator layoutId={indicatorId} />}
       <group.icon
-        className="size-5 group-hover/rail-btn:hidden"
+        className="size-5 group-hover/rail-btn:hidden group-data-proximity-active/rail-btn:hidden"
         weight="regular"
       />
       <group.icon
-        className="hidden size-5 group-hover/rail-btn:block"
+        className="hidden size-5 group-hover/rail-btn:block group-data-proximity-active/rail-btn:block"
         weight="duotone"
       />
       <span className="text-[10px] leading-none">{group.label}</span>
@@ -92,17 +112,64 @@ export function FilterRail({
   orientation?: "vertical" | "horizontal";
   indicatorId: string;
 }) {
+  const navRef = useRef<HTMLElement>(null);
+  const {
+    activeIndex,
+    sessionRef,
+    handlers,
+    registerItem,
+    itemRects,
+    isMeasured,
+  } = useProximityHover(navRef, {
+    axis: orientation === "horizontal" ? "x" : "y",
+  });
+
+  const hoverRect =
+    isMeasured && activeIndex !== null ? itemRects[activeIndex] : null;
+
   return (
     <nav
+      ref={navRef}
       aria-label="Filter groups"
+      onMouseMove={handlers.onMouseMove}
+      onMouseEnter={handlers.onMouseEnter}
+      onMouseLeave={handlers.onMouseLeave}
       className={cn(
-        "flex gap-1",
+        "relative flex gap-1",
         orientation === "horizontal"
           ? "flex-row overflow-x-auto pb-1"
           : "flex-col"
       )}
     >
-      {FILTER_GROUPS.map((group) => (
+      <AnimatePresence>
+        {hoverRect && (
+          <motion.div
+            key={sessionRef.current}
+            className="pointer-events-none absolute rounded-md bg-accent/50"
+            initial={{
+              opacity: 0,
+              top: hoverRect.top,
+              left: hoverRect.left,
+              width: hoverRect.width,
+              height: hoverRect.height,
+            }}
+            animate={{
+              opacity: 1,
+              top: hoverRect.top,
+              left: hoverRect.left,
+              width: hoverRect.width,
+              height: hoverRect.height,
+            }}
+            exit={{ opacity: 0, transition: spring.fast.exit }}
+            transition={{
+              ...spring.fast,
+              opacity: { duration: 0.08 },
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      {FILTER_GROUPS.map((group, index) => (
         <FilterGroupButton
           key={group.id}
           group={group}
@@ -111,6 +178,9 @@ export function FilterRail({
           onSelect={onSelect}
           horizontal={orientation === "horizontal"}
           indicatorId={indicatorId}
+          proximityIndex={index}
+          registerItem={registerItem}
+          proximityActive={activeIndex === index}
         />
       ))}
     </nav>

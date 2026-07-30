@@ -108,6 +108,7 @@
   /* shadcn's --chart-* and --sidebar-* are deliberately absent: no charts, and
      the sidebar paints from --canvas and --card. shadcn's radius ladder is
      kept verbatim. */
+  --color-hover: color-mix(in srgb, var(--accent) 50%, transparent);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -299,6 +300,13 @@
   --shadow-6: inset 0 1px 0 0 var(--dm-hi-high), inset 0 0 0 1px var(--dm-ring-high), 0 0 0 1px rgba(0,0,0,0.18), 0 1px 1px -0.5px var(--dm-drop), 0 3px 3px -1.5px var(--dm-drop), 0 6px 6px -3px var(--dm-drop), 0 12px 12px -6px var(--dm-drop), 0 24px 24px -12px var(--dm-drop);
   --shadow-7: inset 0 1px 0 0 var(--dm-hi-peak), inset 0 0 0 1px var(--dm-ring-high), 0 0 0 1px rgba(0,0,0,0.20), 0 1px 1px -0.5px var(--dm-drop), 0 3px 3px -1.5px var(--dm-drop), 0 6px 6px -3px var(--dm-drop), 0 12px 12px -6px var(--dm-drop), 0 24px 24px -12px var(--dm-drop), 0 48px 48px -24px var(--dm-drop);
   --shadow-8: inset 0 1px 0 0 var(--dm-hi-peak), inset 0 0 0 1px var(--dm-ring-high), 0 0 0 1px rgba(0,0,0,0.22), 0 1px 1px -0.5px var(--dm-drop), 0 3px 3px -1.5px var(--dm-drop), 0 6px 6px -3px var(--dm-drop), 0 12px 12px -6px var(--dm-drop), 0 24px 24px -12px var(--dm-drop), 0 48px 48px -24px var(--dm-drop), 0 96px 96px -48px var(--dm-drop);
+}
+
+/* Suppress individual hover backgrounds when proximity hover provides the
+   visual feedback. The proximity overlay is the single source of truth, so the
+   per-button hover:bg-accent/50 from RAIL_BTN_OFF must not stack on top. */
+[data-proximity-group] :is(a, button):hover {
+  background-color: transparent !important;
 }
 
 @layer base {

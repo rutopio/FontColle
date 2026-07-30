@@ -108,7 +108,6 @@ export function Detail({
     [featureState]
   );
 
-  // Only show badges for axes whose value actually differs across instances.
   const varyingAxisTags = useMemo(() => {
     const seen = new Map<string, number>();
     const varying = new Set<string>();
@@ -195,13 +194,13 @@ export function Detail({
             <MetricsPanel font={font} />
 
             <div className="grid gap-4 md:grid-cols-4">
-              <Panel label="Specs" className="md:col-span-1">
+              <Panel label="Specs" className="md:col-span-2 xl:col-span-1">
                 <SpecTable rows={specRows} />
               </Panel>
               <Panel
                 label="Subsets"
                 count={subsets.length || undefined}
-                className="flex flex-col md:col-span-1"
+                className="flex flex-col md:col-span-2 xl:col-span-1"
                 bodyClassName="flex-1"
               >
                 <ColumnList items={subsets} />
@@ -210,7 +209,7 @@ export function Detail({
                 <Panel
                   label="Writing systems"
                   count={font.scripts.length}
-                  className="flex flex-col md:col-span-1"
+                  className="flex flex-col md:col-span-2 xl:col-span-1"
                   bodyClassName="flex-1"
                 >
                   <ColumnList items={font.scripts.map(scriptLabel)} />
@@ -222,13 +221,13 @@ export function Detail({
                 count={
                   versionHistory.length > 0 ? versionHistory.length : undefined
                 }
-                className="md:col-span-1"
+                className="md:col-span-2 xl:col-span-1"
               >
                 {versionHistory.length > 0 ? (
                   <Table>
                     <TableBody>
-                      {[...versionHistory].reverse().map((v) => (
-                        <TableRow key={v.version}>
+                      {[...versionHistory].reverse().map((v, i) => (
+                        <TableRow key={v.version} index={i}>
                           <TableCell className="px-0 py-1.5 font-mono text-sm">
                             v{v.version}
                           </TableCell>

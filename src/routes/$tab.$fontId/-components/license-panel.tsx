@@ -3,8 +3,6 @@ import type { FontRecord } from "@/lib/fonts/types";
 import { CopyButton } from "./copy-button";
 import { Panel } from "./panel";
 
-// Assembled from the per-family OFL copyright header plus that license's
-// shared boilerplate; Apache and UFL have no per-family header.
 export function LicensePanel({ font }: { font: FontRecord }) {
   const boilerplate = font.license
     ? LICENSE_BOILERPLATE[font.license]

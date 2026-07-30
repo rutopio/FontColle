@@ -8,8 +8,6 @@ import { EASE_OUT, MOTION_S } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { Panel } from "./panel";
 
-// A language spoken on several continents is listed under each, so the
-// per-region counts sum to more than the header's count of distinct languages.
 export function LanguageSupport({ font }: { font: FontRecord }) {
   const regions = useMemo(
     () => groupLanguagesByRegion(font.languages),
@@ -40,7 +38,6 @@ function RegionAccordion({
   defaultOpen: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
-  // Names the collapsed region so aria-expanded has something to point at.
   const panelId = useId();
 
   return (
@@ -61,10 +58,6 @@ function RegionAccordion({
           {ids.length}
         </span>
       </button>
-      {/* Motion collapses the region open/closed by animating height auto <-> 0;
-          overflow-hidden clips the content while it slides. The id sits on this
-          always-mounted wrapper rather than the motion child, so the button's
-          aria-controls still resolves while the region is collapsed. */}
       <div id={panelId}>
         <AnimatePresence initial={false}>
           {open && (

@@ -8,7 +8,6 @@ import {
 import { REPO_URL, SITE_NAME } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
-/* Shaped like AboutLink so the two sit as one set. */
 export function GithubLink({
   variant = "rail",
 }: {

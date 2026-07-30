@@ -1,11 +1,7 @@
 import { CaretDownIcon, type Icon } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from "motion/react";
 import { Fragment, useId, useMemo, useState } from "react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip } from "@/components/ui/tooltip";
 import type { MatchMode } from "@/lib/fonts/filter";
 import { EASE_OUT, MOTION_S } from "@/lib/motion";
 import { cn } from "@/lib/utils";
@@ -114,7 +110,6 @@ export function Pills({
   expandAll?: boolean;
 }) {
   const [showRare, setShowRare] = useState(false);
-  // Names the collapsed rare row so the toggle's aria-expanded has a target.
   const rareId = useId();
 
   const isRare = ([value, count]: [string, number]) => {
@@ -143,15 +138,10 @@ export function Pills({
     );
     if (!tip) return <Fragment key={value}>{pill}</Fragment>;
     return (
-      <Tooltip key={value}>
-        <TooltipTrigger
-          render={(props) => (
-            <div {...props} className={cn("flex", grid && "min-w-0")}>
-              {pill}
-            </div>
-          )}
-        />
-        <TooltipContent className="normal-case">{tip}</TooltipContent>
+      <Tooltip key={value} content={tip} className="normal-case">
+        <div className={cn("flex", grid && "min-w-0")}>
+          {pill}
+        </div>
       </Tooltip>
     );
   };

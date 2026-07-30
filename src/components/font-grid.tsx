@@ -175,10 +175,6 @@ export function SkeletonGrid({ view }: { view: ViewMode }) {
   );
 }
 
-/* Mirrors FontCard: the name block, then the specimen placeholder at the same
-   min-h-16 flex-1 py-1 as the card's unloaded state, then the trait row. The
-   trait bars are h-5 to match Badge's height, so the card's three bands sit at
-   the same heights whether it is loading or loaded. */
 function SkeletonCard() {
   return (
     <div className="flex h-72 flex-col gap-4 rounded-lg border bg-card p-4">
@@ -200,9 +196,6 @@ function SkeletonCard() {
   );
 }
 
-/* Mirrors FontRow + its Separator: same h-32, the same gap-4 between the meta
-   block and the specimen, and px-4 on the text rather than the row box, so the
-   placeholder bars start on the same x as the real name and specimen. */
 function SkeletonLine() {
   return (
     <div className="flex flex-col">

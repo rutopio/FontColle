@@ -1,11 +1,7 @@
 import { GoogleLogoIcon, HeartIcon } from "@phosphor-icons/react";
 import { HoverBoldIcon } from "@/components/hover-bold-icon";
 import { repoHostIcon } from "@/components/repo-host-icon";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip } from "@/components/ui/tooltip";
 import type { FontRecord } from "@/lib/fonts/types";
 import { cn } from "@/lib/utils";
 
@@ -22,10 +18,10 @@ export function FontActions({
 }) {
   return (
     <div className="flex shrink-0 items-center gap-4">
-      <Tooltip>
-        <TooltipTrigger
+      <Tooltip content={isFavorite ? "Remove from favorites" : "Add to favorites"}>
+        <button
           type="button"
-          onClick={(e) => {
+          onClick={(e: React.MouseEvent) => {
             e.preventDefault();
             onToggleFavorite(font.id);
           }}
@@ -41,16 +37,13 @@ export function FontActions({
               isFavorite && "animate-heart-pop text-red-500"
             )}
           />
-        </TooltipTrigger>
-        <TooltipContent>
-          {isFavorite ? "Remove from favorites" : "Add to favorites"}
-        </TooltipContent>
+        </button>
       </Tooltip>
       {/* Buttons, not links: the card is already a <Link> and nested <a> is invalid. */}
-      <Tooltip>
-        <TooltipTrigger
+      <Tooltip content="View on Google Fonts">
+        <button
           type="button"
-          onClick={(e) => {
+          onClick={(e: React.MouseEvent) => {
             e.preventDefault();
             e.stopPropagation();
             window.open(
@@ -63,14 +56,13 @@ export function FontActions({
           className="-m-2 p-2 text-muted-foreground transition-colors hover:text-foreground"
         >
           <HoverBoldIcon icon={GoogleLogoIcon} className="size-5" />
-        </TooltipTrigger>
-        <TooltipContent>View on Google Fonts</TooltipContent>
+        </button>
       </Tooltip>
       {font.repositoryUrl && (
-        <Tooltip>
-          <TooltipTrigger
+        <Tooltip content="View source repository">
+          <button
             type="button"
-            onClick={(e) => {
+            onClick={(e: React.MouseEvent) => {
               e.preventDefault();
               e.stopPropagation();
               window.open(font.repositoryUrl as string, "_blank", "noreferrer");
@@ -82,8 +74,7 @@ export function FontActions({
               icon={repoHostIcon(font.repositoryUrl)}
               className="size-5"
             />
-          </TooltipTrigger>
-          <TooltipContent>View source repository</TooltipContent>
+          </button>
         </Tooltip>
       )}
       {!font.repositoryUrl && reserveRepoSlot && (

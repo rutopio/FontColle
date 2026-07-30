@@ -22,6 +22,10 @@ import {
 } from "@/components/filter/groups";
 import { PresetToggle } from "@/components/filter/preset-toggle";
 import { Column, FilterLayout } from "@/components/filter-layout";
+import {
+  HeaderButtonGroup,
+  HeaderButtonGroupItem,
+} from "@/components/header-button-group";
 import { FontGrid, type ViewMode } from "@/components/font-grid";
 import { GithubLink } from "@/components/github-link";
 import { PreviewBar } from "@/components/preview-dock";
@@ -82,7 +86,6 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
   const searchRef = useRef<HTMLInputElement>(null);
 
   const filter = useMemo(() => searchToFilter(search), [search]);
-  // Deferred: commits at opacity 0 so results swap while invisible.
   const [shownFilter, setShownFilter] = useState(filter);
   const fading = filterKey(filter) !== filterKey(shownFilter);
   useEffect(() => {
@@ -141,11 +144,7 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
   const sort = (search.sort as SortKey) ?? DEFAULT_SORT;
   const favOnly = search.fav === "1";
 
-  /* Searching runs two full passes over ~2000 families, ~300ms together, and
-     as an urgent render that blocked the keystroke that caused it. Deferring
-     lets React paint the new character first and compute the list in an
-     interruptible pass, which a later keystroke can throw away. No timer, so
-     results still start updating on the very first keystroke. */
+  // Deferred so keystrokes paint immediately.
   const deferredFilter = useDeferredValue(shownFilter);
   const favDep = favOnly ? favorites : null;
   const results = useMemo(() => {
@@ -154,8 +153,7 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
       ? matched.filter((f) => favDep.includes(f.id))
       : matched;
     if (!deferredFilter.query.trim()) return sortFonts(filtered, sort);
-    // searchByQuery both matches and ranks by relevance. Keep its order only
-    // while the sort is unset; an explicit pick must win over relevance.
+    // Keep relevance order unless user picks an explicit sort.
     const matches = searchByQuery(filtered, deferredFilter.query);
     return search.sort ? sortFonts(matches, sort) : matches;
   }, [fonts, deferredFilter, sort, search.sort, favDep]);
@@ -168,8 +166,6 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
     navigate({
       search: {
         ...filterToSearch(filter),
-        // While searching, an absent `sort` means relevance, so the default key
-        // has to stay in the URL or picking Popularity would read as relevance.
         sort: next === DEFAULT_SORT && !hasQuery ? undefined : next,
         fav: search.fav,
       },
@@ -177,7 +173,6 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
     });
   };
 
-  // Dropping `sort` hands the order back to searchByQuery's relevance ranking.
   const setRelevance = () => {
     navigate({
       search: { ...filterToSearch(filter), sort: undefined, fav: search.fav },
@@ -343,18 +338,20 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
                 orientation="vertical"
                 className="mx-2 h-5"
               />
-              <div className={RAIL_HEADER_CELL}>
-                <ThemeToggle variant="header" />
-              </div>
-              <div className={RAIL_HEADER_CELL}>
-                <AboutLink variant="header" />
-              </div>
-              <div className={RAIL_HEADER_CELL}>
-                <GithubLink variant="header" />
-              </div>
-              <div className={RAIL_HEADER_CELL}>
-                <FavoriteToggle variant="header" />
-              </div>
+              <HeaderButtonGroup className="relative flex items-center gap-1">
+                <HeaderButtonGroupItem index={0} className={RAIL_HEADER_CELL}>
+                  <ThemeToggle variant="header" />
+                </HeaderButtonGroupItem>
+                <HeaderButtonGroupItem index={1} className={RAIL_HEADER_CELL}>
+                  <AboutLink variant="header" />
+                </HeaderButtonGroupItem>
+                <HeaderButtonGroupItem index={2} className={RAIL_HEADER_CELL}>
+                  <GithubLink variant="header" />
+                </HeaderButtonGroupItem>
+                <HeaderButtonGroupItem index={3} className={RAIL_HEADER_CELL}>
+                  <FavoriteToggle variant="header" />
+                </HeaderButtonGroupItem>
+              </HeaderButtonGroup>
             </div>
           </div>
         </>

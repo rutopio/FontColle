@@ -1,10 +1,6 @@
 import type * as React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-/* --rail-width and --panel-width are the columns' real widths, set on the shell
-   in filter-layout. Header controls that line up with a column repeat its token
-   directly; main is flex-1, so no width here is derived from another. */
-
 export function FilterRailColumn({ children }: { children?: React.ReactNode }) {
   if (!children) return null;
 

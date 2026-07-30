@@ -31,9 +31,6 @@ export function PresetSection({
   const { presets, remove, restore } = usePresets();
   const full = presets.length >= MAX_PRESETS;
 
-  // Undo rather than a confirmation dialog: the X is one click and presets are
-  // device-local, so a mis-click is otherwise unrecoverable. The index is
-  // captured before the write so restore() can put the row back where it was.
   const onRemove = (preset: FilterPreset, index: number) => {
     remove(preset.id);
     toast.success("Preset deleted", {
@@ -43,24 +40,18 @@ export function PresetSection({
   };
 
   return (
-    // Only matters when empty: the Empty block below centres in this height.
     <div className="flex min-h-0 flex-1 flex-col gap-2">
       <SectionHeader
         title="Preset"
         icon={BookmarkSimpleIcon}
-        // Not a selection: removal is per-row and there is nothing to reorder.
         hasSelection={false}
         onReset={() => {}}
         canSort={false}
         sort="count"
         onToggleSort={() => {}}
-        // No `info`: presets are the user's own data, and the save popover
-        // already states the device-local caveat where it matters.
       />
 
       {presets.length === 0 ? (
-        // No border: the panel frames nothing else, so a box would read as a
-        // card rather than as the panel's own resting state.
         <Empty className="gap-3 px-4">
           <EmptyHeader>
             <EmptyMedia variant="icon">

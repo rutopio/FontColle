@@ -6,6 +6,10 @@ import { AboutLink } from "@/components/about-link";
 import { FavoriteToggle } from "@/components/favorite-toggle";
 import { FontTraits } from "@/components/font-traits";
 import { GithubLink } from "@/components/github-link";
+import {
+  HeaderButtonGroup,
+  HeaderButtonGroupItem,
+} from "@/components/header-button-group";
 import { RAIL_HEADER_BTN, RAIL_HEADER_CELL } from "@/components/rail-button";
 import { repoHostIcon } from "@/components/repo-host-icon";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -62,7 +66,6 @@ export function DetailHeader({ font }: { font: FontRecord }) {
         </div>
       </div>
       <div className="hidden w-full flex-wrap items-center gap-2 md:ml-auto md:flex md:w-auto md:shrink-0 md:flex-nowrap">
-        {/* FontTraits fills its outline badges itself. */}
         <FontTraits font={font} selection={emptyFilter} />
         {font.license && (
           <Badge variant="outline" className="bg-background">
@@ -73,31 +76,37 @@ export function DetailHeader({ font }: { font: FontRecord }) {
 
       <div className="hidden shrink-0 items-center gap-1 md:flex">
         <Separator aria-hidden orientation="vertical" className="mx-2 h-5" />
-        <HeaderLink
-          href={`https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`}
-          aria-label={`View ${font.name} on Google Fonts`}
-          icon={GoogleLogoIcon}
-        />
-        {font.repositoryUrl && (
-          <HeaderLink
-            href={font.repositoryUrl}
-            aria-label={`View ${font.name}'s source repository`}
-            icon={RepoIcon}
-          />
-        )}
-        <Separator aria-hidden orientation="vertical" className="mx-2 h-5" />
-        <div className={RAIL_HEADER_CELL}>
-          <ThemeToggle variant="header" />
-        </div>
-        <div className={RAIL_HEADER_CELL}>
-          <AboutLink variant="header" />
-        </div>
-        <div className={RAIL_HEADER_CELL}>
-          <GithubLink variant="header" />
-        </div>
-        <div className={RAIL_HEADER_CELL}>
-          <FavoriteToggle fontId={font.id} variant="header" />
-        </div>
+        <HeaderButtonGroup className="relative flex items-center gap-1">
+          <HeaderButtonGroupItem index={0} className={RAIL_HEADER_CELL}>
+            <HeaderLink
+              href={`https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`}
+              aria-label={`View ${font.name} on Google Fonts`}
+              icon={GoogleLogoIcon}
+            />
+          </HeaderButtonGroupItem>
+          {font.repositoryUrl && (
+            <HeaderButtonGroupItem index={1} className={RAIL_HEADER_CELL}>
+              <HeaderLink
+                href={font.repositoryUrl}
+                aria-label={`View ${font.name}'s source repository`}
+                icon={RepoIcon}
+              />
+            </HeaderButtonGroupItem>
+          )}
+          <Separator aria-hidden orientation="vertical" className="mx-2 h-5" />
+          <HeaderButtonGroupItem index={font.repositoryUrl ? 2 : 1} className={RAIL_HEADER_CELL}>
+            <ThemeToggle variant="header" />
+          </HeaderButtonGroupItem>
+          <HeaderButtonGroupItem index={font.repositoryUrl ? 3 : 2} className={RAIL_HEADER_CELL}>
+            <AboutLink variant="header" />
+          </HeaderButtonGroupItem>
+          <HeaderButtonGroupItem index={font.repositoryUrl ? 4 : 3} className={RAIL_HEADER_CELL}>
+            <GithubLink variant="header" />
+          </HeaderButtonGroupItem>
+          <HeaderButtonGroupItem index={font.repositoryUrl ? 5 : 4} className={RAIL_HEADER_CELL}>
+            <FavoriteToggle fontId={font.id} variant="header" />
+          </HeaderButtonGroupItem>
+        </HeaderButtonGroup>
       </div>
     </>
   );

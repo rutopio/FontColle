@@ -7,11 +7,7 @@ import {
 import { useMemo, useState } from "react";
 import { EditableValue } from "@/components/ui/editable-value";
 import { Slider } from "@/components/ui/slider";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip } from "@/components/ui/tooltip";
 import {
   formatMetricValue,
   isRangeActive,
@@ -84,10 +80,14 @@ function MetricRangeRow({
   const lo = localTrack ? map.fromTrack(localTrack[0]) : baseLo;
   const hi = localTrack ? map.fromTrack(localTrack[1]) : baseHi;
 
+  // Snap to spec step before storing (avoids float drift in filter state/URL).
+  const snap = (v: number) =>
+    spec.scale === "log" ? Math.round(v) : roundTo(v, spec.step);
+
   const commit = (nlo: number, nhi: number) => {
     const range: MetricRange = [
-      Math.max(spec.min, Math.min(nlo, spec.max)),
-      Math.max(spec.min, Math.min(nhi, spec.max)),
+      snap(Math.max(spec.min, Math.min(nlo, spec.max))),
+      snap(Math.max(spec.min, Math.min(nhi, spec.max))),
     ];
     onChange(isRangeActive(spec, range) ? range : undefined);
   };
@@ -116,17 +116,14 @@ function MetricRangeRow({
           <h3 className="font-medium text-muted-foreground text-xs uppercase">
             {spec.label}
           </h3>
-          <Tooltip>
-            <TooltipTrigger
+          <Tooltip content={spec.hint} className="max-w-xs normal-case">
+            <button
               type="button"
               aria-label={`About ${spec.label}`}
               className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
             >
               <InfoIcon className="size-3.5" />
-            </TooltipTrigger>
-            <TooltipContent className="max-w-xs normal-case">
-              {spec.hint}
-            </TooltipContent>
+            </button>
           </Tooltip>
         </span>
         {editable ? (
@@ -173,28 +170,22 @@ function MetricRangeRow({
             <Tooltip
               // biome-ignore lint/suspicious/noArrayIndexKey: fixed 4-quartile list
               key={i}
+              content={<>{formatMetricValue(spec.key, q[0])} – {formatMetricValue(spec.key, q[1])}</>}
+              className="font-mono normal-case"
             >
-              <TooltipTrigger
-                render={
-                  <button
-                    type="button"
-                    onClick={() => pickQuartile(q)}
-                    aria-pressed={active}
-                    className={cn(
-                      "flex min-h-9 items-center justify-center rounded border py-0.5 text-center text-[11px] transition-colors md:min-h-8",
-                      active
-                        ? "border-primary bg-muted font-semibold text-foreground"
-                        : "text-foreground hover:bg-muted"
-                    )}
-                  >
-                    Q{i + 1}
-                  </button>
-                }
-              />
-              <TooltipContent className="font-mono normal-case">
-                {formatMetricValue(spec.key, q[0])} –{" "}
-                {formatMetricValue(spec.key, q[1])}
-              </TooltipContent>
+              <button
+                type="button"
+                onClick={() => pickQuartile(q)}
+                aria-pressed={active}
+                className={cn(
+                  "flex min-h-9 items-center justify-center rounded border py-0.5 text-center text-[11px] transition-colors md:min-h-8",
+                  active
+                    ? "border-primary bg-muted font-semibold text-foreground"
+                    : "text-foreground hover:bg-muted"
+                )}
+              >
+                Q{i + 1}
+              </button>
             </Tooltip>
           );
         })}

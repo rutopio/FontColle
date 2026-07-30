@@ -9,15 +9,10 @@ export function previewFontFamily(name: string, isLoaded = true): string {
   return `"${name}", "${fallback}", sans-serif`;
 }
 
-/** Families known ready, so check() runs once per family instead of once per subscriber. */
 const readyFamilies = new Set<string>();
 const watchers = new Map<string, Set<() => void>>();
 let listening = false;
 
-/** Keyed by family *and* weight, so a row needing 700 is not reported ready by
- *  an earlier row's 400: check() only answers "can some face of this family
- *  render". The list previews at a single weight today, but the detail page
- *  does not, and the cost is one Set entry per weight. */
 function keyFor(name: string, weight: number) {
   return `${name}@${weight}`;
 }
@@ -26,14 +21,7 @@ function probeFor(name: string, weight: number) {
   return `${weight} 16px "${name}"`;
 }
 
-/** check() means "renderable without loading anything new", which is true for
- *  a family that has NO @font-face at all — it just resolves to a system font.
- *  Mid-fling a row subscribes before its css2 <link> has registered any rules,
- *  so check() said yes, the skeleton swapped to text, and the chain was already
- *  on NotDef while the real font had not begun downloading: the boxes that
- *  flashed before the real face appeared. Requiring a registered face for the
- *  family keeps the row on Adobe Blank until there is something real to wait
- *  for. */
+/** check() says "renderable" even without @font-face; require registered faces first. */
 function hasFaces(name: string) {
   for (const face of document.fonts) {
     if (face.family === name) return true;
@@ -45,8 +33,7 @@ function canPaint(name: string, weight: number) {
   return hasFaces(name) && document.fonts.check(probeFor(name, weight));
 }
 
-/** One document.fonts listener for the whole app: a per-row listener makes every
- *  loadingdone event O(rows), and each check() forces a style flush mid-scroll. */
+/** Single document.fonts listener shared app-wide. */
 function onLoadingDone() {
   for (const [key, callbacks] of watchers) {
     if (readyFamilies.has(key)) continue;
@@ -72,17 +59,11 @@ function markReady(key: string) {
 /** Keys with a retry in flight, so N rows of one family share one chase. */
 const pursuing = new Set<string>();
 
-/** How long a row may sit on the skeleton before it gives up and shows text.
- *  A stuck skeleton is worse than a brief fallback: the row would otherwise
- *  stay blank forever if the stylesheet 404s or the face never registers. */
+/** Max skeleton wait before showing fallback text. */
 const GIVE_UP_MS = 3000;
 const RETRY_MS = 100;
 
-/** load() resolves immediately — with an empty list — for a family that has no
- *  @font-face yet, so a single call cannot settle a row that subscribed before
- *  its css2 <link> registered. loadingdone does not help either: it may have
- *  already fired for that stylesheet. So keep asking, the way font-face
- *  observers do, until the face can paint or the deadline passes. */
+/** Retries until the face can paint or the deadline passes. */
 function pursue(key: string, name: string, weight: number) {
   if (pursuing.has(key)) return;
   pursuing.add(key);
@@ -105,7 +86,6 @@ function pursue(key: string, name: string, weight: number) {
       markReady(key);
       return;
     }
-    // Re-issue load(): once the faces exist this is what actually starts them.
     document.fonts
       .load(probeFor(name, weight))
       .then(() => {
@@ -157,8 +137,7 @@ export function useFontLoaded(name: string, weight = 400): boolean {
   return useSyncExternalStore(subscribe, getSnapshot, () => true);
 }
 
-/** Internals exposed for tests: the subscription bookkeeping is the part that
- *  regressed, and it is verifiable without a DOM. */
+/** Internals exposed for tests. */
 export const __loaderInternals = {
   subscribeFamily,
   isReady: (name: string, weight = 400) =>

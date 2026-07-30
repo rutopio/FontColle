@@ -5,19 +5,12 @@ import { FontsourceMethod } from "./fontsource";
 import { GoogleFontsMethod } from "./google-fonts";
 import { fallbackFor } from "./shared";
 
-// Three ways to put this family on a page: the hosted Google Fonts API,
-// self-hosted Fontsource, or Bunny Fonts as a GDPR-friendly drop-in. Every
-// snippet is derived from the family's real weights and axes.
-//
-// Switching methods unmounts the inactive ones, so a method's picks reset when
-// revisited — fine, since switching usually means changing approach.
 export function UsePanel({
   font,
   axisState,
   italic,
 }: {
   font: FontRecord;
-  // Powers the Google Fonts method's "Match current preview" shortcut.
   axisState: Record<string, number>;
   italic: boolean;
 }) {

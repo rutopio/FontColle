@@ -3,8 +3,6 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-// Flips to a red X when the clipboard write fails (insecure context, denied
-// permission) rather than lying about success with a silent no-op.
 export function CopyButton({
   text,
   label = "Copy",
@@ -49,8 +47,6 @@ export function CopyButton({
         className
       )}
     >
-      {/* Keyed on status so the check/x remounts and replays the pop; the idle
-          copy icon stays still (no key/animation) so it doesn't pop on reset. */}
       {status === "copied" ? (
         <CheckIcon
           key="copied"

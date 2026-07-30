@@ -11,11 +11,7 @@ import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { EditableValue } from "@/components/ui/editable-value";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip } from "@/components/ui/tooltip";
 import { DEFAULT_ON, featureName } from "@/lib/fonts/features";
 import type { FontRecord } from "@/lib/fonts/types";
 import { EASE_OUT, MOTION_S } from "@/lib/motion";
@@ -239,19 +235,17 @@ export function DetailSidebar({
               <h2 className="flex items-center gap-1.5 font-medium text-primary text-sm uppercase">
                 <ToggleRightIcon className="size-4" />
                 Features Toggle
-                <Tooltip>
-                  <TooltipTrigger
+                <Tooltip
+                  content="Each toggle starts in the state browsers apply by default per the W3C CSS Fonts spec: features like liga, calt, kern and ccmp are on, the rest off."
+                  className="max-w-xs normal-case"
+                >
+                  <button
                     type="button"
                     aria-label="About the default toggle states"
                     className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
                   >
                     <InfoIcon className="size-3.5" />
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-xs normal-case">
-                    Each toggle starts in the state browsers apply by default
-                    per the W3C CSS Fonts spec: features like liga, calt, kern
-                    and ccmp are on, the rest off.
-                  </TooltipContent>
+                  </button>
                 </Tooltip>
               </h2>
               <ResetButton

@@ -7,11 +7,6 @@ import {
   type SerializedElementNode,
 } from "lexical";
 
-// ParagraphNode/HeadingNode subclasses that write __style to the DOM.
-// Stock nodes only emit text-align; these also apply font-variation-settings
-// so each block can carry its own named instance.
-
-// Overwrites cssText but preserves text-align set by super.createDOM.
 function applyNodeStyle(dom: HTMLElement, style: string): void {
   const { textAlign } = dom.style;
   dom.style.cssText = style;
@@ -90,7 +85,7 @@ export const TESTER_NODES = [
   },
 ];
 
-// Mirrors previewStyle's mapping: must override all inherited properties.
+// Must override all inherited properties (mirrors previewStyle).
 export function instanceStyle(
   coords: Record<string, number>,
   italic: boolean

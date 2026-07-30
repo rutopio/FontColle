@@ -7,11 +7,7 @@ import {
   XIcon,
 } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from "motion/react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip } from "@/components/ui/tooltip";
 import type { MatchMode } from "@/lib/fonts/filter";
 import { EASE_OUT, MOTION_S } from "@/lib/motion";
 import { cn } from "@/lib/utils";
@@ -34,17 +30,14 @@ export function InfoTip({
 }) {
   if (!children) return null;
   return (
-    <Tooltip>
-      <TooltipTrigger
+    <Tooltip content={children} className="max-w-xs normal-case">
+      <button
         type="button"
         aria-label={`About ${title}`}
         className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
       >
         <InfoIcon className="size-3.5" />
-      </TooltipTrigger>
-      <TooltipContent className="max-w-xs normal-case">
-        {children}
-      </TooltipContent>
+      </button>
     </Tooltip>
   );
 }
@@ -171,7 +164,6 @@ export function SectionHeader({
             </motion.div>
           ) : null}
         </AnimatePresence>
-        {/* Invisible placeholder reserves layout space for the action slot. */}
         <div className="relative shrink-0">
           <HeaderButton
             onClick={() => {}}

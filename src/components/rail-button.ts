@@ -15,14 +15,12 @@ export const RAIL_HEADER_BTN = `${RAIL_BTN_CHROME} ${RAIL_BTN_OFF} flex size-9 s
 
 export const RAIL_HEADER_CELL = "group/rail-btn flex shrink-0 items-center";
 
-/* Full strength, against the /50 the unselected tiles hover to, so selected
-   reads a clear step above merely hovered. */
+// Full-strength selected surface (unselected tiles hover to accent/50).
 const RAIL_ON_SURFACE = "bg-accent";
 
 export const RAIL_BTN_ON = `${RAIL_ON_SURFACE} text-accent-foreground`;
 
-/* Sliding variant: the tile keeps only the colour and a shared layout element
-   (see RailIndicator) carries the surface between buttons. */
+// Sliding variant: surface travels via shared RailIndicator layoutId.
 export const RAIL_BTN_ON_SLIDING = "text-accent-foreground";
 
 export const RAIL_INDICATOR = `${RAIL_ON_SURFACE} absolute inset-0 -z-1 rounded-md`;

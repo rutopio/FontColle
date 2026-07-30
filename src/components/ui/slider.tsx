@@ -23,11 +23,6 @@ import { Slider as SliderPrimitive } from "@base-ui/react/slider";
 import { cn } from "@/lib/utils";
 import { spring } from "@/lib/springs";
 import { fontWeights } from "@/lib/font-weight";
-import { useShape } from "@/lib/shape-context";
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
 
 type SliderValue = number | [number, number];
 type ValuePosition = "left" | "right" | "top" | "bottom" | "tooltip";
@@ -66,23 +61,15 @@ interface SliderProps
   hideFill?: boolean;
   thumbColor?: string;
   thumbBorderColor?: string;
+  tooltipSide?: "top" | "bottom";
 }
-
-// ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
 
 const THUMB_SIZE = 20;
 const THUMB_SIZE_REST = 16;
 const TRACK_BG_HEIGHT = 18;
 const DOT_SIZE = 4;
 const PIP_SIZE = 5;
-// Inset track BG so its rounded-end centers align with thumb centers at min/max
 const TRACK_INSET = (THUMB_SIZE - TRACK_BG_HEIGHT) / 2;
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
 
 function valueToPixel(
   v: number,
@@ -93,6 +80,12 @@ function valueToPixel(
   if (max === min) return 0;
   const usable = trackWidth - THUMB_SIZE;
   return ((v - min) / (max - min)) * usable;
+}
+
+/** Round to the step's decimal precision to eliminate IEEE-754 drift. */
+function cleanStep(value: number, step: number): number {
+  const inv = 1 / step;
+  return Math.round(value * inv) / inv;
 }
 
 function nearestStepIndex(v: number, steps: number[]): number {
@@ -116,16 +109,12 @@ function pixelToValue(
   const raw = (px / usable) * (max - min) + min;
   if (stepValues) return stepValues[nearestStepIndex(raw, stepValues)];
   const snapped = Math.round((raw - min) / step) * step + min;
-  return Math.max(min, Math.min(max, snapped));
+  return Math.max(min, Math.min(max, cleanStep(snapped, step)));
 }
 
 function toRadixValue(value: SliderValue): number[] {
   return Array.isArray(value) ? value : [value];
 }
-
-// ---------------------------------------------------------------------------
-// ValueDisplay (internal)
-// ---------------------------------------------------------------------------
 
 interface ValueDisplayProps {
   values: number[];
@@ -158,7 +147,6 @@ function ValueDisplay({
   isRange,
   isInteracting,
 }: ValueDisplayProps) {
-  const shape = useShape();
   const [inputValue, setInputValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -176,7 +164,7 @@ function ValueDisplay({
         const clamped = Math.max(min, Math.min(max, parsed));
         const snapped = stepValues
           ? stepValues[nearestStepIndex(clamped, stepValues)]
-          : Math.round((clamped - min) / step) * step + min;
+          : cleanStep(Math.round((clamped - min) / step) * step + min, step);
         onCommitEdit(index, snapped);
       } else {
         onCancelEdit();
@@ -189,8 +177,7 @@ function ValueDisplay({
     if (editingIndex === index) {
       return (
         <span className="inline-grid text-[13px]">
-          {/* Ghost for layout stability — widest possible value */}
-          <span
+              <span
             className="col-start-1 row-start-1 invisible"
             style={{ fontVariationSettings: fontWeights.medium }}
             aria-hidden="true"
@@ -218,7 +205,7 @@ function ValueDisplay({
               aria-label={`Edit slider value${isRange ? (index === 0 ? " (start)" : " (end)") : ""}`}
               className={cn(
                 "w-[5ch] bg-transparent text-foreground outline-none border-b border-border text-center",
-                shape.input
+                "rounded-lg"
               )}
               style={{ fontVariationSettings: fontWeights.medium }}
             />
@@ -254,7 +241,7 @@ function ValueDisplay({
           : fontWeights.normal,
       }}
     >
-      {/* Invisible ghost — reserves width of widest possible value */}
+      {/* Ghost reserves the widest possible value's width */}
       <span
         className="col-start-1 row-start-1 invisible whitespace-nowrap"
         style={{ fontVariationSettings: fontWeights.medium }}
@@ -280,33 +267,30 @@ function ValueDisplay({
   );
 }
 
-// ---------------------------------------------------------------------------
-// TooltipValue (internal)
-// ---------------------------------------------------------------------------
-
 interface TooltipValueProps {
   value: number;
   formatValue: (v: number) => string;
   motionX: MotionValue<number>;
+  side?: "top" | "bottom";
 }
 
-function TooltipValue({ value, formatValue, motionX }: TooltipValueProps) {
-  const shape = useShape();
+function TooltipValue({ value, formatValue, motionX, side = "top" }: TooltipValueProps) {
   const tooltipX = useTransform(motionX, (x) => x + THUMB_SIZE / 2);
+  const isBottom = side === "bottom";
   return (
     <motion.div
       className="absolute -translate-x-1/2 pointer-events-none z-20"
       style={{
         x: tooltipX,
-        top: -16,
+        ...(isBottom ? { bottom: -16 } : { top: -16 }),
       }}
-      initial={{ opacity: 0, y: 4 }}
+      initial={{ opacity: 0, y: isBottom ? -4 : 4 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 4, transition: spring.fast.exit }}
+      exit={{ opacity: 0, y: isBottom ? -4 : 4, transition: spring.fast.exit }}
       transition={spring.fast}
     >
       <span
-        className={cn("text-[12px] text-background tabular-nums whitespace-nowrap bg-foreground px-2 py-1", shape.bg)}
+        className={cn("text-[12px] text-background tabular-nums whitespace-nowrap bg-foreground px-2 py-1", "rounded-lg")}
         style={{ fontVariationSettings: fontWeights.medium }}
       >
         {formatValue(value)}
@@ -314,10 +298,6 @@ function TooltipValue({ value, formatValue, motionX }: TooltipValueProps) {
     </motion.div>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Slider
-// ---------------------------------------------------------------------------
 
 const Slider = forwardRef<HTMLDivElement, SliderProps>(
   (
@@ -342,6 +322,7 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
       hideFill = false,
       thumbColor,
       thumbBorderColor,
+      tooltipSide = "top",
       className,
       ...props
     },
@@ -349,10 +330,7 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
   ) => {
     const isRange = Array.isArray(value);
     const values = toRadixValue(value);
-    const shape = useShape();
 
-    // Non-uniform step mode: sorted, deduped list of allowed values. Keyed on
-    // the joined string so inline array literals don't recompute every render.
     const stepsKey = steps ? steps.join(",") : "";
     const stepValues = useMemo(() => {
       if (!stepsKey) return null;
@@ -364,7 +342,6 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
     const min = stepValues ? stepValues[0] : minProp;
     const max = stepValues ? stepValues[stepValues.length - 1] : maxProp;
 
-    // --- Refs ---
     const trackRef = useRef<HTMLDivElement>(null);
     const trackWidthRef = useRef(0);
     const dragging = useRef(false);
@@ -376,7 +353,6 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
     minRef.current = min;
     maxRef.current = max;
 
-    // --- State ---
     const [isHovered, setIsHovered] = useState(false);
     const [isPressed, setIsPressed] = useState(false);
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -401,11 +377,9 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
       return () => { if (hoverDelayRef.current) clearTimeout(hoverDelayRef.current); };
     }, [isHovered]);
 
-    // --- Motion values ---
     const motionX0 = useMotionValue(0);
     const motionX1 = useMotionValue(0);
 
-    // --- Derived motion values for fill ---
     const fillLeft = useTransform(motionX0, (x) =>
       isRange ? x + THUMB_SIZE / 2 - TRACK_INSET : 0
     );
@@ -416,7 +390,6 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
     );
     const fillWidth = isRange ? fillWidthRange : fillWidthSingle;
 
-    // --- Step dots mask (hides dots on filled side, like SliderComfortable pips) ---
     const stepDotsMaskSingle = useTransform(
       motionX0,
       (x) => {
@@ -437,9 +410,6 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
     // --- Hover preview computation ---
     const computeHoverPreview = useCallback(
       (cursorX: number, trackWidth: number) => {
-        // cursorX and trackWidth are in layout space (offsetWidth-relative),
-        // unaffected by ancestor CSS transforms. THUMB_SIZE / TRACK_INSET are
-        // also layout-space, so the math below is consistent end-to-end.
         const usable = trackWidth - THUMB_SIZE;
         const rawPx = cursorX - THUMB_SIZE / 2;
         const clampedPx = Math.max(0, Math.min(usable, rawPx));
@@ -448,12 +418,11 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
           ? stepValues[nearestStepIndex(rawVal, stepValues)]
           : Math.max(
               min,
-              Math.min(max, Math.round((rawVal - min) / step) * step + min)
+              Math.min(max, cleanStep(Math.round((rawVal - min) / step) * step + min, step))
             );
         const snappedPercent = max === min ? 0 : (snappedVal - min) / (max - min);
         const snappedX = THUMB_SIZE / 2 + snappedPercent * usable;
 
-        // Find nearest thumb center
         const c0 = motionX0.get() + THUMB_SIZE / 2;
         const c1 = motionX1.get() + THUMB_SIZE / 2;
         const nearestIdx = isRange
@@ -461,7 +430,6 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
           : 0;
         const nearest = nearestIdx === 0 ? c0 : c1;
 
-        // Extend hover bar to track edges at extremes so there's no gap
         const edgeX = snappedVal === min ? 0 : snappedVal === max ? trackWidth : snappedX;
         const left = Math.min(nearest, edgeX);
         const width = Math.abs(edgeX - nearest);
@@ -470,7 +438,6 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
       [min, max, step, stepValues, isRange, motionX0, motionX1]
     );
 
-    // --- Initial sync (before paint) ---
     const initialSyncDone = useRef(false);
     const [ready, setReady] = useState(false);
     useLayoutEffect(() => {
@@ -488,7 +455,6 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
       setReady(true);
     }, []);
 
-    // --- Track width measurement (resize only) ---
     useEffect(() => {
       const el = trackRef.current;
       if (!el) return;
@@ -511,10 +477,7 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
       return () => ro.disconnect();
     }, [isRange, motionX0, motionX1]);
 
-    // --- Sync motion values on value change (keyboard, programmatic) ---
-    // Depend on a primitive key rather than the `values` array — its identity
-    // changes every render (toRadixValue allocates), which would restart the
-    // animation on unrelated re-renders (hover/tooltip state churn).
+    // Keyed on primitive string, not the array (which reallocates every render).
     const valuesKey = values.join(",");
     useEffect(() => {
       if (!initialSyncDone.current) return;
@@ -530,7 +493,6 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
       }
     }, [valuesKey, min, max, isRange, motionX0, motionX1]);
 
-    // --- Range crossing prevention ---
     const clampForRange = useCallback(
       (px: number, thumbIndex: number): number => {
         if (!isRange) return px;
@@ -543,7 +505,6 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
       [isRange, motionX0, motionX1]
     );
 
-    // --- Emit value change ---
     const emitChange = useCallback(
       (thumbIndex: number, newValue: number) => {
         if (isRange) {
@@ -557,21 +518,19 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
       [isRange, values, onChange]
     );
 
-    // --- Pointer handlers on track ---
     const handlePointerDown = useCallback(
       (e: React.PointerEvent<HTMLDivElement>) => {
         if (disabled) return;
         if (e.pointerType === "mouse" && e.button !== 0) return;
         e.preventDefault();
-        e.stopPropagation(); // Prevent Radix from also handling the drag
+        e.stopPropagation();
 
         const trackEl = trackRef.current;
         if (!trackEl) return;
         const trackRect = trackEl.getBoundingClientRect();
         const layoutWidth = trackEl.offsetWidth;
         if (layoutWidth <= 0 || trackRect.width <= 0) return;
-        // Normalize cursor to layout space so it matches motionX (which is
-        // rendered as a CSS-pixel transform), even under ancestor CSS scale.
+        // Normalize to layout space (accounts for ancestor CSS scale).
         const scale = trackRect.width / layoutWidth;
         const localX = (e.clientX - trackRect.left) / scale - THUMB_SIZE / 2;
         const clamped = Math.max(
@@ -579,7 +538,6 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
           Math.min(layoutWidth - THUMB_SIZE, localX)
         );
 
-        // Determine which thumb to drag
         if (isRange) {
           const dist0 = Math.abs(clamped - motionX0.get());
           const dist1 = Math.abs(clamped - motionX1.get());
@@ -594,7 +552,6 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
         const motionX =
           activeDragThumb.current === 0 ? motionX0 : motionX1;
 
-        // Snap to step grid immediately
         const snappedValue = pixelToValue(
           clamped,
           min,
@@ -605,15 +562,11 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
         );
         const snappedPx = valueToPixel(snappedValue, min, max, layoutWidth);
 
-        // Clamp for range crossing
         const finalPx = clampForRange(
           snappedPx,
           activeDragThumb.current
         );
-        // Spring-animate thumb to clicked position
         animate(motionX, finalPx, spring.moderate);
-
-        // Update value
         const finalValue = pixelToValue(
           finalPx,
           min,
@@ -648,7 +601,6 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
         const motionX =
           activeDragThumb.current === 0 ? motionX0 : motionX1;
 
-        // Snap to step grid during drag
         const snappedValue = pixelToValue(
           clamped,
           min,
@@ -663,7 +615,6 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
           activeDragThumb.current
         );
         motionX.set(finalPx);
-
         const finalValue = pixelToValue(
           finalPx,
           min,
@@ -683,7 +634,6 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
       setIsPressed(false);
       setHoverPreview(null);
 
-      // Spring settle to final quantized position
       const tw = trackWidthRef.current;
       const motionX =
         activeDragThumb.current === 0 ? motionX0 : motionX1;
@@ -692,8 +642,6 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
       const snappedPx = valueToPixel(snapped, min, max, tw);
       animate(motionX, snappedPx, spring.moderate);
 
-      // Drag-end commit. Mirrors emitChange's value shape so consumers get the
-      // same tuple/scalar they get from onChange, but only once per drag.
       if (onCommit) {
         if (isRange) {
           const committed: [number, number] = [
@@ -717,9 +665,7 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
       values,
     ]);
 
-    // --- Radix keyboard handler ---
-    // In steps mode the primitive runs on indices (0..len-1, step 1) so arrow
-    // keys walk the list; map indices back to actual values on the way out.
+    // In steps mode, map indices back to actual values.
     const handleRadixChange = useCallback(
       (newValues: number[]) => {
         if (dragging.current) return;
@@ -735,9 +681,6 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
       [isRange, onChange, stepValues]
     );
 
-    // Keyboard and track-click commits come through the primitive. Pointer
-    // drags bypass it (dragging.current short-circuits above), so those are
-    // committed from handlePointerUp instead.
     const handleRadixCommit = useCallback(
       (newValues: number[]) => {
         if (!onCommit) return;
@@ -749,7 +692,6 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
       [isRange, onCommit, stepValues]
     );
 
-    // --- Click-to-edit handlers ---
     const handleStartEdit = useCallback((index: number) => {
       setEditingIndex(index);
     }, []);
@@ -766,7 +708,6 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
       setEditingIndex(null);
     }, []);
 
-    // --- Step dots ---
     const stepDots = useMemo(
       () =>
         showSteps
@@ -787,19 +728,14 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
       [showSteps, min, max, step, stepValues]
     );
 
-    // --- Interaction state for tooltip ---
     const isInteracting = isHovered || isPressed;
 
-    // --- Per-thumb accessible names ---
-    // aria-label on Root lands on a role-less div and never reaches the
-    // thumb's input, so each Thumb gets its own label.
     const thumbAriaLabel = (index: number): string | undefined => {
       if (!isRange) return label;
       if (!label) return index === 0 ? "Minimum" : "Maximum";
       return index === 0 ? `${label} minimum` : `${label} maximum`;
     };
 
-    // --- Value display component ---
     const valueDisplay = showValue && valuePosition !== "tooltip" && (
       <ValueDisplay
         values={values}
@@ -818,7 +754,6 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
       />
     );
 
-    // --- Render visual thumb (not Radix — purely visual) ---
     const renderVisualThumb = (index: number) => {
       const motionX = index === 0 ? motionX0 : motionX1;
       return (
@@ -837,8 +772,6 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
           }}
           initial={false}
         >
-          {/* Themed via tokens rather than a literal white so the thumb tracks
-              light/dark; thumbColor/thumbBorderColor still override per call. */}
           <motion.span
             className={cn(
               "block rounded-full shadow-sm",
@@ -858,7 +791,6 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
                 : undefined,
             }}
           />
-          {/* Focus ring */}
           <motion.span
             className="absolute rounded-full border border-ring pointer-events-none"
             initial={false}
@@ -886,17 +818,16 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
         )}
         {...props}
       >
-        {/* Top / Left value */}
         {(valuePosition === "top" || valuePosition === "left") && valueDisplay}
 
-        {/* Track area */}
         <div
           className="relative flex-1 overflow-visible"
           style={{
             height: (valuePosition === "left" || valuePosition === "right")
               ? THUMB_SIZE + 16
               : THUMB_SIZE + (valuePosition === "tooltip" ? 16 : 0),
-            paddingTop: valuePosition === "tooltip" ? 16 : 0,
+            paddingTop: valuePosition === "tooltip" && tooltipSide === "top" ? 16 : 0,
+            paddingBottom: valuePosition === "tooltip" && tooltipSide === "bottom" ? 16 : 0,
           }}
           onPointerEnter={() => setIsHovered(true)}
           onPointerLeave={() => {
@@ -910,16 +841,12 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
             const trackRect = trackEl.getBoundingClientRect();
             const layoutWidth = trackEl.offsetWidth;
             if (layoutWidth <= 0 || trackRect.width <= 0) return;
-            // Normalize to layout space so the formula's THUMB_SIZE / TRACK_INSET
-            // constants (layout px) match the cursor's coordinate space, even
-            // when an ancestor applies a CSS scale transform (e.g. /demo).
             const scale = trackRect.width / layoutWidth;
             const layoutX = (e.clientX - trackRect.left) / scale;
             const clamped = Math.max(0, Math.min(layoutWidth, layoutX));
             computeHoverPreview(clamped, layoutWidth);
           }}
         >
-          {/* Tooltip values */}
           {showValue && valuePosition === "tooltip" && (
             <AnimatePresence>
               {isInteracting && (
@@ -928,6 +855,7 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
                   value={values[0]}
                   formatValue={formatValue}
                   motionX={motionX0}
+                  side={tooltipSide}
                 />
               )}
               {isInteracting && isRange && values[1] !== undefined && (
@@ -936,12 +864,12 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
                   value={values[1]}
                   formatValue={formatValue}
                   motionX={motionX1}
+                  side={tooltipSide}
                 />
               )}
             </AnimatePresence>
           )}
 
-          {/* Base UI Slider — invisible, provides ARIA + keyboard nav */}
           <SliderPrimitive.Root
             value={
               stepValues
@@ -988,7 +916,6 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
             </SliderPrimitive.Control>
           </SliderPrimitive.Root>
 
-          {/* Visual track with pointer handlers */}
           <div
             ref={trackRef}
             className="relative w-full cursor-ew-resize py-2"
@@ -998,7 +925,6 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
             onPointerUp={handlePointerUp}
             onPointerCancel={handlePointerUp}
           >
-            {/* Extended hit area — 8px beyond each edge */}
             <div
               className="absolute cursor-ew-resize"
               style={{ left: -8, right: -8, top: 0, bottom: 0 }}
@@ -1007,23 +933,22 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
               onPointerUp={handlePointerUp}
               onPointerCancel={handlePointerUp}
             />
-            {/* Hover value tooltip */}
             <AnimatePresence>
               {hoverPreview && showHoverTooltip && !isPressed && valuePosition !== "tooltip" && (
                 <motion.div
                   key="hover-tooltip"
                   className="absolute -translate-x-1/2 pointer-events-none z-20"
-                  initial={{ opacity: 0, y: 4 }}
+                  initial={{ opacity: 0, y: tooltipSide === "bottom" ? -4 : 4 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 4, transition: spring.fast.exit }}
+                  exit={{ opacity: 0, y: tooltipSide === "bottom" ? -4 : 4, transition: spring.fast.exit }}
                   transition={spring.fast}
                   style={{
                     left: hoverPreview.cursorX,
-                    top: -20,
+                    ...(tooltipSide === "bottom" ? { bottom: -20 } : { top: -20 }),
                   }}
                 >
                   <span
-                    className={cn("text-[12px] text-background tabular-nums whitespace-nowrap bg-foreground px-2 py-1", shape.bg)}
+                    className={cn("text-[12px] text-background tabular-nums whitespace-nowrap bg-foreground px-2 py-1", "rounded-lg")}
                     style={{ fontVariationSettings: fontWeights.medium }}
                   >
                     {formatValue(hoverPreview.snappedValue)}
@@ -1032,7 +957,6 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
               )}
             </AnimatePresence>
 
-            {/* Track background */}
             <motion.div
               className={cn("absolute border border-border overflow-hidden rounded-full", trackClassName)}
               initial={false}
@@ -1048,7 +972,6 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
                 ...trackStyle,
               }}
             >
-              {/* Filled range */}
               {!hideFill && (
               <motion.div
                 className={cn("absolute h-full bg-primary", fillClassName)}
@@ -1060,7 +983,6 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
               />
               )}
 
-              {/* Hover preview */}
               <motion.div
                 className="absolute h-full pointer-events-none z-[2]"
                 initial={false}
@@ -1082,7 +1004,6 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
 
             </motion.div>
 
-            {/* Step dots — masked so filled side is hidden */}
             {stepDots.length > 0 && (
               <motion.div
                 className="absolute left-0 right-0 pointer-events-none"
@@ -1122,13 +1043,11 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
               </motion.div>
             )}
 
-            {/* Visual thumbs */}
             {renderVisualThumb(0)}
             {isRange && renderVisualThumb(1)}
           </div>
         </div>
 
-        {/* Bottom / Right value */}
         {(valuePosition === "bottom" || valuePosition === "right") &&
           valueDisplay}
       </div>
@@ -1137,10 +1056,6 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
 );
 
 Slider.displayName = "Slider";
-
-// ---------------------------------------------------------------------------
-// SliderComfortable
-// ---------------------------------------------------------------------------
 
 interface SliderComfortableProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onChange" | "defaultValue" | "onDrag" | "onDragStart" | "onDragEnd" | "onDragOver" | "onAnimationStart"> {
@@ -1186,7 +1101,6 @@ const SliderComfortable = forwardRef<HTMLDivElement, SliderComfortableProps>(
     } | null>(null);
     const [showHoverTooltip, setShowHoverTooltip] = useState(false);
     const hoverDelayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const shape = useShape();
 
     // Show hover tooltip after 100ms delay
     useEffect(() => {
@@ -1221,7 +1135,6 @@ const SliderComfortable = forwardRef<HTMLDivElement, SliderComfortableProps>(
     const fillPercent = useMotionValue(
       max === min ? 0 : Math.max(0, Math.min(1, (value - min) / (max - min)))
     );
-    // Small offset when value is at min so the handle line stays visible
     const zeroTarget = variant === "pips" ? 8 : 17;
     const zeroOffset = useMotionValue(value === min ? zeroTarget : 0);
 
@@ -1234,7 +1147,6 @@ const SliderComfortable = forwardRef<HTMLDivElement, SliderComfortableProps>(
       [fillPercent, zeroOffset] as MotionValue<number>[],
       ([p, zo]) => `calc(${(p as number) * 100}% - 9px + ${zo as number}px)`
     );
-    // Pips-specific: offset by px-3 (12px) padding so fill edge aligns with active pip center
     const pipsFillWidthStyle = useTransform(
       [fillPercent, zeroOffset] as MotionValue<number>[],
       ([p, zo]) => `calc(${(p as number) * 100}% + ${20 - 20 * (p as number) - (zo as number) * 2.5}px)`
@@ -1251,25 +1163,19 @@ const SliderComfortable = forwardRef<HTMLDivElement, SliderComfortableProps>(
       }
     );
 
-    // --- Hover preview computation ---
     const computeHoverPreview = useCallback(
       (clientX: number) => {
         const el = containerRef.current;
         if (!el) return;
         const rect = el.getBoundingClientRect();
-        // Use clientWidth (padding box) — CSS % and absolute left/width are relative to it
         const w = el.clientWidth;
         if (w <= 0 || rect.width <= 0) return;
-        // Normalize cursor to layout space so it matches `w` (layout, padding
-        // box). offsetWidth is the layout border-box; the difference vs `w` is
-        // the horizontal border contribution split across both sides.
         const scale = rect.width / el.offsetWidth;
         const borderLeftLayout = (el.offsetWidth - w) / 2;
         const visualX = clientX - rect.left;
         const layoutX = visualX / scale - borderLeftLayout;
         const clamped = Math.max(0, Math.min(w, layoutX));
 
-        // Snap to nearest step value
         let snappedVal: number;
         if (variant === "pips") {
           if (pipCount <= 1) return;
@@ -1277,12 +1183,11 @@ const SliderComfortable = forwardRef<HTMLDivElement, SliderComfortableProps>(
           snappedVal = pipSteps[index];
         } else {
           const raw = min + (clamped / w) * (max - min);
-          snappedVal = Math.max(min, Math.min(max, Math.round((raw - min) / step) * step + min));
+          snappedVal = Math.max(min, Math.min(max, cleanStep(Math.round((raw - min) / step) * step + min, step)));
         }
         const snappedPercent = max === min ? 0 : (snappedVal - min) / (max - min);
         const snappedX = snappedPercent * w;
 
-        // Current handle position — for pips, match the visual fill edge offset
         const currentPercent = fillPercent.get();
         let handleX: number;
         if (variant === "pips") {
@@ -1292,7 +1197,6 @@ const SliderComfortable = forwardRef<HTMLDivElement, SliderComfortableProps>(
           handleX = currentPercent * w;
         }
 
-        // Extend hover bar to container edges at extremes so there's no gap
         const edgeX = snappedVal === min ? 0 : snappedVal === max ? w : snappedX;
         const left = Math.min(handleX, edgeX);
         const width = Math.abs(edgeX - handleX);
@@ -1301,7 +1205,6 @@ const SliderComfortable = forwardRef<HTMLDivElement, SliderComfortableProps>(
       [variant, pipSteps, pipCount, min, max, step, fillPercent, zeroOffset]
     );
 
-    // Sync fill on programmatic value change
     useEffect(() => {
       if (dragging.current || handleDragging.current) return;
       const percent = max === min ? 0 : Math.max(0, Math.min(1, (value - min) / (max - min)));
@@ -1325,7 +1228,7 @@ const SliderComfortable = forwardRef<HTMLDivElement, SliderComfortableProps>(
         } else {
           const raw = min + (clamped / rect.width) * (max - min);
           const snapped = Math.round((raw - min) / step) * step + min;
-          return Math.max(min, Math.min(max, snapped));
+          return Math.max(min, Math.min(max, cleanStep(snapped, step)));
         }
       },
       [variant, pipSteps, pipCount, min, max, step]
@@ -1370,7 +1273,6 @@ const SliderComfortable = forwardRef<HTMLDivElement, SliderComfortableProps>(
       setHoverPreview(null);
     }, []);
 
-    // Resize handle drag handlers (direct cursor position)
     const handleResizePointerDown = useCallback(
       (e: React.PointerEvent<HTMLDivElement>) => {
         if (disabled) return;
@@ -1429,7 +1331,6 @@ const SliderComfortable = forwardRef<HTMLDivElement, SliderComfortableProps>(
           computeHoverPreview(e.clientX);
         }}
       >
-        {/* Extended hit area — 8px beyond each edge */}
         <div
           className="absolute cursor-ew-resize"
           style={{ left: -8, right: -8, top: 0, bottom: 0 }}
@@ -1438,7 +1339,6 @@ const SliderComfortable = forwardRef<HTMLDivElement, SliderComfortableProps>(
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerUp}
         />
-        {/* Hover value tooltip — outside overflow-hidden container */}
         <AnimatePresence>
           {hoverPreview && showHoverTooltip && !isPressed && (
             <motion.div
@@ -1454,7 +1354,7 @@ const SliderComfortable = forwardRef<HTMLDivElement, SliderComfortableProps>(
               }}
             >
               <span
-                className={cn("text-[12px] text-background tabular-nums whitespace-nowrap bg-foreground px-2 py-1", shape.bg)}
+                className={cn("text-[12px] text-background tabular-nums whitespace-nowrap bg-foreground px-2 py-1", "rounded-lg")}
                 style={{ fontVariationSettings: fontWeights.medium }}
               >
                 {formatValue(hoverPreview.snappedValue)}
@@ -1470,7 +1370,7 @@ const SliderComfortable = forwardRef<HTMLDivElement, SliderComfortableProps>(
           variant === "scrubber"
             ? "flex items-center gap-3 px-4 cursor-ew-resize"
             : "cursor-ew-resize",
-          shape.bg,
+          "rounded-lg",
           disabled && "opacity-50 pointer-events-none",
           className
         )}
@@ -1487,7 +1387,6 @@ const SliderComfortable = forwardRef<HTMLDivElement, SliderComfortableProps>(
         onPointerCancel={handlePointerUp}
         {...props}
       >
-        {/* Invisible Base UI Slider for keyboard nav + a11y */}
         <SliderPrimitive.Root
           value={[value]}
           onValueChange={(v) => handleRadixChange(v as number[])}
@@ -1513,7 +1412,6 @@ const SliderComfortable = forwardRef<HTMLDivElement, SliderComfortableProps>(
           </SliderPrimitive.Control>
         </SliderPrimitive.Root>
 
-        {/* Hover preview */}
         <motion.div
           className="absolute inset-y-0 pointer-events-none z-[3]"
           initial={false}
@@ -1528,7 +1426,6 @@ const SliderComfortable = forwardRef<HTMLDivElement, SliderComfortableProps>(
           }}
         />
 
-        {/* Pips: dots layer — z-[1] */}
         {variant === "pips" && (
           <motion.div
             className="absolute inset-0 flex justify-between items-center px-3 pointer-events-none z-[1]"
@@ -1558,7 +1455,6 @@ const SliderComfortable = forwardRef<HTMLDivElement, SliderComfortableProps>(
           </motion.div>
         )}
 
-        {/* Pips: label + value BG layer — z-[2] (occludes dots behind text) */}
         {variant === "pips" && (
           <div className="absolute inset-0 flex items-center px-2 z-[2] pointer-events-none" aria-hidden>
             {label && (
@@ -1575,7 +1471,6 @@ const SliderComfortable = forwardRef<HTMLDivElement, SliderComfortableProps>(
           </div>
         )}
 
-        {/* Pips: fill — z-[3] */}
         {variant === "pips" && (
           <motion.div
             className="absolute left-0 top-0 bottom-0 pointer-events-none z-[3]"
@@ -1586,7 +1481,6 @@ const SliderComfortable = forwardRef<HTMLDivElement, SliderComfortableProps>(
           />
         )}
 
-        {/* Pips: handle line — z-[3] */}
         {variant === "pips" && (
           <motion.div
             className="absolute rounded-full pointer-events-none z-[3]"
@@ -1608,7 +1502,6 @@ const SliderComfortable = forwardRef<HTMLDivElement, SliderComfortableProps>(
           />
         )}
 
-        {/* Pips: label + value text layer — z-[4] */}
         {variant === "pips" && (
           <div className="absolute inset-0 flex items-center px-2 z-[4] pointer-events-none">
             {label && (
@@ -1633,7 +1526,6 @@ const SliderComfortable = forwardRef<HTMLDivElement, SliderComfortableProps>(
           </div>
         )}
 
-        {/* Scrubber: fill */}
         {variant === "scrubber" && (
           <motion.div
             className="absolute left-0 top-0 bottom-0 pointer-events-none"
@@ -1644,7 +1536,6 @@ const SliderComfortable = forwardRef<HTMLDivElement, SliderComfortableProps>(
           />
         )}
 
-        {/* Scrubber: handle line */}
         {variant === "scrubber" && (
           <motion.div
             className="absolute rounded-full pointer-events-none z-10"
@@ -1666,7 +1557,6 @@ const SliderComfortable = forwardRef<HTMLDivElement, SliderComfortableProps>(
           />
         )}
 
-        {/* Scrubber: label */}
         {variant === "scrubber" && label && (
           <motion.span
             className="text-[13px] shrink-0 z-10"
@@ -1678,7 +1568,6 @@ const SliderComfortable = forwardRef<HTMLDivElement, SliderComfortableProps>(
           </motion.span>
         )}
 
-        {/* Scrubber: flex-1 spacer + value */}
         {variant === "scrubber" && (
           <>
             <div className="flex-1" />
@@ -1694,7 +1583,6 @@ const SliderComfortable = forwardRef<HTMLDivElement, SliderComfortableProps>(
           </>
         )}
 
-        {/* Resize handle (scrubber only) */}
         {variant === "scrubber" && (
           <motion.div
             className="absolute top-0 bottom-0 w-2 cursor-ew-resize z-20"

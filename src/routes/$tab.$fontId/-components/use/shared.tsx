@@ -3,8 +3,7 @@ import { Button } from "@/components/ui/button";
 import axesData from "@/data/axes.json";
 import { cn } from "@/lib/utils";
 
-// "full" requests the whole range and yields a variable stylesheet; "one" pins
-// a single value.
+// "full" = variable range, "one" = pinned value.
 export type AxisPick = { mode: "full" | "one"; value: number };
 
 export function MethodIntro({ blurb }: { blurb: string }) {
@@ -93,15 +92,12 @@ export function fontsourceSlug(name: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
-// Defaults to [400] when none are recorded, so there is always one toggle.
 export function weightList(weights: number[]): number[] {
   return [...new Set(weights.length > 0 ? weights : [400])].sort(
     (a, b) => a - b
   );
 }
 
-// From the axis registry, for the value pills. Empty for custom or parametric
-// axes the registry doesn't name.
 export const axisStops = (tag: string): { name: string; value: number }[] =>
   (
     axesData as Record<
@@ -113,7 +109,6 @@ export const axisStops = (tag: string): { name: string; value: number }[] =>
 const WEIGHT_NAME = new Map(axisStops("wght").map((s) => [s.value, s.name]));
 export const weightLabel = (w: number) => WEIGHT_NAME.get(w) ?? String(w);
 
-// Falls back to the raw tag for axes the registry doesn't cover.
 export const axisName = (tag: string): string =>
   (axesData as Record<string, { name?: string }>)[tag]?.name ?? tag;
 
