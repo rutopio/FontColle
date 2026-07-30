@@ -418,12 +418,10 @@ export function BlockGrid({
           {hoverRect && (
             <motion.div
               key={sessionRef.current}
-              /* Layers above the cells rather than behind them: the cells paint
-                 an opaque bg-card and the gaps between them are transparent
-                 down to the page, so a highlight behind would be hidden and a
-                 row-level background would erase the grid lines. A translucent
-                 fill reads the same and keeps the glyph legible. */
-              className="pointer-events-none absolute z-20 rounded-lg bg-accent/60"
+              /* Cells have opaque bg-card so a filled highlight behind them
+                 would be hidden. Instead we layer an inset ring above the
+                 cells — no fill, so the glyph text stays untinted. */
+              className="pointer-events-none absolute z-20 rounded-lg ring-2 ring-accent ring-inset"
               initial={{ opacity: 0, ...hoverRect }}
               animate={{ opacity: 1, ...hoverRect }}
               exit={{ opacity: 0, transition: spring.fast.exit }}
