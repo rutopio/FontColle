@@ -138,7 +138,7 @@ const SIDEBAR_SKELETON = (
           Category
         </h2>
       </div>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-1.5">
         {CATEGORY_CARDS.map((card) => (
           <div
             key={`card:${card}`}
