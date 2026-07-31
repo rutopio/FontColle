@@ -1,11 +1,12 @@
 import { MoonIcon, SunIcon } from "@phosphor-icons/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   RAIL_BAR_BTN,
   RAIL_BTN,
   RAIL_BTN_OFF,
   RAIL_HEADER_BTN,
 } from "@/components/rail-button";
+import { useMountEffect } from "@/hooks/use-mount-effect";
 import { cn } from "@/lib/utils";
 
 export function ThemeToggle({
@@ -15,9 +16,9 @@ export function ThemeToggle({
 }) {
   const [isDark, setIsDark] = useState(false);
 
-  useEffect(() => {
+  useMountEffect(() => {
     setIsDark(document.documentElement.classList.contains("dark"));
-  }, []);
+  });
 
   const toggle = () => {
     const next = !isDark;

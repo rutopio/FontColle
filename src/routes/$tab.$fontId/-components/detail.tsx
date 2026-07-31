@@ -1,8 +1,9 @@
 import type * as React from "react";
-import { useEffect, useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import { Column } from "@/components/filter-layout";
 import { PreviewBar } from "@/components/preview-dock";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import { useMountEffect } from "@/hooks/use-mount-effect";
 import type { DesignerSibling } from "@/lib/fonts/detail";
 import { buildFeatureSettings } from "@/lib/fonts/features";
 import { scriptLabel } from "@/lib/fonts/labels";
@@ -60,9 +61,10 @@ export function Detail({
     [font.instances]
   );
 
-  useEffect(() => {
+  // Font face loading — component remounts on fontId change, so mount-only is correct.
+  useMountEffect(() => {
     ensureFontRangeLoaded(font.name, font.axes, hasItalic);
-  }, [font.name, font.axes, hasItalic]);
+  });
 
   const fontLoaded = useFontLoaded(font.name);
 

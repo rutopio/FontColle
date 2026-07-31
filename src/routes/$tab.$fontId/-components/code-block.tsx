@@ -1,5 +1,5 @@
 import { CheckIcon, CopyIcon, XIcon } from "@phosphor-icons/react";
-import { useEffect, useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { highlight } from "@/lib/code/highlight";
 import { cn } from "@/lib/utils";
@@ -14,12 +14,7 @@ export function CodeBlock({
   className?: string;
 }) {
   const [status, setStatus] = useState<"idle" | "copied" | "failed">("idle");
-
-  useEffect(() => {
-    if (status === "idle") return;
-    const t = setTimeout(() => setStatus("idle"), 1500);
-    return () => clearTimeout(t);
-  }, [status]);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const copy = async () => {
     try {
@@ -30,6 +25,8 @@ export function CodeBlock({
       setStatus("failed");
       toast.error("Copy failed");
     }
+    clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => setStatus("idle"), 1500);
   };
 
   return (

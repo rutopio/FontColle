@@ -259,7 +259,7 @@ export function BlockGrid({
   ]);
 
   const rovingCpRef = useRef<number | null>(null);
-  const pendingFocusRef = useRef<number | null>(null);
+  const pendingFocusRafRef = useRef<number>(0);
   const [, forceRender] = useState(0);
 
   const firstPresentCp = useMemo(() => {
@@ -305,29 +305,24 @@ export function BlockGrid({
         btn.focus();
         return;
       }
-      pendingFocusRef.current = cp;
+      // Element not yet in DOM (virtualizer hasn't rendered it). Scroll to it
+      // and poll until it appears.
+      cancelAnimationFrame(pendingFocusRafRef.current);
+      let tries = 0;
+      const tick = () => {
+        const el = cellButton(cp);
+        if (el) {
+          el.focus();
+          return;
+        }
+        if (tries++ < 20)
+          pendingFocusRafRef.current = requestAnimationFrame(tick);
+      };
+      pendingFocusRafRef.current = requestAnimationFrame(tick);
       rowVirtualizer.scrollToIndex(rowOf(cp), { align: "center" });
     },
     [rowVirtualizer, cellButton, rowOf]
   );
-
-  useEffect(() => {
-    const cp = pendingFocusRef.current;
-    if (cp == null) return;
-    let frame = 0;
-    let tries = 0;
-    const tick = () => {
-      const btn = cellButton(cp);
-      if (btn) {
-        btn.focus();
-        pendingFocusRef.current = null;
-        return;
-      }
-      if (tries++ < 20) frame = requestAnimationFrame(tick);
-    };
-    tick();
-    return () => cancelAnimationFrame(frame);
-  });
 
   const nextPresent = (
     cp: number,

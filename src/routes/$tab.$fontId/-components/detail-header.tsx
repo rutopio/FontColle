@@ -1,7 +1,7 @@
 import { ArrowLeftIcon, GoogleLogoIcon } from "@phosphor-icons/react";
 import { Link, useCanGoBack, useRouter } from "@tanstack/react-router";
 import type * as React from "react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AboutLink } from "@/components/about-link";
 import { FavoriteToggle } from "@/components/favorite-toggle";
 import { FontTraits } from "@/components/font-traits";
@@ -19,6 +19,7 @@ import { repoHostIcon } from "@/components/repo-host-icon";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { useMountEffect } from "@/hooks/use-mount-effect";
 import { emptyFilter } from "@/lib/fonts/filter/state";
 import type { FontRecord } from "@/lib/fonts/types";
 import { backWithViewTransition } from "@/lib/view-transition";
@@ -27,7 +28,7 @@ export function DetailHeader({ font }: { font: FontRecord }) {
   const router = useRouter();
   // Deferred to avoid hydration mismatch (server can't read browser history).
   const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  useMountEffect(() => setMounted(true));
   const canGoBack = useCanGoBack() && mounted;
 
   const RepoIcon = repoHostIcon(font.repositoryUrl);

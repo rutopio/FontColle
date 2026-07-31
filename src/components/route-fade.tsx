@@ -1,11 +1,22 @@
 import { useRouterState } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import { type ReactNode, useEffect } from "react";
+import { type ReactNode, useEffect, useRef } from "react";
 import { EASE_OUT, MOTION_S } from "@/lib/motion";
 
-// Module-level so remounts at the same URL skip the fade; undefined on first
-// render so SSR doesn't ship opacity:0.
-let lastPath: string | undefined;
+/**
+ * Returns true on the first render after a route change, false otherwise.
+ * Must update AFTER commit so that concurrent renders all read the pre-navigation
+ * value — this is the one case where a post-commit write (effect) is essential.
+ */
+function useRouteChanged(pathname: string): boolean {
+  const committed = useRef<string | undefined>(undefined);
+  const changed =
+    committed.current !== undefined && committed.current !== pathname;
+  useEffect(() => {
+    committed.current = pathname;
+  }, [pathname]);
+  return changed;
+}
 
 export function RouteFade({
   className,
@@ -17,11 +28,7 @@ export function RouteFade({
   distance?: number;
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  // Committed in effect so all RouteFades see the same previous path.
-  const changed = lastPath !== undefined && lastPath !== pathname;
-  useEffect(() => {
-    lastPath = pathname;
-  }, [pathname]);
+  const changed = useRouteChanged(pathname);
 
   return (
     <motion.div

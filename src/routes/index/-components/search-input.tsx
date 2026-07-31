@@ -2,9 +2,10 @@ import {
   ArrowElbowDownLeftIcon,
   MagnifyingGlassIcon,
 } from "@phosphor-icons/react";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useCallback, useId, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Kbd } from "@/components/ui/kbd";
+import { useMountEffect } from "@/hooks/use-mount-effect";
 import { cn } from "@/lib/utils";
 
 const DEBOUNCE_MS = 200;
@@ -40,7 +41,7 @@ export function SearchInput({
     setDraft(query);
   }
 
-  useEffect(() => () => clearTimeout(debounceRef.current), []);
+  useMountEffect(() => () => clearTimeout(debounceRef.current));
 
   const flush = useCallback(
     (value: string) => {

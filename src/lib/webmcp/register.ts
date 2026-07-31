@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useMountEffect } from "@/hooks/use-mount-effect";
 import { buildTools, type ToolDefinition } from "./tools";
 
 interface ModelContext {
@@ -22,7 +22,7 @@ export function useWebMcp(): void {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  useEffect(() => {
+  useMountEffect(() => {
     const ctx = modelContext();
     if (!ctx) return;
 
@@ -63,5 +63,5 @@ export function useWebMcp(): void {
       if (typeof ctx.registerTool !== "function")
         void ctx.provideContext?.({ tools: [] });
     };
-  }, [router, queryClient]);
+  });
 }

@@ -7,7 +7,7 @@ import {
   useRouter,
 } from "@tanstack/react-router";
 import { AnimatePresence } from "motion/react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FilterLayout } from "@/components/filter-layout";
 import { NotFound } from "@/components/not-found";
 import { fetchFontById, fetchFontsByDesigners } from "@/lib/fonts/detail";
@@ -185,13 +185,7 @@ function DetailPage() {
   const [glyphBlock, setGlyphBlock] = useState("");
   const [highlightCp, setHighlightCp] = useState<number | null>(null);
   const [searchMiss, setSearchMiss] = useState(false);
-
-  // WCAG 2.2.2: auto-retire the highlight after 3s.
-  useEffect(() => {
-    if (highlightCp == null) return;
-    const id = setTimeout(() => setHighlightCp(null), 3000);
-    return () => clearTimeout(id);
-  }, [highlightCp]);
+  const highlightTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const searchGlyph = (query: string): boolean => {
     const cp = parseGlyphQuery(query);
@@ -207,6 +201,9 @@ function DetailPage() {
     setSearchMiss(false);
     setGlyphBlock(block.name);
     setHighlightCp(cp);
+    // WCAG 2.2.2: auto-retire the highlight after 3s.
+    clearTimeout(highlightTimerRef.current);
+    highlightTimerRef.current = setTimeout(() => setHighlightCp(null), 3000);
     return true;
   };
 

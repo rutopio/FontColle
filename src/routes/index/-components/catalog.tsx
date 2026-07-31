@@ -88,11 +88,10 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
   const filter = useMemo(() => searchToFilter(search), [search]);
   const [shownFilter, setShownFilter] = useState(filter);
   const fading = filterKey(filter) !== filterKey(shownFilter);
-  useEffect(() => {
-    if (!fading && filter.query !== shownFilter.query) {
-      setShownFilter(filter);
-    }
-  }, [fading, filter, shownFilter.query]);
+  // Render-time sync: when filter keys match (no fade) but query diverged, update immediately.
+  if (!fading && filter.query !== shownFilter.query) {
+    setShownFilter(filter);
+  }
 
   const commitFilter = (next: FilterState) => {
     pruneAxisValues(next.axes);

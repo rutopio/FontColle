@@ -23,7 +23,13 @@ import {
   FORMAT_ELEMENT_COMMAND,
   SELECTION_CHANGE_COMMAND,
 } from "lexical";
-import { type CSSProperties, useCallback, useEffect, useState } from "react";
+import {
+  type CSSProperties,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { EditableValue } from "@/components/ui/editable-value";
 import {
@@ -34,6 +40,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
+import { useMountEffect } from "@/hooks/use-mount-effect";
 import { previewStyle } from "@/lib/fonts/preview-style";
 import type { FontInstance } from "@/lib/fonts/types";
 import { useBlockAxes } from "@/lib/tester/block-axes";
@@ -189,6 +196,7 @@ function TesterInner({
     const selection = $getSelection();
     if (!$isRangeSelection(selection)) {
       setActiveKeys([]);
+      setBlockAxesTargetRef.current?.(null);
       return;
     }
     const anchorNode = selection.anchor.getNode();
@@ -200,22 +208,33 @@ function TesterInner({
       ? (element.getTag() as BlockType)
       : "normal";
     setBlock(next);
-    setBlockStyle(isTesterBlock(element) ? element.getStyle() : "");
+    const style = isTesterBlock(element) ? element.getStyle() : "";
+    setBlockStyle(style);
     setAlign($isElementNode(element) ? element.getFormatType() : "");
     const dom = editor.getElementByKey(element.getKey());
     setRtl(dom ? getComputedStyle(dom).direction === "rtl" : false);
-    setActiveKeys(
-      Array.from(
-        new Set(
-          selection
-            .getNodes()
-            .map((n) =>
-              n.getKey() === "root" ? n : n.getTopLevelElementOrThrow()
-            )
-            .map((n) => n.getKey())
-        )
+    const keys = Array.from(
+      new Set(
+        selection
+          .getNodes()
+          .map((n) =>
+            n.getKey() === "root" ? n : n.getTopLevelElementOrThrow()
+          )
+          .map((n) => n.getKey())
       )
     );
+    setActiveKeys(keys);
+    // Sync block axes context inline
+    if (setBlockAxesTargetRef.current) {
+      if (keys.length === 0) {
+        setBlockAxesTargetRef.current(null);
+      } else {
+        setBlockAxesTargetRef.current({
+          coords: coordsFromStyle(style),
+          setAxis: setBlockAxisRef.current,
+        });
+      }
+    }
   }, [editor]);
 
   useEffect(() => {
@@ -274,18 +293,11 @@ function TesterInner({
 
   const blockAxesCtx = useBlockAxes();
   const setBlockAxesTarget = blockAxesCtx?.setTarget;
-  useEffect(() => {
-    if (!setBlockAxesTarget) return;
-    if (activeKeys.length === 0) {
-      setBlockAxesTarget(null);
-      return;
-    }
-    setBlockAxesTarget({
-      coords: coordsFromStyle(blockStyle),
-      setAxis: setBlockAxis,
-    });
-    return () => setBlockAxesTarget(null);
-  }, [setBlockAxesTarget, activeKeys, blockStyle, setBlockAxis]);
+  const setBlockAxesTargetRef = useRef(setBlockAxesTarget);
+  setBlockAxesTargetRef.current = setBlockAxesTarget;
+  const setBlockAxisRef = useRef(setBlockAxis);
+  setBlockAxisRef.current = setBlockAxis;
+  useMountEffect(() => () => setBlockAxesTargetRef.current?.(null));
 
   const applyBlock = (value: BlockType) => {
     editor.update(() => {

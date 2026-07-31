@@ -156,12 +156,13 @@ function ValueDisplay({
   const [inputValue, setInputValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
+  const [prevEditingIndex, setPrevEditingIndex] = useState<number | null>(null);
+  if (editingIndex !== prevEditingIndex) {
+    setPrevEditingIndex(editingIndex);
     if (editingIndex !== null) {
       setInputValue(String(values[editingIndex]));
-      requestAnimationFrame(() => inputRef.current?.select());
     }
-  }, [editingIndex]);
+  }
 
   const commitEdit = useCallback(
     (index: number) => {
@@ -202,6 +203,8 @@ function ValueDisplay({
               min={min}
               max={max}
               step={stepValues ? "any" : step}
+              autoFocus
+              onFocus={(e) => e.currentTarget.select()}
               onChange={(e) => setInputValue(e.target.value)}
               onBlur={() => commitEdit(index)}
               onKeyDown={(e) => {
@@ -372,17 +375,6 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
     const [focusedThumb, setFocusedThumb] = useState<number | null>(null);
     const [showHoverTooltip, setShowHoverTooltip] = useState(false);
     const hoverDelayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-    // Show hover tooltip after 100ms delay
-    useEffect(() => {
-      if (isHovered) {
-        hoverDelayRef.current = setTimeout(() => setShowHoverTooltip(true), 100);
-      } else {
-        if (hoverDelayRef.current) clearTimeout(hoverDelayRef.current);
-        setShowHoverTooltip(false);
-      }
-      return () => { if (hoverDelayRef.current) clearTimeout(hoverDelayRef.current); };
-    }, [isHovered]);
 
     const motionX0 = useMotionValue(0);
     const motionX1 = useMotionValue(0);
@@ -841,10 +833,16 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
             paddingTop: valuePosition === "tooltip" && tooltipSide === "top" ? 16 : 0,
             paddingBottom: valuePosition === "tooltip" && tooltipSide === "bottom" ? 16 : 0,
           }}
-          onPointerEnter={() => setIsHovered(true)}
+          onPointerEnter={() => {
+            setIsHovered(true);
+            hoverDelayRef.current = setTimeout(() => setShowHoverTooltip(true), 100);
+          }}
           onPointerLeave={() => {
             setIsHovered(false);
             setHoverPreview(null);
+            if (hoverDelayRef.current) clearTimeout(hoverDelayRef.current);
+            hoverDelayRef.current = null;
+            setShowHoverTooltip(false);
           }}
           onMouseMove={(e) => {
             if (dragging.current) return;
@@ -1118,17 +1116,6 @@ const SliderComfortable = forwardRef<HTMLDivElement, SliderComfortableProps>(
     const [showHoverTooltip, setShowHoverTooltip] = useState(false);
     const hoverDelayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    // Show hover tooltip after 100ms delay
-    useEffect(() => {
-      if (isHovered) {
-        hoverDelayRef.current = setTimeout(() => setShowHoverTooltip(true), 100);
-      } else {
-        if (hoverDelayRef.current) clearTimeout(hoverDelayRef.current);
-        setShowHoverTooltip(false);
-      }
-      return () => { if (hoverDelayRef.current) clearTimeout(hoverDelayRef.current); };
-    }, [isHovered]);
-
     const mergedRef = useCallback(
       (el: HTMLDivElement | null) => {
         containerRef.current = el;
@@ -1335,11 +1322,19 @@ const SliderComfortable = forwardRef<HTMLDivElement, SliderComfortableProps>(
     return (
       <div
         className="relative w-full touch-none"
-        onPointerEnter={() => { if (!disabled) setIsHovered(true); }}
+        onPointerEnter={() => {
+          if (!disabled) {
+            setIsHovered(true);
+            hoverDelayRef.current = setTimeout(() => setShowHoverTooltip(true), 100);
+          }
+        }}
         onPointerLeave={() => {
           if (!disabled) {
             setIsHovered(false);
             setHoverPreview(null);
+            if (hoverDelayRef.current) clearTimeout(hoverDelayRef.current);
+            hoverDelayRef.current = null;
+            setShowHoverTooltip(false);
           }
         }}
         onMouseMove={(e) => {

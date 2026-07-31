@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useMountEffect } from "@/hooks/use-mount-effect";
 import type { FilterSelection } from "@/lib/fonts/filter";
 import {
   ensureFontLoaded,
@@ -26,27 +27,7 @@ export function useFontFacePreview(
     italic: previewItalic,
   } = usePreviewCoords(font, selection, axisValues);
 
-  const [previewRef, inView] = useInView("400px");
-
-  useEffect(() => {
-    if (!inView) return;
-    if (font.isVariable) {
-      ensureFontRangeLoaded(
-        font.name,
-        font.axes,
-        font.facets.includes("has-italic")
-      );
-    } else {
-      ensureFontLoaded(font.name, [activeWeight]);
-    }
-  }, [
-    inView,
-    font.name,
-    font.isVariable,
-    font.axes,
-    font.facets,
-    activeWeight,
-  ]);
+  const [previewRef, inView] = useInView("400px", font, activeWeight);
 
   const fontReady = useFontLoaded(font.name, activeWeight);
   const fontLoaded = inView && fontReady;
@@ -65,28 +46,57 @@ export function useFontFacePreview(
 }
 
 function useInView(
-  rootMargin: string
+  rootMargin: string,
+  font: FontRecord,
+  activeWeight: number
 ): [React.RefObject<HTMLAnchorElement | null>, boolean] {
   const ref = useRef<HTMLAnchorElement>(null);
   const [inView, setInView] = useState(false);
+  const fontRef = useRef(font);
+  fontRef.current = font;
+  const activeWeightRef = useRef(activeWeight);
+  activeWeightRef.current = activeWeight;
 
-  useEffect(() => {
-    if (inView) return;
+  useMountEffect(() => {
     const node = ref.current;
     if (!node) return;
     if (typeof IntersectionObserver === "undefined") {
+      loadFont(fontRef.current, activeWeightRef.current);
       setInView(true);
       return;
     }
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries.some((e) => e.isIntersecting)) setInView(true);
+        if (entries.some((e) => e.isIntersecting)) {
+          loadFont(fontRef.current, activeWeightRef.current);
+          setInView(true);
+          observer.disconnect();
+        }
       },
       { rootMargin }
     );
     observer.observe(node);
     return () => observer.disconnect();
-  }, [inView, rootMargin]);
+  });
+
+  // For non-variable fonts, load additional weights when the selection changes
+  // after the card is already in view.
+  useEffect(() => {
+    if (!inView || font.isVariable) return;
+    ensureFontLoaded(font.name, [activeWeight]);
+  }, [inView, activeWeight, font.isVariable, font.name]);
 
   return [ref, inView];
+}
+
+function loadFont(font: FontRecord, activeWeight: number) {
+  if (font.isVariable) {
+    ensureFontRangeLoaded(
+      font.name,
+      font.axes,
+      font.facets.includes("has-italic")
+    );
+  } else {
+    ensureFontLoaded(font.name, [activeWeight]);
+  }
 }

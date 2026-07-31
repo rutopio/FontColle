@@ -43,12 +43,7 @@ const Table = forwardRef<HTMLTableElement, TableProps>(
       sessionRef,
       handlers,
       registerItem,
-      measureItems,
     } = useProximityHover(containerRef);
-
-    useEffect(() => {
-      measureItems();
-    }, [measureItems, children]);
 
     const activeRect = activeIndex !== null ? itemRects[activeIndex] : null;
 
