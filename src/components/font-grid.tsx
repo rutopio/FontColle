@@ -197,9 +197,9 @@ function SkeletonCard() {
         <div className="h-3.5 w-1/3 animate-pulse rounded bg-muted" />
       </div>
       <div className="flex min-h-16 flex-1 flex-col gap-2.5 py-1">
-        <div className="h-4 w-[85%] animate-pulse rounded bg-muted" />
-        <div className="h-4 w-[70%] animate-pulse rounded bg-muted" />
-        <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
+        <div className="h-6 w-[85%] animate-pulse rounded bg-muted" />
+        <div className="h-6 w-[70%] animate-pulse rounded bg-muted" />
+        <div className="h-6 w-1/2 animate-pulse rounded bg-muted" />
       </div>
       <div className="flex flex-wrap gap-1">
         <div className="h-5 w-12 animate-pulse rounded-full bg-muted" />

@@ -74,9 +74,9 @@ export const FontCard = memo(function FontCard({
         </p>
       ) : (
         <div className="flex min-h-16 flex-1 flex-col gap-2.5 py-1" aria-hidden>
-          <div className="h-4 w-[85%] animate-pulse rounded bg-muted" />
-          <div className="h-4 w-[70%] animate-pulse rounded bg-muted" />
-          <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
+          <div className="h-6 w-[85%] animate-pulse rounded bg-muted" />
+          <div className="h-6 w-[70%] animate-pulse rounded bg-muted" />
+          <div className="h-6 w-1/2 animate-pulse rounded bg-muted" />
         </div>
       )}
 
