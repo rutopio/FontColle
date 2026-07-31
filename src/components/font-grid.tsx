@@ -11,6 +11,7 @@ import { FontCard } from "@/components/font-card";
 import { FontRow } from "@/components/font-row";
 import type { FilterSelection } from "@/lib/fonts/filter";
 import type { FontRecord } from "@/lib/fonts/types";
+import { cn } from "@/lib/utils";
 import { Separator } from "./ui/separator";
 
 export type ViewMode = "grid" | "row";
@@ -127,6 +128,7 @@ export function FontGrid({
           const rowFonts = fonts.slice(start, start + cols);
           if (rowFonts.length === 0) return null;
           const isLastRow = row.index === rowCount - 1;
+          const isFirstRow = row.index === 0;
           return (
             <div
               key={rowKey(view, rowFonts[0]?.id ?? String(row.key))}
@@ -148,8 +150,17 @@ export function FontGrid({
                 // The row's last cell drops its right gridline, so only the
                 // interior verticals show. :last-child also covers a final
                 // partial row, where no cell reaches the last column.
+                //
+                // The four outer corners of the whole grid get a matching
+                // radius, so a hovered corner cell echoes the shell's rounding.
                 <div
-                  className="grid [&>:last-child]:border-r-0"
+                  className={cn(
+                    "grid [&>:last-child]:border-r-0",
+                    isFirstRow &&
+                      "[&>:first-child]:rounded-tl-lg [&>:last-child]:rounded-tr-lg",
+                    isLastRow &&
+                      "[&>:first-child]:rounded-bl-lg [&>:last-child]:rounded-br-lg"
+                  )}
                   style={{
                     gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
                   }}
