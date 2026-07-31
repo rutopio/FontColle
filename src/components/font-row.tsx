@@ -15,6 +15,8 @@ interface Props {
   onToggleFavorite: (id: string) => void;
   selection: FilterSelection;
   axisValues: Record<string, number>;
+  /** Loading skeleton: render blank action slots (see FontActions). */
+  staticActions?: boolean;
 }
 
 export const FontRow = memo(function FontRow({
@@ -24,6 +26,7 @@ export const FontRow = memo(function FontRow({
   onToggleFavorite,
   selection,
   axisValues,
+  staticActions = false,
 }: Props) {
   const { fontLoaded, previewStyle, previewRef } = useFontFacePreview(
     font,
@@ -59,6 +62,7 @@ export const FontRow = memo(function FontRow({
             isFavorite={isFavorite}
             onToggleFavorite={onToggleFavorite}
             reserveRepoSlot
+            static={staticActions}
           />
         </div>
         {font.designer && (

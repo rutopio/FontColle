@@ -225,6 +225,7 @@ export function FirstPagePending({ firstPage }: { firstPage: FontRecord[] }) {
                 onToggleFavorite={NOOP}
                 selection={FIRST_PAGE_SELECTION}
                 axisValues={EMPTY_AXES}
+                staticActions
               />
             ))}
           </div>
@@ -240,6 +241,7 @@ export function FirstPagePending({ firstPage }: { firstPage: FontRecord[] }) {
                 onToggleFavorite={NOOP}
                 selection={FIRST_PAGE_SELECTION}
                 axisValues={EMPTY_AXES}
+                staticActions
               />
               <Separator className="mx-4 aria-[orientation=horizontal]:w-auto" />
             </div>

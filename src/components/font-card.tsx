@@ -18,6 +18,8 @@ interface Props {
   axisValues: Record<string, number>;
   /** Cells draw a bottom gridline; the final row drops it so the list ends clean. */
   lastRow?: boolean;
+  /** Loading skeleton: render blank action slots (see FontActions). */
+  staticActions?: boolean;
 }
 
 export const FontCard = memo(function FontCard({
@@ -28,6 +30,7 @@ export const FontCard = memo(function FontCard({
   selection,
   axisValues,
   lastRow = false,
+  staticActions = false,
 }: Props) {
   const { fontLoaded, previewStyle, previewRef } = useFontFacePreview(
     font,
@@ -53,6 +56,7 @@ export const FontCard = memo(function FontCard({
             font={font}
             isFavorite={isFavorite}
             onToggleFavorite={onToggleFavorite}
+            static={staticActions}
           />
         </div>
         {font.designer && (

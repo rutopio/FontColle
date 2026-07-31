@@ -5,17 +5,44 @@ import { Tooltip } from "@/components/ui/tooltip";
 import type { FontRecord } from "@/lib/fonts/types";
 import { cn } from "@/lib/utils";
 
+// Matches the real control order: favorite, Google Fonts, repository.
+const STATIC_SLOTS = ["favorite", "specimen", "repo"];
+
 export function FontActions({
   font,
   isFavorite,
   onToggleFavorite,
   reserveRepoSlot = false,
+  static: isStatic = false,
 }: {
   font: FontRecord;
   isFavorite: boolean;
   onToggleFavorite: (id: string) => void;
   reserveRepoSlot?: boolean;
+  /**
+   * Loading-skeleton mode: render same-sized blanks instead of the real
+   * controls. Each icon here is a HoverBoldIcon, i.e. two full inline SVGs
+   * (regular + bold) for the hover crossfade, and the pending list renders
+   * every card twice (grid and row, one hidden by CSS). That put ~290 SVGs in
+   * the SSR payload for controls nobody can click yet -- 12ms of render on a
+   * 10ms CPU budget. Geometry matches the real row so nothing shifts.
+   */
+  static?: boolean;
 }) {
+  if (isStatic) {
+    const slots =
+      font.repositoryUrl || reserveRepoSlot
+        ? STATIC_SLOTS
+        : STATIC_SLOTS.slice(0, 2);
+    return (
+      <div aria-hidden className="flex shrink-0 items-center gap-4">
+        {slots.map((slot) => (
+          <span key={slot} className="size-5 shrink-0" />
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="flex shrink-0 items-center gap-4">
       <Tooltip
