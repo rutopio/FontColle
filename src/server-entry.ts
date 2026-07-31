@@ -94,11 +94,13 @@ export default {
     }
 
     // Edge-cache the bare `/` and the detail tabs: both SSR identically for
-    // every visitor.
+    // every visitor. Skipped in dev, where a cached `/` outlives every edit and
+    // reads as HMR being broken.
     const isGet = request.method === "GET";
     const isCacheableHome = isGet && url.pathname === "/" && url.search === "";
     const isCacheablePage =
-      isCacheableHome || (isGet && isCacheableDetail(url));
+      import.meta.env.PROD &&
+      (isCacheableHome || (isGet && isCacheableDetail(url)));
     const cache = (caches as unknown as { default: Cache }).default;
     if (isCacheablePage) {
       const hit = await cache.match(request);
