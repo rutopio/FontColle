@@ -14,6 +14,30 @@ const FILTERED_CRAWLER_HTML = `<!DOCTYPE html><html lang="en"><head><meta charse
 
 const HOME_CACHE_SECONDS = 600;
 
+// Detail pages SSR identically for every visitor (all per-user state is
+// client-side), but there are ~1,900 fonts x 7 tabs of them and none were
+// cached: every crawler hit paid a full React render, which is what pushed the
+// Worker past its CPU limit. They change only on deploy, so they cache longer
+// than `/`.
+const DETAIL_CACHE_SECONDS = 86400;
+const DETAIL_TAB_SLUGS = new Set([
+  "instances",
+  "tester",
+  "glyphs",
+  "detail",
+  "designer",
+  "use",
+  "license",
+]);
+
+function isCacheableDetail(url: URL): boolean {
+  if (url.search !== "") return false;
+  const parts = url.pathname.split("/");
+  return (
+    parts.length === 3 && DETAIL_TAB_SLUGS.has(parts[1]) && parts[2] !== ""
+  );
+}
+
 const SECURITY_HEADERS: Record<string, string> = {
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "strict-origin-when-cross-origin",
@@ -69,11 +93,14 @@ export default {
       });
     }
 
-    // Edge-cache the bare `/`: it SSRs identically for every visitor.
-    const isCacheableHome =
-      request.method === "GET" && url.pathname === "/" && url.search === "";
+    // Edge-cache the bare `/` and the detail tabs: both SSR identically for
+    // every visitor.
+    const isGet = request.method === "GET";
+    const isCacheableHome = isGet && url.pathname === "/" && url.search === "";
+    const isCacheablePage =
+      isCacheableHome || (isGet && isCacheableDetail(url));
     const cache = (caches as unknown as { default: Cache }).default;
-    if (isCacheableHome) {
+    if (isCacheablePage) {
       const hit = await cache.match(request);
       if (hit) return hit;
     }
@@ -89,10 +116,14 @@ export default {
     }
     next.headers.set("Link", LINK_HEADER);
 
-    if (isCacheableHome && next.status === 200) {
+    // Only 200s are cached: a 404 or a 504 from an overloaded render must not
+    // be pinned at the edge.
+    if (isCacheablePage && next.status === 200) {
       next.headers.set(
         "Cache-Control",
-        `public, max-age=${HOME_CACHE_SECONDS}`
+        `public, max-age=${
+          isCacheableHome ? HOME_CACHE_SECONDS : DETAIL_CACHE_SECONDS
+        }`
       );
       const ctx = (args as unknown[])[2] as ExecutionContext | undefined;
       const write = cache.put(request, next.clone());

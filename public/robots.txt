@@ -15,6 +15,16 @@ Disallow: /?
 # but the pages are not offered as AI training material.
 Content-Signal: search=yes, ai-input=yes, ai-train=no
 
+# Backlink-index crawlers, kept last so the directives above stay attached to
+# the `*` group. Neither sends readers here, and between them they were ~18% of
+# uncached requests, walking the ~1,900 x 7 detail-tab URL space and taking
+# 503s off the Worker's CPU limit.
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
 # LLMs / AI search tools: machine-readable catalog guide at
 # https://fontcolle.com/llms.txt (field tables, tag vocabulary, URL params).
 
