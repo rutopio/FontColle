@@ -159,18 +159,28 @@ jobs:
             echo "changed=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Backfill repo-derived fields for newly harvested families
+      - name: Backfill repo-derived fields for families still missing them
         if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ -s scripts/harvester/og_ids.txt ]; then
             ids=$(paste -sd, scripts/harvester/og_ids.txt)
+            # License text comes from raw.githubusercontent.com, which is not
+            # metered against the core API quota, so scoping by --ids is only a
+            # time saving and stays as-is.
             python3 scripts/harvester/backfill_license.py --ids="$ids" 2>&1 | tee -a update.log
-            python3 scripts/harvester/backfill_version_history.py --ids="$ids" 2>&1 | tee -a update.log
           else
-            echo "no families re-harvested; repo-derived fields unchanged"
+            echo "no families re-harvested; license headers unchanged"
           fi
+          # version_history hits api.github.com, which IS metered (5000/hr). On a
+          # full reconcile --ids is the whole catalog: ~6000 requests, so the run
+          # always died around the same family and the tail of the alphabet was
+          # left with no history at all. Bare, the script resumes -- it processes
+          # only families still missing firstCommitDate. daily_update now carries
+          # that field across a re-harvest, so this set is just the genuinely new
+          # families rather than all 2030.
+          python3 scripts/harvester/backfill_version_history.py 2>&1 | tee -a update.log
 
       - name: Publish assets to R2
         if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'

@@ -134,6 +134,35 @@ def harvest_subset(changed):
     return load_json(RAW_OUT)
 
 
+# Fields no harvest can derive: each is written by its own backfill_*.py from a
+# source outside the font binary (git history, the repo's LICENSE text,
+# quant.csv, the GF metadata endpoint). to_record() cannot produce them, so
+# replacing a record with a fresh one drops them — and a --full run replaces
+# EVERY record. Left unhandled, a monthly full reconcile wiped versionHistory
+# catalog-wide, and the re-backfill then ran out of GitHub API quota partway
+# through, stranding the tail of the alphabet with no history at all. Carry them
+# across the replace; the backfills still update what genuinely changed, since
+# both jobs re-run them over the harvested ids. See [[reharvest-drops-backfills]].
+BACKFILLED_FIELDS = (
+    "versionHistory",
+    "firstCommitDate",
+    "licenseHeader",
+    "about",
+    "designerProfiles",
+    "contrast",
+    "glyphCoverage",
+)
+
+
+def carry_backfilled(prev, rec):
+    """Copy backfill-only fields from the previous record onto a fresh one."""
+    if not prev:
+        return
+    for field in BACKFILLED_FIELDS:
+        if field in prev and field not in rec:
+            rec[field] = prev[field]
+
+
 def main():
     # --full forces a whole-catalog re-harvest (every family, ignoring the
     # lastModified diff), used monthly to reconcile silent misses: an upstream
@@ -182,15 +211,16 @@ def main():
         harvested_ids = {r["id"] for r in new_records}
         by_id = {r["id"]: r for r in dataset}
         for rec in new_records:
+            prev = by_id.get(rec["id"])
             # Carry the google/fonts classification scores across the replace.
             # They come from the tags CSV (backfill_tags.py), not the harvest, so
             # a fresh record has tags={} — and `category` is derived from them,
             # so dropping the scores would silently demote e.g. Inconsolata from
             # Mono back to whatever the API category says. See
             # [[reharvest-drops-backfills]].
-            prev = by_id.get(rec["id"])
             if prev and prev.get("tags") and not rec.get("tags"):
                 rec["tags"] = prev["tags"]
+            carry_backfilled(prev, rec)
             by_id[rec["id"]] = rec  # replace or insert
         dataset = list(by_id.values())
 
