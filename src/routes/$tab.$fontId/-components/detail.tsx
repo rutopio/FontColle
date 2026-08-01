@@ -1,5 +1,5 @@
 import type * as React from "react";
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Column } from "@/components/filter-layout";
 import { PreviewBar } from "@/components/preview-dock";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
@@ -15,16 +15,16 @@ import type { FontRecord } from "@/lib/fonts/types";
 import { usePreview } from "@/lib/preview/context";
 import { DesignerPanel } from "./designer-panel";
 import { type DetailTab, DetailTabBar } from "./detail-rail";
-import { GlyphsPanel } from "./glyphs";
+import { GlyphsBlockHeading, GlyphsPanel } from "./glyphs";
 import { InstanceRow } from "./instance-row";
 import { LanguageSupport } from "./language-support";
-import { LicensePanel } from "./license-panel";
+import { LicenseHeading, LicensePanel } from "./license-panel";
 import { LinksDrawer } from "./links-drawer";
 import { MetricsPanel } from "./metrics-panel";
 import { Panel } from "./panel";
 import { type SpecRow, SpecTable } from "./spec-table";
 import { Tester } from "./tester";
-import { UsePanel } from "./use";
+import { type UseMethod, UseMethodTabs, UsePanel } from "./use";
 
 export function Detail({
   font,
@@ -67,6 +67,8 @@ export function Detail({
   });
 
   const fontLoaded = useFontLoaded(font.name);
+
+  const [useMethod, setUseMethod] = useState<UseMethod>("google");
 
   const subsets = font.subsets.filter((s) => s !== "menu");
 
@@ -144,6 +146,13 @@ export function Detail({
       <Column
         scrollViewportRef={scrollRef}
         subheader={<DetailTabBar active={tab} fontId={fontSlug(font.id)} />}
+        toolbar={
+          (tab === "glyphs" && <GlyphsBlockHeading blockName={glyphBlock} />) ||
+          (tab === "license" && <LicenseHeading font={font} />) ||
+          (tab === "use" && (
+            <UseMethodTabs method={useMethod} onMethodChange={setUseMethod} />
+          ))
+        }
         footer={<PreviewBar />}
         footerHidden={tab !== "sample"}
       >
@@ -188,7 +197,12 @@ export function Detail({
         )}
 
         {tab === "use" && (
-          <UsePanel font={font} axisState={axisState} italic={italic} />
+          <UsePanel
+            font={font}
+            axisState={axisState}
+            italic={italic}
+            method={useMethod}
+          />
         )}
 
         {tab === "detail" && (

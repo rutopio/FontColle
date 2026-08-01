@@ -5,24 +5,51 @@ import { FontsourceMethod } from "./fontsource";
 import { GoogleFontsMethod } from "./google-fonts";
 import { fallbackFor } from "./shared";
 
-export function UsePanel({
-  font,
-  axisState,
-  italic,
-}: {
-  font: FontRecord;
-  axisState: Record<string, number>;
-  italic: boolean;
-}) {
-  const cssFamily = `"${font.name}", ${fallbackFor(font.category)}`;
+export const USE_METHODS = ["google", "fontsource", "bunny"] as const;
+export type UseMethod = (typeof USE_METHODS)[number];
 
+/**
+ * The method switcher. Rendered in the Column's toolbar slot, outside the
+ * ScrollArea, so the scroll-fade mask never dissolves it. It carries its own
+ * Tabs root because the panels live in a sibling subtree and Base UI's context
+ * cannot span the two.
+ */
+export function UseMethodTabs({
+  method,
+  onMethodChange,
+}: {
+  method: UseMethod;
+  onMethodChange: (value: UseMethod) => void;
+}) {
   return (
-    <Tabs defaultValue="google">
-      <TabsList className="mb-4">
+    <Tabs
+      value={method}
+      onValueChange={(value) => onMethodChange(value as UseMethod)}
+    >
+      <TabsList>
         <TabsTab value="google">Google Fonts</TabsTab>
         <TabsTab value="fontsource">Fontsource</TabsTab>
         <TabsTab value="bunny">Bunny Fonts</TabsTab>
       </TabsList>
+    </Tabs>
+  );
+}
+
+export function UsePanel({
+  font,
+  axisState,
+  italic,
+  method,
+}: {
+  font: FontRecord;
+  axisState: Record<string, number>;
+  italic: boolean;
+  method: UseMethod;
+}) {
+  const cssFamily = `"${font.name}", ${fallbackFor(font.category)}`;
+
+  return (
+    <Tabs value={method}>
       <TabsPanel value="google">
         <GoogleFontsMethod
           font={font}

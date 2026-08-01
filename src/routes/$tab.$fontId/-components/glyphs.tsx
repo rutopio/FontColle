@@ -14,6 +14,29 @@ import {
   type Range,
 } from "./glyph-block-grid";
 
+function useActiveBlock(blockName: string) {
+  return useMemo(
+    () => BMP_BLOCKS.find((b) => b.name === blockName) ?? BMP_BLOCKS[0],
+    [blockName]
+  );
+}
+
+/**
+ * The block's name and range. Rendered in the Column's toolbar slot, outside
+ * the ScrollArea, so the scroll-fade mask never dissolves it.
+ */
+export function GlyphsBlockHeading({ blockName }: { blockName: string }) {
+  const active = useActiveBlock(blockName);
+  return (
+    <div className="flex items-baseline justify-between gap-3">
+      <h2 className="font-semibold text-2xl">{active.name}</h2>
+      <span className="font-mono text-muted-foreground text-xs">
+        U+{hex(active.start)}–U+{hex(active.end)}
+      </span>
+    </div>
+  );
+}
+
 export function GlyphsPanel({
   font,
   fontLoaded,
@@ -31,10 +54,7 @@ export function GlyphsPanel({
   scrollRef: RefObject<HTMLDivElement | null>;
   highlightCp: number | null;
 }) {
-  const active = useMemo(
-    () => BMP_BLOCKS.find((b) => b.name === blockName) ?? BMP_BLOCKS[0],
-    [blockName]
-  );
+  const active = useActiveBlock(blockName);
 
   const onCopy = useCallback(async (cp: number) => {
     try {
@@ -55,12 +75,6 @@ export function GlyphsPanel({
 
   return (
     <div className="w-full min-w-0 pb-48 md:pb-0">
-      <div className="mb-8 flex items-baseline justify-between gap-3">
-        <h2 className="font-semibold text-2xl">{active.name}</h2>
-        <span className="font-mono text-muted-foreground text-xs">
-          U+{hex(active.start)}–U+{hex(active.end)}
-        </span>
-      </div>
       {loading ? (
         <GlyphGridSkeleton />
       ) : (

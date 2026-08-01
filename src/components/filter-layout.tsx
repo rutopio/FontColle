@@ -159,12 +159,19 @@ function ColumnHeader({ children }: { children: React.ReactNode }) {
 
 export function Column({
   subheader,
+  toolbar,
   footer,
   footerHidden = false,
   children,
   scrollViewportRef,
 }: {
   subheader?: React.ReactNode;
+  /**
+   * Controls that sit above the list. Rendered outside the ScrollArea: its
+   * scroll-fade is a mask over the whole subtree, so anything inside dissolves
+   * as it enters the top fade band (see detail.tsx for the same constraint).
+   */
+  toolbar?: React.ReactNode;
   footer?: React.ReactNode;
   footerHidden?: boolean;
   children: React.ReactNode;
@@ -204,6 +211,9 @@ export function Column({
       <div className="absolute inset-0 flex flex-col">
         <div className="flex min-h-0 flex-1 flex-col bg-background md:overflow-hidden md:rounded-lg md:border md:border-border">
           {subheader}
+          {toolbar ? (
+            <div className="mx-auto w-full shrink-0 px-4 pt-4">{toolbar}</div>
+          ) : null}
           <ScrollArea
             fade
             viewportRef={scrollViewportRef}

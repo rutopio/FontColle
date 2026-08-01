@@ -6,6 +6,27 @@ import { cn } from "@/lib/utils";
 // "full" = variable range, "one" = pinned value.
 export type AxisPick = { mode: "full" | "one"; value: number };
 
+/**
+ * A method's heading and body. Deliberately unboxed: the tab strip above
+ * already groups these, so a Panel's border only nests one frame in another.
+ */
+export function MethodBody({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="max-w-2xl">
+      <h2 className="mb-4 font-medium text-muted-foreground text-xs uppercase">
+        {label}
+      </h2>
+      {children}
+    </section>
+  );
+}
+
 export function MethodIntro({ blurb }: { blurb: string }) {
   return <p className="mb-4 text-pretty text-xs leading-relaxed">{blurb}</p>;
 }

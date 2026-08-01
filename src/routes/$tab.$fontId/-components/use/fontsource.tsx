@@ -2,11 +2,11 @@ import { useState } from "react";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
 import type { FontRecord } from "@/lib/fonts/types";
 import { CodeBlock } from "@/routes/$tab.$fontId/-components/code-block";
-import { Panel } from "@/routes/$tab.$fontId/-components/panel";
 import {
   ExternalLink,
   fallbackFor,
   fontsourceSlug,
+  MethodBody,
   MethodIntro,
   Pill,
   Step,
@@ -39,7 +39,7 @@ export function FontsourceMethod({ font }: { font: FontRecord }) {
   const subsets = font.subsets.filter((s) => s !== "menu");
 
   return (
-    <Panel label="Self-hosted package" bodyClassName="max-w-2xl">
+    <MethodBody label="Self-hosted package">
       <MethodIntro blurb="Install once and bundle the files with your app. No runtime request to a third party." />
       {font.isVariable && (
         <Tabs
@@ -120,7 +120,7 @@ export function FontsourceMethod({ font }: { font: FontRecord }) {
         href={`https://fontsource.org/fonts/${slug}`}
         label="Framework guides on Fontsource"
       />
-    </Panel>
+    </MethodBody>
   );
 }
 

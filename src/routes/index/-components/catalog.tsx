@@ -358,6 +358,16 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
     >
       <Column
         scrollViewportRef={scrollRef}
+        toolbar={
+          results.length > 0 && (
+            <ActiveFilterChips
+              filter={shownFilter}
+              onChange={commitFilter}
+              align="left"
+              currentSearch={filterToSearch(shownFilter)}
+            />
+          )
+        }
         footer={
           <PreviewBar
             onScrollTop={() =>
@@ -369,14 +379,6 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
           />
         }
       >
-        {results.length > 0 && (
-          <ActiveFilterChips
-            filter={shownFilter}
-            onChange={commitFilter}
-            align="left"
-            currentSearch={filterToSearch(shownFilter)}
-          />
-        )}
         <motion.div
           className="flex flex-1 flex-col"
           animate={{ opacity: fading || viewFading ? 0 : 1 }}

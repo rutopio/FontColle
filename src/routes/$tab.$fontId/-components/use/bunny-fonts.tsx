@@ -2,11 +2,11 @@ import { useState } from "react";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
 import type { FontRecord } from "@/lib/fonts/types";
 import { CodeBlock } from "@/routes/$tab.$fontId/-components/code-block";
-import { Panel } from "@/routes/$tab.$fontId/-components/panel";
 import {
   ExternalLink,
   fallbackFor,
   fontsourceSlug,
+  MethodBody,
   MethodIntro,
   Pill,
   Step,
@@ -36,7 +36,7 @@ export function BunnyMethod({ font }: { font: FontRecord }) {
 }`;
 
   return (
-    <Panel label="Privacy-first & GDPR-friendly CDN" bodyClassName="max-w-2xl">
+    <MethodBody label="Privacy-first & GDPR-friendly CDN">
       <MethodIntro blurb="A drop-in for the Google Fonts API that serves the same families without logging IPs or setting cookies." />
       {font.isVariable && (
         <p className="mb-3 rounded-md bg-muted/50 px-2.5 py-1.5 text-xs">
@@ -100,7 +100,7 @@ export function BunnyMethod({ font }: { font: FontRecord }) {
         href={`https://fonts.bunny.net/family/${slug}`}
         label="This family on Bunny Fonts"
       />
-    </Panel>
+    </MethodBody>
   );
 }
 

@@ -6,12 +6,12 @@ import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
 import type { FontRecord } from "@/lib/fonts/types";
 import { CodeBlock } from "@/routes/$tab.$fontId/-components/code-block";
-import { Panel } from "@/routes/$tab.$fontId/-components/panel";
 import {
   type AxisPick,
   axisName,
   axisStops,
   ExternalLink,
+  MethodBody,
   MethodIntro,
   Pill,
   Step,
@@ -87,7 +87,7 @@ export function GoogleFontsMethod({
   const cssRule = googleFontsCss(font, cssFamily, picks, italic, italicKind);
 
   return (
-    <Panel label="Hosted stylesheet" bodyClassName="max-w-2xl">
+    <MethodBody label="Hosted stylesheet">
       <MethodIntro blurb="No build step. Embed the family and the browser loads the font from Google's CDN. This exposes visitors' IPs to Google and may fall foul of GDPR, if privacy matters, use Bunny Fonts instead." />
       <Steps>
         <Step n={1} label="Configure the axes">
@@ -175,7 +175,7 @@ export function GoogleFontsMethod({
         href={`https://fonts.google.com/specimen/${urlFamily(font.name)}`}
         label="Full options on Google Fonts"
       />
-    </Panel>
+    </MethodBody>
   );
 }
 
