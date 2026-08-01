@@ -14,6 +14,20 @@ const FILTERED_CRAWLER_HTML = `<!DOCTYPE html><html lang="en"><head><meta charse
 
 const HOME_CACHE_SECONDS = 600;
 
+// `caches.default` is a per-colo HTTP cache: it is keyed by URL and survives a
+// deploy, which is not what an SSR'd document wants. The HTML names the build's
+// content-hashed assets, and a deploy deletes the previous hashes, so an entry
+// written before the deploy points at files that now 404 -- the page renders
+// blank until the entry expires or someone purges it. Key the cache on the
+// build instead, so a new Worker never sees the old build's entries.
+declare const __BUILD_ID__: string;
+
+function cacheKey(request: Request): Request {
+  const url = new URL(request.url);
+  url.searchParams.set("__b", __BUILD_ID__);
+  return new Request(url, request);
+}
+
 // Detail pages SSR identically for every visitor (all per-user state is
 // client-side), but there are ~1,900 fonts x 7 tabs of them and none were
 // cached: every crawler hit paid a full React render, which is what pushed the
@@ -102,8 +116,9 @@ export default {
       import.meta.env.PROD &&
       (isCacheableHome || (isGet && isCacheableDetail(url)));
     const cache = (caches as unknown as { default: Cache }).default;
+    const key = isCacheablePage ? cacheKey(request) : request;
     if (isCacheablePage) {
-      const hit = await cache.match(request);
+      const hit = await cache.match(key);
       if (hit) return hit;
     }
 
@@ -128,7 +143,7 @@ export default {
         }`
       );
       const ctx = (args as unknown[])[2] as ExecutionContext | undefined;
-      const write = cache.put(request, next.clone());
+      const write = cache.put(key, next.clone());
       if (ctx?.waitUntil) ctx.waitUntil(write);
     }
     return next;
