@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { memo } from "react";
 import { FontActions } from "@/components/font-actions";
 import { FontTraits } from "@/components/font-traits";
+import { Badge } from "@/components/ui/badge";
 import type { FilterSelection } from "@/lib/fonts/filter";
 import { fontSlug } from "@/lib/fonts/slug";
 import { specimenFor } from "@/lib/fonts/specimen";
@@ -46,6 +47,13 @@ export const FontRow = memo(function FontRow({
         <div className="flex items-center justify-between gap-4">
           <div className="flex min-w-0 items-center gap-2">
             <h3 className="truncate sm:shrink-0">{font.name}</h3>
+            <Badge
+              variant="secondary"
+              className="shrink-0 rounded-lg text-3xs tabular-nums"
+              title={`${font.instances.length} named instance${font.instances.length === 1 ? "" : "s"}`}
+            >
+              {font.instances.length}
+            </Badge>
             {font.designer && (
               <span className="hidden truncate text-xs sm:inline">
                 {font.designer}

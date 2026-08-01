@@ -17,7 +17,9 @@ export function fontTraits(
       active: selection.categories.includes(font.category),
     },
     {
-      label: font.isVariable ? "Variable" : "Static",
+      label: font.isVariable
+        ? `Variable: ${font.axes.length} ${font.axes.length === 1 ? "axis" : "axes"}`
+        : "Static",
       active: font.isVariable
         ? selection.tags.includes("variable") || selection.axes.length > 0
         : selection.tags.includes("static"),

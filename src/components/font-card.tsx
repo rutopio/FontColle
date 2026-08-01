@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { memo } from "react";
 import { FontActions } from "@/components/font-actions";
 import { FontTraits } from "@/components/font-traits";
+import { Badge } from "@/components/ui/badge";
 import type { FilterSelection } from "@/lib/fonts/filter";
 import { fontSlug } from "@/lib/fonts/slug";
 import { specimenFor } from "@/lib/fonts/specimen";
@@ -51,7 +52,16 @@ export const FontCard = memo(function FontCard({
     >
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between gap-3">
-          <h3 className="min-w-0 truncate">{font.name}</h3>
+          <div className="flex min-w-0 items-center gap-1.5">
+            <h3 className="min-w-0 truncate">{font.name}</h3>
+            <Badge
+              variant="secondary"
+              className="shrink-0 rounded-lg text-3xs tabular-nums"
+              title={`${font.instances.length} named instance${font.instances.length === 1 ? "" : "s"}`}
+            >
+              {font.instances.length}
+            </Badge>
+          </div>
           <FontActions
             font={font}
             isFavorite={isFavorite}
