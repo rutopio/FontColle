@@ -77,7 +77,11 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: node scripts/sync-assets.mjs
+        # A full reconcile re-renders every OG card and reseals the base at the
+        # end, so pulling the deltas here is wasted work -- and the delta guard
+        # would otherwise block the only job that can clear an over-full
+        # manifest.
+        run: node scripts/sync-assets.mjs --skip-og-deltas
 
       - name: Refresh published signals
         env:
@@ -175,9 +179,14 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           # A full reconcile re-harvests every family, so og_ids.txt lists the
-          # whole catalog: the OG delta channel effectively re-uploads all cards,
-          # and the glyph tarball is re-sealed. Same publish path as the daily job.
-          node scripts/publish-assets.mjs --daily --og-ids=scripts/harvester/og_ids.txt
+          # whole catalog. Publishing that through the delta channel would leave
+          # a manifest with one delta per family, and sync-assets fetches deltas
+          # one wrangler process at a time -- ~1900 of them time the build out.
+          # Reseal the base tarball instead and drop the deltas; --reseed-og is
+          # exactly this case. Skip the delta upload entirely, since the base we
+          # are about to seal already contains every card.
+          node scripts/publish-assets.mjs --daily
+          node scripts/publish-assets.mjs --reseed-og
           if [ "${{ steps.glyphs.outputs.changed }}" = "true" ]; then
             node scripts/publish-assets.mjs --reseed-glyphs
           fi
