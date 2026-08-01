@@ -9,6 +9,7 @@ import type { MatchMode } from "@/lib/fonts/filter";
 import { EASE_OUT, MOTION_S } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { SectionHeader } from "./section-header";
+import { useCollapseAnchor } from "./use-collapse-anchor";
 
 const AXES: Record<
   string,
@@ -49,6 +50,7 @@ export function VariableAxesSection({
 }) {
   const [showMore, setShowMore] = useState(false);
   const tailId = useId();
+  const { ref: moreToggleRef, anchor } = useCollapseAnchor();
   const hasSelection = items.some(([value]) => selected.includes(value));
 
   const common = useMemo(() => items.slice(0, TOP_N), [items]);
@@ -200,10 +202,17 @@ export function VariableAxesSection({
             {pinned.map(renderRow)}
             <button
               type="button"
-              onClick={() => setShowMore((v) => !v)}
+              ref={moreToggleRef}
+              onClick={() => {
+                if (showMore) anchor();
+                setShowMore((v) => !v);
+              }}
               aria-expanded={showMore}
               aria-controls={tailId}
-              className="flex w-fit items-center gap-1 text-muted-foreground text-xs hover:text-foreground"
+              className={cn(
+                "flex w-fit items-center gap-1 rounded-md px-2 py-1 font-mono text-muted-foreground text-xs transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted/50",
+                showMore ? "mt-1" : "-mt-0.5"
+              )}
             >
               <CaretDownIcon
                 aria-hidden="true"

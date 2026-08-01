@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { RARE_THRESHOLD } from "./constants";
 import { PillButton } from "./pill-button";
 import { SectionHeader, type SortMode } from "./section-header";
+import { useCollapseAnchor } from "./use-collapse-anchor";
 
 export function Section({
   title,
@@ -111,6 +112,7 @@ export function Pills({
 }) {
   const [showRare, setShowRare] = useState(false);
   const rareId = useId();
+  const { ref: rareToggleRef, anchor } = useCollapseAnchor();
 
   const isRare = ([value, count]: [string, number]) => {
     if (expandAll) return false;
@@ -151,7 +153,7 @@ export function Pills({
     : "flex flex-wrap gap-1.5";
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-1.5">
       <div className={rowClass}>{common.map(renderPill)}</div>
       {rare.length > 0 && (
         <>
@@ -173,10 +175,17 @@ export function Pills({
           </div>
           <button
             type="button"
-            onClick={() => setShowRare((v) => !v)}
+            ref={rareToggleRef}
+            onClick={() => {
+              if (showRare) anchor();
+              setShowRare((v) => !v);
+            }}
             aria-expanded={showRare}
             aria-controls={rareId}
-            className="flex w-fit items-center gap-1 text-muted-foreground text-xs hover:text-foreground"
+            className={cn(
+              "flex w-fit items-center gap-1 rounded-md px-2 py-1 font-mono text-muted-foreground text-xs transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted/50",
+              showRare ? "mt-1" : "-mt-0.5"
+            )}
           >
             <CaretDownIcon
               aria-hidden="true"
