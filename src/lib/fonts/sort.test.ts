@@ -110,6 +110,22 @@ describe("sortFonts, popularity and trending", () => {
   it("trending: lower rank first, unranked last", () => {
     expect(sortedNames(fonts, "trending")).toEqual(["C", "B", "A", "Unranked"]);
   });
+  it("popularity-least: higher rank first, unranked still last", () => {
+    expect(sortedNames(fonts, "popularity-least")).toEqual([
+      "C",
+      "B",
+      "A",
+      "Unranked",
+    ]);
+  });
+  it("trending-least: higher rank first, unranked still last", () => {
+    expect(sortedNames(fonts, "trending-least")).toEqual([
+      "A",
+      "B",
+      "C",
+      "Unranked",
+    ]);
+  });
   it("popularity tie-breaks by name", () => {
     const tie = [
       font({ name: "Beta", popularityRank: 5 }),

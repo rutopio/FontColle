@@ -2,7 +2,9 @@ import type { FontRecord } from "./types";
 
 export type SortKey =
   | "popularity"
+  | "popularity-least"
   | "trending"
+  | "trending-least"
   | "name-asc"
   | "name-desc"
   | "creator-asc"
@@ -28,12 +30,16 @@ export const SORT_GROUPS: SortGroup[] = [
   {
     group: "Popularity",
     asc: "popularity",
+    desc: "popularity-least",
     ascLabel: "Most popular",
+    descLabel: "Least popular",
   },
   {
     group: "Trending",
     asc: "trending",
+    desc: "trending-least",
     ascLabel: "Trending",
+    descLabel: "Least trending",
   },
   {
     group: "Name",
@@ -114,9 +120,20 @@ export function sortFonts(fonts: FontRecord[], key: SortKey): FontRecord[] {
         (a, b) =>
           numCmp(a.popularityRank, b.popularityRank, false) || byName(a, b)
       );
+    // A rank of 1 is the top spot, so "least" is the ascending comparator
+    // reversed. numCmp keeps unranked families last either way.
+    case "popularity-least":
+      return out.sort(
+        (a, b) =>
+          numCmp(a.popularityRank, b.popularityRank, true) || byName(a, b)
+      );
     case "trending":
       return out.sort(
         (a, b) => numCmp(a.trendingRank, b.trendingRank, false) || byName(a, b)
+      );
+    case "trending-least":
+      return out.sort(
+        (a, b) => numCmp(a.trendingRank, b.trendingRank, true) || byName(a, b)
       );
     case "name-asc":
       return out.sort(byName);
