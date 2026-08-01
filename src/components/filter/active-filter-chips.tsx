@@ -15,6 +15,9 @@ const CHIP_MOTION = {
   transition: { duration: MOTION_S.fast, ease: EASE_OUT },
 } as const;
 
+export const hasActiveFilterChips = (filter: FilterState): boolean =>
+  groupActiveFilters(filter).length > 0 || filter.query.trim().length > 0;
+
 export function ActiveFilterChips({
   filter,
   onChange,
@@ -28,21 +31,11 @@ export function ActiveFilterChips({
 }) {
   const groups = groupActiveFilters(filter);
   const query = filter.query.trim();
-  if (groups.length === 0 && !query && align === "center") return null;
-  const filled = groups.length > 0 || query.length > 0;
+  if (!hasActiveFilterChips(filter)) return null;
   return (
-    <motion.div
-      animate={{
-        height: filled ? "auto" : 0,
-        marginBottom: filled ? 0 : "calc(var(--chip-row-gap) * -1)",
-      }}
-      initial={false}
-      transition={{ duration: 0 }}
-      style={{ overflow: "hidden" }}
+    <div
       className={cn(
-        // Inset by 1px so chip borders aren't clipped during height collapse.
-        "-mx-px -mt-px p-px",
-        "flex flex-wrap gap-1.5 [--chip-row-gap:1rem] md:[--chip-row-gap:1.5rem]",
+        "flex flex-wrap gap-1.5",
         align === "center" ? "max-w-2xl justify-center" : "justify-start"
       )}
     >
@@ -83,9 +76,9 @@ export function ActiveFilterChips({
           </motion.button>
         ))}
       </AnimatePresence>
-      {currentSearch && filled && (
+      {currentSearch && (
         <SavePresetPopover filter={filter} currentSearch={currentSearch} />
       )}
-    </motion.div>
+    </div>
   );
 }

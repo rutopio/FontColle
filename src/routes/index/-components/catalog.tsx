@@ -12,7 +12,10 @@ import {
 } from "react";
 import { AboutLink } from "@/components/about-link";
 import { FavoriteToggle } from "@/components/favorite-toggle";
-import { ActiveFilterChips } from "@/components/filter/active-filter-chips";
+import {
+  ActiveFilterChips,
+  hasActiveFilterChips,
+} from "@/components/filter/active-filter-chips";
 import { FilterDrawer } from "@/components/filter/filter-drawer";
 import { FilterRail } from "@/components/filter/filter-rail";
 import { FilterSidebar } from "@/components/filter/filter-sidebar";
@@ -359,7 +362,8 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
       <Column
         scrollViewportRef={scrollRef}
         toolbar={
-          results.length > 0 && (
+          results.length > 0 &&
+          hasActiveFilterChips(shownFilter) && (
             <ActiveFilterChips
               filter={shownFilter}
               onChange={commitFilter}
