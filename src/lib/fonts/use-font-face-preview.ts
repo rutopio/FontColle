@@ -8,6 +8,7 @@ import {
   useFontLoaded,
 } from "@/lib/fonts/loader";
 import { opticalSizing, variationSettings } from "@/lib/fonts/preview-style";
+import { specimenFor } from "@/lib/fonts/specimen";
 import type { FontRecord } from "@/lib/fonts/types";
 import { usePreviewCoords } from "@/lib/fonts/use-preview-coords";
 import { MOTION } from "@/lib/motion";
@@ -15,11 +16,14 @@ import { MOTION } from "@/lib/motion";
 export function useFontFacePreview(
   font: FontRecord,
   selection: FilterSelection,
-  axisValues: Record<string, number>
+  axisValues: Record<string, number>,
+  previewText: string
 ): {
   fontLoaded: boolean;
   previewStyle: React.CSSProperties;
   previewRef: React.RefObject<HTMLAnchorElement | null>;
+  /** The string the caller must paint — readiness is probed against exactly it. */
+  text: string;
 } {
   const {
     weight: activeWeight,
@@ -29,7 +33,8 @@ export function useFontFacePreview(
 
   const [previewRef, inView] = useInView("400px", font, activeWeight);
 
-  const fontReady = useFontLoaded(font.name, activeWeight);
+  const text = previewText || specimenFor(font);
+  const fontReady = useFontLoaded(font.name, activeWeight, text);
   const fontLoaded = inView && fontReady;
   const settings = variationSettings(variationCoords);
   const previewStyle: React.CSSProperties = {
@@ -42,7 +47,7 @@ export function useFontFacePreview(
     transition: `font-weight ${MOTION.base}ms ease, font-variation-settings ${MOTION.base}ms ease`,
   };
 
-  return { fontLoaded, previewStyle, previewRef };
+  return { fontLoaded, previewStyle, previewRef, text };
 }
 
 function useInView(

@@ -5,7 +5,6 @@ import { FontTraits } from "@/components/font-traits";
 import { Badge } from "@/components/ui/badge";
 import type { FilterSelection } from "@/lib/fonts/filter";
 import { fontSlug } from "@/lib/fonts/slug";
-import { specimenFor } from "@/lib/fonts/specimen";
 import type { FontRecord } from "@/lib/fonts/types";
 import { useFontFacePreview } from "@/lib/fonts/use-font-face-preview";
 import { cn } from "@/lib/utils";
@@ -33,10 +32,11 @@ export const FontCard = memo(function FontCard({
   lastRow = false,
   staticActions = false,
 }: Props) {
-  const { fontLoaded, previewStyle, previewRef } = useFontFacePreview(
+  const { fontLoaded, previewStyle, previewRef, text } = useFontFacePreview(
     font,
     selection,
-    axisValues
+    axisValues,
+    previewText
   );
 
   return (
@@ -80,7 +80,7 @@ export const FontCard = memo(function FontCard({
           style={previewStyle}
           className="min-h-16 flex-1 overflow-hidden break-words text-2xl leading-snug"
         >
-          {previewText || specimenFor(font)}
+          {text}
         </p>
       ) : (
         <div className="flex min-h-16 flex-1 flex-col gap-2.5 py-1" aria-hidden>

@@ -5,7 +5,6 @@ import { FontTraits } from "@/components/font-traits";
 import { Badge } from "@/components/ui/badge";
 import type { FilterSelection } from "@/lib/fonts/filter";
 import { fontSlug } from "@/lib/fonts/slug";
-import { specimenFor } from "@/lib/fonts/specimen";
 import type { FontRecord } from "@/lib/fonts/types";
 import { useFontFacePreview } from "@/lib/fonts/use-font-face-preview";
 
@@ -29,10 +28,11 @@ export const FontRow = memo(function FontRow({
   axisValues,
   staticActions = false,
 }: Props) {
-  const { fontLoaded, previewStyle, previewRef } = useFontFacePreview(
+  const { fontLoaded, previewStyle, previewRef, text } = useFontFacePreview(
     font,
     selection,
-    axisValues
+    axisValues,
+    previewText
   );
 
   return (
@@ -84,7 +84,7 @@ export const FontRow = memo(function FontRow({
           style={previewStyle}
           className="truncate px-4 text-3xl leading-tight"
         >
-          {previewText || specimenFor(font)}
+          {text}
         </p>
       ) : (
         <div

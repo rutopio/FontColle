@@ -37,7 +37,15 @@ function stubFontFaceSet() {
   // Registered @font-face rules, which the loader requires before it trusts
   // check() — see hasFaces().
   const faces = new Set<{ family: string }>();
-  const check = vi.fn((probe: string) => ready.has(probe));
+  // Faces are per unicode-range, as a css2 stylesheet serves them, so readiness
+  // is tracked per (probe, character): check(probe, text) is true only when
+  // every character's face has arrived.
+  const readyChars = new Map<string, Set<string>>();
+  const check = vi.fn((probe: string, text = " ") => {
+    if (ready.has(probe)) return true;
+    const chars = readyChars.get(probe);
+    return chars ? [...text].every((c) => chars.has(c)) : false;
+  });
   const load = vi.fn(() => Promise.resolve([]));
 
   const fonts = {
@@ -66,6 +74,15 @@ function stubFontFaceSet() {
     finish(name: string, weight = 400) {
       faces.add({ family: name });
       ready.add(`${weight} 16px "${name}"`);
+      for (const cb of [...listeners]) cb();
+    },
+    /** One unicode-range subset of a family arrives, covering only `chars`. */
+    finishSubset(name: string, chars: string, weight = 400) {
+      faces.add({ family: name });
+      const probe = `${weight} 16px "${name}"`;
+      const set = readyChars.get(probe) ?? new Set<string>();
+      for (const c of chars) set.add(c);
+      readyChars.set(probe, set);
       for (const cb of [...listeners]) cb();
     },
   };
@@ -246,6 +263,56 @@ describe("font-family subscriptions", () => {
 
     expect(onBold).toHaveBeenCalledTimes(1);
     expect(__loaderInternals.isReady("Inter", 700)).toBe(true);
+  });
+
+  /* The half-a-sentence NotDef flash. A css2 family is split across many
+     unicode-range faces; probing with the default single space answered for the
+     latin face alone, so the row went ready and flipped its chain to NotDef
+     while the face covering the rest of the sentence was still downloading. */
+  it("stays pending while a subset the text needs is still loading", () => {
+    const onInter = vi.fn();
+    __loaderInternals.subscribeFamily("Inter", 400, onInter, "aé");
+
+    // Latin lands; the face carrying "é" has not.
+    env.finishSubset("Inter", "a");
+    expect(__loaderInternals.isReady("Inter", 400, "aé")).toBe(false);
+    expect(onInter).not.toHaveBeenCalled();
+
+    env.finishSubset("Inter", "é");
+    expect(__loaderInternals.isReady("Inter", 400, "aé")).toBe(true);
+    expect(onInter).toHaveBeenCalledTimes(1);
+  });
+
+  it("probes the text it was given, not just a space", () => {
+    env.register("Inter"); // hasFaces() gates check(), so the <link> must land
+    __loaderInternals.subscribeFamily("Inter", 400, () => {}, "一二三");
+    expect(env.check).toHaveBeenCalledWith('400 16px "Inter"', "一二三");
+  });
+
+  it("tracks each preview text separately", () => {
+    const onLatin = vi.fn();
+    const onCjk = vi.fn();
+    __loaderInternals.subscribeFamily("Inter", 400, onLatin, "ab");
+    __loaderInternals.subscribeFamily("Inter", 400, onCjk, "一");
+
+    env.finishSubset("Inter", "ab");
+
+    expect(__loaderInternals.isReady("Inter", 400, "ab")).toBe(true);
+    expect(__loaderInternals.isReady("Inter", 400, "一")).toBe(false);
+    expect(onCjk).not.toHaveBeenCalled();
+  });
+
+  /* A font that genuinely lacks a character has no face to wait for, so
+     check() returns true and the chain resolves to NotDef — the box is the
+     honest answer, and must not be held back as if it were still loading. */
+  it("does not wait forever on a character no face covers", () => {
+    const onInter = vi.fn();
+    // The stub reports the whole family loaded, matching check()'s behaviour
+    // when nothing in the text maps to an unloaded face.
+    env.finish("Inter");
+    __loaderInternals.subscribeFamily("Inter", 400, onInter, "a\u{10FFFF}");
+
+    expect(__loaderInternals.isReady("Inter", 400, "a\u{10FFFF}")).toBe(true);
   });
 
   it("marks the family ready when load() rejects, so text is never stuck hidden", async () => {
