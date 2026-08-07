@@ -25,13 +25,20 @@ function encodeRanges(ranges) {
   return parts.join(",");
 }
 
+/**
+ * Adobe Blank maps every codepoint to an empty glyph, so it "covers" any text
+ * and would match every coverage query. It is the preview fallback this app
+ * ships, not a family anyone browses for.
+ */
+const EXCLUDED_IDS = new Set(["adobeblank"]);
+
 export async function genGlyphIndex() {
   let files = [];
   try {
     files = (await readdir(GLYPH_DIR)).filter((f) => f.endsWith(".json"));
   } catch {
-    // No glyph data (sample-catalog fallback build). Ship an empty index: the
-    // client treats an unlisted font as "unknown coverage" and keeps it.
+    // No glyph data (sample-catalog fallback build). Ship an empty index; with
+    // nothing to vouch for, the coverage filter simply matches nothing.
   }
 
   // Identical coverage sets are extremely common (every latin-only family
@@ -42,6 +49,7 @@ export async function genGlyphIndex() {
 
   for (const file of files.sort()) {
     const id = file.slice(0, -".json".length);
+    if (EXCLUDED_IDS.has(id)) continue;
     let ranges;
     try {
       ranges = JSON.parse(
