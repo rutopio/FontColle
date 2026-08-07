@@ -23,6 +23,24 @@ describe("previewFontFamily", () => {
     );
   });
 
+  /* With the coverage filter on, every listed font is known to have the
+     characters, so a NotDef box could only be a supplemental face still in
+     flight. Blank keeps the gap invisible instead of flashing one. */
+  it("stays on Adobe Blank when missing glyphs are meant to be hidden", () => {
+    expect(previewFontFamily("Inter", true, true)).toBe(
+      '"Inter", "Adobe Blank", sans-serif'
+    );
+    expect(previewFontFamily("Inter", false, true)).toBe(
+      '"Inter", "Adobe Blank", sans-serif'
+    );
+  });
+
+  it("still surfaces NotDef when missing glyphs are meaningful", () => {
+    expect(previewFontFamily("Inter", true, false)).toBe(
+      '"Inter", "Adobe NotDef", sans-serif'
+    );
+  });
+
   it("always ends with sans-serif as the last resort", () => {
     expect(previewFontFamily("X", true).endsWith(", sans-serif")).toBe(true);
     expect(previewFontFamily("X", false).endsWith(", sans-serif")).toBe(true);
