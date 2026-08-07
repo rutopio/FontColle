@@ -4,13 +4,30 @@ import { useLocalStorageState } from "@/lib/use-local-storage-state";
 interface PreviewState {
   text: string;
   setText: (v: string) => void;
+  /** Hide fonts that cannot render the preview text. On unless switched off. */
+  coverOnly: boolean;
+  setCoverOnly: (v: boolean) => void;
 }
 
 const PreviewContext = createContext<PreviewState | null>(null);
 
 export function PreviewProvider({ children }: { children: ReactNode }) {
   const [text, setText] = useLocalStorageState("font-colle.preview-text", "");
-  const value = useMemo(() => ({ text, setText }), [text, setText]);
+  // Defaults on: typing a sentence is a question about which fonts have those
+  // characters, so only an explicit "0" turns the narrowing off.
+  const [cover, setCover] = useLocalStorageState(
+    "font-colle.preview-cover-only",
+    "1"
+  );
+  const value = useMemo(
+    () => ({
+      text,
+      setText,
+      coverOnly: cover !== "0",
+      setCoverOnly: (v: boolean) => setCover(v ? "1" : "0"),
+    }),
+    [text, setText, cover, setCover]
+  );
   return (
     <PreviewContext.Provider value={value}>{children}</PreviewContext.Provider>
   );

@@ -35,6 +35,9 @@ await genCatalog();
 const { genFacets } = await import("./gen-facets.mjs");
 await genFacets();
 
+const { genGlyphIndex } = await import("./gen-glyph-index.mjs");
+await genGlyphIndex();
+
 const { createBuilder } = await import("vite");
 
 const builder = await createBuilder();

@@ -1,10 +1,9 @@
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-const ROOT = path.resolve(
-  path.dirname(new URL(import.meta.url).pathname),
-  ".."
-);
+// import.meta.dirname, not the URL pathname: a repo path containing characters
+// a URL percent-encodes (this one has brackets) would not survive the round trip.
+const ROOT = path.resolve(import.meta.dirname, "..");
 
 const project = (f) => ({
   id: f.id,

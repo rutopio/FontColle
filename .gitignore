@@ -33,6 +33,8 @@ scripts/harvester/og_ids.txt
 /public/catalog-v/
 /public/catalog-manifest.json
 /public/designer-index.json
+# Generated at build time from public/glyphs (scripts/gen-glyph-index.mjs)
+/public/glyph-index.json
 /.agents
 /.claude
 skills-lock.json

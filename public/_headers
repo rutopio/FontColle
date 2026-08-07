@@ -44,6 +44,12 @@
 /catalog/*
   Cache-Control: public, max-age=3600
 
+# Deduplicated catalog-wide glyph coverage, fetched only when the preview-text
+# coverage filter is switched on. Overwritten in place each deploy, like the
+# other generated catalog files.
+/glyph-index.json
+  Cache-Control: public, max-age=3600
+
 # Agent-discovery documents (RFC 9727 / RFC 9264 / OpenAPI). Cloudflare assets
 # would otherwise serve the extension-less api-catalog file as octet-stream.
 /.well-known/api-catalog

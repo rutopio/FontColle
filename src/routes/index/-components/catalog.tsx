@@ -57,6 +57,7 @@ import {
   searchToFilter,
   suggestFamilies,
 } from "@/lib/fonts/filter";
+import { useRenderableFontIds } from "@/lib/fonts/glyph-index";
 import { fontSlug } from "@/lib/fonts/slug";
 import { DEFAULT_SORT, type SortKey, sortFonts } from "@/lib/fonts/sort";
 import type { FontRecord } from "@/lib/fonts/types";
@@ -79,7 +80,7 @@ function filterKey(f: FilterState): string {
 export function Catalog({ fonts }: { fonts: FontRecord[] }) {
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
-  const { text: previewText } = usePreview();
+  const { text: previewText, coverOnly, setCoverOnly } = usePreview();
   const { favorites, toggle } = useFavorites();
 
   const { listScrollY, lastGroup } = useFilter();
@@ -148,17 +149,28 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
 
   // Deferred so keystrokes paint immediately.
   const deferredFilter = useDeferredValue(shownFilter);
+  const deferredPreview = useDeferredValue(previewText);
+  // null while the toggle is off or the coverage index has yet to load.
+  const renderableIds = useRenderableFontIds(deferredPreview, coverOnly);
   const favDep = favOnly ? favorites : null;
-  const results = useMemo(() => {
-    const matched = applyFilters(fonts, deferredFilter);
+  const { results, coverageHid } = useMemo(() => {
+    const covered = applyFilters(fonts, deferredFilter);
+    const matched = renderableIds
+      ? covered.filter((f) => renderableIds.has(f.id))
+      : covered;
+    // Fonts the preview text alone removed, so an empty list can say why.
+    const coverageHid = covered.length - matched.length;
     const filtered = favDep
       ? matched.filter((f) => favDep.includes(f.id))
       : matched;
-    if (!deferredFilter.query.trim()) return sortFonts(filtered, sort);
-    // Keep relevance order unless user picks an explicit sort.
-    const matches = searchByQuery(filtered, deferredFilter.query);
-    return search.sort ? sortFonts(matches, sort) : matches;
-  }, [fonts, deferredFilter, sort, search.sort, favDep]);
+    const order = (list: FontRecord[]) => {
+      if (!deferredFilter.query.trim()) return sortFonts(list, sort);
+      // Keep relevance order unless user picks an explicit sort.
+      const matches = searchByQuery(list, deferredFilter.query);
+      return search.sort ? sortFonts(matches, sort) : matches;
+    };
+    return { results: order(filtered), coverageHid };
+  }, [fonts, deferredFilter, sort, search.sort, favDep, renderableIds]);
 
   useListScrollRestore(scrollRef, listScrollY);
 
@@ -229,6 +241,10 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
   };
 
   const activeCount = activeFilterCount(filter);
+  // The preview text is the sole reason the list is empty: it is not a filter
+  // chip, so without this the empty state would point at conditions that are
+  // not what actually emptied the list.
+  const coverageEmpty = results.length === 0 && coverageHid > 0 && !favOnly;
 
   const openFont = useCallback(
     (id: string) => {
@@ -374,6 +390,7 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
         }
         footer={
           <PreviewBar
+            coverageToggle
             onScrollTop={() =>
               scrollRef.current?.scrollTo({
                 top: 0,
@@ -399,12 +416,18 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
                   {favOnly ? <HeartIcon /> : <MagnifyingGlassIcon />}
                 </EmptyMedia>
                 <EmptyTitle>
-                  {favOnly ? "No favorites yet" : "No fonts found"}
+                  {favOnly
+                    ? "No favorites yet"
+                    : coverageEmpty
+                      ? "No fonts have these characters"
+                      : "No fonts found"}
                 </EmptyTitle>
                 <EmptyDescription>
                   {favOnly
                     ? "Tap the heart on a font to add it here."
-                    : "No fonts match your filters and search. Remove a condition below, or broaden them."}
+                    : coverageEmpty
+                      ? "No font in the catalog can render your preview text. Shorten it, or keep browsing with the missing characters shown as boxes."
+                      : "No fonts match your filters and search. Remove a condition below, or broaden them."}
                 </EmptyDescription>
               </EmptyHeader>
               {suggestions.length > 0 && (
@@ -433,6 +456,10 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
               {favOnly ? (
                 <Button variant="outline" onClick={discoverFonts}>
                   Discover Font
+                </Button>
+              ) : coverageEmpty ? (
+                <Button variant="outline" onClick={() => setCoverOnly(false)}>
+                  Show every font anyway
                 </Button>
               ) : (
                 <Button variant="outline" onClick={reset}>
