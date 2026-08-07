@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useMountEffect } from "@/hooks/use-mount-effect";
 import type { FilterSelection } from "@/lib/fonts/filter";
+import { useCoveredCharacters } from "@/lib/fonts/glyph-index";
 import {
   ensureFontLoaded,
   ensureFontRangeLoaded,
+  ensureTextSubsetLoaded,
   previewFontFamily,
   useFontLoaded,
 } from "@/lib/fonts/loader";
@@ -12,6 +14,7 @@ import { specimenFor } from "@/lib/fonts/specimen";
 import type { FontRecord } from "@/lib/fonts/types";
 import { usePreviewCoords } from "@/lib/fonts/use-preview-coords";
 import { MOTION } from "@/lib/motion";
+import { usePreview } from "@/lib/preview/context";
 
 export function useFontFacePreview(
   font: FontRecord,
@@ -31,14 +34,29 @@ export function useFontFacePreview(
     italic: previewItalic,
   } = usePreviewCoords(font, selection, axisValues);
 
+  const { coverOnly } = usePreview();
   const [previewRef, inView] = useInView("400px", font, activeWeight);
 
   const text = previewText || specimenFor(font);
+
   const fontReady = useFontLoaded(font.name, activeWeight, text);
+
+  // The family's default subsets can omit a block the font itself covers, so
+  // ask css2 for those characters directly. Restricted to characters the index
+  // says this font has: css2 answers a request for a character the family lacks
+  // with an HTML error page, so asking blind would burn a request per card.
+  const covered = useCoveredCharacters(font.id, text);
+  useEffect(() => {
+    if (!inView) return;
+    return ensureTextSubsetLoaded(font.name, covered);
+  }, [inView, font.name, covered]);
   const fontLoaded = inView && fontReady;
   const settings = variationSettings(variationCoords);
   const previewStyle: React.CSSProperties = {
-    fontFamily: previewFontFamily(font.name, fontLoaded),
+    // With the coverage filter on, every listed font provably has these
+    // characters, so a NotDef box could only be a supplemental face still
+    // arriving. Stay on Adobe Blank instead of flashing one.
+    fontFamily: previewFontFamily(font.name, fontLoaded, coverOnly),
     fontWeight: activeWeight,
     fontStyle: previewItalic ? "italic" : undefined,
     fontVariationSettings: settings || undefined,

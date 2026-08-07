@@ -149,6 +149,25 @@ export function renderableFontIds(
   return ids;
 }
 
+/**
+ * The characters of `text` that `fontId` covers, per the index. Empty when the
+ * font is not indexed, so callers never act on a guess.
+ */
+export function coveredCharacters(
+  index: GlyphIndex,
+  fontId: string,
+  text: string
+): string {
+  const cls = index.fonts[fontId];
+  if (cls === undefined) return "";
+  const ranges = index.classes[cls];
+  let out = "";
+  for (const ch of text) {
+    if (covers(ranges, ch.codePointAt(0) as number)) out += ch;
+  }
+  return out;
+}
+
 export function glyphIndexQueryOptions(enabled: boolean) {
   return queryOptions({
     queryKey: ["glyph-index"],
@@ -177,4 +196,17 @@ export function useRenderableFontIds(
     if (!(active && data)) return null;
     return renderableFontIds(data, text);
   }, [active, data, text]);
+}
+
+/**
+ * The part of `text` that `fontId` is known to have glyphs for, for callers
+ * that must not ask the CDN for characters the font lacks — css2 answers such a
+ * request with an HTML error page, not a font. Empty until the index loads.
+ */
+export function useCoveredCharacters(fontId: string, text: string): string {
+  const { data } = useQuery(glyphIndexQueryOptions(text.length > 0));
+  return useMemo(
+    () => (data ? coveredCharacters(data, fontId, text) : ""),
+    [data, fontId, text]
+  );
 }
