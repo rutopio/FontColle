@@ -6,13 +6,7 @@ const ROOT = path.resolve(import.meta.dirname, "..");
 const GLYPH_DIR = path.join(ROOT, "public/glyphs");
 const OUT = path.join(ROOT, "public/glyph-index.json");
 
-/**
- * Encode one font's coverage as a compact string the client can decode without
- * a JSON array per range: each range becomes "<gap>.<len>" in base36, where gap
- * is the distance from the previous range's END and len the range's own span.
- * A single-codepoint range drops the ".0" tail. Ranges are already sorted and
- * non-overlapping (backfill_glyph_coverage.py emits them that way).
- */
+// Base36 delta encoding per range: "<gap>.<len>"; single-codepoint ranges omit ".0".
 function encodeRanges(ranges) {
   let prev = 0;
   const parts = [];
@@ -25,24 +19,15 @@ function encodeRanges(ranges) {
   return parts.join(",");
 }
 
-/**
- * Adobe Blank maps every codepoint to an empty glyph, so it "covers" any text
- * and would match every coverage query. It is the preview fallback this app
- * ships, not a family anyone browses for.
- */
+// Adobe Blank matches every coverage query; exclude it even if catalog marks it published.
 const EXCLUDED_IDS = new Set(["adobeblank"]);
 
 export async function genGlyphIndex() {
   let files = [];
   try {
     files = (await readdir(GLYPH_DIR)).filter((f) => f.endsWith(".json"));
-  } catch {
-    // No glyph data (sample-catalog fallback build). Ship an empty index; with
-    // nothing to vouch for, the coverage filter simply matches nothing.
-  }
+  } catch {}
 
-  // Identical coverage sets are extremely common (every latin-only family
-  // shares one), so store each distinct set once and point fonts at it.
   const classIndex = new Map();
   const classes = [];
   const fonts = {};

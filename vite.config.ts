@@ -6,9 +6,6 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
-// Stamped into the Worker's edge-cache keys so a deploy cannot serve an HTML
-// document that points at the previous build's asset hashes. See
-// src/server-entry.ts.
 const BUILD_ID = Date.now().toString(36);
 
 const config = defineConfig({

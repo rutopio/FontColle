@@ -13,8 +13,6 @@ const PreviewContext = createContext<PreviewState | null>(null);
 
 export function PreviewProvider({ children }: { children: ReactNode }) {
   const [text, setText] = useLocalStorageState("font-colle.preview-text", "");
-  // Defaults on: typing a sentence is a question about which fonts have those
-  // characters, so only an explicit "0" turns the narrowing off.
   const [cover, setCover] = useLocalStorageState(
     "font-colle.preview-cover-only",
     "1"

@@ -14,12 +14,7 @@ const FILTERED_CRAWLER_HTML = `<!DOCTYPE html><html lang="en"><head><meta charse
 
 const HOME_CACHE_SECONDS = 600;
 
-// `caches.default` is a per-colo HTTP cache: it is keyed by URL and survives a
-// deploy, which is not what an SSR'd document wants. The HTML names the build's
-// content-hashed assets, and a deploy deletes the previous hashes, so an entry
-// written before the deploy points at files that now 404 -- the page renders
-// blank until the entry expires or someone purges it. Key the cache on the
-// build instead, so a new Worker never sees the old build's entries.
+// Cache key includes the build ID so a deploy invalidates stale SSR entries.
 declare const __BUILD_ID__: string;
 
 function cacheKey(request: Request): Request {
@@ -28,11 +23,6 @@ function cacheKey(request: Request): Request {
   return new Request(url, request);
 }
 
-// Detail pages SSR identically for every visitor (all per-user state is
-// client-side), but there are ~1,900 fonts x 7 tabs of them and none were
-// cached: every crawler hit paid a full React render, which is what pushed the
-// Worker past its CPU limit. They change only on deploy, so they cache longer
-// than `/`.
 const DETAIL_CACHE_SECONDS = 86400;
 const DETAIL_TAB_SLUGS = new Set([
   "instances",
@@ -107,9 +97,6 @@ export default {
       });
     }
 
-    // Edge-cache the bare `/` and the detail tabs: both SSR identically for
-    // every visitor. Skipped in dev, where a cached `/` outlives every edit and
-    // reads as HMR being broken.
     const isGet = request.method === "GET";
     const isCacheableHome = isGet && url.pathname === "/" && url.search === "";
     const isCacheablePage =
@@ -133,8 +120,6 @@ export default {
     }
     next.headers.set("Link", LINK_HEADER);
 
-    // Only 200s are cached: a 404 or a 504 from an overloaded render must not
-    // be pinned at the edge.
     if (isCacheablePage && next.status === 200) {
       next.headers.set(
         "Cache-Control",

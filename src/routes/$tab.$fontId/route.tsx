@@ -91,8 +91,7 @@ export const Route = createFileRoute("/$tab/$fontId")({
     const name = font?.name;
     if (!name || !font) return {};
     const description = detailDescription(font);
-    // Each tab is its own indexable URL, so it must self-canonicalize; pointing
-    // all seven at /instances/ told crawlers the other six were duplicates.
+    // Each tab is its own canonical URL (not all pointed at /instances/).
     const canonical = absoluteUrl(`/${params.tab}/${fontSlug(font.id)}`);
     const ogImage = absoluteUrl(`/og/${font.id}.png`);
     return {
@@ -249,8 +248,7 @@ function DetailPage() {
       />
     );
 
-  // The family's own URL, deliberately NOT the per-tab canonical: this node
-  // describes the typeface, and every tab is one view of that same work.
+  // JSON-LD describes the family, not the active tab view.
   const familyUrl = absoluteUrl(`/instances/${fontSlug(font.id)}`);
   const jsonLd = familyUrl
     ? JSON.stringify({
@@ -263,8 +261,6 @@ function DetailPage() {
       })
     : undefined;
 
-  // Only the tester binds its axes to a selected block; every other tab keeps
-  // the page-wide behaviour, so the provider is mounted just for that tab.
   const withBlockAxes = (node: React.ReactNode) =>
     tab === "tester" ? <BlockAxesProvider>{node}</BlockAxesProvider> : node;
 

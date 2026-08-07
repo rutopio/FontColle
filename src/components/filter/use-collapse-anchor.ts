@@ -40,7 +40,8 @@ export function useCollapseAnchor() {
     const start = performance.now();
     const step = () => {
       settle();
-      if (performance.now() - start < 400) raf.current = requestAnimationFrame(step);
+      if (performance.now() - start < 400)
+        raf.current = requestAnimationFrame(step);
     };
     raf.current = requestAnimationFrame(step);
   }, []);

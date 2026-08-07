@@ -18,7 +18,6 @@ export function FontActions({
   isFavorite: boolean;
   onToggleFavorite: (id: string) => void;
   reserveRepoSlot?: boolean;
-  /** Loading skeleton: same-sized blanks instead of the real controls. */
   static?: boolean;
 }) {
   if (isStatic) {
@@ -60,7 +59,7 @@ export function FontActions({
           />
         </button>
       </Tooltip>
-      {/* Buttons, not links: the card is already a <Link> and nested <a> is invalid. */}
+      {/* Card is a Link — nested <a> is invalid HTML. */}
       <Tooltip content="View on Google Fonts">
         <button
           type="button"

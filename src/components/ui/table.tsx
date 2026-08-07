@@ -18,16 +18,12 @@ import { spring } from "@/lib/springs";
 import { fontWeights } from "@/lib/font-weight";
 import { useProximityHover } from "@/hooks/use-proximity-hover";
 
-// ── Context ──────────────────────────────────────────────
-
 interface TableContextValue {
   registerItem: (index: number, element: HTMLElement | null) => void;
   activeIndex: number | null;
 }
 
 const TableContext = createContext<TableContextValue | null>(null);
-
-// ── Table ────────────────────────────────────────────────
 
 interface TableProps extends HTMLAttributes<HTMLTableElement> {
   children: ReactNode;
@@ -61,7 +57,6 @@ const Table = forwardRef<HTMLTableElement, TableProps>(
           onMouseMove={handlers.onMouseMove}
           onMouseLeave={handlers.onMouseLeave}
         >
-          {/* Hover background */}
           <AnimatePresence>
             {activeRect && (
               <motion.div
@@ -105,8 +100,6 @@ const Table = forwardRef<HTMLTableElement, TableProps>(
 
 Table.displayName = "Table";
 
-// ── TableHeader ──────────────────────────────────────────
-
 const TableHeader = forwardRef<
   HTMLTableSectionElement,
   HTMLAttributes<HTMLTableSectionElement>
@@ -116,8 +109,6 @@ const TableHeader = forwardRef<
 
 TableHeader.displayName = "TableHeader";
 
-// ── TableBody ────────────────────────────────────────────
-
 const TableBody = forwardRef<
   HTMLTableSectionElement,
   HTMLAttributes<HTMLTableSectionElement>
@@ -126,8 +117,6 @@ const TableBody = forwardRef<
 ));
 
 TableBody.displayName = "TableBody";
-
-// ── TableRow ─────────────────────────────────────────────
 
 interface TableRowProps extends HTMLAttributes<HTMLTableRowElement> {
   index?: number;
@@ -179,8 +168,6 @@ const TableRow = forwardRef<HTMLTableRowElement, TableRowProps>(
 
 TableRow.displayName = "TableRow";
 
-// ── TableHead ────────────────────────────────────────────
-
 const TableHead = forwardRef<
   HTMLTableCellElement,
   ThHTMLAttributes<HTMLTableCellElement>
@@ -197,8 +184,6 @@ const TableHead = forwardRef<
 
 TableHead.displayName = "TableHead";
 
-// ── TableCell ────────────────────────────────────────────
-
 const TableCell = forwardRef<
   HTMLTableCellElement,
   TdHTMLAttributes<HTMLTableCellElement>
@@ -214,7 +199,5 @@ const TableCell = forwardRef<
 ));
 
 TableCell.displayName = "TableCell";
-
-// ── Exports ──────────────────────────────────────────────
 
 export { Table, TableHeader, TableBody, TableRow, TableHead, TableCell };

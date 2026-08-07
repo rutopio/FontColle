@@ -120,8 +120,6 @@ export function sortFonts(fonts: FontRecord[], key: SortKey): FontRecord[] {
         (a, b) =>
           numCmp(a.popularityRank, b.popularityRank, false) || byName(a, b)
       );
-    // A rank of 1 is the top spot, so "least" is the ascending comparator
-    // reversed. numCmp keeps unranked families last either way.
     case "popularity-least":
       return out.sort(
         (a, b) =>

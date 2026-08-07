@@ -166,7 +166,6 @@ export function SearchInput({
             >
               <span className="min-w-0 flex-1 truncate">{s.name}</span>
               {i === enterTarget && (
-                // Decorative hint mirroring Enter; aria-hidden to avoid noisy option labels.
                 <Kbd aria-hidden="true" className="bg-background/80">
                   <ArrowElbowDownLeftIcon />
                 </Kbd>

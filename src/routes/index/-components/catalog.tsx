@@ -92,7 +92,6 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
   const filter = useMemo(() => searchToFilter(search), [search]);
   const [shownFilter, setShownFilter] = useState(filter);
   const fading = filterKey(filter) !== filterKey(shownFilter);
-  // Render-time sync: when filter keys match (no fade) but query diverged, update immediately.
   if (!fading && filter.query !== shownFilter.query) {
     setShownFilter(filter);
   }
@@ -147,10 +146,8 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
   const sort = (search.sort as SortKey) ?? DEFAULT_SORT;
   const favOnly = search.fav === "1";
 
-  // Deferred so keystrokes paint immediately.
   const deferredFilter = useDeferredValue(shownFilter);
   const deferredPreview = useDeferredValue(previewText);
-  // null while the toggle is off or the coverage index has yet to load.
   const renderableIds = useRenderableFontIds(deferredPreview, coverOnly);
   const favDep = favOnly ? favorites : null;
   const { results, coverageHid } = useMemo(() => {
@@ -158,14 +155,12 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
     const matched = renderableIds
       ? covered.filter((f) => renderableIds.has(f.id))
       : covered;
-    // Fonts the preview text alone removed, so an empty list can say why.
     const coverageHid = covered.length - matched.length;
     const filtered = favDep
       ? matched.filter((f) => favDep.includes(f.id))
       : matched;
     const order = (list: FontRecord[]) => {
       if (!deferredFilter.query.trim()) return sortFonts(list, sort);
-      // Keep relevance order unless user picks an explicit sort.
       const matches = searchByQuery(list, deferredFilter.query);
       return search.sort ? sortFonts(matches, sort) : matches;
     };
@@ -241,9 +236,7 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
   };
 
   const activeCount = activeFilterCount(filter);
-  // The preview text is the sole reason the list is empty: it is not a filter
-  // chip, so without this the empty state would point at conditions that are
-  // not what actually emptied the list.
+  // Preview text isn't a filter chip; distinguish coverage-empty from filter-empty.
   const coverageEmpty = results.length === 0 && coverageHid > 0 && !favOnly;
 
   const openFont = useCallback(

@@ -3,11 +3,6 @@ import { motion } from "motion/react";
 import { type ReactNode, useEffect, useRef } from "react";
 import { EASE_OUT, MOTION_S } from "@/lib/motion";
 
-/**
- * Returns true on the first render after a route change, false otherwise.
- * Must update AFTER commit so that concurrent renders all read the pre-navigation
- * value — this is the one case where a post-commit write (effect) is essential.
- */
 function useRouteChanged(pathname: string): boolean {
   const committed = useRef<string | undefined>(undefined);
   const changed =

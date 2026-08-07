@@ -137,20 +137,11 @@ export function BlockGrid({
     if (popRef.current) popRef.current.style.display = "none";
   };
 
-  /* Proximity hover: one shared highlight that slides between cells instead of
-     a per-cell :hover. Only present glyphs get one; empty pads and
-     missing-glyph cells are skipped so the highlight never lands on a
-     non-interactive square. */
+  /* Shared hover highlight slides between cells; skips empty/missing glyphs. */
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
   const sessionRef = useRef(0);
 
-  /* Columns are derived arithmetically — the horizontal pitch is exactly
-     `cellSize + GAP` (the grid's `gap-px`). Rows are not: `cellSize` is the
-     pre-measurement estimate, and the virtualizer settles on a slightly
-     different real height, so deriving `top` from it drifts a fraction of a
-     pixel per row and visibly misaligns deep into a block. Take the row's
-     start/size from the virtualizer, which measured it, and subtract
-     `scrollMargin` to match the coordinate space each row is placed in. */
+  /* Row top/size from virtualizer (cellSize estimate drifts over many rows). */
   const hoverRow =
     hoverIdx == null
       ? null
@@ -196,7 +187,7 @@ export function BlockGrid({
     const cp = cpOf(e);
     if (cp != null) {
       rovingCpRef.current = cp;
-      forceRender((n) => n + 1); // move tabIndex=0 to the clicked cell
+      forceRender((n) => n + 1);
       onCopy(cp);
     }
   };
@@ -305,8 +296,7 @@ export function BlockGrid({
         btn.focus();
         return;
       }
-      // Element not yet in DOM (virtualizer hasn't rendered it). Scroll to it
-      // and poll until it appears.
+      // Virtualizer may not have rendered the cell yet — scroll then poll.
       cancelAnimationFrame(pendingFocusRafRef.current);
       let tries = 0;
       const tick = () => {
@@ -354,8 +344,6 @@ export function BlockGrid({
       title={`U+${hex(cp)}: click to copy`}
       aria-label={`U+${hex(cp)} ${String.fromCodePoint(cp)}, copy character`}
       className={cn(
-        // Keeps its own bg-card, unchanged on hover, so nothing pops a frame
-        // ahead of the spring; the highlight layers above it instead.
         "relative z-10 flex items-center justify-center border-primary bg-card leading-none outline-none focus-visible:border-2 focus-visible:border-primary",
         highlightCp === cp && "animate-pulse border-2 border-primary"
       )}
@@ -398,8 +386,6 @@ export function BlockGrid({
           position: "relative",
         }}
         onMouseEnter={() => {
-          // A new hover session fades the highlight in; moves within the same
-          // session keep the key stable so it slides instead of re-fading.
           sessionRef.current += 1;
         }}
         onMouseMove={onMove}
@@ -413,9 +399,7 @@ export function BlockGrid({
           {hoverRect && (
             <motion.div
               key={sessionRef.current}
-              /* Cells have opaque bg-card so a filled highlight behind them
-                 would be hidden. Instead we layer an inset ring above the
-                 cells — no fill, so the glyph text stays untinted. */
+              /* Inset ring above opaque cells — fill would hide glyph text. */
               className="pointer-events-none absolute z-20 rounded-lg ring-2 ring-accent ring-inset"
               initial={{ opacity: 0, ...hoverRect }}
               animate={{ opacity: 1, ...hoverRect }}
@@ -426,7 +410,7 @@ export function BlockGrid({
         </AnimatePresence>
 
         {rowVirtualizer.getVirtualItems().map((vrow) => {
-          const rowStart = vrow.index * COLS; // grid index of this row's col 0
+          const rowStart = vrow.index * COLS;
           return (
             <div
               key={vrow.key}

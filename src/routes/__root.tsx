@@ -23,7 +23,7 @@ import { absoluteUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
 import { useWebMcp } from "@/lib/webmcp/register";
 import appCss from "@/styles.css?url";
 
-// Blocking scripts to avoid FOUC: apply theme/view preference before paint.
+// Blocking scripts in <head> prevent theme/view FOUC.
 const themeScript = `try{if(localStorage.theme==='dark')document.documentElement.classList.add('dark')}catch(e){}`;
 const viewScript = `try{var v=localStorage['font-colle.view'];document.documentElement.dataset.view=v==='row'?'row':'grid'}catch(e){document.documentElement.dataset.view='grid'}`;
 
@@ -36,8 +36,7 @@ export const Route = createRootRouteWithContext<{
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: SITE_NAME },
       { name: "description", content: SITE_DESCRIPTION },
-      // Per-scheme, so the browser chrome matches the page instead of flashing
-      // white behind a dark UI. The dark value is the manifest's theme_color.
+      // Per-scheme theme-color so browser chrome matches the page (no flash).
       {
         name: "theme-color",
         content: "#ffffff",

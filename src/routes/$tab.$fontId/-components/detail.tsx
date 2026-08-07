@@ -61,7 +61,6 @@ export function Detail({
     [font.instances]
   );
 
-  // Font face loading — component remounts on fontId change, so mount-only is correct.
   useMountEffect(() => {
     ensureFontRangeLoaded(font.name, font.axes, hasItalic);
   });
@@ -278,9 +277,7 @@ export function Detail({
 
         {tab === "license" && <LicensePanel font={font} />}
       </Column>
-      {/* Outside Column: the ScrollArea's scroll-fade is a mask, which applies
-          to its whole subtree, so a fixed FAB inside it faded out at the edges
-          no matter its z-index. */}
+      {/* Outside Column: ScrollArea's scroll-fade mask would fade a fixed FAB. */}
       <LinksDrawer font={font} dockVisible={tab === "sample"} />
     </>
   );

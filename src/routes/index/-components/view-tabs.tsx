@@ -2,8 +2,7 @@ import { GridFourIcon, ListIcon } from "@phosphor-icons/react";
 import type { ViewMode } from "@/components/font-grid";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-// accent/50 matches rail hover on --canvas; VIEW_TABS_WIDTH aligns Reset below md.
-export const VIEW_TABS_WIDTH = "max-md:w-[4.375rem]";
+export const VIEW_TABS_WIDTH = "max-md:w-[4.375rem]"; // aligns Reset button width below md
 
 const TABS_LIST = `h-9 bg-accent/50 ${VIEW_TABS_WIDTH}`;
 

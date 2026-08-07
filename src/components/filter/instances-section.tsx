@@ -13,8 +13,7 @@ import {
 import { cn } from "@/lib/utils";
 import { SectionHeader } from "./section-header";
 
-// Slider indices map to stop positions, not raw counts — the distribution is
-// heavily skewed toward low values.
+// Slider tracks histogram stop indices, not raw counts (skewed distribution).
 export function InstancesSection({
   histogram,
   value,

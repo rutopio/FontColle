@@ -29,7 +29,6 @@ export function previewStyle({
   };
 }
 
-/** `none` when an explicit opsz coord is set, so it isn't overridden by auto. */
 export function opticalSizing(coords: Record<string, number>): "auto" | "none" {
   return "opsz" in coords ? "none" : "auto";
 }

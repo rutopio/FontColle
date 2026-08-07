@@ -35,7 +35,6 @@ type ArrayKey =
   | "activity"
   | "upm";
 
-// wght <-> Weight steps and wdth <-> Width steps are mutually exclusive.
 const AXIS_EXCLUSIVE: Record<string, "weights" | "widths"> = {
   wght: "weights",
   wdth: "widths",
@@ -90,7 +89,6 @@ export function colorSelection(filter: FilterState): string[] {
   return filter.colorFormats.length > 0 ? ["color"] : filter.color;
 }
 
-/** Monochrome clears color formats; clicking the format-implied Colorful also clears them. */
 export function selectColor(filter: FilterState, value: string): FilterState {
   const colorImpliedByFormat = filter.colorFormats.length > 0;
   if (value === "color" && colorImpliedByFormat) {

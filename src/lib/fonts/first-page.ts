@@ -3,7 +3,6 @@ import { getRequest } from "@tanstack/react-start/server";
 import { withFacets } from "./facets";
 import type { FontRecord } from "./types";
 
-// Worker self-fetch would recurse; use the ASSETS binding on the server.
 const assetFetch = createIsomorphicFn()
   .server(async (path: string, signal?: AbortSignal) => {
     const { env } = await import("cloudflare:workers");

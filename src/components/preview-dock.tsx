@@ -16,16 +16,6 @@ import { usePreview } from "@/lib/preview/context";
 
 const PREVIEW_DEBOUNCE_MS = 150;
 
-/**
- * Releases the coverage filter. Narrowing to fonts that can render the preview
- * text is the resting state, so the button is what lets the excluded fonts back
- * in — pressed means the .notdef boxes are allowed to show, which is what the
- * icon draws.
- *
- * Carries no hover class of its own: the surrounding HeaderButtonGroup slides a
- * shared background between the bar's buttons, and a per-button hover:bg would
- * paint a second one underneath it.
- */
 function ShowUncoveredToggle() {
   const { coverOnly, setCoverOnly } = usePreview();
   const pressed = !coverOnly;
@@ -52,14 +42,12 @@ export function PreviewBar({
   coverageToggle = false,
 }: {
   onScrollTop?: () => void;
-  /** List page only: the detail page shows one font, so there is nothing to narrow. */
   coverageToggle?: boolean;
 }) {
   const { text, setText } = usePreview();
   const [draft, setDraft] = useState(text);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  // Sync external changes without remounting (which would drop focus).
   const [prevText, setPrevText] = useState(text);
   if (text !== prevText) {
     setPrevText(text);
@@ -78,9 +66,6 @@ export function PreviewBar({
     setText("");
   };
 
-  // Fixed indices, so the highlight keeps tracking the right button as the
-  // clear/coverage pair mounts and unmounts with the field's content. The hook
-  // measures registered items only, and tolerates the gaps this leaves.
   return (
     <div className="flex flex-1 items-center gap-2">
       <Input

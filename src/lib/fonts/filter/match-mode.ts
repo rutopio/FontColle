@@ -25,7 +25,6 @@ export const MODE_KEYS: ModeKey[] = [
   "designers",
 ];
 
-// Style and designer default to OR — their values are near-exclusive per family.
 export const SECTION_DEFAULT_MODE: Record<ModeKey, MatchMode> = {
   style: "any",
   features: "all",

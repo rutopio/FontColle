@@ -1,8 +1,6 @@
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-// import.meta.dirname, not the URL pathname: a repo path containing characters
-// a URL percent-encodes (this one has brackets) would not survive the round trip.
 const ROOT = path.resolve(import.meta.dirname, "..");
 
 const project = (f) => ({
@@ -36,7 +34,6 @@ export async function genFacets() {
   await rm(outDir, { recursive: true, force: true });
   await mkdir(outDir, { recursive: true });
 
-  /** @type {{dimension:string,value:string,count:number,href:string}[]} */
   const index = [];
 
   const writeSlice = async (dimension, value, records) => {

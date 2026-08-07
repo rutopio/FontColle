@@ -2,9 +2,6 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-/* Albert Sans (OFL 1.1): the app's UI sans, used via font-sans. Variable
-   weight 100-900 and width 87-100; license in public/fonts/. Preloaded in the
-   root route so the swap is invisible on first paint. */
 @font-face {
   font-family: "Albert Sans Variable";
   src: url("/fonts/albert-sans.woff2") format("woff2");
@@ -14,9 +11,6 @@
   font-display: swap;
 }
 
-/* Host Grotesk (OFL 1.1): the app's heading face, used via font-heading.
-   Variable weight 300-800; license in public/fonts/. Preloaded in the root
-   route so the swap is invisible on first paint. */
 @font-face {
   font-family: "Host Grotesk Variable";
   src: url("/fonts/host-grotesk.woff2") format("woff2");
@@ -25,25 +19,17 @@
   font-display: swap;
 }
 
-/* Adobe NotDef (OFL 1.1): preview fallback. Maps every codepoint to a visible
-   .notdef box, so when a previewed font lacks a glyph the missing character
-   shows as an obvious box instead of the browser's default fallback. Used last
-   in the preview font-family chain. */
+/* Preview fallback: maps every codepoint to a visible .notdef box. */
 @font-face {
   font-family: "Adobe NotDef";
   src: url("/fonts/adobe-notdef.woff2") format("woff2");
   font-weight: 100 1000;
   font-style: normal;
   size-adjust: 100%;
-  /* block: don't paint until loaded, so NotDef never flashes while the real
-     font is still arriving (the real fonts also use display=block). */
   font-display: block;
 }
 
-/* Adobe Blank (OFL 1.1): maps every codepoint to an empty, zero-width glyph.
-   Used as the fallback only while a preview family is still loading, so the
-   text stays blank instead of flashing NotDef boxes. Once the family loads we
-   switch the chain to Adobe NotDef, which surfaces genuine missing glyphs. */
+/* Loading fallback: zero-width glyphs prevent NotDef flash while fonts load. */
 @font-face {
   font-family: "Adobe Blank";
   src: url("/fonts/adobe-blank.woff") format("woff");
@@ -53,8 +39,6 @@
   font-display: block;
 }
 
-/* Paper Mono (OFL 1.1): the app's monospace face, used via the font-mono
-   utility. Variable weight 100-800; license in public/fonts/. */
 @font-face {
   font-family: "Paper Mono";
   src: url("/fonts/paper-mono.woff2") format("woff2");
@@ -66,55 +50,21 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  /* One step past Tailwind's built-in scale, which stops at 2xl/96rem. Lets the
-     app shell keep widening on 1920px displays instead of capping at 1536px and
-     leaving 384px of dead margin either side; see the container utility below. */
   --breakpoint-3xl: 120rem;
 
-  /* What a bare `transition-colors` / `transition-opacity` resolves to. Tailwind
-     ships 150ms with cubic-bezier(0.4, 0, 0.2, 1) — a symmetric ease-in-out,
-     the one curve the note beside --ease-snap rules out for UI motion. Every
-     shorthand transition silently inherited it, so the defaults are re-pointed
-     at the motion scale here rather than pinned at ~40 call sites.
-
-     Written as literals, not var(--motion-fast) / var(--ease-snap): this block
-     is `@theme inline`, so values are substituted where they are used. Keep in
-     sync with the motion scale below. */
+  /* Keep in sync with --motion-* in :root and MOTION in src/lib/motion.ts.
+     Literals required: @theme inline substitutes values at use sites. */
   --default-transition-duration: 120ms;
   --default-transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
 
-  /* Backs the `duration-fast|base|slow` and `ease-snap|drawer` utilities, so
-     call sites write those rather than duration-[var(--motion-fast)].
-
-     The duration namespace is --transition-duration-*, not --duration-*: that
-     is the key the `duration-*` utility resolves against. Written as literals
-     for the same reason as the two defaults above — this block is
-     `@theme inline`, so a var() here would not survive substitution. Their
-     :root twins --motion-* are what the CSS animations further down use; keep
-     both in sync with MOTION in src/lib/motion.ts.
-
-     The easings need no :root twin: `@theme` emits them as real custom
-     properties, so var(--ease-snap) resolves everywhere. They are named snap /
-     drawer rather than --ease-out because Tailwind already ships --ease-out to
-     back the bare `ease-out` utility, and redefining it would silently re-curve
-     every existing use of that class. --ease-snap moves most in the first
-     frames, which is when the user is watching; --ease-drawer is Ionic's sheet
-     curve, for edge-anchored panels that need to settle rather than stop. */
   --transition-duration-fast: 120ms;
   --transition-duration-base: 180ms;
   --transition-duration-slow: 240ms;
+  /* --ease-snap: fast decel; --ease-drawer: Ionic sheet settle curve. */
   --ease-snap: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 
-  /* Two steps below Tailwind's scale, which bottoms out at text-xs/12px. Both
-     are the caption sizes under rail and toolbar icons, and the sub-labels in
-     the filter sections — text small enough that xs reads as oversized.
-
-     Deliberately no --text-*--line-height companion: with one, the utility
-     would also set line-height, and these sizes are used inside fixed-height
-     rows and badges that set their own (leading-none) or rely on the ambient
-     one. Font-size only keeps them drop-in replacements for the text-[Npx]
-     they supersede. */
+  /* No --line-height companion: these are used in fixed-height rows/badges. */
   --text-2xs: 11px;
   --text-3xs: 10px;
 
@@ -141,9 +91,6 @@
   --color-card: var(--card);
   --color-foreground: var(--foreground);
   --color-background: var(--background);
-  /* shadcn's --chart-* and --sidebar-* are deliberately absent: no charts, and
-     the sidebar paints from --canvas and --card. shadcn's radius ladder is
-     kept verbatim. */
   --color-hover: color-mix(in srgb, var(--accent) 50%, transparent);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
@@ -154,7 +101,6 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* shadcn's Stone base color, unmodified apart from --accent below. */
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.147 0.004 49.25);
@@ -167,15 +113,8 @@
   --secondary: oklch(0.97 0.001 106.424);
   --secondary-foreground: oklch(0.216 0.006 56.043);
   --muted: oklch(0.97 0.001 106.424);
-  /* 0.553 per the adopted Stone palette. Note this is below the 4.5:1 WCAG AA
-     floor for body text on white (muted text on the lighter --muted surface
-     fares worse still); an earlier audit had pinned this at 0.37 to clear AA.
-     Kept at the palette value by explicit request — revisit if the contrast
-     audit matters again. The dark theme's value is well above AA. */
   --muted-foreground: oklch(0.553 0.013 58.071);
-  /* The one token moved off Stone, which ships --secondary, --muted and
-     --accent at one value: at 0.97 an accent/50 hover and a full-strength
-     accent selection were 0.015 apart, invisible on white. */
+  /* Shifted off Stone's default to separate accent hover from accent selection. */
   --accent: oklch(0.9 0.001 106.424);
   --accent-foreground: oklch(0.216 0.006 56.043);
   --destructive: oklch(0.577 0.245 27.325);
@@ -184,35 +123,14 @@
   --ring: oklch(0.709 0.01 56.259);
   --radius: 0.45rem;
 
-  /* The motion scale for hand-written CSS (the animations and transitions
-     further down); the utilities use the --transition-duration-* twins in
-     @theme. Mirrored by MOTION in src/lib/motion.ts — change all three
-     together. Three steps, picked by how far the element travels and how often
-     it is seen: fast for tooltips/chips/button feedback, base for
-     trigger-anchored popovers and selects, slow for sheets, dialogs and route
-     changes. See the note in lib/motion.ts for why a single 60ms value was
-     wrong. */
+  /* Keep in sync with @theme --transition-duration-* and MOTION in lib/motion.ts. */
   --motion-fast: 120ms;
   --motion-base: 180ms;
   --motion-slow: 240ms;
 
-  /* --ease-snap / --ease-drawer are not repeated here: unlike the durations
-     above, `@theme` emits them as real custom properties, so the definitions at
-     the top of the file already reach the CSS animations below. */
-
-  /* The page behind the columns. A touch off --background so the cards, which
-     are --background, read as raised against it. */
   --canvas: oklch(0.985 0.001 106.423);
-
-  /* The veil behind dialogs, sheets and drawers. Carries its own alpha so the
-     overlays can use a bare `bg-scrim`; the drawer still drives opacity
-     separately as it tracks the swipe. */
   --scrim: oklch(0 0 0 / 10%);
 
-  /* Syntax highlighting for the Use-tab code snippets (see lib/code/highlight).
-     A muted, low-chroma palette that sits calmly against the neutral UI; the
-     dark variant lifts lightness so the same hues stay legible on the dark
-     card. Comments/punctuation stay grey; strings/keywords/tags carry hue. */
   --syntax-comment: oklch(0.6 0 0);
   --syntax-punct: oklch(0.55 0 0);
   --syntax-tag: oklch(0.5 0.16 25);
@@ -237,8 +155,6 @@
   --secondary-foreground: oklch(0.985 0.001 106.423);
   --muted: oklch(0.268 0.007 34.298);
   --muted-foreground: oklch(0.709 0.01 56.259);
-  /* Lifted away from --card rather than toward it, so a selected row reads as
-     raised. See the light theme's note. */
   --accent: oklch(0.37 0.007 34.298);
   --accent-foreground: oklch(0.985 0.001 106.423);
   --destructive: oklch(0.704 0.191 22.216);
@@ -247,11 +163,8 @@
   --ring: oklch(0.553 0.013 58.071);
   --canvas: oklch(0.216 0.006 56.043);
 
-  /* Heavier than light mode: a 10% black veil barely reads against an already
-     dark canvas, so the layer below stops receding. */
   --scrim: oklch(0 0 0 / 40%);
 
-  /* Dark-card syntax palette: same hues, lifted lightness for legibility. */
   --syntax-comment: oklch(0.6 0 0);
   --syntax-punct: oklch(0.65 0 0);
   --syntax-tag: oklch(0.72 0.15 25);
@@ -263,9 +176,7 @@
   --syntax-number: oklch(0.78 0.11 75);
 }
 
-/* Suppress individual hover backgrounds when proximity hover provides the
-   visual feedback. The proximity overlay is the single source of truth, so the
-   per-button hover:bg-accent/50 from RAIL_BTN_OFF must not stack on top. */
+/* Proximity hover overlay is the sole hover indicator; suppress per-button hover. */
 [data-proximity-group] :is(a, button):hover {
   background-color: transparent !important;
 }
@@ -274,10 +185,6 @@
   * {
     @apply border-border outline-ring/50;
   }
-  /* Sidebar tint, not the page background: the shell is centred in a max-width
-     container, and body is only visible around it — the 2rem gutters and, past
-     1920px, the margins either side. Every surface inside the shell paints its
-     own opaque background, so this reads purely as the frame the app sits in. */
   body {
     @apply bg-canvas text-foreground;
   }
@@ -285,31 +192,12 @@
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
-  /* The UI is set slightly wide. This must not reach the font previews: any
-     non-zero letter-spacing suppresses ligature substitution (the spacing is
-     inserted between the very character units a ligature would join), so an
-     inherited value made previews render "fi"/"ffi" as separate glyphs and
-     misrepresent the font. The previews reset it to `normal` themselves, in
-     the two shared style helpers every preview surface goes through:
-     lib/fonts/preview-style and lib/fonts/use-font-face-preview. Scoping the
-     tracking to .font-sans/.font-mono instead was tried and rejected: UI text
-     inherits the family rather than carrying the class, so two thirds of it
-     silently lost its tracking. */
+  /* Preview surfaces reset letter-spacing to `normal` to preserve ligatures. */
   html {
     @apply font-sans tracking-wide antialiased;
-    /* Missing weights/styles fail visibly instead of rendering a browser-faked
-       bold or italic. This is doubly right for a font browser: a previewed
-       family that lacks a cut should show its real fallback, never a synthetic
-       one that misrepresents the typeface. */
     font-synthesis: none;
   }
-  /* iOS Chrome computes dvh/svh/lvh as outerHeight (including the collapsed
-     toolbar band) and also inflates a plain height:100% body past the real
-     viewport, leaving an empty strip below the content. Safari and desktop
-     don't, so the bug is iOS-Chrome-only. The app scrolls inside its own
-     ScrollArea (filter-layout uses absolute inset-0), never the body, so we
-     lock html/body to a fixed viewport height and hide their overflow. The
-     shell then fills it exactly with h-full. */
+  /* iOS Chrome overflows body past the real viewport; lock to 100% + hidden. */
   html,
   body {
     height: 100%;
@@ -325,21 +213,7 @@
   }
 }
 
-/* Caps and centres the whole app shell (see filter-layout).
-
-   The shell is fluid up to 3xl and only capped past it. Tailwind's stock
-   container steps its max-width down to the breakpoint below on every screen,
-   which wastes a laptop's width — at 1500px it would sit at 1280 and leave
-   220px of dead margin. Here the width is simply the viewport until 1920px,
-   where the cap stops lines from growing past what is comfortable to scan.
-
-   The 2rem gutters still start at md: below that the shell is the mobile layout
-   (Sheet sidebar, top bar) and goes edge to edge. Margin auto is a no-op at
-   width:100%, so it only bites past the cap and can sit outside the query.
-
-   max-width:none on the intervening steps is not redundant: shadcn/tailwind.css
-   ships its own .container with the stock sm..2xl ladder, and with nothing here
-   to overrule it those caps would apply. */
+/* Fluid up to 3xl, then capped. Overrides shadcn's stock .container. */
 @utility container {
   width: 100%;
   margin-left: auto;
@@ -358,26 +232,15 @@
   }
 }
 
-/* scroll-fade without scroll-driven animations. Where `animation-timeline` is
-   unsupported — WebKit before Safari 26, which is every browser on older iOS,
-   Chrome included — shadcn's utility falls back to fading BOTH edges at a
-   fixed size, so a list sitting at the very top still had its first row
-   dissolving into the header. The bottom edge stays: a list is usually long
-   enough that it is telling the truth. The top one is only right after the
-   user has scrolled, which is exactly what this fallback cannot detect. */
+/* Without scroll-driven animations, disable the top scroll-fade edge
+   (it incorrectly dissolves the first row even at scroll-top 0). */
 @supports not (animation-timeline: scroll()) {
   [data-slot="scroll-area-viewport"] {
     --scroll-fade-t: 0px;
   }
 }
 
-/* Grid/row switch for the SSR'd pending list. The real list reads the
-   preference from localStorage, which the server can't see, so the pending
-   markup renders both layouts and these hide the one that doesn't match
-   data-view (stamped on <html> by viewScript in __root before first paint).
-   That way a row-mode visitor never sees grid cards flip to rows when the
-   catalog resolves. Once the real list mounts it renders only its own layout,
-   so these stop applying to anything. */
+/* SSR pending list: both layouts render, data-view on <html> hides the wrong one. */
 @utility pending-grid-only {
   :root[data-view="row"] & {
     display: none;
@@ -391,10 +254,6 @@
   }
 }
 
-/* Favorite heart pop: a quick scale up with a slight overshoot, then settle
-   back. Played once when a font is hearted (keyed on the favorited state so
-   React remounts the icon to retrigger it), so the "added" reads as a beat,
-   not a hard swap. Disabled under reduced-motion. */
 @keyframes heart-pop {
   0% {
     transform: scale(1);
@@ -414,14 +273,6 @@
   animation: heart-pop var(--motion-slow) var(--ease-snap) both;
 }
 
-/* Copy confirmation pop: a quick scale up to full, no overshoot — a "confirmed"
-   beat, not the heart's celebratory bounce. Played once when the copy icon
-   swaps to the check/x (keyed on status), so the confirmation reads as a
-   response rather than a hard glyph swap. Disabled under reduced-motion.
-
-   Starts at 0.85 with a partial fade rather than the 0.6 it began life at: the
-   icon is replacing another icon in the same box, so it should read as the
-   glyph resolving into place, not as a new object flying in from nothing. */
 @keyframes copy-pop {
   0% {
     transform: scale(0.85);
@@ -437,9 +288,6 @@
   animation: copy-pop var(--motion-fast) var(--ease-snap) both;
 }
 
-/* Syntax token colours for the Use-tab CodeBlock (tokens from
-   lib/code/highlight). Plain text inherits the code block's own colour; only
-   the classed tokens carry hue. */
 .tok-comment {
   color: var(--syntax-comment);
   font-style: italic;
@@ -469,40 +317,14 @@
   color: var(--syntax-number);
 }
 
-/* The detail page's Tester rich-text editor. One document mixes heading levels
-   and normal paragraphs, so each block renders at its own size, driven by the
-   --pg-* custom properties the Tester toolbar sets on the editor root. Editing
-   a level's slider updates every block of that level. The `--pg-` prefix is
-   short for "playground", the tab's original name, and is kept only because it
-   is terse; everything else reads as Tester. */
-
-/* The document is a font preview, so it must show the family as it really is.
-   The base layer styles every h1-h6 with `font-heading tracking-wide`, and
-   those land directly on the seeded heading elements: more specific than the
-   `font-family`/`letter-spacing: normal` that previewStyle puts on the editor
-   root, so the root's reset alone never reached them. Headings were rendering
-   in the UI's heading face, tracked wide, which also breaks ligatures (the
-   spacing is inserted between the very units "fi"/"ffi" would join).
-
-   Both are handed back to the editor root here, which carries the previewed
-   family and the preview's `letter-spacing: normal`, so a heading now matches
-   the instance rows: the real typeface at its real spacing. */
+/* Override base-layer font-heading on headings: inherit the previewed family. */
 .tester-editor :is(h1, h2, h3, h4, h5, h6) {
   font-family: inherit;
   letter-spacing: inherit;
 }
-/* Line height is a fixed 1.2 at every level: the Tester is a type specimen,
-   so the leading stays out of the way and only size/weight distinguish the
-   levels. Set once here rather than per level, and no longer adjustable from
-   the toolbar. */
 .tester-editor :is(h1, h2, h3, p) {
   line-height: 1.2;
 }
-/* Headings are seeded carrying a named instance (see headingInstance in
-   tester.tsx), whose inline font-weight is a real cut of the family and
-   wins over these. The literals are the fallback for a family with no
-   instances at all, and for a heading the user has cleared back to the
-   document default. */
 .tester-editor h1 {
   font-size: var(--pg-size-h1);
   font-weight: 700;
@@ -518,26 +340,11 @@
 .tester-editor p {
   font-size: var(--pg-size-normal);
 }
-/* Space between blocks, so the seeded h1/h2/h3 stack reads as separate
-   specimens rather than one run-on column. An em, not a fixed length, so the
-   gap tracks whatever size the block below it is set to: a 48px heading earns
-   more room above it than an 18px paragraph. Only later siblings get the
-   margin, so the document still starts flush with the editor's padded edge. */
 .tester-editor > * + * {
   margin-top: 1em;
 }
 
-/* The block the caret is in. Both the Style/Size/Line-height controls and the
-   instance chips apply to the whole block, not the selected word, so the tint
-   shows how far the next change will reach. Set as a data attribute by the
-   editor rather than a Lexical node property, to keep the highlight out of the
-   document's undo history (see the effect in tester.tsx).
-
-   The negative inline margin + matching padding bleeds the band past the text
-   column so it reads as a full-width row rather than a box hugging the glyphs;
-   box-decoration-break keeps it continuous when a block wraps onto more lines.
-   Transition on background-color only: the caret moves between blocks often,
-   and animating anything geometric would make the document twitch. */
+/* Active block highlight. Data attribute (not Lexical state) to stay out of undo. */
 .tester-editor [data-pg-active] {
   background-color: var(--color-muted);
   border-radius: var(--radius-sm);
@@ -547,33 +354,13 @@
   transition: background-color var(--motion-fast) var(--ease-snap);
 }
 
-/* List <-> detail navigation, both ways: a plain crossfade of the whole page.
-   Nothing carries a view-transition-name of its own, so the root group is the
-   entire transition — no element flies between the two pages, which at this
-   size read as a distraction rather than as continuity.
-
-   old and new are timed together rather than left to the default sequence, so
-   the two states cross over instead of the outgoing page emptying first.
-   Browsers without View Transitions ignore all of this and keep RouteFade's
-   fade, which is why nothing here is required for the pages to work. */
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation-duration: var(--motion-slow);
   animation-timing-function: var(--ease-snap);
 }
 
-/* Reduced motion means less movement, not no animation. This used to flatten
-   every duration to 0.01ms, which also killed the fades and colour changes that
-   carry meaning — a panel swapping contents became a hard cut, harder to follow
-   than the fade it replaced, which is the opposite of the request.
-
-   So: kill the travel, keep the fade. Transforms snap to their end state
-   instantly while opacity and colour still cross over at their normal pace, and
-   the transform-only keyframes (heart-pop, copy-pop) are dropped entirely since
-   there is nothing left of them once the movement goes.
-
-   Motion-driven components are handled separately by MotionConfig
-   reducedMotion="user" in __root, which zeroes transforms the same way. */
+/* Kill spatial movement, keep opacity/color fades. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -588,25 +375,12 @@
     animation: none !important;
   }
 
-  /* A View Transition is a browser-level animation, so neither the
-     transition-property filter above nor __root's MotionConfig reaches it. The
-     morphing name is pure travel — exactly what this setting asks us to drop —
-     so hold every group still and let the pages swap outright. */
   ::view-transition-group(*),
   ::view-transition-old(*),
   ::view-transition-new(*) {
     animation: none !important;
   }
 
-  /* Tailwind's animate-spin is a 360deg rotation on an infinite loop, which the
-     transition-property filter above cannot touch (it is an animation, not a
-     transition). Rotation is exactly the kind of motion the setting is asking
-     us to drop, so hold the spinner still: it stays visible and still marks
-     "busy", it just no longer turns. Kept as a rule rather than removing the
-     class, so a spinner added later is covered by default.
-
-     animate-pulse is deliberately NOT listed: it animates opacity only, which
-     implies no self-motion and is the fade this block exists to preserve. */
   .animate-spin {
     animation: none !important;
   }

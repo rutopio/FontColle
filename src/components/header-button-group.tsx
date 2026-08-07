@@ -60,8 +60,6 @@ function HeaderButtonGroup({
           {activeRect && (
             <motion.div
               key={sessionRef.current}
-              // rounded-lg, not shape.bg: the header icons sit beside the
-              // search input, which is fixed at rounded-lg in both shape modes.
               className="pointer-events-none absolute -z-1 rounded-lg bg-accent/50"
               initial={{
                 opacity: 0,

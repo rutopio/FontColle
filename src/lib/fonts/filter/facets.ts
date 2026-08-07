@@ -8,7 +8,6 @@ import { familyWeightSet, familyWidthSet } from "./weights";
 export type FacetIndex = ReturnType<typeof buildFacetIndex>;
 
 export const FORM_TAG_THRESHOLD = 1;
-// Mood needs a high threshold because Google scores most families on most traits.
 export const MOOD_TAG_THRESHOLD = 50;
 
 export function meetsTagThreshold(tag: string, score: number): boolean {
@@ -166,7 +165,6 @@ export const ACTIVITY_LABELS: Record<string, string> = {
   dormant: "Dormant (3y+)",
 };
 
-/** Uses head.modified (not lastModifiedApi, which moves on metadata-only releases). */
 export function fontActivity(font: FontRecord): string {
   const months = monthsSince(font);
   if (months === null) return "dormant";

@@ -108,7 +108,6 @@ export const METRIC_ORDER: MetricKey[] = [
 const ratio = (n: number | null, d: number | null): number | null =>
   n != null && d != null && d > 0 ? n / d : null;
 
-// Round to 2 decimals to match UI precision.
 const round2 = (v: number | null): number | null =>
   v == null ? null : Math.round(v * 100) / 100;
 
@@ -138,7 +137,6 @@ export function derive(font: FontRecord, key: MetricKey): number | null {
   }
 }
 
-/** A thumb on the domain edge is unbounded on that side. */
 export function matchesRange(
   font: FontRecord,
   spec: MetricSpec,

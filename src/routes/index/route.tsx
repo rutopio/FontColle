@@ -45,12 +45,10 @@ export const Route = createFileRoute("/")({
 
 function isDefaultView(search: FilterSearch): boolean {
   if (search.sort || search.fav) return false;
-  // activeFilterCount excludes q; check it separately.
-  if (search.q) return false;
+  if (search.q) return false; // activeFilterCount ignores q
   return activeFilterCount(searchToFilter(search)) === 0;
 }
 
-// Client-side fetch to stay under Worker limits.
 function App() {
   const search = Route.useSearch();
   const { firstPage } = Route.useLoaderData();

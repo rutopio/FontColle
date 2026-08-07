@@ -1,25 +1,16 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-/**
- * Catalog-wide Unicode coverage, for answering "which fonts can render this
- * preview sentence?" on the list page. The per-font files behind the Glyphs
- * panel (public/glyphs/<id>.json, ~15 MB total) are far too many to fetch here,
- * so scripts/gen-glyph-index.mjs folds them into one deduplicated file: 2028
- * fonts share only ~1500 distinct coverage sets.
- */
 interface RawGlyphIndex {
   classes: string[];
   fonts: Record<string, number>;
 }
 
 export interface GlyphIndex {
-  /** One flat [start, end, start, end, …] pair list per coverage class. */
   classes: Int32Array[];
   fonts: Record<string, number>;
 }
 
-/** Inverse of encodeRanges() in scripts/gen-glyph-index.mjs. */
 function decodeRanges(encoded: string): Int32Array {
   if (!encoded) return new Int32Array(0);
   const parts = encoded.split(",");
@@ -67,26 +58,10 @@ const coversAll = (ranges: Int32Array, s: string): boolean => {
   return true;
 };
 
-/**
- * A base character plus any combining marks that follow it. Marks with no base
- * (a string that opens with one) form a cluster of their own.
- */
 const CLUSTER_RE = /\P{M}\p{M}*|\p{M}+/gu;
-
-/**
- * Whitespace never needs a glyph, and default-ignorable characters (ZWJ, ZWNJ,
- * variation selectors, BOM) are the shaper's business, not the cmap's.
- */
 const SKIP_RE = /[\s\p{Default_Ignorable_Code_Point}]/gu;
 
-/**
- * Whether a cluster survives the normalization a shaper applies before it ever
- * looks a glyph up. HarfBuzz decomposes the cluster and then recomposes what it
- * can, so a font passes if it covers EITHER the precomposed character or the
- * base plus each mark — checking raw codepoints against the cmap alone rejects
- * fonts that render the text perfectly well (measured: 89 extra families match
- * "Tiếng Việt" once this runs).
- */
+/** Checks precomposed OR decomposed coverage (mirrors HarfBuzz normalization). */
 function clusterRenderable(ranges: Int32Array, cluster: string): boolean {
   if (coversAll(ranges, cluster)) return true;
 
@@ -95,8 +70,6 @@ function clusterRenderable(ranges: Int32Array, cluster: string): boolean {
   const marks = chars.slice(1);
   if (marks.length === 0) return coversAll(ranges, base);
 
-  // Fold each mark into the base while the composition stays a single covered
-  // character; whatever will not compose has to stand on its own in the cmap.
   let composed = base;
   const standalone: string[] = [];
   for (const mark of marks) {
@@ -125,15 +98,6 @@ export function canRenderWithCoverage(
   return clusters.every((c) => clusterRenderable(ranges, c));
 }
 
-/**
- * Ids of every font in the index that can render `text`.
- *
- * Only indexed fonts can be returned, so a font the index does not cover is
- * filtered out rather than kept. The index is built from the same glyph data
- * the catalog is built from and is currently a superset of it, so this is not
- * reachable today; if the two ever diverge, the missing fonts disappear from
- * the list while the filter is on.
- */
 export function renderableFontIds(
   index: GlyphIndex,
   text: string
@@ -149,10 +113,6 @@ export function renderableFontIds(
   return ids;
 }
 
-/**
- * The characters of `text` that `fontId` covers, per the index. Empty when the
- * font is not indexed, so callers never act on a guess.
- */
 export function coveredCharacters(
   index: GlyphIndex,
   fontId: string,
@@ -182,10 +142,7 @@ export function glyphIndexQueryOptions(enabled: boolean) {
   });
 }
 
-/**
- * Font ids that can render `text`, or null while the filter is off, the text is
- * empty, or the index has not arrived yet — null means "do not filter".
- */
+/** Returns null when the filter is off/text is empty (meaning "do not filter"). */
 export function useRenderableFontIds(
   text: string,
   enabled: boolean
@@ -198,11 +155,7 @@ export function useRenderableFontIds(
   }, [active, data, text]);
 }
 
-/**
- * The part of `text` that `fontId` is known to have glyphs for, for callers
- * that must not ask the CDN for characters the font lacks — css2 answers such a
- * request with an HTML error page, not a font. Empty until the index loads.
- */
+/** Characters the font covers per the index. Empty until the index loads. */
 export function useCoveredCharacters(fontId: string, text: string): string {
   const { data } = useQuery(glyphIndexQueryOptions(text.length > 0));
   return useMemo(

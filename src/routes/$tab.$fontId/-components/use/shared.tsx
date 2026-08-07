@@ -6,10 +6,6 @@ import { cn } from "@/lib/utils";
 // "full" = variable range, "one" = pinned value.
 export type AxisPick = { mode: "full" | "one"; value: number };
 
-/**
- * A method's heading and body. Deliberately unboxed: the tab strip above
- * already groups these, so a Panel's border only nests one frame in another.
- */
 export function MethodBody({
   label,
   children,
@@ -104,8 +100,7 @@ export function Pill({
 
 export const urlFamily = (name: string) => name.replace(/\s+/g, "+");
 
-// Matches fontsource.org's scheme ("Playfair Display" -> "playfair-display").
-// Bunny uses the same slug.
+// Same slug scheme as fontsource.org and Bunny.
 export function fontsourceSlug(name: string): string {
   return name
     .toLowerCase()

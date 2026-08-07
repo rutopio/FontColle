@@ -34,10 +34,9 @@ export function columnsFor(width: number, view: ViewMode): number {
   return 1;
 }
 
-// h-72 with border-box sizing: the 1px bottom gridline sits inside the 288px,
-// so rows must advance by exactly this or a bare strip opens above each line.
+// Must match h-72/h-32 incl. border-box gridlines or virtual rows misalign.
 const CARD_H = 288;
-const LINE_H = 128; // h-32
+const LINE_H = 128;
 
 const rowKey = (view: ViewMode, firstFontId: string) =>
   `${view}-${firstFontId}`;
@@ -133,8 +132,6 @@ export function FontGrid({
             <div
               key={rowKey(view, rowFonts[0]?.id ?? String(row.key))}
               data-index={row.index}
-              // Virtual items are the only true siblings here (row view renders
-              // one row each), so the "row below is hovered" rule lives on them.
               className="group/slot has-[+.group\/slot:hover]:[&_[data-slot=separator]]:bg-transparent"
               style={{
                 position: "absolute",
@@ -147,12 +144,6 @@ export function FontGrid({
               {view === "row" ? (
                 <div>{rowFonts.map((f) => renderCell(f, isLastRow))}</div>
               ) : (
-                // The row's last cell drops its right gridline, so only the
-                // interior verticals show. :last-child also covers a final
-                // partial row, where no cell reaches the last column.
-                //
-                // The four outer corners of the whole grid get a matching
-                // radius, so a hovered corner cell echoes the shell's rounding.
                 <div
                   className={cn(
                     "grid [&>:last-child]:border-r-0",
@@ -187,8 +178,6 @@ export function SkeletonGrid({ view }: { view: ViewMode }) {
     </div>
   ) : (
     <div className="@container">
-      {/* Column count is CSS-driven, so the interior verticals are added per
-          breakpoint: every cell gets one, then each row's last cell drops it. */}
       <div className="grid @min-[1024px]:grid-cols-3 @min-[768px]:grid-cols-2 grid-cols-1 @min-[1024px]:[&>*:nth-child(2n)]:border-r @min-[768px]:[&>*:nth-child(2n)]:border-r-0 @min-[1024px]:[&>*:nth-child(3n)]:border-r-0 @min-[768px]:[&>*]:border-r">
         {keys.map((k) => (
           <SkeletonCard key={k} />
@@ -200,8 +189,6 @@ export function SkeletonGrid({ view }: { view: ViewMode }) {
 
 function SkeletonCard() {
   return (
-    // The right gridline comes from the container, which knows the breakpoint's
-    // column count and can skip each row's trailing cell.
     <div className="flex h-72 flex-col gap-4 border-border border-b p-4">
       <div className="flex flex-col gap-1">
         <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />

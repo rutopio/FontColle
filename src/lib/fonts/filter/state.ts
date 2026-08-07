@@ -105,7 +105,6 @@ export interface FilterSearch {
 const splitCsv = (v: string | undefined): string[] =>
   v ? v.split(",").filter(Boolean) : [];
 
-// "_" avoids %2C encoding in URLSearchParams.
 const joinUnderscore = (xs: string[]): string => xs.join("_");
 
 const splitUnderscore = (v: string | undefined): string[] => {

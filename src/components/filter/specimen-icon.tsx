@@ -1,6 +1,6 @@
 import { SmileyIcon } from "@phosphor-icons/react";
 
-// Mask + currentColor, not <img>: fill:currentColor only works on inline SVG.
+// CSS mask + currentColor; <img> can't inherit fill.
 function SpecimenImg({ src, className }: { src: string; className?: string }) {
   return (
     <span

@@ -66,8 +66,7 @@ function DrawerContent({
           data-slot="drawer-content"
           className={cn(
             "relative flex max-h-[calc(100dvh-2rem)] w-full flex-col overflow-hidden rounded-t-xl border-t bg-popover bg-clip-padding text-popover-foreground text-sm shadow-lg outline-none",
-            // 0px fallback required: Base UI only registers the CSS property
-            // behind a feature guard, so without it the transform is invalid.
+            // Base UI registers --drawer-swipe-movement-y behind a feature guard; 0px keeps transform valid.
             "[transform:translateY(var(--drawer-swipe-movement-y,0px))]",
             "transition-transform duration-slow ease-drawer",
             "data-swiping:will-change-transform data-swiping:select-none data-swiping:duration-0",

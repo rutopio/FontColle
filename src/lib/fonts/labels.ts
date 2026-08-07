@@ -9,7 +9,6 @@ export interface LanguageMeta {
   regions: string[];
 }
 
-// Must match REGION_ORDER in scripts/harvester/langcov.py.
 const NO_LANGUAGE_REGION = "Constructed & historical";
 
 const LANGUAGE_REGIONS = [

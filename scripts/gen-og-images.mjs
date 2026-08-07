@@ -13,9 +13,7 @@ const H = 630;
 
 const BG = "#ffffff";
 const FG = "#0a0a0a";
-// The mark's inverted treatment, matching LogoIcon and favicon.ico: --primary
-// and --primary-foreground (light theme) resolved to sRGB, since resvg cannot
-// evaluate the var() the component uses.
+// LogoIcon mark colors as sRGB; resvg can't resolve CSS var().
 const MARK_BG = "#1c1917";
 const MARK_FG = "#fafaf9";
 
@@ -34,11 +32,7 @@ const ICON_PATHS = [
   "M13 13V9H20",
 ];
 
-// The mark as a filled rounded square with the strokes knocked out. Geometry
-// mirrors LogoIcon: rx 5.25 of a 24 box, mark inset by translate(4 4) and
-// scaled to 0.667. Stroke width is a parameter because the solid square reads
-// heavier than the old outline mark did, and the interior lines close up once
-// it is small enough to sit beside the wordmark.
+// Filled square mark matching LogoIcon; strokeWidth tunable because fill reads heavier.
 function markSquare(x, y, size, strokeWidth) {
   const s = size / 24;
   return (
@@ -105,7 +99,7 @@ function centeredText(font, text, { boxX, boxY, boxW, boxH, maxSize }) {
     advance += (g.advanceWidth ?? font.unitsPerEm) * scaleFor(maxSize);
   }
   const asc = font.ascender * scaleFor(maxSize);
-  const desc = font.descender * scaleFor(maxSize); // negative
+  const desc = font.descender * scaleFor(maxSize);
   const runH = asc - desc;
 
   const fit = Math.min(1, boxW / advance, boxH / runH);
@@ -128,9 +122,6 @@ function centeredText(font, text, { boxX, boxY, boxW, boxH, maxSize }) {
 }
 
 function wordmark() {
-  // A touch smaller than the old outline mark's 56, and a heavier stroke: the
-  // filled square carries more weight beside the wordmark, and its interior
-  // lines merge at this size on 1.5.
   const iconSize = 52;
   const gap = 16;
   const wordSize = 44;

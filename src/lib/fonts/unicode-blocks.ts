@@ -183,7 +183,6 @@ export function blockOf(cp: number): UnicodeBlock | undefined {
   return BMP_BLOCKS.find((b) => cp >= b.start && cp <= b.end);
 }
 
-// Bare "ab" is its first codepoint, not hex 0x00AB.
 export function parseGlyphQuery(input: string): number | null {
   const q = input.trim();
   if (!q) return null;

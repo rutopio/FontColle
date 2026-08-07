@@ -4,7 +4,6 @@ import { deriveFacets } from "./facets";
 import { slugKey } from "./slug";
 import type { FontRecord } from "./types";
 
-// Server uses ASSETS binding to avoid self-referencing fetch.
 const assetFetch = createIsomorphicFn()
   .server(async (path: string, signal?: AbortSignal) => {
     const { env } = await import("cloudflare:workers");

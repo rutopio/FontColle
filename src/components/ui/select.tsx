@@ -22,7 +22,6 @@ import { cn } from "@/lib/utils";
 import { spring, exitFallbackMs } from "@/lib/springs";
 import { useProximityHover } from "@/hooks/use-proximity-hover";
 
-// How long a selection holds the popup open so the acknowledgment animation is visible.
 const selectionAckMs = 300;
 
 interface SelectContextValue {
@@ -58,7 +57,6 @@ interface SelectProps {
     required?: boolean;
 }
 
-/** Collect `{ value, label }` from SelectItem children for Base UI's `items` prop. */
 function collectSelectItems(
     node: ReactNode,
     out: { value: string; label: ReactNode }[] = []
@@ -113,7 +111,6 @@ function Select({
     }, []);
     useEffect(() => cancelAckClose, [cancelAckClose]);
 
-    // Item selection defers close by selectionAckMs so the acknowledgment animation is visible.
     const handleOpenChange = useCallback(
         (nextOpen: boolean, eventDetails: { reason: string }) => {
             if (!nextOpen && eventDetails.reason === "item-press") {
@@ -138,7 +135,6 @@ function Select({
     return (
         <SelectContext.Provider value={ctx}>
             <SelectPrimitive.Root
-                // Always controlled; "" (no selection) maps to Base UI's null.
                 value={currentValue === "" ? null : currentValue}
                 onValueChange={handleValueChange}
                 open={open}
@@ -148,7 +144,6 @@ function Select({
                 disabled={disabled}
                 name={name}
                 required={required}
-                // Non-modal so the page scrolls and popup tracks anchor.
                 modal={false}
             >
                 {children}
@@ -219,10 +214,6 @@ const SelectTrigger = forwardRef<HTMLButtonElement, SelectTriggerProps>(
                         )}
                         <SelectPrimitive.Value
                             placeholder={placeholder}
-                            // py-1/-my-1: truncate's overflow:hidden clips at the padding
-                            // box, and the trimmed box excludes ascenders/descenders — the
-                            // padding gives glyphs room while the negative margin keeps the
-                            // trimmed layout box.
                             className="min-w-0 flex-1 text-left truncate [text-box:trim-both_cap_alphabetic] py-1 -my-1 data-[placeholder]:text-muted-foreground"
                         />
                     </span>
@@ -277,11 +268,7 @@ const SelectContent = forwardRef<HTMLDivElement, SelectContentProps>(
             undefined
         );
 
-        // Release Base UI's deferred unmount once the exit tween has played.
-        // onAnimationComplete on the motion.div is the primary signal; this
-        // timeout is a fallback for throttled/background tabs where rAF-driven
-        // animation callbacks can stall. The popup exits with spring.fast, so the
-        // fallback tracks that tier's exit duration plus a safety buffer.
+        // Fallback when rAF-driven onAnimationComplete stalls (background tab).
         useEffect(() => {
             if (open) return;
             const id = setTimeout(
@@ -291,25 +278,16 @@ const SelectContent = forwardRef<HTMLDivElement, SelectContentProps>(
             return () => clearTimeout(id);
         }, [open, actionsRef]);
 
-        // Fresh rects once per open. Measuring is the hook's job — it owns the
-        // one coalesced pass that item registration and container resizes both
-        // feed into, and a second pass from elsewhere is what used to land a
-        // corrected rect on an already-mounted overlay. The popup keeps its items
-        // registered while it sits hidden between opens, so registration alone
-        // would never trigger a fresh pass on reopen.
+        // Items stay registered while hidden; reopen needs an explicit remeasure.
         useEffect(() => {
             if (!open) return;
             remeasure();
         }, [open, remeasure]);
 
-        // Detect the checked row. Deliberately does NOT remeasure on a value
-        // change while open: the rows haven't moved, so the published rects stay
-        // trustworthy and only checkedIndex switches — which lets the selected
-        // marker spring from the old row to the picked one (the selection
-        // acknowledgment) instead of unmounting and snapping.
+        // Value change while open: only checkedIndex updates so the marker can spring.
         useEffect(() => {
             if (!open) return;
-            // Double rAF: first waits for React commit, second for layout
+            // Double rAF: commit, then layout.
             let inner: number;
             const outer = requestAnimationFrame(() => {
                 inner = requestAnimationFrame(() => {
@@ -331,12 +309,7 @@ const SelectContent = forwardRef<HTMLDivElement, SelectContentProps>(
             };
         }, [open, value]);
 
-        // Reset every overlay index as the close begins. checkedIndex otherwise
-        // lags one open behind value (picking an item closes the popup before the
-        // effect above re-syncs it), and a leftover activeIndex is worse: Base UI
-        // keeps the popup mounted through the exit tween, so on reopen the hover
-        // pill would still be sitting on the previously active row and spring from
-        // there to the row that auto-focus lands on.
+        // Clear stale indices before exit tween finishes — Base UI keeps popup mounted.
         useEffect(() => {
             if (open) return;
             setCheckedIndex(undefined);
@@ -344,9 +317,6 @@ const SelectContent = forwardRef<HTMLDivElement, SelectContentProps>(
             setFocusedIndex(null);
         }, [open, setActiveIndex]);
 
-        // Overlays read rects only once the hook reports the item set fully
-        // measured. Positioning one from an incomplete pass mounts it at the wrong
-        // row, and the correcting pass then springs it across the list.
         const activeRect =
             isMeasured && activeIndex !== null ? itemRects[activeIndex] : null;
         const checkedRect =
@@ -377,8 +347,6 @@ const SelectContent = forwardRef<HTMLDivElement, SelectContentProps>(
                         }
                         transition={open ? spring.fast : spring.fast.exit}
                         style={{ transformOrigin: "top center" }}
-                        // Base UI defers unmount while actionsRef is set; release it once
-                        // the exit spring has finished so the close animation fully plays.
                         onAnimationComplete={() => {
                             if (!open) actionsRef.current?.unmount();
                         }}
@@ -427,15 +395,10 @@ const SelectContent = forwardRef<HTMLDivElement, SelectContentProps>(
                                     setActiveIndex(null);
                                 }}
                                 className={cn(
-                                    // min-w tracks the trigger via the Positioner's --anchor-width
-                                    // var, matching the pre-migration minWidth: triggerRect.width.
-                                    // rounded-xl: one step over the rounded-lg
-                                    // items so the popup stays concentric.
                                     "relative flex flex-col gap-0.5 min-w-[var(--anchor-width)] max-h-[min(300px,var(--available-height))] overflow-y-auto rounded-xl p-1 select-none outline-none",
                                     className
                                 )}
                             >
-                                {/* Overlays unmount on close (not exit-animated) so AnimatePresence doesn't re-adopt stale positions on reopen. */}
                                 {open && (
                                     <AnimatePresence>
                                         {checkedRect && (
@@ -493,9 +456,6 @@ const SelectContent = forwardRef<HTMLDivElement, SelectContentProps>(
                                     <AnimatePresence>
                                         {focusRect && (
                                             <motion.div
-                                                // rounded-[10px] = the item's 8px
-                                                // +2px, since the ring sits 2px
-                                                // outside; keeps corners concentric.
                                                 className="absolute rounded-[10px] pointer-events-none z-20 border border-ring"
                                                 initial={false}
                                                 animate={{
@@ -555,7 +515,7 @@ const SelectItem = forwardRef<HTMLDivElement, SelectItemProps>(
             hasMounted.current = true;
         }, []);
 
-        // Depends on stable registerItem, not contentCtx (rebuilt per activeIndex change).
+        // contentCtx is rebuilt every activeIndex tick; registerItem is stable.
         const registerItem = contentCtx?.registerItem;
         useEffect(() => {
             if (!registerItem) return;
@@ -586,7 +546,6 @@ const SelectItem = forwardRef<HTMLDivElement, SelectItemProps>(
                         data-proximity-index={index}
                         data-value={value}
                         className={cn(
-                            // Fixed h-9 so text-box trim doesn't shrink the row; shrink-0 prevents flex compression in long lists.
                             "relative z-10 flex h-9 shrink-0 items-center gap-2 rounded-lg px-2 text-sm cursor-pointer outline-none select-none",
                             "transition-[color] duration-80",
                             isActive || isChecked
@@ -608,16 +567,11 @@ const SelectItem = forwardRef<HTMLDivElement, SelectItemProps>(
                 )}
 
                 <SelectPrimitive.ItemText
-                    // py-1/-my-1 keeps truncate's overflow:hidden from clipping
-                    // ascenders/descenders outside the trimmed box.
                     render={<span className="flex-1 min-w-0 truncate [text-box:trim-both_cap_alphabetic] py-1 -my-1" />}
                 >
                     {children}
                 </SelectPrimitive.ItemText>
 
-                {/* Always-rendered fixed slot so the check appearing/disappearing
-            never changes the row's intrinsic width — without it the whole
-            popup resizes when a selection lands. */}
                 <span aria-hidden className="shrink-0 w-4 h-4">
                     <AnimatePresence>
                         {isChecked && (

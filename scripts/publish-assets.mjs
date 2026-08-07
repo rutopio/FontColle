@@ -69,11 +69,7 @@ async function reseedGlyphs() {
   writeManifest({ ...manifest, glyphs });
 }
 
-/** After a full re-render of public/og. The deltas exist to carry the handful
- *  of cards a daily run adds on top of the base tarball, so once the base
- *  contains every current card they are not just redundant but wrong — a
- *  client would fetch each one to overwrite a file the base already has right.
- *  Clearing them is the point of reseeding rather than publishing 1900 deltas. */
+// Reseed folds all cards into the base; stale deltas would overwrite correct files.
 async function reseedOg() {
   const manifest = readManifest();
   if (!manifest) throw new Error("no manifest; run --seed first");

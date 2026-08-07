@@ -8,12 +8,7 @@ import { fallbackFor } from "./shared";
 export const USE_METHODS = ["google", "fontsource", "bunny"] as const;
 export type UseMethod = (typeof USE_METHODS)[number];
 
-/**
- * The method switcher. Rendered in the Column's toolbar slot, outside the
- * ScrollArea, so the scroll-fade mask never dissolves it. It carries its own
- * Tabs root because the panels live in a sibling subtree and Base UI's context
- * cannot span the two.
- */
+// Outside ScrollArea (scroll-fade mask) and needs its own Tabs root (panels are siblings).
 export function UseMethodTabs({
   method,
   onMethodChange,

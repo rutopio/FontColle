@@ -25,6 +25,8 @@ pnpm build && pnpm dev   # first build seeds the sample catalog; dev after that
 
 That is enough to exercise the layout, filters, detail page and most components against real records. Glyph-coverage data and OG images still live in R2, so the few pages that use them degrade rather than fail.
 
+One exception worth knowing: with no `public/glyphs/` data, `scripts/gen-glyph-index.mjs` writes an empty index, and the preview bar's coverage filter — which is **on by default** — then matches no font at all, so typing preview text empties the list. Switch it off with the `.notdef` toggle beside the preview field.
+
 Want more families? The harvester reads straight from the public [google/fonts](https://github.com/google/fonts) repo, so you can build your own dataset of any size — no Cloudflare account or API key required:
 
 ```bash
@@ -44,7 +46,7 @@ Two things worth knowing before you run it:
 
 `to_dataset.py` needs no Google Fonts API key: without `published.json` it marks every family published and skips ranking, which is fine for local work. `pnpm dev`/`pnpm build` then slices whatever `fonts.json` holds, so a 3-family catalog runs the real site.
 
-Glyph coverage data and OG images stay in R2 and are not rebuilt by the above; the pages that use them degrade rather than fail. `src/data/fonts.json` and `src/data/data-manifest.json` are both gitignored — nothing about a data update belongs in git.
+Glyph coverage data and OG images stay in R2 and are not rebuilt by the above; the pages that use them degrade rather than fail, except that an empty glyph index makes the coverage filter match nothing (see above). `src/data/fonts.json` and `src/data/data-manifest.json` are both gitignored — nothing about a data update belongs in git.
 
 Each publish uploads `fonts.json` under a content-hashed key, `fonts/<sha16>.json`, and points the manifest (`manifest/latest.json` in R2) at it; identical content re-publishes to the same key, so there is one object per distinct catalog content (not per day), and a same-day re-run can never overwrite the bytes a prior manifest still names. An R2 lifecycle rule (`expire-fonts-versions`, prefix `fonts/`) expires objects 30 days after creation, so rollback reaches back a month: rewrite the R2 manifest to point at an earlier snapshot. `glyphs/` and `og/` are long-lived base objects and are not covered by the rule.
 

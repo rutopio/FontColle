@@ -16,9 +16,7 @@ interface Props {
   onToggleFavorite: (id: string) => void;
   selection: FilterSelection;
   axisValues: Record<string, number>;
-  /** Cells draw a bottom gridline; the final row drops it so the list ends clean. */
   lastRow?: boolean;
-  /** Loading skeleton: render blank action slots (see FontActions). */
   staticActions?: boolean;
 }
 

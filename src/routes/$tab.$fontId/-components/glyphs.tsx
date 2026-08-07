@@ -21,10 +21,7 @@ function useActiveBlock(blockName: string) {
   );
 }
 
-/**
- * The block's name and range. Rendered in the Column's toolbar slot, outside
- * the ScrollArea, so the scroll-fade mask never dissolves it.
- */
+// Outside ScrollArea so the scroll-fade mask doesn't dissolve it.
 export function GlyphsBlockHeading({ blockName }: { blockName: string }) {
   const active = useActiveBlock(blockName);
   return (

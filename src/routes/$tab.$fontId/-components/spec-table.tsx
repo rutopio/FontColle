@@ -4,13 +4,12 @@ import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 export interface SpecRow {
   label: string;
   value: string;
-  badge?: string; // version tag, rendered as "v{badge}"
+  badge?: string;
 }
 
 export function SpecTable({ rows }: { rows: SpecRow[] }) {
   return (
-    // -mx-3 cancels the cells' default px-3: the text stays flush with the
-    // panel's other content while the hover highlight extends past it.
+    // -mx-3 cancels cell padding so hover highlight extends past text.
     <Table className="-mx-3 w-[calc(100%+1.5rem)]">
       <TableBody>
         {rows.map((row, i) => (

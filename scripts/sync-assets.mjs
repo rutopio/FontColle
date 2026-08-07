@@ -16,12 +16,9 @@ const FONTS_JSON = path.join(ROOT, "src/data/fonts.json");
 const GLYPHS_DIR = path.join(ROOT, "public/glyphs");
 const OG_DIR = path.join(ROOT, "public/og");
 const SCRATCH = path.join(ROOT, ".r2-tmp");
-/** Daily runs add a few dozen cards at most; well past that the base is stale. */
+// Daily runs add a few dozen OG cards; hundreds means the base tarball is stale.
 const MAX_OG_DELTAS = 300;
-/** A harvest re-renders the cards it needs and republishes the base, so the
- *  deltas are wasted fetches there -- and refusing them would deadlock the one
- *  job that can clear an over-full manifest. Builds get the guard; harvests
- *  pass --skip-og-deltas. */
+// Harvests pass --skip-og-deltas; builds enforce the limit to avoid timeout deadlock.
 const SKIP_OG_DELTAS = process.argv.includes("--skip-og-deltas");
 
 const manifest = r2GetManifest();
@@ -53,9 +50,7 @@ console.log(`[sync] fonts.json <- ${manifest.fonts.key} (verified)`);
       `[sync] skipping ${manifest.og.deltas.length} OG deltas (--skip-og-deltas)`
     );
   }
-  // Each delta is one wrangler subprocess, so the loop costs about a second per
-  // entry. A manifest carrying the whole catalog would run past the build
-  // timeout with no output -- fail fast and name the fix instead of hanging.
+  // One wrangler subprocess per delta (~1s each); fail fast before build timeout.
   if (deltas.length > MAX_OG_DELTAS) {
     throw new Error(
       `manifest carries ${deltas.length} OG deltas (limit ${MAX_OG_DELTAS}). ` +
@@ -67,8 +62,6 @@ console.log(`[sync] fonts.json <- ${manifest.fonts.key} (verified)`);
   deltas.forEach((key, i) => {
     const name = key.slice("og/".length);
     r2Get(key, path.join(OG_DIR, name));
-    // Without this the loop is silent, which is what made the timeout look
-    // like a hang in an unrelated build step.
     if ((i + 1) % 25 === 0) {
       console.log(`[sync] OG deltas ${i + 1}/${deltas.length}`);
     }

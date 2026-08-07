@@ -31,22 +31,10 @@ interface SliderProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onChange" | "defaultValue"> {
   value: SliderValue;
   onChange: (value: SliderValue) => void;
-  /**
-   * Fired once at the end of an interaction (pointer release, or a keyboard /
-   * track-click commit) rather than on every frame of a drag. Use it to defer
-   * expensive work — refiltering, network calls — off the drag path.
-   */
   onCommit?: (value: SliderValue) => void;
   min?: number;
   max?: number;
   step?: number;
-  /**
-   * Discrete list of allowed values, e.g. [0.1, 0.5, 0.7, 1.1, 1.3].
-   *
-   * When set, the thumb snaps only to these values (positioned proportionally
-   * along the track) and arrow keys walk the list. `min`/`max` derive from the
-   * list's extremes and `step` is ignored.
-   */
   steps?: number[];
   showSteps?: boolean;
   showValue?: boolean;
@@ -62,11 +50,6 @@ interface SliderProps
   thumbColor?: string;
   thumbBorderColor?: string;
   tooltipSide?: "top" | "bottom";
-  /**
-   * Suppress the on-hover value bubble. The bubble needs 16px of headroom
-   * above the track, so turning it off also reclaims that height — use it
-   * where the slider sits in a tight row and the value is shown elsewhere.
-   */
   hideHoverTooltip?: boolean;
 }
 
@@ -250,7 +233,6 @@ function ValueDisplay({
           : fontWeights.normal,
       }}
     >
-      {/* Ghost reserves the widest possible value's width */}
       <span
         className="col-start-1 row-start-1 invisible whitespace-nowrap"
         style={{ fontVariationSettings: fontWeights.medium }}
@@ -406,7 +388,6 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
     );
     const stepDotsMask = isRange ? stepDotsMaskRange : stepDotsMaskSingle;
 
-    // --- Hover preview computation ---
     const computeHoverPreview = useCallback(
       (cursorX: number, trackWidth: number) => {
         const usable = trackWidth - THUMB_SIZE;
@@ -529,7 +510,7 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
         const trackRect = trackEl.getBoundingClientRect();
         const layoutWidth = trackEl.offsetWidth;
         if (layoutWidth <= 0 || trackRect.width <= 0) return;
-        // Normalize to layout space (accounts for ancestor CSS scale).
+        // Layout space, not visual — ancestor transform: scale() skews getBoundingClientRect.
         const scale = trackRect.width / layoutWidth;
         const localX = (e.clientX - trackRect.left) / scale - THUMB_SIZE / 2;
         const clamped = Math.max(
@@ -664,7 +645,6 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
       values,
     ]);
 
-    // In steps mode, map indices back to actual values.
     const handleRadixChange = useCallback(
       (newValues: number[]) => {
         if (dragging.current) return;
@@ -729,9 +709,6 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
 
     const isInteracting = isHovered || isPressed;
 
-    // Vertical breathing room around the track. Normally 8px, which is also the
-    // headroom the hover bubble pops into; with the bubble off nothing needs it,
-    // so the whole slider collapses to exactly THUMB_SIZE.
     const trackPad = hideHoverTooltip ? 0 : 8;
 
     const thumbAriaLabel = (index: number): string | undefined => {
@@ -1134,7 +1111,6 @@ const SliderComfortable = forwardRef<HTMLDivElement, SliderComfortableProps>(
     );
     const pipCount = pipSteps.length;
 
-    // Fill motion value
     const fillPercent = useMotionValue(
       max === min ? 0 : Math.max(0, Math.min(1, (value - min) / (max - min)))
     );

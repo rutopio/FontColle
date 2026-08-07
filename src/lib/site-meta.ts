@@ -1,4 +1,3 @@
-// No imports or import.meta.env — scripts/gen-sitemap.mjs runs under bare Node.
 export const SITE_NAME = "FontColle";
 
 export const SITE_DESCRIPTION =

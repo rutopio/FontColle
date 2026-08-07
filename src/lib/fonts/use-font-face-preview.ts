@@ -41,10 +41,6 @@ export function useFontFacePreview(
 
   const fontReady = useFontLoaded(font.name, activeWeight, text);
 
-  // The family's default subsets can omit a block the font itself covers, so
-  // ask css2 for those characters directly. Restricted to characters the index
-  // says this font has: css2 answers a request for a character the family lacks
-  // with an HTML error page, so asking blind would burn a request per card.
   const covered = useCoveredCharacters(font.id, text);
   useEffect(() => {
     if (!inView) return;
@@ -53,9 +49,6 @@ export function useFontFacePreview(
   const fontLoaded = inView && fontReady;
   const settings = variationSettings(variationCoords);
   const previewStyle: React.CSSProperties = {
-    // With the coverage filter on, every listed font provably has these
-    // characters, so a NotDef box could only be a supplemental face still
-    // arriving. Stay on Adobe Blank instead of flashing one.
     fontFamily: previewFontFamily(font.name, fontLoaded, coverOnly),
     fontWeight: activeWeight,
     fontStyle: previewItalic ? "italic" : undefined,
@@ -102,8 +95,6 @@ function useInView(
     return () => observer.disconnect();
   });
 
-  // For non-variable fonts, load additional weights when the selection changes
-  // after the card is already in view.
   useEffect(() => {
     if (!inView || font.isVariable) return;
     ensureFontLoaded(font.name, [activeWeight]);

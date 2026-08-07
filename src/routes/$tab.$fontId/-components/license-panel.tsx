@@ -9,10 +9,7 @@ function licenseText(font: FontRecord) {
   return [font.licenseHeader, boilerplate].filter(Boolean).join("\n\n").trim();
 }
 
-/**
- * The license name and its copy button. Rendered in the Column's toolbar slot,
- * outside the ScrollArea, so the scroll-fade mask never dissolves it.
- */
+// Outside ScrollArea so the scroll-fade mask doesn't dissolve it.
 export function LicenseHeading({ font }: { font: FontRecord }) {
   const text = licenseText(font);
   return (

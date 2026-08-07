@@ -55,8 +55,6 @@ export function FilterLayout({
   header?: React.ReactNode;
   favoriteFontId?: string;
 }) {
-  // `undefined` until measured. It reads as desktop before then, so on a phone
-  // the panel mounts and is immediately removed; that exit must not animate.
   const mobileState = useIsMobileState();
   const isMobile = !!mobileState;
   const viewportKnown = mobileState !== undefined;

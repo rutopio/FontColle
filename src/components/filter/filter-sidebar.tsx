@@ -170,7 +170,7 @@ export function FilterSidebar({
     enabled: !showingPreset,
   });
 
-  // Force ScrollArea to re-evaluate overflow after AnimatePresence swap.
+  // Nudge scroll so ScrollArea recalculates overflow after panel swap.
   const resetScrollbar = () => {
     let frame = 0;
     const nudge = () => {
@@ -410,7 +410,7 @@ export function FilterSidebar({
 
   return (
     <aside className="flex h-full w-full min-w-0 flex-col text-foreground">
-      {/* Remount fixes Base UI stale overflow latch when switching preset/filters. */}
+      {/* Remount clears Base UI stale overflow when toggling preset/filters. */}
       <ScrollArea
         key={showingPreset ? "preset" : "filters"}
         fade

@@ -87,8 +87,7 @@ export function PresetSection({
   );
 }
 
-// The X is a SIBLING of the apply button, not nested: a button inside a button
-// is invalid, and it would inherit the row's click.
+// Delete is a sibling — nested buttons are invalid and inherit row click.
 function PresetRow({
   preset,
   active,

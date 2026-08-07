@@ -32,7 +32,6 @@ export function GoogleFontsMethod({
   previewAxes: Record<string, number>;
   previewItalic: boolean;
 }) {
-  // Detect italic mechanism.
   const italicKind: "ital" | "slnt" | "none" = font.axes.some(
     (a) => a.tag === "ital"
   )
@@ -43,7 +42,7 @@ export function GoogleFontsMethod({
         ? "slnt"
         : "none";
 
-  // slnt is governed by the Italic toggle, not its own axis control.
+  // slnt follows the Italic toggle, not a separate axis control.
   const axes = [...font.axes]
     .filter((a) => !(italicKind === "slnt" && a.tag === "slnt"))
     .sort((a, b) => {
@@ -190,7 +189,6 @@ function AxisControl({
 }) {
   const min = axis.min ?? 0;
   const max = axis.max ?? min;
-  // Registry stops within range; opsz and slnt stay slider-only.
   const stops = STOP_AXES.has(axis.tag)
     ? axisStops(axis.tag).filter((s) => s.value >= min && s.value <= max)
     : [];
@@ -292,17 +290,14 @@ function StaticWeightControl({
   );
 }
 
-// Lower rank sorts earlier; everything unlisted follows, alphabetically.
 const AXIS_ORDER = ["wght", "wdth", "opsz", "slnt"];
 const axisRank = (tag: string): number => {
   const i = AXIS_ORDER.indexOf(tag);
   return i === -1 ? AXIS_ORDER.length : i;
 };
 
-// Only wght and wdth have meaningful registry stops.
 const STOP_AXES = new Set(["wght", "wdth"]);
 
-// Builds the fonts.google.com embed URL from axis picks.
 function googleFontsHref(
   font: FontRecord,
   picks: Record<string, AxisPick>,
@@ -341,7 +336,6 @@ function googleFontsHref(
   return `https://fonts.googleapis.com/css2?family=${family}${spec}&display=swap`;
 }
 
-// GF "CSS class" snippet: standard properties plus pinned variation settings.
 function googleFontsCss(
   font: FontRecord,
   cssFamily: string,

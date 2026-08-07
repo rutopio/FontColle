@@ -16,7 +16,6 @@ export function GithubLink({
   const bar = variant === "bar";
   const header = variant === "header";
   const chrome = bar ? RAIL_BAR_BTN : header ? RAIL_HEADER_BTN : RAIL_BTN;
-  // RAIL_HEADER_BTN already bakes in RAIL_BTN_OFF; the other two do not.
   const hover = header ? undefined : RAIL_BTN_OFF;
 
   return (

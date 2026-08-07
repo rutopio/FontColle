@@ -224,7 +224,6 @@ function TesterInner({
       )
     );
     setActiveKeys(keys);
-    // Sync block axes context inline
     if (setBlockAxesTargetRef.current) {
       if (keys.length === 0) {
         setBlockAxesTargetRef.current(null);
@@ -253,7 +252,7 @@ function TesterInner({
     );
   }, [editor, syncFromSelection]);
 
-  // DOM attribute, not Lexical state, to avoid polluting the undo history.
+  // DOM attribute avoids polluting Lexical undo history.
   useEffect(() => {
     const marked = activeKeys
       .map((key) => editor.getElementByKey(key))
@@ -264,10 +263,7 @@ function TesterInner({
     };
   }, [editor, activeKeys]);
 
-  // Publish the selected blocks to the sidebar's axis sliders. Writing an axis
-  // rebuilds the whole style from the block's current coords, so dragging one
-  // axis never drops the others, and italic survives because it is read back
-  // off the same style string.
+  // Rebuild full style from coords so one axis change never drops others (incl. italic).
   const setBlockAxis = useCallback(
     (tag: string, value: number) => {
       editor.update(() => {

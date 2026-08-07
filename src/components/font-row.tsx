@@ -15,7 +15,6 @@ interface Props {
   onToggleFavorite: (id: string) => void;
   selection: FilterSelection;
   axisValues: Record<string, number>;
-  /** Loading skeleton: render blank action slots (see FontActions). */
   staticActions?: boolean;
 }
 

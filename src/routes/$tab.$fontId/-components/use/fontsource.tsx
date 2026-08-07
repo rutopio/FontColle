@@ -215,7 +215,6 @@ function SimpleStaticImport({
   );
 }
 
-// @font-face builder; bundler rewrites src urls into assets.
 function AdvancedFontFace({
   slug,
   isVariable,

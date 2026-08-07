@@ -27,10 +27,6 @@ function ScrollArea({
   ...props
 }: ScrollAreaPrimitive.Root.Props & {
   viewportRef?: React.Ref<HTMLDivElement>
-  /**
-   * Fade the scrollable edges with the `scroll-fade` mask utilities. `true` is
-   * the vertical fade; pass an axis or edge for the others.
-   */
   fade?: boolean | "y" | "x" | "t" | "b" | "l" | "r" | "s" | "e"
   viewportClassName?: string
 }) {
@@ -45,7 +41,7 @@ function ScrollArea({
         data-slot="scroll-area-viewport"
         className={cn(
           "size-full overscroll-contain rounded-[inherit] outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-          // Must be on the viewport element (scroll(self) resolution).
+          // scroll-fade resolves against this element's scrollport.
           fade === true && "scroll-fade",
           typeof fade === "string" && FADE_CLASS[fade],
           viewportClassName

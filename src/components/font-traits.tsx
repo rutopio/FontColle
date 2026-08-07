@@ -21,7 +21,6 @@ export function FontTraits({
           variant={trait.active ? "secondary" : "outline"}
           className={cn(
             "rounded-lg text-3xs",
-            // Opaque bg so the badge doesn't inherit the card's hover tint.
             !trait.active && "bg-background",
             badgeClassName
           )}

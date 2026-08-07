@@ -87,9 +87,11 @@ Read straight out of the `OS/2`, `hhea`, `post`, `head`, `name`, `fvar`,
   `specimen` (a preview string in the family's own script).
 - **Computed flags / ids**: `id` (slug), `name`, `category` (final class),
   `facets`.
-- **Glyph coverage** for the Glyphs panel is written separately to
-  `public/glyphs/<id>.json` (`backfill_glyph_coverage.py`, reading `ttf_cache/`),
-  not stored inside `fonts.json`.
+- **Glyph coverage** is written separately to `public/glyphs/<id>.json`
+  (`backfill_glyph_coverage.py`, reading `ttf_cache/`), not stored inside
+  `fonts.json`. It backs the Glyphs panel, and `scripts/gen-glyph-index.mjs`
+  folds all of it into one deduplicated `public/glyph-index.json` at build time
+  for the list page's preview-coverage filter.
 
 ## Quick lookup
 

@@ -54,16 +54,11 @@ function ResetButton({
   );
 }
 
-/** Axis granularity, from how far the axis travels. A wide axis (wght spans
- *  500, GRAD 250) has no use for half units — the difference is invisible and
- *  it would take a thousand arrow presses to cross. Narrow ones (slnt spans 28)
- *  need the finer step to stay adjustable. */
+// Wider axes use whole steps; narrow ones (e.g. slnt) use halves.
 function axisStep(min: number, max: number): number {
   return max - min > 50 ? 1 : 0.5;
 }
 
-/** Round for display so the readout matches what the slider can actually
- *  land on: whole numbers on a step-1 axis, halves on a step-0.5 one. */
 function roundToStep(value: number, step: number): number {
   return Math.round(value / step) * step;
 }
@@ -108,9 +103,7 @@ export function DetailSidebar({
     (a) => axisState[a.tag] !== (a.default ?? a.min ?? 0)
   );
 
-  // On the tester tab the axes belong to whichever block the caret is in, so
-  // they wait for a selection. The provider is absent on every other tab,
-  // where the sliders keep driving the page-wide preview.
+  // Tester axes follow the selected block; other tabs use page-wide preview.
   const blockAxesCtx = useBlockAxes();
   const blockTarget = blockAxesCtx?.target ?? null;
   const axesDisabled = blockAxesCtx != null && blockTarget == null;
@@ -191,9 +184,6 @@ export function DetailSidebar({
                   const min = a.min ?? 0;
                   const max = a.max ?? 100;
                   const step = axisStep(min, max);
-                  // With a tester block selected the sliders drive that block;
-                  // an axis the block doesn't name falls back to the page value
-                  // so the handle starts where the text actually renders.
                   const value = blockTarget
                     ? (blockTarget.coords[a.tag] ?? axisState[a.tag])
                     : axisState[a.tag];

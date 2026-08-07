@@ -38,8 +38,6 @@ function BlockButton({
       onClick={onClick}
       aria-pressed={on}
       className={cn(
-        // The proximity highlight layers behind; the button keeps only its
-        // selected state so the two never stack into a darker patch.
         "relative flex min-h-11 items-center justify-between gap-2 rounded px-2 py-1 text-left text-xs transition-colors md:min-h-8",
         on
           ? "bg-accent font-medium text-accent-foreground"

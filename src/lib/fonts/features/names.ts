@@ -1,4 +1,3 @@
-// font-feature-settings overrides browser defaults wholesale — only emit diffs.
 export const DEFAULT_ON = new Set([
   "calt",
   "liga",
@@ -150,9 +149,6 @@ export function featureName(tag: string): string {
   return tag;
 }
 
-/**
- * Only entries that differ from the browser default.
- */
 export function buildFeatureSettings(
   overrides: Record<string, boolean>
 ): string | undefined {

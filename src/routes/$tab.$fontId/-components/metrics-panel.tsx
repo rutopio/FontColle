@@ -17,7 +17,6 @@ import { Panel } from "./panel";
 
 function nearbyRange(key: MetricKey, value: number): MetricRange {
   const spec = METRIC_SPECS[key];
-  // A tenth of the domain to each side reads as "in the same neighbourhood".
   const half = (spec.max - spec.min) * 0.1;
   return [Math.max(spec.min, value - half), Math.min(spec.max, value + half)];
 }
@@ -49,7 +48,7 @@ function MetricsDiagram({
 
   const xHeight = derive(font, "xHeight");
   const capHeight = derive(font, "capHeight");
-  // Prefer typo* metrics; hhea* are padded for accents/CJK.
+  // typo* metrics preferred over hhea* (padded for accents/CJK).
   const upm = font.unitsPerEm;
   const ascRaw = font.typoAscender ?? font.hheaAscender;
   const descRaw = font.typoDescender ?? font.hheaDescender;

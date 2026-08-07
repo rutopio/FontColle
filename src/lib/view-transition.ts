@@ -1,4 +1,3 @@
-// back() bypasses the router's viewTransition wrapper.
 const POPSTATE_TIMEOUT_MS = 300;
 
 export function backWithViewTransition(back: () => void): void {
@@ -20,7 +19,6 @@ export function backWithViewTransition(back: () => void): void {
         clearTimeout(timer);
         resolve();
       };
-      // Wait two rAFs so React's commit lands before the transition snapshots.
       const onPop = () =>
         requestAnimationFrame(() => requestAnimationFrame(done));
       window.addEventListener("popstate", onPop, { once: true });

@@ -33,7 +33,6 @@ export interface FontRecord {
   colorTables: string[];
   languages: string[];
   scripts: string[];
-  // Fields below are detail-only: present in per-font JSON, absent from catalog.
   cjkCoverage?: Record<string, number>;
   version: number | null;
   versionString: string | null;

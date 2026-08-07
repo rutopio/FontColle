@@ -119,8 +119,6 @@ function PendingRail() {
   );
 }
 
-// Category and Style live in the same filter group, so they share gap-12 with
-// no divider (see filter-sidebar.tsx).
 const SIDEBAR_SKELETON = (
   <div className="flex w-full flex-col gap-12 p-4">
     <div className="flex flex-col gap-2">
@@ -213,8 +211,6 @@ export function FirstPagePending({ firstPage }: { firstPage: FontRecord[] }) {
     >
       <Column footer={<PreviewBar />}>
         <div className="pending-grid-only @container flex-1">
-          {/* Column count is CSS-driven, so each row's trailing cell drops its
-              vertical per breakpoint; at 1 column every cell is trailing. */}
           <div className="grid @min-[1024px]:grid-cols-3 @min-[768px]:grid-cols-2 grid-cols-1 @min-[1024px]:[&>*:nth-child(2n)]:border-r @min-[768px]:[&>*:nth-child(2n)]:border-r-0 @min-[1024px]:[&>*:nth-child(3n)]:border-r-0 @min-[768px]:[&>*]:border-r [&>*]:border-r-0">
             {firstPage.map((font) => (
               <FontCard
