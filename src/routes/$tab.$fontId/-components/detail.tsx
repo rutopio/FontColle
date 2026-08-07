@@ -153,7 +153,13 @@ export function Detail({
             <UseMethodTabs method={useMethod} onMethodChange={setUseMethod} />
           ))
         }
-        footer={<PreviewBar />}
+        footer={
+          <PreviewBar
+            onScrollTop={() =>
+              scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" })
+            }
+          />
+        }
         footerHidden={tab !== "sample"}
       >
         {tab === "tester" && (
