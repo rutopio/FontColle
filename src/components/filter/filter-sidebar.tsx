@@ -9,6 +9,8 @@ import {
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useMemo, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useScrollReset } from "@/hooks/use-scroll-reset";
+import { useSectionScrollspy } from "@/hooks/use-section-scrollspy";
 import {
   type FacetIndex,
   type FilterSearch,
@@ -22,8 +24,6 @@ import {
 } from "@/lib/fonts/filter";
 import * as actions from "@/lib/fonts/filter-actions";
 import { EASE_OUT, MOTION_S } from "@/lib/motion";
-import { useScrollReset } from "@/lib/use-scroll-reset";
-import { useSectionScrollspy } from "@/lib/use-section-scrollspy";
 import { cn } from "@/lib/utils";
 import { CardGrid } from "./card-grid";
 import { CategoryCards } from "./category-cards";
@@ -364,9 +364,9 @@ export function FilterSidebar({
         <>
           <NotoSection
             items={index.flags}
-            selected={filter.flags}
+            selected={filter.source}
             onToggle={(v) => onChange(actions.selectFlag(filter, v))}
-            onReset={() => onChange({ ...filter, flags: [] })}
+            onReset={() => onChange({ ...filter, source: [] })}
           />
           <DesignerSection
             designers={index.designers}

@@ -1,5 +1,5 @@
 import { createContext, type ReactNode, useContext, useMemo } from "react";
-import { useLocalStorageState } from "@/lib/use-local-storage-state";
+import { useLocalStorageState } from "@/hooks/use-local-storage-state";
 
 interface PreviewState {
   text: string;

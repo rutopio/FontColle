@@ -15,7 +15,7 @@ import {
   useProximityHover,
   useRegisterProximityItem,
 } from "@/hooks/use-proximity-hover";
-import { spring } from "@/lib/springs";
+import { spring } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 export type DetailTab =

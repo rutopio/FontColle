@@ -4,7 +4,6 @@ import { FontActions } from "@/components/font-actions";
 import { FontTraits } from "@/components/font-traits";
 import { Badge } from "@/components/ui/badge";
 import type { FilterSelection } from "@/lib/fonts/filter";
-import { fontSlug } from "@/lib/fonts/slug";
 import type { FontRecord } from "@/lib/fonts/types";
 import { useFontFacePreview } from "@/lib/fonts/use-font-face-preview";
 
@@ -38,7 +37,7 @@ export const FontRow = memo(function FontRow({
     <Link
       ref={previewRef}
       to="/$tab/$fontId"
-      params={{ tab: "instances", fontId: fontSlug(font.id) }}
+      params={{ tab: "instances", fontId: font.id }}
       viewTransition
       className="flex h-32 flex-col justify-center gap-4 overflow-hidden rounded-lg transition-[color,background-color,transform] duration-fast ease-snap hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset active:scale-[0.995] active:bg-accent"
     >

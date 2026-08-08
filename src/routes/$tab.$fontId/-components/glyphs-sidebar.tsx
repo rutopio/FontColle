@@ -7,10 +7,9 @@ import {
   useProximityHover,
   useRegisterProximityItem,
 } from "@/hooks/use-proximity-hover";
+import { useScrollReset } from "@/hooks/use-scroll-reset";
 import type { CoveredBlock } from "@/lib/fonts/glyph-coverage";
-import { EASE_OUT, MOTION_S } from "@/lib/motion";
-import { spring } from "@/lib/springs";
-import { useScrollReset } from "@/lib/use-scroll-reset";
+import { EASE_OUT, MOTION_S, spring } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 function BlockButton({

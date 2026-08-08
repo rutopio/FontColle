@@ -28,7 +28,7 @@ const fullFilter: FilterState = {
   license: ["OFL", "APACHE2"],
   repoHosts: ["github", "gitlab"],
   activity: ["active"],
-  flags: ["others"],
+  source: ["others"],
   italic: ["italic"],
   upm: ["1000", "2048"],
   instances: [2, 9],
@@ -149,14 +149,14 @@ describe("filterToSearch normalization", () => {
   });
 
   it("spells the source radio with its pill labels (noto / non-noto)", () => {
-    expect(filterToSearch({ ...emptyFilter, flags: ["noto"] }).noto).toBe(
+    expect(filterToSearch({ ...emptyFilter, source: ["noto"] }).noto).toBe(
       "noto"
     );
-    expect(filterToSearch({ ...emptyFilter, flags: ["others"] }).noto).toBe(
+    expect(filterToSearch({ ...emptyFilter, source: ["others"] }).noto).toBe(
       "non-noto"
     );
-    expect(searchToFilter({ noto: "non-noto" }).flags).toEqual(["others"]);
-    expect(searchToFilter({ noto: "noto" }).flags).toEqual(["noto"]);
+    expect(searchToFilter({ noto: "non-noto" }).source).toEqual(["others"]);
+    expect(searchToFilter({ noto: "noto" }).source).toEqual(["noto"]);
   });
 });
 

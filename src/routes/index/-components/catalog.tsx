@@ -44,6 +44,8 @@ import {
 } from "@/components/ui/empty";
 import { Kbd } from "@/components/ui/kbd";
 import { Separator } from "@/components/ui/separator";
+import { useListScrollRestore } from "@/hooks/use-list-scroll-restore";
+import { useLocalStorageState } from "@/hooks/use-local-storage-state";
 import { useFilter } from "@/lib/filter/context";
 import { useFavorites } from "@/lib/fonts/favorites";
 import {
@@ -58,13 +60,10 @@ import {
   suggestFamilies,
 } from "@/lib/fonts/filter";
 import { useRenderableFontIds } from "@/lib/fonts/glyph-index";
-import { fontSlug } from "@/lib/fonts/slug";
 import { DEFAULT_SORT, type SortKey, sortFonts } from "@/lib/fonts/sort";
 import type { FontRecord } from "@/lib/fonts/types";
 import { EASE_OUT, MOTION_S } from "@/lib/motion";
 import { usePreview } from "@/lib/preview/context";
-import { useListScrollRestore } from "@/lib/use-list-scroll-restore";
-import { useLocalStorageState } from "@/lib/use-local-storage-state";
 import { SearchInput, type SearchSuggestion } from "./search-input";
 import { SortControl } from "./sort-control";
 import { VIEW_TABS_WIDTH, ViewTabs } from "./view-tabs";
@@ -243,7 +242,7 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
     (id: string) => {
       navigate({
         to: "/$tab/$fontId",
-        params: { tab: "instances", fontId: fontSlug(id) },
+        params: { tab: "instances", fontId: id },
         viewTransition: true,
       });
     },

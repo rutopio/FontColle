@@ -17,9 +17,9 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { Select as SelectPrimitive } from "@base-ui/react/select";
-import type { IconComponent } from "@/lib/icon-context";
+type IconComponent = React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
 import { cn } from "@/lib/utils";
-import { spring, exitFallbackMs } from "@/lib/springs";
+import { spring, exitFallbackMs } from "@/lib/motion";
 import { useProximityHover, useRegisterProximityItem } from "@/hooks/use-proximity-hover";
 import { useMountEffect } from "@/hooks/use-mount-effect";
 

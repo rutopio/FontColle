@@ -12,11 +12,11 @@ import { EditableValue } from "@/components/ui/editable-value";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Slider } from "@/components/ui/slider";
 import { Tooltip } from "@/components/ui/tooltip";
+import { useScrollReset } from "@/hooks/use-scroll-reset";
 import { DEFAULT_ON, featureName } from "@/lib/fonts/features";
 import type { FontRecord } from "@/lib/fonts/types";
 import { EASE_OUT, MOTION_S } from "@/lib/motion";
 import { useBlockAxes } from "@/lib/tester/block-axes";
-import { useScrollReset } from "@/lib/use-scroll-reset";
 
 export const SIZE_MIN = 12;
 export const SIZE_MAX = 72;

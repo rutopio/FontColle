@@ -16,7 +16,6 @@ import {
   blocksWithCoverage,
   useGlyphCoverage,
 } from "@/lib/fonts/glyph-coverage";
-import { fontSlug } from "@/lib/fonts/slug";
 import type { FontRecord } from "@/lib/fonts/types";
 import { blockOf, parseGlyphQuery } from "@/lib/fonts/unicode-blocks";
 import { absoluteUrl, pageTitle } from "@/lib/site";
@@ -92,7 +91,7 @@ export const Route = createFileRoute("/$tab/$fontId")({
     if (!name || !font) return {};
     const description = detailDescription(font);
     // Each tab is its own canonical URL (not all pointed at /instances/).
-    const canonical = absoluteUrl(`/${params.tab}/${fontSlug(font.id)}`);
+    const canonical = absoluteUrl(`/${params.tab}/${font.id}`);
     const ogImage = absoluteUrl(`/og/${font.id}.png`);
     return {
       meta: [
@@ -155,7 +154,7 @@ function DetailPage() {
   const tab = tabFromSlug(tabSlug) ?? "sample";
   const selectTab = (id: DetailTab) =>
     navigate({
-      params: { tab: slugFromTab(id), fontId: fontSlug(font.id) },
+      params: { tab: slugFromTab(id), fontId: font.id },
       replace: true,
     });
 
@@ -249,7 +248,7 @@ function DetailPage() {
     );
 
   // JSON-LD describes the family, not the active tab view.
-  const familyUrl = absoluteUrl(`/instances/${fontSlug(font.id)}`);
+  const familyUrl = absoluteUrl(`/instances/${font.id}`);
   const jsonLd = familyUrl
     ? JSON.stringify({
         "@context": "https://schema.org",

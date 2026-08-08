@@ -1,3 +1,4 @@
+/** Variation settings for the site's own UI font (Albert Sans / Host Grotesk). */
 export const fontWeights = {
   normal: "'wght' 400, 'opsz' 14",
   medium: "'wght' 450, 'opsz' 15",

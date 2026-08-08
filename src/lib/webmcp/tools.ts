@@ -8,20 +8,13 @@ import {
   filterToSearch,
   searchByQuery,
 } from "@/lib/fonts/filter";
+import {
+  MCP_CATEGORIES,
+  MCP_MAX_RESULTS,
+  mcpStrings,
+  mcpSummarise,
+} from "@/lib/fonts/mcp-shared";
 import type { FontRecord } from "@/lib/fonts/types";
-
-const CATEGORIES = [
-  "Sans",
-  "Serif",
-  "Slab",
-  "Mono",
-  "Display",
-  "Script",
-  "Graphics",
-  "Emoji",
-] as const;
-
-const MAX_IDS = 50;
 
 export interface ToolContext {
   router: AnyRouter;
@@ -49,26 +42,8 @@ const failure = (message: string): ToolResult => ({
   isError: true,
 });
 
-function strings(value: unknown): string[] {
-  if (typeof value === "string") return value ? [value] : [];
-  if (!Array.isArray(value)) return [];
-  return value.filter((v): v is string => typeof v === "string" && v !== "");
-}
-
 async function catalog(ctx: ToolContext): Promise<FontRecord[]> {
   return ctx.queryClient.fetchQuery(catalogQueryOptions());
-}
-
-function summarise(font: FontRecord) {
-  return {
-    id: font.id,
-    name: font.name,
-    category: font.category,
-    isVariable: font.isVariable,
-    isMonospace: font.isMonospace,
-    designer: font.designer,
-    url: `https://fontcolle.com/instances/${font.id}`,
-  };
 }
 
 export function buildTools(ctx: ToolContext): ToolDefinition[] {
@@ -80,7 +55,7 @@ export function buildTools(ctx: ToolContext): ToolDefinition[] {
         "that filter to the page the user is looking at. The font list and " +
         "the URL both update, so the user sees the results and can keep " +
         "browsing from there. Returns the match count and the first " +
-        `${MAX_IDS} families.`,
+        `${MCP_MAX_RESULTS} families.`,
       inputSchema: {
         type: "object",
         properties: {
@@ -91,7 +66,7 @@ export function buildTools(ctx: ToolContext): ToolDefinition[] {
           },
           category: {
             type: "array",
-            items: { type: "string", enum: CATEGORIES },
+            items: { type: "string", enum: MCP_CATEGORIES },
             description: "Primary style buckets. Multiple values are OR-ed.",
           },
           variable: {
@@ -137,11 +112,11 @@ export function buildTools(ctx: ToolContext): ToolDefinition[] {
         const fonts = await catalog(ctx);
         const filter = { ...emptyFilter };
         if (typeof args.query === "string") filter.query = args.query;
-        filter.categories = strings(args.category);
-        filter.features = strings(args.features);
-        filter.axes = strings(args.axes);
-        filter.scripts = strings(args.scripts);
-        filter.weights = strings(args.weights);
+        filter.categories = mcpStrings(args.category);
+        filter.features = mcpStrings(args.features);
+        filter.axes = mcpStrings(args.axes);
+        filter.scripts = mcpStrings(args.scripts);
+        filter.weights = mcpStrings(args.weights);
         if (typeof args.variable === "boolean")
           filter.tags = [args.variable ? "variable" : "static"];
         if (args.monospace === true && !filter.categories.includes("Mono"))
@@ -157,8 +132,8 @@ export function buildTools(ctx: ToolContext): ToolDefinition[] {
         return json({
           count: matches.length,
           appliedUrl: `https://fontcolle.com/${ctx.router.buildLocation({ to: "/", search }).searchStr}`,
-          fonts: matches.slice(0, MAX_IDS).map(summarise),
-          truncated: matches.length > MAX_IDS,
+          fonts: matches.slice(0, MCP_MAX_RESULTS).map(mcpSummarise),
+          truncated: matches.length > MCP_MAX_RESULTS,
         });
       },
     },

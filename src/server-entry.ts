@@ -115,8 +115,8 @@ export default {
     if (!contentType.includes("text/html")) return res;
 
     const next = new Response(res.body, res);
-    for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
-      next.headers.set(key, value);
+    for (const [name, value] of Object.entries(SECURITY_HEADERS)) {
+      next.headers.set(name, value);
     }
     next.headers.set("Link", LINK_HEADER);
 

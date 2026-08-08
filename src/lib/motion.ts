@@ -11,3 +11,28 @@ export const MOTION_S = {
 } as const;
 
 export const EASE_OUT = [0.23, 1, 0.32, 1] as const;
+
+export const spring = {
+  fast: {
+    type: "spring" as const,
+    duration: 0.08,
+    bounce: 0,
+    exit: { duration: 0.06 },
+  },
+  moderate: {
+    type: "spring" as const,
+    duration: 0.16,
+    bounce: 0,
+    exit: { duration: 0.12 },
+  },
+  slow: {
+    type: "spring" as const,
+    duration: 0.24,
+    bounce: 0.12,
+    exit: { duration: 0.16 },
+  },
+} as const;
+
+/** Force-unmount delay when exit animation stalls (e.g. background tab). */
+export const exitFallbackMs = (tier: { exit: { duration: number } }) =>
+  Math.round(tier.exit.duration * 1000) + 100;

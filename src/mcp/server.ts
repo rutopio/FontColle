@@ -1,6 +1,12 @@
+import {
+  MCP_CATEGORIES,
+  MCP_MAX_RESULTS,
+  mcpNumbers,
+  mcpStrings,
+  mcpSummarise,
+} from "@/lib/fonts/mcp-shared";
 import type { FontRecord } from "@/lib/fonts/types";
 
-// Slim projection of FontRecord used by catalog-slim.json.
 type SlimFont = Pick<
   FontRecord,
   | "id"
@@ -17,19 +23,6 @@ type SlimFont = Pick<
 const SERVER_NAME = "fontcolle";
 const SERVER_VERSION = "1.0.0";
 const PROTOCOL_VERSION = "2025-06-18";
-
-const CATEGORIES = [
-  "Sans",
-  "Serif",
-  "Slab",
-  "Mono",
-  "Display",
-  "Script",
-  "Graphics",
-  "Emoji",
-];
-
-const MAX_RESULTS = 50;
 
 interface JsonRpcRequest {
   jsonrpc?: string;
@@ -49,7 +42,7 @@ const TOOLS = [
       "Search the FontColle catalog of open-source Google Fonts by style " +
       "category, OpenType features, variable axes, writing system, and " +
       "weight. Returns the match count and the first " +
-      `${MAX_RESULTS} families.`,
+      `${MCP_MAX_RESULTS} families.`,
     inputSchema: {
       type: "object",
       properties: {
@@ -59,7 +52,7 @@ const TOOLS = [
         },
         category: {
           type: "array",
-          items: { type: "string", enum: CATEGORIES },
+          items: { type: "string", enum: MCP_CATEGORIES },
           description: "Primary style buckets. Multiple values are OR-ed.",
         },
         variable: {
@@ -95,7 +88,7 @@ const TOOLS = [
         },
         limit: {
           type: "integer",
-          description: `Max families to return (1-${MAX_RESULTS}).`,
+          description: `Max families to return (1-${MCP_MAX_RESULTS}).`,
         },
       },
       additionalProperties: false,
@@ -152,38 +145,19 @@ async function loadCatalog(
   return catalogCache;
 }
 
-function strings(value: unknown): string[] {
-  if (typeof value === "string") return value ? [value] : [];
-  if (!Array.isArray(value)) return [];
-  return value.filter((v): v is string => typeof v === "string" && v !== "");
-}
-
-function numbers(value: unknown): number[] {
-  const raw = Array.isArray(value) ? value : value == null ? [] : [value];
-  return raw
-    .map((v) => (typeof v === "number" ? v : Number(v)))
-    .filter((n) => Number.isFinite(n));
-}
-
-function summarise(font: SlimFont) {
+function summariseSlim(font: SlimFont) {
   return {
-    id: font.id,
-    name: font.name,
-    category: font.category,
-    isVariable: font.isVariable,
-    isMonospace: font.isMonospace,
-    designer: font.designer,
+    ...mcpSummarise(font),
     axes: font.axes,
-    url: `https://fontcolle.com/instances/${font.id}`,
   };
 }
 
 function searchFonts(fonts: SlimFont[], args: Record<string, unknown>) {
-  const categories = strings(args.category);
-  const features = strings(args.features);
-  const axes = strings(args.axes);
-  const scripts = strings(args.scripts);
-  const weights = numbers(args.weights);
+  const categories = mcpStrings(args.category);
+  const features = mcpStrings(args.features);
+  const axes = mcpStrings(args.axes);
+  const scripts = mcpStrings(args.scripts);
+  const weights = mcpNumbers(args.weights);
   const query =
     typeof args.query === "string" ? args.query.trim().toLowerCase() : "";
 
@@ -207,13 +181,13 @@ function searchFonts(fonts: SlimFont[], args: Record<string, unknown>) {
   });
 
   const limit = Math.min(
-    Math.max(1, numbers(args.limit)[0] || MAX_RESULTS),
-    MAX_RESULTS
+    Math.max(1, mcpNumbers(args.limit)[0] || MCP_MAX_RESULTS),
+    MCP_MAX_RESULTS
   );
   return {
     count: matched.length,
     truncated: matched.length > limit,
-    fonts: matched.slice(0, limit).map(summarise),
+    fonts: matched.slice(0, limit).map(summariseSlim),
   };
 }
 

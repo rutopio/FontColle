@@ -9,7 +9,6 @@ import { buildFeatureSettings } from "@/lib/fonts/features";
 import { scriptLabel } from "@/lib/fonts/labels";
 import { ensureFontRangeLoaded, useFontLoaded } from "@/lib/fonts/loader";
 import { previewStyle } from "@/lib/fonts/preview-style";
-import { fontSlug } from "@/lib/fonts/slug";
 import { specimenFor, specimenLinesFor } from "@/lib/fonts/specimen";
 import type { FontRecord } from "@/lib/fonts/types";
 import { usePreview } from "@/lib/preview/context";
@@ -149,7 +148,7 @@ export function Detail({
     <>
       <Column
         scrollViewportRef={scrollRef}
-        subheader={<DetailTabBar active={tab} fontId={fontSlug(font.id)} />}
+        subheader={<DetailTabBar active={tab} fontId={font.id} />}
         toolbar={
           (tab === "glyphs" && <GlyphsBlockHeading blockName={glyphBlock} />) ||
           (tab === "license" && <LicenseHeading font={font} />) ||

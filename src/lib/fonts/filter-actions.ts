@@ -139,8 +139,8 @@ export function resetFontType(filter: FilterState): FilterState {
 }
 
 export function selectFlag(filter: FilterState, value: string): FilterState {
-  const next = filter.flags.includes(value) ? [] : [value];
-  return { ...filter, flags: next };
+  const next = filter.source.includes(value) ? [] : [value];
+  return { ...filter, source: next };
 }
 
 export function selectItalic(filter: FilterState, value: string): FilterState {

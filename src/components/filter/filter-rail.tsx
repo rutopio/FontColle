@@ -11,8 +11,7 @@ import {
   useRegisterProximityItem,
 } from "@/hooks/use-proximity-hover";
 import type { FilterState } from "@/lib/fonts/filter";
-import { EASE_OUT, MOTION_S } from "@/lib/motion";
-import { spring } from "@/lib/springs";
+import { EASE_OUT, MOTION_S, spring } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import {
   FILTER_GROUPS,

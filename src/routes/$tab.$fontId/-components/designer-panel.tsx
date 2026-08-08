@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import type { DesignerSibling } from "@/lib/fonts/detail";
 import { emptyFilter, filterToSearch } from "@/lib/fonts/filter/state";
-import { fontSlug } from "@/lib/fonts/slug";
 import type { FontRecord } from "@/lib/fonts/types";
 import { sanitizeHtml } from "@/lib/sanitize-html";
 import { AboutPanel } from "./about-panel";
@@ -120,7 +119,7 @@ export function DesignerPanel({
                                 to="/$tab/$fontId"
                                 params={{
                                   tab: "instances",
-                                  fontId: fontSlug(s.id),
+                                  fontId: s.id,
                                 }}
                                 className="truncate py-0.5 text-sm hover:text-foreground"
                                 style={{

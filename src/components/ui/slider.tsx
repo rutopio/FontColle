@@ -21,7 +21,7 @@ import {
 } from "motion/react";
 import { Slider as SliderPrimitive } from "@base-ui/react/slider";
 import { cn } from "@/lib/utils";
-import { spring } from "@/lib/springs";
+import { spring } from "@/lib/motion";
 import { fontWeights } from "@/lib/font-weight";
 
 type SliderValue = number | [number, number];

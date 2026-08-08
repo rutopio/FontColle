@@ -26,7 +26,7 @@ export interface FilterState {
   license: string[];
   repoHosts: string[];
   activity: string[];
-  flags: string[];
+  source: string[];
   italic: string[];
   upm: string[];
   instances?: InstanceRange;
@@ -58,7 +58,7 @@ export const emptyFilter: FilterState = {
   license: [],
   repoHosts: [],
   activity: [],
-  flags: [],
+  source: [],
   italic: [],
   upm: [],
   metrics: {},
@@ -233,7 +233,7 @@ export function searchToFilter(s: FilterSearch): FilterState {
     license: splitUnderscore(s.license),
     repoHosts: splitUnderscore(s.repo),
     activity: splitUnderscore(s.activity),
-    flags: splitUnderscore(s.noto).map(decodeSource),
+    source: splitUnderscore(s.noto).map(decodeSource),
     italic: splitUnderscore(s.italic),
     upm: splitUnderscore(s.upm),
     instances: decodeInstances(s.instances),
@@ -267,7 +267,7 @@ export function filterToSearch(f: FilterState): FilterSearch {
   if (f.license.length) s.license = joinUnderscore(f.license);
   if (f.repoHosts.length) s.repo = joinUnderscore(f.repoHosts);
   if (f.activity.length) s.activity = joinUnderscore(f.activity);
-  if (f.flags.length) s.noto = joinUnderscore(f.flags.map(encodeSource));
+  if (f.source.length) s.noto = joinUnderscore(f.source.map(encodeSource));
   if (f.italic.length) s.italic = joinUnderscore(f.italic);
   if (f.upm.length) s.upm = joinUnderscore(f.upm);
   if (
@@ -301,7 +301,7 @@ export function activeFilterCount(f: FilterState): number {
     f.license.length +
     f.repoHosts.length +
     f.activity.length +
-    f.flags.length +
+    f.source.length +
     f.italic.length +
     f.upm.length +
     (f.instances ? 1 : 0) +

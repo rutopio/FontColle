@@ -67,7 +67,7 @@ export const FILTER_GROUPS: FilterGroup[] = [
     id: "designer",
     label: "Designer",
     icon: UserIcon,
-    keys: ["flags", "designers", "vendors"],
+    keys: ["source", "designers", "vendors"],
   },
   {
     id: "metrics",

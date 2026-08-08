@@ -1,13 +1,27 @@
-import { useTheme } from "next-themes"
+import { useSyncExternalStore } from "react"
 import { Toaster as Sonner, type ToasterProps } from "sonner"
 import { CheckCircleIcon, InfoIcon, WarningIcon, XCircleIcon, SpinnerIcon } from "@phosphor-icons/react"
 
+function useResolvedTheme(): "light" | "dark" {
+  return useSyncExternalStore(
+    (cb) => {
+      const mql = window.matchMedia("(prefers-color-scheme: dark)");
+      const obs = new MutationObserver(cb);
+      obs.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+      mql.addEventListener("change", cb);
+      return () => { obs.disconnect(); mql.removeEventListener("change", cb); };
+    },
+    () => document.documentElement.classList.contains("dark") ? "dark" : "light",
+    () => "light",
+  );
+}
+
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = "system" } = useTheme()
+  const theme = useResolvedTheme()
 
   return (
     <Sonner
-      theme={theme as ToasterProps["theme"]}
+      theme={theme}
       className="toaster group"
       icons={{
         success: (

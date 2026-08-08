@@ -209,7 +209,7 @@ export function applyFilters(
       return false;
     if (f.activity.length && !f.activity.includes(fontActivity(font)))
       return false;
-    if (!radio(f.flags, "noto", !!font.isNoto)) return false;
+    if (!radio(f.source, "noto", !!font.isNoto)) return false;
     if (!radio(f.italic, "italic", font.facets.includes("has-italic")))
       return false;
     if (f.upm.length && !f.upm.includes(String(font.unitsPerEm))) return false;

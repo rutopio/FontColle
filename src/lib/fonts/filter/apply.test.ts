@@ -354,10 +354,10 @@ describe("applyFilters, noto flag, italic, hinting, monospace-metric", () => {
     font({ name: "Other", isNoto: false, facets: [], hasHinting: false }),
   ];
   it("noto/others radio partitions", () => {
-    expect(names(applyFilters(fonts, filter({ flags: ["noto"] })))).toEqual([
+    expect(names(applyFilters(fonts, filter({ source: ["noto"] })))).toEqual([
       "Noto",
     ]);
-    expect(names(applyFilters(fonts, filter({ flags: ["others"] })))).toEqual([
+    expect(names(applyFilters(fonts, filter({ source: ["others"] })))).toEqual([
       "Other",
     ]);
   });

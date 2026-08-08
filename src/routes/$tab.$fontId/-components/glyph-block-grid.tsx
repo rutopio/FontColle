@@ -12,7 +12,7 @@ import {
 import { useGlyphCompact } from "@/hooks/use-mobile";
 import { hasCodepoint } from "@/lib/fonts/glyph-coverage";
 import type { UnicodeBlock } from "@/lib/fonts/unicode-blocks";
-import { spring } from "@/lib/springs";
+import { spring } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 export type Range = [number, number];

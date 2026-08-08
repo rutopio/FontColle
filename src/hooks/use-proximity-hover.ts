@@ -98,9 +98,7 @@ export function useProximityHover<T extends HTMLElement>(
     return true;
   }, [containerRef]);
 
-  const measureItems = useCallback(() => {
-    runMeasurement();
-  }, [runMeasurement]);
+  const measureItems = runMeasurement;
 
   const scheduleMeasurement = useCallback(
     (attemptsLeft: number) => {
