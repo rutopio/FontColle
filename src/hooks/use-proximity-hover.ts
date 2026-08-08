@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useMountEffect } from "@/hooks/use-mount-effect";
 
 export interface ItemRect {
   top: number;
@@ -275,7 +276,7 @@ export function useProximityHover<T extends HTMLElement>(
     return () => ro.disconnect();
   }, [containerRef, scheduleMeasurement]);
 
-  useEffect(() => {
+  useMountEffect(() => {
     return () => {
       if (rafIdRef.current !== null) {
         cancelAnimationFrame(rafIdRef.current);
@@ -284,7 +285,7 @@ export function useProximityHover<T extends HTMLElement>(
         cancelAnimationFrame(remeasureRafIdRef.current);
       }
     };
-  }, []);
+  });
 
   return {
     activeIndex,
@@ -304,11 +305,14 @@ export function useProximityHover<T extends HTMLElement>(
 }
 
 export function useRegisterProximityItem(
-  registerItem: (index: number, element: HTMLElement | null) => void,
-  index: number,
+  registerItem:
+    | ((index: number, element: HTMLElement | null) => void)
+    | undefined,
+  index: number | undefined,
   ref: RefObject<HTMLElement | null>
 ) {
   useEffect(() => {
+    if (registerItem == null || index == null) return;
     registerItem(index, ref.current);
     return () => registerItem(index, null);
   }, [index, registerItem, ref]);

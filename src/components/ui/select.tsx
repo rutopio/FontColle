@@ -20,13 +20,15 @@ import { Select as SelectPrimitive } from "@base-ui/react/select";
 import type { IconComponent } from "@/lib/icon-context";
 import { cn } from "@/lib/utils";
 import { spring, exitFallbackMs } from "@/lib/springs";
-import { useProximityHover } from "@/hooks/use-proximity-hover";
+import { useProximityHover, useRegisterProximityItem } from "@/hooks/use-proximity-hover";
+import { useMountEffect } from "@/hooks/use-mount-effect";
 
 const selectionAckMs = 300;
 
 interface SelectContextValue {
     value: string;
     open: boolean;
+    items: { value: string; label: ReactNode }[];
     actionsRef: React.RefObject<{ unmount: () => void } | null>;
 }
 
@@ -128,8 +130,8 @@ function Select({
     );
 
     const ctx = useMemo(
-        () => ({ value: currentValue, open, actionsRef }),
-        [currentValue, open]
+        () => ({ value: currentValue, open, items, actionsRef }),
+        [currentValue, open, items]
     );
 
     return (
@@ -249,7 +251,7 @@ interface SelectContentProps {
 
 const SelectContent = forwardRef<HTMLDivElement, SelectContentProps>(
     ({ className, children }, ref) => {
-        const { open, value, actionsRef } = useSelectContext();
+        const { open, value, items, actionsRef } = useSelectContext();
         const containerRef = useRef<HTMLDivElement>(null);
 
         const {
@@ -264,9 +266,12 @@ const SelectContent = forwardRef<HTMLDivElement, SelectContentProps>(
         } = useProximityHover(containerRef);
 
         const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
-        const [checkedIndex, setCheckedIndex] = useState<number | undefined>(
-            undefined
-        );
+
+        const checkedIndex = useMemo(() => {
+            if (!open) return undefined;
+            const idx = items.findIndex(item => item.value === value);
+            return idx !== -1 ? idx : undefined;
+        }, [open, value, items]);
 
         // Fallback when rAF-driven onAnimationComplete stalls (background tab).
         useEffect(() => {
@@ -284,35 +289,9 @@ const SelectContent = forwardRef<HTMLDivElement, SelectContentProps>(
             remeasure();
         }, [open, remeasure]);
 
-        // Value change while open: only checkedIndex updates so the marker can spring.
-        useEffect(() => {
-            if (!open) return;
-            // Double rAF: commit, then layout.
-            let inner: number;
-            const outer = requestAnimationFrame(() => {
-                inner = requestAnimationFrame(() => {
-                    const container = containerRef.current;
-                    if (container) {
-                        const items = Array.from(
-                            container.querySelectorAll("[data-proximity-index]")
-                        ) as HTMLElement[];
-                        const idx = items.findIndex(
-                            (el) => el.getAttribute("data-value") === value
-                        );
-                        setCheckedIndex(idx !== -1 ? idx : undefined);
-                    }
-                });
-            });
-            return () => {
-                cancelAnimationFrame(outer);
-                cancelAnimationFrame(inner);
-            };
-        }, [open, value]);
-
         // Clear stale indices before exit tween finishes — Base UI keeps popup mounted.
         useEffect(() => {
             if (open) return;
-            setCheckedIndex(undefined);
             setActiveIndex(null);
             setFocusedIndex(null);
         }, [open, setActiveIndex]);
@@ -511,17 +490,11 @@ const SelectItem = forwardRef<HTMLDivElement, SelectItemProps>(
         const internalRef = useRef<HTMLDivElement>(null);
         const hasMounted = useRef(false);
 
-        useEffect(() => {
+        useMountEffect(() => {
             hasMounted.current = true;
-        }, []);
+        });
 
-        // contentCtx is rebuilt every activeIndex tick; registerItem is stable.
-        const registerItem = contentCtx?.registerItem;
-        useEffect(() => {
-            if (!registerItem) return;
-            registerItem(index, internalRef.current);
-            return () => registerItem(index, null);
-        }, [index, registerItem]);
+        useRegisterProximityItem(contentCtx?.registerItem, index, internalRef);
 
         const isActive = contentCtx?.activeIndex === index;
         const isChecked = selectCtx.value === value;

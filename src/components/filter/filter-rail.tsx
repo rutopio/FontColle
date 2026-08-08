@@ -1,12 +1,15 @@
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import {
   RAIL_BTN,
   RAIL_BTN_OFF,
   RAIL_BTN_ON_SLIDING,
   RAIL_INDICATOR,
 } from "@/components/rail-button";
-import { useProximityHover } from "@/hooks/use-proximity-hover";
+import {
+  useProximityHover,
+  useRegisterProximityItem,
+} from "@/hooks/use-proximity-hover";
 import type { FilterState } from "@/lib/fonts/filter";
 import { EASE_OUT, MOTION_S } from "@/lib/motion";
 import { spring } from "@/lib/springs";
@@ -51,11 +54,7 @@ export function FilterGroupButton({
   const btnRef = useRef<HTMLButtonElement>(null);
   const hasProximity = registerItem != null && proximityIndex != null;
 
-  useEffect(() => {
-    if (!hasProximity) return;
-    registerItem(proximityIndex, btnRef.current);
-    return () => registerItem(proximityIndex, null);
-  }, [hasProximity, proximityIndex, registerItem]);
+  useRegisterProximityItem(registerItem, proximityIndex, btnRef);
 
   return (
     <button

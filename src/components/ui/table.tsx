@@ -2,7 +2,6 @@
 
 import {
   useRef,
-  useEffect,
   useMemo,
   createContext,
   useContext,
@@ -16,7 +15,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { spring } from "@/lib/springs";
 import { fontWeights } from "@/lib/font-weight";
-import { useProximityHover } from "@/hooks/use-proximity-hover";
+import { useProximityHover, useRegisterProximityItem } from "@/hooks/use-proximity-hover";
 
 interface TableContextValue {
   registerItem: (index: number, element: HTMLElement | null) => void;
@@ -127,11 +126,7 @@ const TableRow = forwardRef<HTMLTableRowElement, TableRowProps>(
     const internalRef = useRef<HTMLTableRowElement>(null);
     const ctx = useContext(TableContext);
 
-    useEffect(() => {
-      if (index === undefined || !ctx) return;
-      ctx.registerItem(index, internalRef.current);
-      return () => ctx.registerItem(index, null);
-    }, [index, ctx]);
+    useRegisterProximityItem(ctx?.registerItem, index, internalRef);
 
     const isBodyRow = index !== undefined;
     const activeIdx = ctx?.activeIndex ?? null;

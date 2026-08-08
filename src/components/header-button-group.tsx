@@ -5,11 +5,13 @@ import {
   createContext,
   type HTMLAttributes,
   useContext,
-  useEffect,
   useMemo,
   useRef,
 } from "react";
-import { useProximityHover } from "@/hooks/use-proximity-hover";
+import {
+  useProximityHover,
+  useRegisterProximityItem,
+} from "@/hooks/use-proximity-hover";
 import { spring } from "@/lib/springs";
 
 interface HeaderButtonGroupContextValue {
@@ -98,12 +100,7 @@ function HeaderButtonGroupItem({
   const ref = useRef<HTMLDivElement>(null);
   const ctx = useContext(HeaderButtonGroupContext);
 
-  useEffect(() => {
-    if (ctx) {
-      ctx.registerItem(index, ref.current);
-      return () => ctx.registerItem(index, null);
-    }
-  }, [index, ctx]);
+  useRegisterProximityItem(ctx?.registerItem, index, ref);
 
   return (
     <div ref={ref} className={className} {...props}>

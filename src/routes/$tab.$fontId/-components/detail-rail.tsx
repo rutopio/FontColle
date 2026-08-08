@@ -9,9 +9,12 @@ import {
 } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { RAIL_BTN, RAIL_BTN_ON } from "@/components/rail-button";
-import { useProximityHover } from "@/hooks/use-proximity-hover";
+import {
+  useProximityHover,
+  useRegisterProximityItem,
+} from "@/hooks/use-proximity-hover";
 import { spring } from "@/lib/springs";
 import { cn } from "@/lib/utils";
 
@@ -127,10 +130,7 @@ function DetailRailButton({
 }) {
   const btnRef = useRef<HTMLButtonElement>(null);
 
-  useEffect(() => {
-    registerItem(proximityIndex, btnRef.current);
-    return () => registerItem(proximityIndex, null);
-  }, [proximityIndex, registerItem]);
+  useRegisterProximityItem(registerItem, proximityIndex, btnRef);
 
   return (
     <button
