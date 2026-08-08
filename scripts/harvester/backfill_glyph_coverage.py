@@ -2,14 +2,18 @@
 """One-shot derivation of per-font Unicode coverage for the Glyphs page.
 
 For every family in src/data/fonts.json, read the primary TTF's cmap from the
-local ttf_cache and write the set of Basic-Multilingual-Plane codepoints it
-contains to public/glyphs/<id>.json, run-length encoded as ranges:
+local ttf_cache and write the set of codepoints it contains to
+public/glyphs/<id>.json, run-length encoded as ranges:
 
     {"ranges": [[65, 90], [97, 122], ...]}
 
 The frontend maps these ranges onto Unicode blocks (unicode-blocks.ts) to build
 the block list and the per-block grid, so a Latin font lists only Latin blocks
 and a CJK font lists CJK Unified Ideographs with its tens of thousands of cps.
+Supplementary-plane codepoints are included too: the glyph index built from
+these files drives the preview coverage filter, which must recognise CJK
+Extension B+ characters that many Han fonts do cover. The block grid simply
+ignores ranges outside the BMP blocks it knows.
 
 Ranges (not a flat list) keep Noto CJK files small: contiguous runs collapse to
 one [start, end] pair.
@@ -35,8 +39,6 @@ FONTS_JSON = os.path.abspath(
 )
 OUT_DIR = os.path.abspath(os.path.join(HERE, "..", "..", "public", "glyphs"))
 
-BMP_MAX = 0xFFFF
-
 
 def cache_path(rec):
     """Locate a family's primary TTF in the cache. The cache dir mirrors
@@ -51,14 +53,14 @@ def cache_path(rec):
     return hits[0] if hits else None
 
 
-def bmp_ranges(path):
-    """Sorted BMP codepoints of the font's best cmap, run-length encoded."""
+def cmap_ranges(path):
+    """Sorted codepoints of the font's best cmap, run-length encoded."""
     font = TTFont(path, lazy=True)
     try:
         cmap = font.getBestCmap()
     finally:
         font.close()
-    cps = sorted(cp for cp in cmap if cp <= BMP_MAX)
+    cps = sorted(cmap)
     ranges = []
     for cp in cps:
         if ranges and cp == ranges[-1][1] + 1:
@@ -82,7 +84,7 @@ def main():
             missing += 1
             print(f"  MISS cache: {r['id']}", file=sys.stderr)
             continue
-        ranges = bmp_ranges(path)
+        ranges = cmap_ranges(path)
         if not ranges:
             empty += 1
         with open(os.path.join(OUT_DIR, f"{r['id']}.json"), "w") as fh:
