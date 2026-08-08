@@ -66,13 +66,11 @@ export function Tester({
   seedLines,
   instances,
   fontName,
-  fontLoaded,
 }: {
   fontStyle: CSSProperties;
   seedLines: string[];
   instances: FontInstance[];
   fontName: string;
-  fontLoaded: boolean;
 }) {
   const initialConfig = {
     namespace: "font-tester",
@@ -107,7 +105,6 @@ export function Tester({
         fontStyle={fontStyle}
         instances={instances}
         fontName={fontName}
-        fontLoaded={fontLoaded}
       />
     </LexicalComposer>
   );
@@ -175,12 +172,10 @@ function TesterInner({
   fontStyle,
   instances,
   fontName,
-  fontLoaded,
 }: {
   fontStyle: CSSProperties;
   instances: FontInstance[];
   fontName: string;
-  fontLoaded: boolean;
 }) {
   const [editor] = useLexicalComposerContext();
   const [block, setBlock] = useState<BlockType>("normal");
@@ -430,7 +425,6 @@ function TesterInner({
                 }`}
                 style={previewStyle({
                   name: fontName,
-                  loaded: fontLoaded,
                   coords: inst.coords,
                   italic: inst.italic,
                 })}

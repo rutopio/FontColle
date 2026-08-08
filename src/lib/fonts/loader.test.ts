@@ -2,42 +2,34 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { __loaderInternals, previewFontFamily } from "./loader";
 
 describe("previewFontFamily", () => {
-  it("uses Adobe NotDef when the family has loaded (default)", () => {
+  it("hides missing glyphs with Adobe Blank by default", () => {
     expect(previewFontFamily("Inter")).toBe(
-      '"Inter", "Adobe NotDef", sans-serif'
+      '"Inter", "Adobe Blank", sans-serif'
     );
-    expect(previewFontFamily("Inter", true)).toBe(
-      '"Inter", "Adobe NotDef", sans-serif'
-    );
-  });
-
-  it("uses Adobe Blank while the family is still loading", () => {
     expect(previewFontFamily("Roboto", false)).toBe(
       '"Roboto", "Adobe Blank", sans-serif'
     );
   });
 
+  it("boxes missing glyphs only when notdef mode is switched on", () => {
+    expect(previewFontFamily("Inter", true)).toBe(
+      '"Inter", "Adobe NotDef", sans-serif'
+    );
+  });
+
+  /* The fallback tracks the toggle alone. Deriving it from load state made a
+     font flip Blank -> NotDef once loading gave up, boxing glyphs the user had
+     asked to keep hidden. */
+  it("does not depend on load state", () => {
+    expect(previewFontFamily("Inter")).toBe(previewFontFamily("Inter"));
+    expect(previewFontFamily("Inter", true)).toBe(
+      previewFontFamily("Inter", true)
+    );
+  });
+
   it("quotes the family name so multi-word names stay one token", () => {
     expect(previewFontFamily("Noto Sans JP")).toBe(
-      '"Noto Sans JP", "Adobe NotDef", sans-serif'
-    );
-  });
-
-  /* With the coverage filter on, every listed font is known to have the
-     characters, so a NotDef box could only be a supplemental face still in
-     flight. Blank keeps the gap invisible instead of flashing one. */
-  it("stays on Adobe Blank when missing glyphs are meant to be hidden", () => {
-    expect(previewFontFamily("Inter", true, true)).toBe(
-      '"Inter", "Adobe Blank", sans-serif'
-    );
-    expect(previewFontFamily("Inter", false, true)).toBe(
-      '"Inter", "Adobe Blank", sans-serif'
-    );
-  });
-
-  it("still surfaces NotDef when missing glyphs are meaningful", () => {
-    expect(previewFontFamily("Inter", true, false)).toBe(
-      '"Inter", "Adobe NotDef", sans-serif'
+      '"Noto Sans JP", "Adobe Blank", sans-serif'
     );
   });
 

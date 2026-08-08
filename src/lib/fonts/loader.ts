@@ -3,13 +3,12 @@ import { useCallback, useSyncExternalStore } from "react";
 const loaded = new Set<string>();
 const loadedWeights = new Map<string, Set<number>>();
 
-/** `hideMissing`: keep Blank even after load (used when coverage filter is on). */
-export function previewFontFamily(
-  name: string,
-  isLoaded = true,
-  hideMissing = false
-): string {
-  const fallback = isLoaded && !hideMissing ? "Adobe NotDef" : "Adobe Blank";
+/**
+ * The fallback follows the notdef toggle alone, never load state: missing glyphs
+ * are hidden by default, and only an explicit opt-in boxes them as notdef.
+ */
+export function previewFontFamily(name: string, showNotdef = false): string {
+  const fallback = showNotdef ? "Adobe NotDef" : "Adobe Blank";
   return `"${name}", "${fallback}", sans-serif`;
 }
 

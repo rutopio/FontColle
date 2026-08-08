@@ -9,18 +9,18 @@ export function variationSettings(coords: Record<string, number>): string {
 
 export function previewStyle({
   name,
-  loaded,
+  showNotdef = false,
   coords = {},
   italic = false,
 }: {
   name: string;
-  loaded: boolean;
+  showNotdef?: boolean;
   coords?: Record<string, number>;
   italic?: boolean;
 }): CSSProperties {
   const settings = variationSettings(coords);
   return {
-    fontFamily: previewFontFamily(name, loaded),
+    fontFamily: previewFontFamily(name, showNotdef),
     fontWeight: coords.wght ? Math.round(coords.wght) : undefined,
     fontStyle: italic ? "italic" : undefined,
     fontVariationSettings: settings || undefined,

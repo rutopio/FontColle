@@ -8,6 +8,7 @@ import {
   ensureTextSubsetLoaded,
   previewFontFamily,
   useFontLoaded,
+  useGapSettling,
 } from "@/lib/fonts/loader";
 import { opticalSizing, variationSettings } from "@/lib/fonts/preview-style";
 import { specimenFor } from "@/lib/fonts/specimen";
@@ -46,10 +47,13 @@ export function useFontFacePreview(
     if (!inView) return;
     return ensureTextSubsetLoaded(font.name, covered);
   }, [inView, font.name, covered]);
-  const fontLoaded = inView && fontReady;
+  // Hold the reveal until the gap pass settles, otherwise the first paint shows
+  // only the clusters the default subsets happen to cover and the rest pop in.
+  const gapSettling = useGapSettling(font.name);
+  const fontLoaded = inView && fontReady && !gapSettling;
   const settings = variationSettings(variationCoords);
   const previewStyle: React.CSSProperties = {
-    fontFamily: previewFontFamily(font.name, fontLoaded, coverOnly),
+    fontFamily: previewFontFamily(font.name, !coverOnly),
     fontWeight: activeWeight,
     fontStyle: previewItalic ? "italic" : undefined,
     fontVariationSettings: settings || undefined,

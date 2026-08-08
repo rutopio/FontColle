@@ -8,6 +8,7 @@ export function InstanceRow({
   specimen,
   fontName,
   fontLoaded,
+  showNotdef,
   size,
   featureSettings,
   varyingAxisTags,
@@ -17,6 +18,7 @@ export function InstanceRow({
   specimen: string;
   fontName: string;
   fontLoaded: boolean;
+  showNotdef: boolean;
   size: number;
   featureSettings: string | undefined;
   varyingAxisTags: Set<string>;
@@ -25,7 +27,7 @@ export function InstanceRow({
   const style = {
     ...previewStyle({
       name: fontName,
-      loaded: fontLoaded,
+      showNotdef,
       coords: inst.coords,
       italic: inst.italic,
     }),

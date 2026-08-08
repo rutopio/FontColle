@@ -51,7 +51,7 @@ export function Detail({
   glyphLoading: boolean;
   glyphHighlightCp: number | null;
 }) {
-  const { text, setText } = usePreview();
+  const { text, setText, coverOnly } = usePreview();
   const versionHistory = font.versionHistory ?? [];
   const specimen = text || specimenFor(font);
   const seedLines = specimenLinesFor(font);
@@ -135,10 +135,15 @@ export function Detail({
       font.axes.map((a) => [a.tag, axisState[a.tag]])
     );
     return {
-      ...previewStyle({ name: font.name, loaded: fontLoaded, coords, italic }),
+      ...previewStyle({
+        name: font.name,
+        showNotdef: !coverOnly,
+        coords,
+        italic,
+      }),
       fontFeatureSettings: featureSettings,
     };
-  }, [font.name, font.axes, axisState, italic, featureSettings, fontLoaded]);
+  }, [font.name, font.axes, axisState, italic, featureSettings, coverOnly]);
 
   return (
     <>
@@ -154,6 +159,7 @@ export function Detail({
         }
         footer={
           <PreviewBar
+            coverageToggle
             onScrollTop={() =>
               scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" })
             }
@@ -167,7 +173,6 @@ export function Detail({
             seedLines={seedLines}
             instances={font.instances}
             fontName={font.name}
-            fontLoaded={fontLoaded}
           />
         )}
 
@@ -180,6 +185,7 @@ export function Detail({
                 specimen={specimen}
                 fontName={font.name}
                 fontLoaded={fontLoaded}
+                showNotdef={!coverOnly}
                 size={size}
                 featureSettings={featureSettings}
                 varyingAxisTags={varyingAxisTags}
