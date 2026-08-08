@@ -77,6 +77,11 @@ function stubFontFaceSet() {
     register(name: string) {
       faces.add({ family: name });
     },
+    /** The same, as WebKit reports it: css2 writes `font-family: 'Noto Sans'`
+     *  and Safari reads the descriptor back with the quotes still on. */
+    registerQuoted(name: string) {
+      faces.add({ family: `'${name}'` });
+    },
     /** Mark one weight of a family loaded and fire loadingdone, as the browser
      *  would. Weight-specific: check() is asked about the exact face a row
      *  renders, so finishing 400 must not report 700 as ready. Registers the
@@ -178,6 +183,20 @@ describe("font-family subscriptions", () => {
 
     env.finish("Inter");
     expect(onInter).not.toHaveBeenCalled();
+  });
+
+  /* Safari kept the quotes css2 writes around multi-word families, so every
+     face.family comparison missed and hasFaces() reported none. That gated the
+     whole readiness path — and the gap-fill pass with it, so characters the
+     default subsets omit never got refetched. */
+  it("recognises a family whose faces report a quoted name", () => {
+    const onNoto = vi.fn();
+    env.check.mockReturnValue(true);
+    env.registerQuoted("Noto Sans");
+
+    __loaderInternals.subscribeFamily("Noto Sans", 400, onNoto);
+
+    expect(__loaderInternals.isReady("Noto Sans")).toBe(true);
   });
 
   /* The NotDef flash. check() means "renderable without loading anything new",

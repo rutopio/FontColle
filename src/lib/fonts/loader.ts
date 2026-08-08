@@ -34,9 +34,17 @@ function probeFor(name: string, weight: number) {
   return `${weight} 16px "${name}"`;
 }
 
+// WebKit keeps the quotes the CSS source wrote, so css2's `font-family: 'Noto
+// Sans'` reads back quoted; Blink strips them. Every family whose name has a
+// space is quoted in that stylesheet, so comparing raw would miss almost all of
+// them on Safari.
+function sameFamily(faceFamily: string, name: string) {
+  return faceFamily.replace(/^['"]|['"]$/g, "") === name;
+}
+
 function hasFaces(name: string) {
   for (const face of document.fonts) {
-    if (face.family === name) return true;
+    if (sameFamily(face.family, name)) return true;
   }
   return false;
 }
@@ -305,7 +313,7 @@ const requestedText = new Set<string>();
 
 function familyDescriptors(family: string) {
   for (const face of document.fonts) {
-    if (face.family !== family || face.style !== "normal") continue;
+    if (!sameFamily(face.family, family) || face.style !== "normal") continue;
     return { weight: face.weight, stretch: face.stretch };
   }
   return null;
