@@ -2,6 +2,7 @@ import { COLOR_FORMATS, isColorFont } from "@/lib/fonts/color";
 import { catalogUpmCounts } from "@/lib/fonts/metrics";
 import type { FontRecord } from "@/lib/fonts/types";
 import { instanceCount } from "./instances";
+import { fontSpacing, SPACING_LABELS, SPACING_VALUES } from "./spacing";
 import { FONT_TYPE_FACETS } from "./state";
 import { familyWeightSet, familyWidthSet } from "./weights";
 
@@ -211,35 +212,9 @@ export const ITALIC_LABELS: Record<string, string> = {
   upright: "Non-Italic",
 };
 
-export const SPACING_VALUES = ["proportional", "mono"];
-export const SPACING_LABELS: Record<string, string> = {
-  proportional: "Proportional",
-  mono: "Monospaced",
-};
-
-const MONOSPACE_TAG = "/Monospace/Monospace";
-
-/**
- * Advance-width class, the dimension Google's own tag tree keeps orthogonal to
- * letterform: 46 of the 58 families it tags /Monospace also carry a /Sans,
- * /Serif, /Slab or /Script tag (Roboto Mono is Sans AND mono; Courier Prime is
- * Slab AND mono). The tag is the authority — every family it names scores 100,
- * with no middle ground — and apiCategory covers the families the tags CSV has
- * not reached (Iosevka Charon).
- *
- * The post table's `isFixedPitch` (FontRecord.isMonospace) is deliberately NOT
- * consulted: it is wrong in both directions here, missing true mono faces
- * (Azeret Mono, Oxygen Mono, Sono) while claiming faces that merely have even
- * advances (Press Start 2P, Rubik Mono One, Redacted, Wavefont, Noto Color
- * Emoji).
- */
-export function fontSpacing(
-  font: Pick<FontRecord, "tags" | "apiCategory">
-): string {
-  const tagged = (font.tags?.[MONOSPACE_TAG] ?? 0) > 0;
-  const api = (font.apiCategory ?? "").toUpperCase().includes("MONO");
-  return tagged || api ? "mono" : "proportional";
-}
+// Defined in ./spacing, which stays free of `@/` imports so gen-facets.mjs can
+// share it. Re-exported here so the facet call sites read uniformly.
+export { fontSpacing, SPACING_LABELS, SPACING_VALUES };
 
 const UNKNOWN_VENDORS = new Set(["NONE", "UKWN", "----", ""]);
 

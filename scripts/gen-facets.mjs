@@ -1,5 +1,6 @@
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { fontSpacing } from "../src/lib/fonts/filter/spacing.ts";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
 
@@ -11,6 +12,9 @@ const project = (f) => ({
   license: f.license,
   isVariable: f.isVariable,
   isMonospace: f.isMonospace,
+  // The reliable spacing signal; isMonospace above is the raw isFixedPitch bit
+  // and disagrees with it in both directions.
+  spacing: fontSpacing(f),
   weights: f.weights,
   axes: f.axes,
   features: f.features,
@@ -85,10 +89,14 @@ export async function genFacets() {
     "variable",
     slim.filter((f) => f.isVariable)
   );
+  // fontSpacing(), not the `isMonospace` field: post.isFixedPitch is wrong in
+  // both directions (it misses Azeret Mono and Sono, and claims Press Start 2P
+  // and Noto Color Emoji), so a slice built from it does not match what the
+  // site's own Spacing filter returns.
   await writeSlice(
     "flag",
     "monospace",
-    slim.filter((f) => f.isMonospace)
+    slim.filter((f) => fontSpacing(f) === "mono")
   );
   await writeSlice(
     "flag",
@@ -106,7 +114,10 @@ export async function genFacets() {
       "instead of the 2 MB slim catalog when you can only read data into " +
       "context. Each slice is an array of projected family records; fetch " +
       "/catalog/{id}.json for a family's full record. Combine dimensions by " +
-      "intersecting slices on `id`.",
+      "intersecting slices on `id`. The `category` dimension is letterform " +
+      "only, so a monospaced family sits under its letterform (Roboto Mono " +
+      "is Sans); use the flag/monospace slice or each record's `spacing` " +
+      "field for advance width, not the raw `isMonospace` bit.",
     generated: new Date().toISOString().slice(0, 10),
     total: slim.length,
     slices: index,

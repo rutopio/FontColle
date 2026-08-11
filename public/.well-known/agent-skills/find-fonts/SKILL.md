@@ -50,10 +50,11 @@ environment:
 2. Narrow by the remaining hard constraints: `class` (letterform), `subsets`
    (writing system), `isVariable`, `axes` (variable axes), `features` (OpenType
    tags), `weights`. To combine two facet slices, intersect them on `id`.
-   For **monospace**, do not trust `isMonospace` (the `isFixedPitch` bit is
-   wrong in both directions): a family is monospaced when it scores
-   `/Monospace/Monospace` in `tags`, or its `apiCategory` is `MONOSPACE`.
-   Monospace is not a `class` — Roboto Mono is `Sans`, Courier Prime is `Slab`.
+   For **monospace**, use the `spacing` field (`mono` / `proportional`) or the
+   `flag/monospace` slice — not `isMonospace`, which is the raw `isFixedPitch`
+   bit and disagrees with both in either direction (it misses Azeret Mono and
+   Sono, and claims Press Start 2P and Noto Color Emoji). Monospace is not a
+   `class`: Roboto Mono is `Sans`, Courier Prime is `Slab`.
 3. Rank subjective "feel" with the `tags` object — that is what makes mood
    queries ("joyful", "elegant", "technical") answerable.
 4. For a chosen family, fetch `/catalog/{id}.json` for the full record
