@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { FontRecord } from "@/lib/fonts/types";
 import { applyFilters, searchByQuery, suggestFamilies } from "./apply";
-import { fontActivity } from "./facets";
+import { fontActivity, fontSpacing } from "./facets";
 import { emptyFilter, type FilterState } from "./state";
 
 function font(over: Partial<FontRecord> = {}): FontRecord {
@@ -499,5 +499,74 @@ describe("fontActivity", () => {
     expect(
       fontActivity(font({ modifiedMs: null, firstCommitDate: null }))
     ).toBe("dormant");
+  });
+});
+
+describe("fontSpacing", () => {
+  it("reads Google's /Monospace tag as the authority", () => {
+    expect(fontSpacing(font({ tags: { "/Monospace/Monospace": 100 } }))).toBe(
+      "mono"
+    );
+  });
+
+  it("keeps a mono face's letterform tag orthogonal to its spacing", () => {
+    // Roboto Mono is Sans AND mono in Google's own tag data, so it sits on the
+    // Sans card while the Spacing filter still reports it as monospaced.
+    const roboto = font({
+      category: "Sans",
+      tags: { "/Monospace/Monospace": 100, "/Sans/Grotesque": 100 },
+    });
+    expect(fontSpacing(roboto)).toBe("mono");
+    expect(
+      applyFilters([roboto], {
+        ...emptyFilter,
+        categories: ["Sans"],
+        spacing: ["mono"],
+      })
+    ).toHaveLength(1);
+  });
+
+  it("falls back to the API category when the tags CSV is silent", () => {
+    // Iosevka Charon: no tag row, but the API knows it is monospace.
+    expect(fontSpacing(font({ apiCategory: "MONOSPACE" }))).toBe("mono");
+  });
+
+  it("ignores isFixedPitch, which claims non-mono display faces", () => {
+    // Press Start 2P / Rubik Mono One set the post-table flag but are not mono.
+    expect(fontSpacing(font({ isMonospace: true }))).toBe("proportional");
+  });
+
+  it("treats an untagged proportional family as proportional", () => {
+    expect(fontSpacing(font({ tags: { "/Sans/Geometric": 100 } }))).toBe(
+      "proportional"
+    );
+  });
+});
+
+describe("spacing filter", () => {
+  const mono = font({
+    name: "Roboto Mono",
+    tags: { "/Monospace/Monospace": 100 },
+  });
+  const sans = font({ name: "Roboto", tags: { "/Sans/Grotesque": 100 } });
+
+  it("keeps only monospaced families", () => {
+    const out = applyFilters([mono, sans], {
+      ...emptyFilter,
+      spacing: ["mono"],
+    });
+    expect(out.map((f) => f.name)).toEqual(["Roboto Mono"]);
+  });
+
+  it("keeps only proportional families", () => {
+    const out = applyFilters([mono, sans], {
+      ...emptyFilter,
+      spacing: ["proportional"],
+    });
+    expect(out.map((f) => f.name)).toEqual(["Roboto"]);
+  });
+
+  it("does not filter when unset", () => {
+    expect(applyFilters([mono, sans], emptyFilter)).toHaveLength(2);
   });
 });

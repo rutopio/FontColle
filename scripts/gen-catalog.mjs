@@ -81,6 +81,9 @@ export async function genCatalog() {
     name: f.name,
     designer: f.designer ?? null,
     category: f.category,
+    // Backs fontSpacing() for the families the google/fonts tags CSV has not
+    // reached (Hibur Mono, Iosevka Charon).
+    apiCategory: f.apiCategory,
     license: f.license,
     isVariable: f.isVariable,
     isMonospace: f.isMonospace,

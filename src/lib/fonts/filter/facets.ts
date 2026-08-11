@@ -211,6 +211,36 @@ export const ITALIC_LABELS: Record<string, string> = {
   upright: "Non-Italic",
 };
 
+export const SPACING_VALUES = ["proportional", "mono"];
+export const SPACING_LABELS: Record<string, string> = {
+  proportional: "Proportional",
+  mono: "Monospaced",
+};
+
+const MONOSPACE_TAG = "/Monospace/Monospace";
+
+/**
+ * Advance-width class, the dimension Google's own tag tree keeps orthogonal to
+ * letterform: 46 of the 58 families it tags /Monospace also carry a /Sans,
+ * /Serif, /Slab or /Script tag (Roboto Mono is Sans AND mono; Courier Prime is
+ * Slab AND mono). The tag is the authority — every family it names scores 100,
+ * with no middle ground — and apiCategory covers the families the tags CSV has
+ * not reached (Iosevka Charon).
+ *
+ * The post table's `isFixedPitch` (FontRecord.isMonospace) is deliberately NOT
+ * consulted: it is wrong in both directions here, missing true mono faces
+ * (Azeret Mono, Oxygen Mono, Sono) while claiming faces that merely have even
+ * advances (Press Start 2P, Rubik Mono One, Redacted, Wavefont, Noto Color
+ * Emoji).
+ */
+export function fontSpacing(
+  font: Pick<FontRecord, "tags" | "apiCategory">
+): string {
+  const tagged = (font.tags?.[MONOSPACE_TAG] ?? 0) > 0;
+  const api = (font.apiCategory ?? "").toUpperCase().includes("MONO");
+  return tagged || api ? "mono" : "proportional";
+}
+
 const UNKNOWN_VENDORS = new Set(["NONE", "UKWN", "----", ""]);
 
 export function designerTokens(font: FontRecord): string[] {
@@ -247,6 +277,7 @@ export function buildFacetIndex(fonts: FontRecord[]) {
   const activity = new Map<string, number>();
   const flags = new Map<string, number>();
   const italic = new Map<string, number>();
+  const spacing = new Map<string, number>();
   const instances = new Map<string, number>();
   let hintedCount = 0;
   let unhintedCount = 0;
@@ -282,6 +313,7 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     bump(activity, fontActivity(font));
     bump(flags, font.isNoto ? "noto" : "others");
     bump(italic, font.facets.includes("has-italic") ? "italic" : "upright");
+    bump(spacing, fontSpacing(font));
     bump(instances, String(instanceCount(font)));
   }
   const sorted = (m: Map<string, number>) =>
@@ -335,6 +367,9 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     flags: FLAG_VALUES.map((v) => [v, flags.get(v) ?? 0] as [string, number]),
     italic: ITALIC_VALUES.map(
       (v) => [v, italic.get(v) ?? 0] as [string, number]
+    ),
+    spacing: SPACING_VALUES.map(
+      (v) => [v, spacing.get(v) ?? 0] as [string, number]
     ),
     instances: [...instances.entries()]
       .map(([n, c]) => [Number(n), c] as [number, number])

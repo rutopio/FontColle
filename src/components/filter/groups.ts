@@ -37,7 +37,7 @@ export const FILTER_GROUPS: FilterGroup[] = [
     id: "style",
     label: "Style",
     icon: ShapesIcon,
-    keys: ["categories", "style"],
+    keys: ["categories", "spacing", "style"],
   },
   {
     id: "axes",

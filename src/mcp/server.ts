@@ -1,3 +1,4 @@
+import { fontSpacing } from "@/lib/fonts/filter/facets";
 import {
   MCP_CATEGORIES,
   MCP_MAX_RESULTS,
@@ -12,6 +13,8 @@ type SlimFont = Pick<
   | "id"
   | "name"
   | "category"
+  | "apiCategory"
+  | "tags"
   | "isVariable"
   | "isMonospace"
   | "designer"
@@ -165,7 +168,7 @@ function searchFonts(fonts: SlimFont[], args: Record<string, unknown>) {
     if (categories.length && !categories.includes(font.category)) return false;
     if (typeof args.variable === "boolean" && font.isVariable !== args.variable)
       return false;
-    if (args.monospace === true && !font.isMonospace) return false;
+    if (args.monospace === true && fontSpacing(font) !== "mono") return false;
     if (features.length && !features.every((f) => font.features.includes(f)))
       return false;
     if (axes.length && !axes.every((a) => font.axes.includes(a))) return false;

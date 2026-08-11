@@ -10,6 +10,7 @@ import {
   type ModeKey,
   matchMode,
   REPO_HOST_LABELS,
+  SPACING_LABELS,
 } from "@/lib/fonts/filter";
 import { languageLabel, scriptLabel, vendorLabel } from "@/lib/fonts/labels";
 import {
@@ -96,6 +97,8 @@ export function describeActiveFilters(f: FilterState): FilterChip[] {
       "italic",
       v
     );
+  for (const v of f.spacing)
+    push(`spacing:${v}`, "Spacing", SPACING_LABELS[v] ?? v, "spacing", v);
   for (const v of f.upm) push(`upm:${v}`, "Units per em", v, "upm", v);
   if (f.instances) {
     const id = instanceBucketOf(f.instances);

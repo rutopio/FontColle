@@ -30,6 +30,7 @@ const fullFilter: FilterState = {
   activity: ["active"],
   source: ["others"],
   italic: ["italic"],
+  spacing: ["mono"],
   upm: ["1000", "2048"],
   instances: [2, 9],
   metrics: {

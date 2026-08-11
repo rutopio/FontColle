@@ -28,6 +28,7 @@ export interface FilterState {
   activity: string[];
   source: string[];
   italic: string[];
+  spacing: string[];
   upm: string[];
   instances?: InstanceRange;
   metrics: Partial<Record<MetricKey, MetricRange>>;
@@ -60,6 +61,7 @@ export const emptyFilter: FilterState = {
   activity: [],
   source: [],
   italic: [],
+  spacing: [],
   upm: [],
   metrics: {},
   matchModes: {},
@@ -88,6 +90,7 @@ export interface FilterSearch {
   activity?: string;
   noto?: string;
   italic?: string;
+  spacing?: string;
   upm?: string;
   instances?: string;
   xheight?: string;
@@ -235,6 +238,7 @@ export function searchToFilter(s: FilterSearch): FilterState {
     activity: splitUnderscore(s.activity),
     source: splitUnderscore(s.noto).map(decodeSource),
     italic: splitUnderscore(s.italic),
+    spacing: splitUnderscore(s.spacing),
     upm: splitUnderscore(s.upm),
     instances: decodeInstances(s.instances),
     metrics: decodeMetrics(s),
@@ -269,6 +273,7 @@ export function filterToSearch(f: FilterState): FilterSearch {
   if (f.activity.length) s.activity = joinUnderscore(f.activity);
   if (f.source.length) s.noto = joinUnderscore(f.source.map(encodeSource));
   if (f.italic.length) s.italic = joinUnderscore(f.italic);
+  if (f.spacing.length) s.spacing = joinUnderscore(f.spacing);
   if (f.upm.length) s.upm = joinUnderscore(f.upm);
   if (
     f.instances &&
@@ -303,6 +308,7 @@ export function activeFilterCount(f: FilterState): number {
     f.activity.length +
     f.source.length +
     f.italic.length +
+    f.spacing.length +
     f.upm.length +
     (f.instances ? 1 : 0) +
     Object.keys(f.metrics).length +
@@ -334,6 +340,7 @@ export function parseFilterSearch(raw: Record<string, unknown>): FilterSearch {
     activity: str(raw.activity),
     noto: str(raw.noto),
     italic: str(raw.italic),
+    spacing: str(raw.spacing),
     upm: numCsv(raw.upm),
     instances: numCsv(raw.instances),
     xheight: str(raw.xheight),

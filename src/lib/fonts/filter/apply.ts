@@ -11,6 +11,7 @@ import {
   designerTokens,
   foldVendor,
   fontActivity,
+  fontSpacing,
   meetsTagThreshold,
   repoHost,
 } from "./facets";
@@ -211,6 +212,8 @@ export function applyFilters(
       return false;
     if (!radio(f.source, "noto", !!font.isNoto)) return false;
     if (!radio(f.italic, "italic", font.facets.includes("has-italic")))
+      return false;
+    if (f.spacing.length && !f.spacing.includes(fontSpacing(font)))
       return false;
     if (f.upm.length && !f.upm.includes(String(font.unitsPerEm))) return false;
     if (f.instances && !instanceInRange(font, f.instances)) return false;

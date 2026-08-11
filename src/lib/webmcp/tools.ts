@@ -119,8 +119,7 @@ export function buildTools(ctx: ToolContext): ToolDefinition[] {
         filter.weights = mcpStrings(args.weights);
         if (typeof args.variable === "boolean")
           filter.tags = [args.variable ? "variable" : "static"];
-        if (args.monospace === true && !filter.categories.includes("Mono"))
-          filter.categories = [...filter.categories, "Mono"];
+        if (args.monospace === true) filter.spacing = ["mono"];
 
         const matches = searchByQuery(
           applyFilters(fonts, filter),

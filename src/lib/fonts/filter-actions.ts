@@ -148,6 +148,11 @@ export function selectItalic(filter: FilterState, value: string): FilterState {
   return { ...filter, italic: next };
 }
 
+export function selectSpacing(filter: FilterState, value: string): FilterState {
+  const next = filter.spacing.includes(value) ? [] : [value];
+  return { ...filter, spacing: next };
+}
+
 export function toggleMatchMode(
   filter: FilterState,
   key: ModeKey

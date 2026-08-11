@@ -21,6 +21,7 @@ import {
   type MetricRange,
   type ModeKey,
   matchMode,
+  SPACING_LABELS,
 } from "@/lib/fonts/filter";
 import * as actions from "@/lib/fonts/filter-actions";
 import { EASE_OUT, MOTION_S } from "@/lib/motion";
@@ -105,11 +106,9 @@ export function FilterSidebar({
   const categoryCards = [
     "Sans",
     "Serif",
-    "Mono",
     "Display",
     "Script",
     "Slab",
-    "Emoji",
     "Graphics",
   ]
     .map((v) => ({
@@ -121,6 +120,8 @@ export function FilterSidebar({
   const toggleCategory = (value: string) => toggle("categories", value);
   const selectItalic = (value: string) =>
     onChange(actions.selectItalic(filter, value));
+  const selectSpacing = (value: string) =>
+    onChange(actions.selectSpacing(filter, value));
   const toggleMode = (key: ModeKey) =>
     onChange(actions.toggleMatchMode(filter, key));
   const modeOf = (key: ModeKey) => matchMode(filter, key);
@@ -190,6 +191,15 @@ export function FilterSidebar({
             cards={categoryCards}
             onToggle={toggleCategory}
             onReset={() => clearSection("categories", index.categories)}
+          />
+          <RadioPillSection
+            title="Spacing"
+            icon={ArrowsOutLineHorizontalIcon}
+            items={index.spacing}
+            labels={SPACING_LABELS}
+            selected={filter.spacing}
+            onToggle={selectSpacing}
+            onReset={() => onChange({ ...filter, spacing: [] })}
           />
           <ClassificationSection
             title="Style"
