@@ -1,4 +1,8 @@
-import { DiscoBallIcon, ShapesIcon } from "@phosphor-icons/react";
+import {
+  BracketsSquareIcon,
+  DiscoBallIcon,
+  ShapesIcon,
+} from "@phosphor-icons/react";
 import { AboutLink } from "@/components/about-link";
 import { FavoriteToggle } from "@/components/favorite-toggle";
 import { FilterRail } from "@/components/filter/filter-rail";
@@ -17,22 +21,23 @@ import { emptyFilter } from "@/lib/fonts/filter";
 import { DEFAULT_SORT } from "@/lib/fonts/sort";
 import type { FontRecord } from "@/lib/fonts/types";
 import { usePreview } from "@/lib/preview/context";
+import { cn } from "@/lib/utils";
 import { SearchInput, type SearchSuggestion } from "./search-input";
 import { SortControl } from "./sort-control";
 import { ViewTabs } from "./view-tabs";
 
 const NOOP_GROUP = () => {};
 
+// Mirrors the live card order in filter-sidebar.tsx.
 const CATEGORY_CARDS = [
   "sans",
   "serif",
-  "mono",
   "display",
   "script",
   "slab",
-  "emoji",
   "graphics",
 ];
+const SPACING_PILLS = ["proportional", "mono"];
 const STYLE_SUBGROUPS = [
   { id: "sans-serif", count: 7 },
   { id: "serif", count: 7 },
@@ -139,6 +144,35 @@ const SIDEBAR_SKELETON = (
           <div
             key={`card:${card}`}
             className="h-22 animate-pulse rounded-md bg-muted"
+          />
+        ))}
+      </div>
+    </div>
+
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="flex min-w-0 items-center gap-1.5 font-medium text-primary text-sm uppercase">
+          <BracketsSquareIcon className="size-4 shrink-0" />
+          <span className="truncate">Spacing</span>
+        </h2>
+        <div
+          className="invisible flex items-center gap-1 px-2 py-1 font-mono text-xs"
+          aria-hidden="true"
+        >
+          Reset
+        </div>
+      </div>
+      {/* Mirrors SegmentedPills: the same bordered row, so the 1px border adds
+          the same 2px as it does once the real pills render. */}
+      <div className="flex rounded-md border">
+        {SPACING_PILLS.map((pill, i) => (
+          <div
+            key={`spacing:${pill}`}
+            className={cn(
+              "min-h-9 flex-1 animate-pulse bg-muted md:min-h-8",
+              i > 0 && "border-l",
+              i === 0 ? "rounded-l-md" : "rounded-r-md"
+            )}
           />
         ))}
       </div>
