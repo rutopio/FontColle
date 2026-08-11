@@ -10,8 +10,10 @@ import {
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useMemo, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useListScrollRestore } from "@/hooks/use-list-scroll-restore";
 import { useScrollReset } from "@/hooks/use-scroll-reset";
 import { useSectionScrollspy } from "@/hooks/use-section-scrollspy";
+import { useFilter } from "@/lib/filter/context";
 import {
   type FacetIndex,
   type FilterSearch,
@@ -61,6 +63,8 @@ interface Props {
   axisValues: Record<string, number>;
   onAxisValueChange: (tag: string, pct: number) => void;
   onApplyPreset: (search: FilterSearch) => void;
+  /** Keep the panel's scroll offset across route changes (desktop sidebar only). */
+  restoreScroll?: boolean;
 }
 
 export function FilterSidebar({
@@ -72,6 +76,7 @@ export function FilterSidebar({
   axisValues,
   onAxisValueChange,
   onApplyPreset,
+  restoreScroll = false,
 }: Props) {
   const [flash, setFlash] = useState<{
     section: "weights" | "widths" | "axes";
@@ -158,7 +163,8 @@ export function FilterSidebar({
 
   const currentSearch = useMemo(() => filterToSearch(filter), [filter]);
 
-  const viewportRef = useScrollReset<HTMLDivElement>();
+  const viewportRef = useScrollReset<HTMLDivElement>(!restoreScroll);
+  const { panelScrollY } = useFilter();
 
   const showingPreset = group === "preset";
   const { registerSection } = useSectionScrollspy({
@@ -171,6 +177,9 @@ export function FilterSidebar({
     ),
     enabled: !showingPreset,
   });
+
+  // Runs after the scrollspy's mount jump so the remembered offset wins.
+  useListScrollRestore(viewportRef, panelScrollY, restoreScroll);
 
   // Nudge scroll so ScrollArea recalculates overflow after panel swap.
   const resetScrollbar = () => {

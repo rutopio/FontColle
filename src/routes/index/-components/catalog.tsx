@@ -293,6 +293,7 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
           axisValues={axisValues}
           onAxisValueChange={setAxisValue}
           onApplyPreset={applyPreset}
+          restoreScroll
         />
       }
       header={

@@ -2,19 +2,21 @@ import { useEffect } from "react";
 
 export function useListScrollRestore(
   scrollRef: React.RefObject<HTMLDivElement | null>,
-  listScrollY: React.RefObject<number>
+  listScrollY: React.RefObject<number>,
+  enabled = true
 ) {
   useEffect(() => {
     const el = scrollRef.current;
-    if (!el) return;
+    if (!el || !enabled) return;
     const onScroll = () => {
       listScrollY.current = el.scrollTop;
     };
     el.addEventListener("scroll", onScroll, { passive: true });
     return () => el.removeEventListener("scroll", onScroll);
-  }, [scrollRef, listScrollY]);
+  }, [scrollRef, listScrollY, enabled]);
 
   useEffect(() => {
+    if (!enabled) return;
     const target = listScrollY.current;
     if (target <= 0) return;
     let raf = 0;
@@ -30,5 +32,5 @@ export function useListScrollRestore(
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [scrollRef, listScrollY]);
+  }, [scrollRef, listScrollY, enabled]);
 }
