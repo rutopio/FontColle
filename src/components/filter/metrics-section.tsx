@@ -20,7 +20,7 @@ import {
   rangesEqual,
 } from "@/lib/fonts/filter";
 import { cn } from "@/lib/utils";
-import { PillButton } from "./pill-button";
+import { RadioPillSection } from "./radio-pill-section";
 import { Section } from "./section";
 import { SectionHeader } from "./section-header";
 
@@ -275,6 +275,8 @@ export function UnitsPerEmSection({
   );
 }
 
+const HINT_LABELS = { hinted: "Hinted", "no-hinted": "No Hinted" };
+
 export function HintSection({
   hasHinting,
   hintedCount,
@@ -286,37 +288,25 @@ export function HintSection({
   unhintedCount: number;
   onSetHinting: (value: boolean) => void;
 }) {
+  // Hint is stored as a tristate boolean rather than the string list the shared
+  // radio section speaks, so translate at the boundary and leave the filter
+  // state alone.
   return (
-    <div className="flex flex-col gap-2">
-      <SectionHeader
-        title="Hint"
-        icon={GridFourIcon}
-        hasSelection={hasHinting !== undefined}
-        onReset={() => {
-          if (hasHinting !== undefined) onSetHinting(hasHinting);
-        }}
-        canSort={false}
-        sort="count"
-        onToggleSort={() => {}}
-      />
-      <div className="grid grid-cols-2 gap-1.5">
-        <PillButton
-          value="hinted"
-          label="Hinted"
-          count={hintedCount}
-          selected={hasHinting === true}
-          onToggle={() => onSetHinting(true)}
-          className="min-w-0"
-        />
-        <PillButton
-          value="no-hinted"
-          label="No Hinted"
-          count={unhintedCount}
-          selected={hasHinting === false}
-          onToggle={() => onSetHinting(false)}
-          className="min-w-0"
-        />
-      </div>
-    </div>
+    <RadioPillSection
+      title="Hint"
+      icon={GridFourIcon}
+      items={[
+        ["hinted", hintedCount],
+        ["no-hinted", unhintedCount],
+      ]}
+      labels={HINT_LABELS}
+      selected={
+        hasHinting === undefined ? [] : [hasHinting ? "hinted" : "no-hinted"]
+      }
+      onToggle={(value) => onSetHinting(value === "hinted")}
+      onReset={() => {
+        if (hasHinting !== undefined) onSetHinting(hasHinting);
+      }}
+    />
   );
 }
