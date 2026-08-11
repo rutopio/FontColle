@@ -72,7 +72,7 @@ export function PreviewBar({
         dir="auto"
         value={draft}
         onChange={(e) => commit(e.target.value)}
-        placeholder="Type to preview across all fonts…"
+        placeholder="Type to preview and filter by glyph coverage…"
         className="h-9 flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0"
         aria-label="Preview text"
       />
