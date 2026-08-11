@@ -62,6 +62,10 @@ CLASS_OF = {
 DISPLAY_THEME_TAGS = ["/Theme/Pixel", "/Theme/Techno"]
 DISPLAY_THEME_MIN = 50
 
+# The spacing tag. Not a letterform class (it is absent from CLASS_OF), but a
+# family carrying ONLY this one still needs placing somewhere.
+MONOSPACE_TAG = "/Monospace/Monospace"
+
 # Classes assigned by name whitelist rather than by tags; left as-is.
 CURATED = {"Graphics"}
 
@@ -91,6 +95,15 @@ def form_class(rec):
     return None
 
 
+def is_mono_only(rec):
+    """True when Google tagged the family /Monospace and nothing else about its
+    letterform. Read from the tags rather than from the current `category`: a
+    re-harvest resets category from the API value, so a check against "Mono"
+    would only hold on already-migrated data and would quietly stop firing."""
+    tags = rec.get("tags") or {}
+    return tags.get(MONOSPACE_TAG, 0) >= MIN_SCORE and form_class(rec) is None
+
+
 def untagged_mono_class(rec):
     """Where a family Google tagged ONLY /Monospace belongs once Mono is no
     longer a Category class. Decorative pixel/terminal faces read as Display;
@@ -118,10 +131,11 @@ def main():
             continue
         want = form_class(r)
         # No form tag: Google has not scored the letterform, so primary_class()'s
-        # reading of the raw API category stands — except for a family still
-        # sitting on the retired "Mono" class, which has to land somewhere.
+        # reading of the raw API category stands — except for a family tagged
+        # only /Monospace, which the retired Mono class used to hold and which
+        # therefore has to be placed here.
         if want is None:
-            if r.get("category") != "Mono":
+            if not is_mono_only(r):
                 continue
             want = untagged_mono_class(r)
         if r.get("category") != want:
