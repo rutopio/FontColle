@@ -3,9 +3,13 @@ import { AnimatePresence, motion } from "motion/react";
 import { Fragment } from "react";
 import type { FilterSearch, FilterState } from "@/lib/fonts/filter";
 import { EASE_OUT, MOTION_S } from "@/lib/motion";
+import { usePreview } from "@/lib/preview/context";
 import { cn } from "@/lib/utils";
 import { groupActiveFilters } from "./describe";
 import { SavePresetPopover } from "./save-preset-popover";
+
+const CHIP_CLASS =
+  "flex min-h-9 max-w-full flex-wrap items-center gap-x-1.5 gap-y-1 rounded-md border border-input px-2.5 py-2 text-left text-muted-foreground text-xs transition-colors hover:border-foreground hover:text-foreground md:min-h-8 md:py-1";
 
 const CHIP_MOTION = {
   layout: "position",
@@ -31,7 +35,10 @@ export function ActiveFilterChips({
 }) {
   const groups = groupActiveFilters(filter);
   const query = filter.query.trim();
-  if (!hasActiveFilterChips(filter)) return null;
+  const { text: previewText, coverOnly, setCoverOnly } = usePreview();
+  // The coverage chip stands on its own: it shows whenever there is preview
+  // text, even with no filter or search active.
+  if (!(hasActiveFilterChips(filter) || previewText.trim())) return null;
   return (
     <div
       className={cn(
@@ -46,7 +53,7 @@ export function ActiveFilterChips({
             {...CHIP_MOTION}
             type="button"
             onClick={() => onChange({ ...filter, query: "" })}
-            className="flex min-h-9 max-w-full flex-wrap items-center gap-x-1.5 gap-y-1 rounded-md border border-input px-2.5 py-2 text-left text-muted-foreground text-xs transition-colors hover:border-foreground hover:text-foreground md:min-h-8 md:py-1"
+            className={CHIP_CLASS}
             aria-label={`Remove search: ${query}`}
           >
             <span className="shrink-0">Search |</span>
@@ -60,7 +67,7 @@ export function ActiveFilterChips({
             {...CHIP_MOTION}
             type="button"
             onClick={() => onChange(group.removeAll)}
-            className="flex min-h-9 max-w-full flex-wrap items-center gap-x-1.5 gap-y-1 rounded-md border border-input px-2.5 py-2 text-left text-muted-foreground text-xs transition-colors hover:border-foreground hover:text-foreground md:min-h-8 md:py-1"
+            className={CHIP_CLASS}
             aria-label={`Remove filter ${group.section}: ${group.values
               .map((v) => v.value)
               .join(` ${group.joiner} `)}`}
@@ -75,6 +82,28 @@ export function ActiveFilterChips({
             <XIcon className="ml-auto size-3 shrink-0 opacity-60" />
           </motion.button>
         ))}
+        {/* The coverage filter reads as a condition on the list, so it sits
+            with the other chips — but it toggles between two states rather
+            than being removed, which is why it carries no ✕. */}
+        {previewText.trim() && (
+          <motion.button
+            key="__coverage__"
+            {...CHIP_MOTION}
+            type="button"
+            onClick={() => setCoverOnly(!coverOnly)}
+            aria-label={
+              coverOnly
+                ? "Hiding fonts that cannot render the preview text. Show every font"
+                : "Showing every font. Hide the ones that cannot render the preview text"
+            }
+            className={CHIP_CLASS}
+          >
+            <span className="shrink-0">Input Preview |</span>
+            <span className="text-foreground">
+              {coverOnly ? "No Tofu" : "Full"}
+            </span>
+          </motion.button>
+        )}
       </AnimatePresence>
       {currentSearch && (
         <SavePresetPopover filter={filter} currentSearch={currentSearch} />

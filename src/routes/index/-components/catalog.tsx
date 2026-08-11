@@ -372,7 +372,8 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
         scrollViewportRef={scrollRef}
         toolbar={
           results.length > 0 &&
-          hasActiveFilterChips(shownFilter) && (
+          (hasActiveFilterChips(shownFilter) ||
+            previewText.trim().length > 0) && (
             <ActiveFilterChips
               filter={shownFilter}
               onChange={commitFilter}
