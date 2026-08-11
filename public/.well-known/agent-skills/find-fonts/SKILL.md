@@ -47,9 +47,13 @@ environment:
 1. Get the candidate set: fetch the facet slice for your hardest constraint
    (writing system → `subset`, style → `class`, variable/mono/color → `flag`),
    or `/catalog-slim.json` if you can filter with code.
-2. Narrow by the remaining hard constraints: `class` (style), `subsets`
+2. Narrow by the remaining hard constraints: `class` (letterform), `subsets`
    (writing system), `isVariable`, `axes` (variable axes), `features` (OpenType
    tags), `weights`. To combine two facet slices, intersect them on `id`.
+   For **monospace**, do not trust `isMonospace` (the `isFixedPitch` bit is
+   wrong in both directions): a family is monospaced when it scores
+   `/Monospace/Monospace` in `tags`, or its `apiCategory` is `MONOSPACE`.
+   Monospace is not a `class` — Roboto Mono is `Sans`, Courier Prime is `Slab`.
 3. Rank subjective "feel" with the `tags` object — that is what makes mood
    queries ("joyful", "elegant", "technical") answerable.
 4. For a chosen family, fetch `/catalog/{id}.json` for the full record

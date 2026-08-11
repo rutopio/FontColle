@@ -111,10 +111,11 @@ Then link the user to \`${siteUrl}/instances/<Family_Name>\` for each result, an
 | \`id\` | string | Catalog slug, lowercased, spaces removed |
 | \`name\` | string | Family name as Google publishes it |
 | \`designer\` | string \\| null | May list several designers, comma-separated |
-| \`category\` | string | ${code(categories)} |
+| \`category\` | string | ${code(categories)}. Letterform only — advance width is the separate Spacing dimension below |
+| \`apiCategory\` | string | Google's own coarser category (\`SANS_SERIF\` \`MONOSPACE\`, …). Backs Spacing for the families the classification CSV has not reached |
 | \`license\` | string | ${licenses.map((l) => `\`${l}\``).join(" \\| ")} |
 | \`isVariable\` | boolean | True when the family ships a variable font |
-| \`isMonospace\` | boolean | From the post table's \`isFixedPitch\` |
+| \`isMonospace\` | boolean | From the post table's \`isFixedPitch\`. Unreliable for finding monospace families (wrong in both directions) — use the Spacing dimension instead |
 | \`isNoto\` | boolean | Part of the Noto superfamily |
 | \`weights\` | number[] | Standard weight steps present: ${weights.join(", ")} |
 | \`widthClass\` | number | OS/2 usWidthClass, ${widths[0]} (narrowest) – ${widths.at(-1)} |
@@ -156,7 +157,8 @@ The site's own filter UI exposes exactly these, and all are computable from the 
 | Dimension | Values | Combine |
 |---|---|---|
 | Text query | matches family name and designer | — |
-| Category | ${code(categories)} | OR |
+| Category | ${code(categories)} (letterform only) | OR |
+| Spacing | \`proportional\` \\| \`mono\` | radio |
 | Facet | the \`facets\` list above | AND |
 | OpenType feature | any of ${features.length} tags (${code(["liga", "smcp", "ss01", "zero"])}, …) | AND |
 | Variable axis | ${code(REGISTERED_AXES)} + ${customAxes.length} custom | AND |
@@ -193,6 +195,7 @@ Filters live in the URL of \`${siteUrl}/\`, so a query can be handed back to the
 |---|---|---|
 | \`q\` | text query | \`q=roboto\` |
 | \`class\` | class | \`class=Sans_Serif\` |
+| \`spacing\` | spacing | \`spacing=mono\` |
 | \`facet\` | facets | \`facet=variable_small-caps\` |
 | \`feature\` | features | \`feature=liga_zero\` |
 | \`axis\` | axes | \`axis=wght_opsz\` |

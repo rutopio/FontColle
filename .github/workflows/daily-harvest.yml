@@ -156,6 +156,10 @@ jobs:
           before=$(shasum -a 256 src/data/fonts.json | cut -d' ' -f1)
           python3 scripts/harvester/backfill_tags.py 2>&1 | tee -a update.log
           python3 scripts/harvester/backfill_form_category.py 2>&1 | tee -a update.log
+          # Must follow form_category: it overrides that result for slab-tagged
+          # families (Slab is a peer of Sans/Serif, not a Serif sub-style), and
+          # folds any legacy "Emoji" category back into Graphics.
+          python3 scripts/harvester/backfill_slab_category.py 2>&1 | tee -a update.log
           python3 scripts/harvester/backfill_contrast.py 2>&1 | tee -a update.log
           python3 scripts/harvester/backfill_display_names.py 2>&1 | tee -a update.log
           after=$(shasum -a 256 src/data/fonts.json | cut -d' ' -f1)

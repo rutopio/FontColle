@@ -124,13 +124,13 @@
           },
           "name": { "type": "string" },
           "designer": { "type": "string" },
-          "class": {
-            "type": "string",
-            "description": "Coarse style class, e.g. Sans, Serif, Display."
-          },
           "category": {
             "type": "string",
-            "description": "Google category, e.g. SANS_SERIF, SERIF, DISPLAY, HANDWRITING, MONOSPACE."
+            "description": "Letterform class: Sans, Serif, Slab, Script, Display, or Graphics. Advance width is not a class here — a monospaced family still carries its letterform class (Roboto Mono is Sans, Courier Prime is Slab). Detect monospace from the /Monospace/Monospace tag or apiCategory instead."
+          },
+          "apiCategory": {
+            "type": "string",
+            "description": "Google's own coarser category, e.g. SANS_SERIF, SERIF, DISPLAY, HANDWRITING, MONOSPACE. The fallback monospace signal for families the classification CSV has not reached."
           },
           "license": {
             "type": "string",

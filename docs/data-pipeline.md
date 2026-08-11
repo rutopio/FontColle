@@ -116,6 +116,7 @@ python3 to_dataset.py stress_output.json ../../src/data/fonts.json
 #    after harvest since it reads ttf_cache/.
 python3 backfill_tags.py                        # families.csv classification scores
 python3 backfill_form_category.py               # derived Category class
+python3 backfill_slab_category.py               # carve Slab out; fold legacy Emoji -> Graphics
 python3 backfill_contrast.py                    # quant.csv
 python3 backfill_display_names.py               # metadata endpoint
 python3 backfill_about.py                       # description + designers
