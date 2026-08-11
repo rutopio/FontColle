@@ -1,5 +1,3 @@
-import { SmileyIcon } from "@phosphor-icons/react";
-
 // CSS mask + currentColor; <img> can't inherit fill.
 function SpecimenImg({ src, className }: { src: string; className?: string }) {
   return (
@@ -24,13 +22,6 @@ function SpecimenImg({ src, className }: { src: string; className?: string }) {
 const boxClass = "h-6 w-full text-foreground";
 
 export function CategorySpecimen({ category }: { category: string }) {
-  if (category === "Emoji") {
-    return (
-      <span className={boxClass}>
-        <SmileyIcon className="mx-auto size-6" aria-hidden />
-      </span>
-    );
-  }
   return (
     <span className={boxClass}>
       <SpecimenImg src={`/specimens/category-${category.toLowerCase()}.svg`} />
