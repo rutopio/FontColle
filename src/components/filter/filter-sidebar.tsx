@@ -1,5 +1,6 @@
 import {
   ArrowsOutLineHorizontalIcon,
+  BracketsSquareIcon,
   DiscoBallIcon,
   SlidersHorizontalIcon,
   SmileyMeltingIcon,
@@ -194,7 +195,7 @@ export function FilterSidebar({
           />
           <RadioPillSection
             title="Spacing"
-            icon={ArrowsOutLineHorizontalIcon}
+            icon={BracketsSquareIcon}
             items={index.spacing}
             labels={SPACING_LABELS}
             selected={filter.spacing}

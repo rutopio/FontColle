@@ -13,7 +13,6 @@ const CATEGORY_SPECIMEN = {
   Serif: "Playfair Display",
   Display: "Bebas Neue",
   Script: "Dancing Script",
-  Mono: "JetBrains Mono",
 };
 
 const WEIGHT_STEPS = [100, 200, 300, 400, 500, 600, 700, 800, 900];

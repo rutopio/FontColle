@@ -19,9 +19,10 @@ none": Arimo, Darker Grotesque and ~90 other plain sans faces carry only
 /Expressive scores, and bucketing those into Display would be plainly wrong.
 The API category is the better answer whenever the tag tree is silent.
 
-Graphics and Emoji are never touched: they come from a curated name whitelist
-in to_dataset.py, not from the tag tree, and some of them do carry form tags
-(Datatype scores /Monospace 100) that would otherwise pull them out.
+Graphics is never touched: it comes from a curated name whitelist in
+to_dataset.py, not from the tag tree, and some of those families do carry form
+tags (Datatype scores /Monospace 100) that would otherwise pull them out. Emoji
+faces are part of that whitelist and stay under Graphics.
 
 Run AFTER backfill_tags.py, which is what puts `tags` on each record.
 Idempotent.
@@ -35,21 +36,34 @@ import sys
 from collections import Counter
 
 # Top-level tag-tree groups that describe letterform, in decreasing specificity.
-# A tie at the top score resolves to the earliest entry here: Monospace beats
-# Sans (Inconsolata), Slab beats Serif (Bevan), Serif beats Script (Kurale).
-FORM_PRIORITY = ["Monospace", "Slab", "Serif", "Sans", "Script"]
+# A tie at the top score resolves to the earliest entry here: Slab beats Serif
+# (Bevan), Serif beats Script (Kurale).
+#
+# /Monospace is deliberately absent. Advance width is not a letterform, and
+# Google's own tag tree keeps the two orthogonal: 46 of the 58 families it tags
+# /Monospace also carry a /Sans, /Serif, /Slab or /Script tag (Roboto Mono is
+# Sans AND mono, Courier Prime is Slab AND mono, Xanh Mono is Serif AND mono).
+# Spacing is a facet of its own — see fontSpacing() in src/lib/fonts/filter/
+# facets.ts, which the Proportional/Monospaced filter reads.
+FORM_PRIORITY = ["Slab", "Serif", "Sans", "Script"]
 
 # Tag-tree group -> the Category class we show. Only the name differs.
 CLASS_OF = {
-    "Monospace": "Mono",
     "Slab": "Slab",
     "Serif": "Serif",
     "Sans": "Sans",
     "Script": "Script",
 }
 
+# Decorative tags that place an otherwise unclassifiable face in Display. Only
+# consulted for families Google gave no letterform tag at all: a pixel or
+# terminal face (VT323, Sixtyfour, Doto) is a display face, whereas a plain
+# coding face with no tags (Geist Mono, PT Mono) is closer to Sans.
+DISPLAY_THEME_TAGS = ["/Theme/Pixel", "/Theme/Techno"]
+DISPLAY_THEME_MIN = 50
+
 # Classes assigned by name whitelist rather than by tags; left as-is.
-CURATED = {"Graphics", "Emoji"}
+CURATED = {"Graphics"}
 
 # A tag counts towards its group at any positive score, matching what Google's
 # own site lists and the FORM_TAG_THRESHOLD the Style pills now use. (Mood pills
@@ -77,6 +91,16 @@ def form_class(rec):
     return None
 
 
+def untagged_mono_class(rec):
+    """Where a family Google tagged ONLY /Monospace belongs once Mono is no
+    longer a Category class. Decorative pixel/terminal faces read as Display;
+    plain coding faces have no letterform signal at all and default to Sans."""
+    tags = rec.get("tags") or {}
+    if any(tags.get(t, 0) >= DISPLAY_THEME_MIN for t in DISPLAY_THEME_TAGS):
+        return "Display"
+    return "Sans"
+
+
 def main():
     path = sys.argv[1] if len(sys.argv) > 1 else os.path.join(
         os.path.dirname(__file__), "..", "..", "src", "data", "fonts.json"
@@ -94,9 +118,12 @@ def main():
             continue
         want = form_class(r)
         # No form tag: Google has not scored the letterform, so primary_class()'s
-        # reading of the raw API category stands.
+        # reading of the raw API category stands — except for a family still
+        # sitting on the retired "Mono" class, which has to land somewhere.
         if want is None:
-            continue
+            if r.get("category") != "Mono":
+                continue
+            want = untagged_mono_class(r)
         if r.get("category") != want:
             moves[f"{r.get('category')} -> {want}"] += 1
             r["category"] = want

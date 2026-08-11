@@ -40,11 +40,15 @@ GRAPHICS_FAMILIES = {
 }
 
 def primary_class(cat, name=None):
+    # Category describes letterform only; advance width is carried separately by
+    # fontSpacing() (src/lib/fonts/filter/facets.ts) off the /Monospace tag and
+    # apiCategory, so the API's MONOSPACE bucket does not map to a class here.
+    # backfill_form_category.py refines this from Google's tag tree afterwards,
+    # which is what places most MONOSPACE families on Sans/Serif/Slab.
     if name in GRAPHICS_FAMILIES: return "Graphics"
     c = (cat or "").upper()
     if "SERIF" in c and "SANS" not in c: return "Serif"
     if "SANS" in c: return "Sans"
-    if "MONO" in c: return "Mono"
     if "DISPLAY" in c: return "Display"
     if "HANDWRITING" in c or "SCRIPT" in c: return "Script"
     return "Sans"

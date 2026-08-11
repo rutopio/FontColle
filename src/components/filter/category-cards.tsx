@@ -36,7 +36,7 @@ export function CategoryCards({
           Category
           <InfoTip title="Category">
             {
-              "One primary class per family, so the cards partition the catalog. Derived from Google Fonts’ letterform classifications by taking each family’s highest-scoring one, with Mono winning ties over Sans or Serif. Families Google has not classified fall back to the category its API reports."
+              "One primary class per family, so the cards partition the catalog. Derived from Google Fonts’ letterform classifications by taking each family’s highest-scoring one, with Slab winning ties over Serif. Letterform only: whether a family is monospaced is a separate filter, because a mono face still has a letterform — Roboto Mono is a sans, Courier Prime a slab. Families Google has not classified fall back to the category its API reports."
             }
           </InfoTip>
         </h2>

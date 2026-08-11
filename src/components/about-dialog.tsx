@@ -64,7 +64,7 @@ function AboutBody({
             rel="noreferrer"
             className="underline underline-offset-4 transition-colors hover:text-foreground"
           >
-            ChingRu (@rutopio)
+            ChingRu
           </a>
         </p>
       </div>

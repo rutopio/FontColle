@@ -4,11 +4,9 @@ export const MCP_CATEGORIES = [
   "Sans",
   "Serif",
   "Slab",
-  "Mono",
   "Display",
   "Script",
   "Graphics",
-  "Emoji",
 ] as const;
 
 export const MCP_MAX_RESULTS = 50;
