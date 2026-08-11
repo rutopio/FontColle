@@ -6,7 +6,7 @@
 
 [![FontColle](/cover.png)](https://fontcolle.com)
 
-FontColle is an enhanced Google **Font**s **Colle**ction that filters OpenType features, variable-font axes, weight/width steps, writing systems, languages, and color vs. monochrome. Preview any weight or named instance live, edit the specimen text inline, and save favorites.
+FontColle (*/font-koh-lay/*) is an enhanced Google **Font**s **Colle**ction that filters OpenType features, variable-font axes, weight/width steps, writing systems, languages, and color vs. monochrome. Preview any weight or named instance live, edit the specimen text inline, and save favorites.
 
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)
