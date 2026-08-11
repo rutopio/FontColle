@@ -14,11 +14,19 @@ build/publish/deploy flow. This file is only about origins.
 | --- | --- | --- | --- |
 | `fonts.json` | no (R2) | the full harvest + backfills | google/fonts repo + Google Fonts APIs + the font binaries |
 | `data-manifest.json` | no (R2) | `scripts/publish-assets.mjs` | pointer to the R2 snapshot the build pulls; lives at `manifest/latest.json` in R2 |
-| `fonts.sample.json` | yes | committed 24-family excerpt of `fonts.json` | fallback so a fork without R2 access can still build |
+| `fonts.sample.json` | yes | committed 30-family excerpt of `fonts.json` | fallback so a fork without R2 access can still build |
 | `scripts.json` | yes | `to_dataset.py` (`write_label_maps`) | derived label map: script code → human name, for the scripts the catalog uses. Names from `gflanguages` |
 | `languages.json` | yes | `to_dataset.py` (`write_label_maps`) | derived label map: language code → human name, for the languages the catalog uses. Names from `gflanguages` |
 | `axes.json` | yes | `scripts/gen-axes-data.mjs` (one-off) | [googlefonts/axisregistry](https://github.com/googlefonts/axisregistry) — variable-axis registry (name, min/default/max, fallbacks) |
 | `vendors.json` | yes | `scripts/gen-vendors-data.mjs` (one-off) | [Microsoft OpenType vendor ID registry](https://learn.microsoft.com/en-us/typography/vendors/) — the OS/2 `achVendID` → foundry name map |
+
+`fonts.sample.json` is hand-picked, not generated, and six of its families are
+there to keep the filters exercisable on a fork: **Roboto Mono** (Sans),
+**Courier Prime** (Slab), **Xanh Mono** (Serif) and **VT323** (Display) are all
+monospaced, so the Spacing radio has something on both sides and the
+Category × Spacing pairs are non-empty; **Noto Emoji** and **Noto Sans Symbols**
+populate the Graphics card. Keep that spread when editing the sample — without
+it the Spacing filter reads as broken (`Monospaced 0`).
 
 `scripts.json` / `languages.json` are regenerated on every daily harvest but
 change only when a family introduces a brand-new writing system or language, so

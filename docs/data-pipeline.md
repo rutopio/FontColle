@@ -16,7 +16,7 @@ each individual field comes from, see [`src/data/README.md`](../src/data/README.
 
 ## Running without R2 access
 
-The R2 bucket is maintainer-only, so `pnpm pull:data` will not work on a fork. **You do not need it to work on the UI.** A 24-family sample dataset ships in git (`src/data/fonts.sample.json`), and `pnpm build` falls back to it automatically when the R2 pull fails, so a fresh clone runs with zero data setup:
+The R2 bucket is maintainer-only, so `pnpm pull:data` will not work on a fork. **You do not need it to work on the UI.** A 30-family sample dataset ships in git (`src/data/fonts.sample.json`), and `pnpm build` falls back to it automatically when the R2 pull fails, so a fresh clone runs with zero data setup:
 
 ```bash
 pnpm install

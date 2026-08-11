@@ -35,7 +35,7 @@ pnpm pull:data    # fetch the data assets from R2 (first clone only)
 pnpm dev          # vite dev server on :3000
 ```
 
-`pnpm pull:data` needs a `CLOUDFLARE_API_TOKEN` with R2 read on the `fontcolle-assets` bucket, which only the maintainers have: see [docs/data-pipeline.md](docs/data-pipeline.md). **Outside contributors skip it** — `pnpm build` falls back to a committed 24-family sample, so `pnpm build && pnpm dev` runs with no Cloudflare account or API key. Details, and how to harvest more families, in [Running without R2 access](docs/data-pipeline.md#running-without-r2-access).
+`pnpm pull:data` needs a `CLOUDFLARE_API_TOKEN` with R2 read on the `fontcolle-assets` bucket, which only the maintainers have: see [docs/data-pipeline.md](docs/data-pipeline.md). **Outside contributors skip it** — `pnpm build` falls back to a committed 30-family sample, so `pnpm build && pnpm dev` runs with no Cloudflare account or API key. Details, and how to harvest more families, in [Running without R2 access](docs/data-pipeline.md#running-without-r2-access).
 
 `pnpm check` runs Biome (with `--write`) then `tsc --noEmit`; run it before committing. `pnpm build` produces the Workers bundle in `dist/`.
 
@@ -56,7 +56,7 @@ The dataset (harvest → R2 storage → build → deploy) is documented separate
 - **[docs/data-pipeline.md](docs/data-pipeline.md)** — where the data lives, running without R2 access, building the dataset, bootstrapping from scratch, and the daily incremental CI update.
 - **[src/data/README.md](src/data/README.md)** — provenance of each data file and each `fonts.json` field.
 
-The short version: `fonts.json` (~21 MB) and the manifest pointer live in R2, not git; the daily workflow harvests only what changed, publishes to R2, and fires a Cloudflare Deploy Hook — a data-only day makes zero commits. Forks with no R2 access build against a committed 24-family sample.
+The short version: `fonts.json` (~21 MB) and the manifest pointer live in R2, not git; the daily workflow harvests only what changed, publishes to R2, and fires a Cloudflare Deploy Hook — a data-only day makes zero commits. Forks with no R2 access build against a committed 30-family sample.
 
 ## Open Graph images
 
@@ -81,3 +81,5 @@ The fonts listed in this project are not distributed here; every font file and d
 Made by [ChingRu(@rutopio)](https://chingru.com) - hello[AT]chingru.com
 
 </div>
+
+[![FontColle](/logo.png)](https://fontcolle.com)
