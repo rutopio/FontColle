@@ -11,6 +11,7 @@ import {
   useState,
 } from "react";
 import { AboutLink } from "@/components/about-link";
+import { CountFlash } from "@/components/count-flash";
 import { FavoriteToggle } from "@/components/favorite-toggle";
 import {
   ActiveFilterChips,
@@ -329,7 +330,7 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
 
           <div className="ml-auto flex items-center gap-2 max-md:ml-0 max-md:w-full max-md:justify-between md:shrink-0 md:gap-3">
             <span className="flex-1 text-sm" aria-live="polite">
-              <span className="font-mono tabular-nums">{results.length}</span>{" "}
+              <CountFlash value={results.length} className="font-mono" />{" "}
               {results.length === 1 ? "font" : "fonts"}
             </span>
             <div className="md:hidden">
