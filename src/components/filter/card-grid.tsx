@@ -13,6 +13,7 @@ export function CardGrid({
   onReset,
   label,
   axis,
+  info,
   flashKey,
   mode,
   onToggleMode,
@@ -25,6 +26,7 @@ export function CardGrid({
   onReset: () => void;
   label: (value: string) => string;
   axis: "wght" | "wdth";
+  info?: React.ReactNode;
   flashKey?: number;
   mode?: MatchMode;
   onToggleMode?: () => void;
@@ -39,6 +41,7 @@ export function CardGrid({
         canSort={false}
         sort="count"
         onToggleSort={() => {}}
+        info={info}
         flashKey={flashKey}
         mode={mode}
         onToggleMode={onToggleMode}

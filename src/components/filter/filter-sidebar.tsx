@@ -317,6 +317,7 @@ export function FilterSidebar({
             onReset={() => onChange({ ...filter, weights: [] })}
             label={weightLabel}
             axis="wght"
+            info="The nine standard steps a family can reach, not the styles it ships. A variable family matches every step inside its wght axis range, so it can appear here for a weight it has no named instance for — reach that weight by dragging the axis on the detail page. A static family matches the weights of its own files, snapped to the nearest step."
             flashKey={flashKeyFor("weights")}
             mode={modeOf("weights")}
             onToggleMode={() => toggleMode("weights")}
@@ -330,7 +331,7 @@ export function FilterSidebar({
             onReset={() => onChange({ ...filter, widths: [] })}
             label={widthLabel}
             axis="wdth"
-            flashKey={flashKeyFor("widths")}
+            info="The nine standard steps a family can reach, not the styles it ships. A variable family matches every step inside its wdth axis range, so a family whose named instances are all normal width still appears under Ultra Cond. and Ultra Expd. if its axis stretches that far — reach those widths by dragging the axis on the detail page. A static family matches the single width recorded in its OS/2 table."
             mode={modeOf("widths")}
             onToggleMode={() => toggleMode("widths")}
           />
