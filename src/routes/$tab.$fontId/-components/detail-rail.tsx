@@ -15,6 +15,7 @@ import {
   useProximityHover,
   useRegisterProximityItem,
 } from "@/hooks/use-proximity-hover";
+import type { TabSlug } from "@/lib/fonts/last-tab";
 import { spring } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
@@ -27,7 +28,14 @@ export type DetailTab =
   | "designer"
   | "license";
 
-export const TABS = [
+// slug is typed against TabSlug so the rail and the persisted-tab vocabulary
+// in lib/fonts/last-tab.ts cannot drift apart.
+export const TABS: {
+  id: DetailTab;
+  slug: TabSlug;
+  label: string;
+  icon: typeof EyesIcon;
+}[] = [
   {
     id: "sample" as const,
     slug: "instances",
@@ -67,9 +75,9 @@ export const TABS = [
   },
 ];
 
-export type TabSlug = (typeof TABS)[number]["slug"];
+export type { TabSlug };
 
-const BY_SLUG = new Map(TABS.map((t) => [t.slug, t.id]));
+const BY_SLUG = new Map<string, DetailTab>(TABS.map((t) => [t.slug, t.id]));
 const BY_ID = new Map(TABS.map((t) => [t.id, t.slug]));
 
 export const tabFromSlug = (slug: string): DetailTab | undefined =>

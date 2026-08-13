@@ -2,6 +2,7 @@ import { ArrowLeftIcon, GoogleLogoIcon } from "@phosphor-icons/react";
 import { Link, useCanGoBack, useRouter } from "@tanstack/react-router";
 import type * as React from "react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { AboutLink } from "@/components/about-link";
 import { FavoriteToggle } from "@/components/favorite-toggle";
 import { FontTraits } from "@/components/font-traits";
@@ -33,6 +34,15 @@ export function DetailHeader({ font }: { font: FontRecord }) {
 
   const RepoIcon = repoHostIcon(font.repositoryUrl);
 
+  const copyName = async () => {
+    try {
+      await navigator.clipboard.writeText(font.name);
+      toast.success("Copied font name", { description: font.name });
+    } catch {
+      toast.error("Copy failed");
+    }
+  };
+
   return (
     <>
       <div className="flex w-full min-w-0 items-center gap-1 md:w-auto">
@@ -61,11 +71,17 @@ export function DetailHeader({ font }: { font: FontRecord }) {
         </div>
         <Separator aria-hidden orientation="vertical" className="mx-2 h-5" />
         <div className="flex min-w-0 items-baseline gap-2">
-          <h1
-            className="truncate font-semibold text-lg leading-tight"
-            style={{ fontFamily: `"${font.name}", sans-serif` }}
-          >
-            {font.name}
+          <h1 className="min-w-0 font-semibold text-lg leading-tight">
+            <button
+              type="button"
+              onClick={copyName}
+              aria-label={`Copy font name "${font.name}"`}
+              title="Copy font name"
+              className="max-w-full cursor-pointer truncate rounded outline-none transition-colors hover:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+              style={{ fontFamily: `"${font.name}", sans-serif` }}
+            >
+              {font.name}
+            </button>
           </h1>
           {font.designer && <p className="truncate text-xs">{font.designer}</p>}
         </div>

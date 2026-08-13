@@ -4,6 +4,7 @@ import { FontActions } from "@/components/font-actions";
 import { FontTraits } from "@/components/font-traits";
 import { Badge } from "@/components/ui/badge";
 import type { FilterSelection } from "@/lib/fonts/filter";
+import { useLastDetailTab } from "@/lib/fonts/last-tab";
 import type { FontRecord } from "@/lib/fonts/types";
 import { useFontFacePreview } from "@/lib/fonts/use-font-face-preview";
 import { cn } from "@/lib/utils";
@@ -35,12 +36,13 @@ export const FontCard = memo(function FontCard({
     axisValues,
     previewText
   );
+  const [lastTab] = useLastDetailTab();
 
   return (
     <Link
       ref={previewRef}
       to="/$tab/$fontId"
-      params={{ tab: "instances", fontId: font.id }}
+      params={{ tab: lastTab, fontId: font.id }}
       viewTransition
       className={cn(
         "flex h-72 flex-col gap-4 overflow-hidden border-border border-r p-4 transition-[color,background-color] duration-fast ease-snap hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset",

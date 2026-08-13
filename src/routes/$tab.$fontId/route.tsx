@@ -16,6 +16,7 @@ import {
   blocksWithCoverage,
   useGlyphCoverage,
 } from "@/lib/fonts/glyph-coverage";
+import { useLastDetailTab } from "@/lib/fonts/last-tab";
 import type { FontRecord } from "@/lib/fonts/types";
 import { blockOf, parseGlyphQuery } from "@/lib/fonts/unicode-blocks";
 import { absoluteUrl, pageTitle } from "@/lib/site";
@@ -157,6 +158,14 @@ function DetailPage() {
       params: { tab: slugFromTab(id), fontId: font.id },
       replace: true,
     });
+
+  // Remember the view the user ended on so the next font opens on it. Driven by
+  // the resolved tab, not by selectTab, so the mobile tab bar and deep links
+  // (which never call selectTab) are recorded too.
+  const [, setLastTab] = useLastDetailTab();
+  useEffect(() => {
+    setLastTab(slugFromTab(tab));
+  }, [tab, setLastTab]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

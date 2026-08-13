@@ -117,6 +117,18 @@ const DEFAULT_SIZE: Record<BlockType, number> = {
   normal: 18,
 };
 
+// Unitless multiplier of font-size, matching the .tester-editor CSS default.
+const LEADING_MIN = 0.8;
+const LEADING_MAX = 2.5;
+const LEADING_STEP = 0.05;
+const LEADING_PRESETS = [1, 1.2, 1.4, 1.5, 1.6, 1.8, 2];
+const DEFAULT_LEADING: Record<BlockType, number> = {
+  h1: 1.2,
+  h2: 1.2,
+  h3: 1.2,
+  normal: 1.2,
+};
+
 const HEADING_WEIGHT: Record<"h1" | "h2" | "h3", number> = {
   h1: 700,
   h2: 600,
@@ -154,6 +166,8 @@ function alignedAs(
   return null;
 }
 
+const round2 = (v: number) => Math.round(v * 100) / 100;
+
 // Snap to nearest shipped weight to avoid browser synthesis.
 function headingInstance(
   instances: FontInstance[],
@@ -186,6 +200,11 @@ function TesterInner({
   const [sizes, setSizes] = useState<Record<BlockType, number>>(DEFAULT_SIZE);
   const size = sizes[block];
   const setSize = (v: number) => setSizes((s) => ({ ...s, [block]: v }));
+  const [leadings, setLeadings] =
+    useState<Record<BlockType, number>>(DEFAULT_LEADING);
+  const leading = leadings[block];
+  const setLeading = (v: number) =>
+    setLeadings((l) => ({ ...l, [block]: round2(v) }));
 
   const syncFromSelection = useCallback(() => {
     const selection = $getSelection();
@@ -327,6 +346,10 @@ function TesterInner({
     "--pg-size-h2": `${sizes.h2}px`,
     "--pg-size-h3": `${sizes.h3}px`,
     "--pg-size-normal": `${sizes.normal}px`,
+    "--pg-leading-h1": leadings.h1,
+    "--pg-leading-h2": leadings.h2,
+    "--pg-leading-h3": leadings.h3,
+    "--pg-leading-normal": leadings.normal,
   } as CSSProperties;
 
   return (
@@ -373,6 +396,31 @@ function TesterInner({
               presets={SIZE_PRESETS}
               onChange={setSize}
               ariaLabel={`${block} font size`}
+            />
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2 text-xs">
+          <span>Leading</span>
+          <Slider
+            label="Line height"
+            min={LEADING_MIN}
+            max={LEADING_MAX}
+            step={LEADING_STEP}
+            value={leading}
+            onChange={(v) => setLeading(v as number)}
+            showValue={false}
+            tooltipSide="bottom"
+            className="w-32"
+          />
+          <span className="flex w-8 shrink-0 justify-end">
+            <EditableValue
+              value={leading}
+              min={LEADING_MIN}
+              max={LEADING_MAX}
+              presets={LEADING_PRESETS}
+              onChange={setLeading}
+              ariaLabel={`${block} line height`}
             />
           </span>
         </div>

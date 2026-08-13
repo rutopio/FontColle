@@ -327,18 +327,22 @@
 }
 .tester-editor h1 {
   font-size: var(--pg-size-h1);
+  line-height: var(--pg-leading-h1);
   font-weight: 700;
 }
 .tester-editor h2 {
   font-size: var(--pg-size-h2);
+  line-height: var(--pg-leading-h2);
   font-weight: 600;
 }
 .tester-editor h3 {
   font-size: var(--pg-size-h3);
+  line-height: var(--pg-leading-h3);
   font-weight: 500;
 }
 .tester-editor p {
   font-size: var(--pg-size-normal);
+  line-height: var(--pg-leading-normal);
 }
 .tester-editor > * + * {
   margin-top: 1em;

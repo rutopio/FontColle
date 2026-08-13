@@ -61,6 +61,7 @@ import {
   suggestFamilies,
 } from "@/lib/fonts/filter";
 import { useRenderableFontIds } from "@/lib/fonts/glyph-index";
+import { useLastDetailTab } from "@/lib/fonts/last-tab";
 import { DEFAULT_SORT, type SortKey, sortFonts } from "@/lib/fonts/sort";
 import type { FontRecord } from "@/lib/fonts/types";
 import { EASE_OUT, MOTION_S } from "@/lib/motion";
@@ -136,6 +137,7 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
     },
     [lastGroup]
   );
+  const [lastTab] = useLastDetailTab();
   const [viewPref, setViewPref] = useLocalStorageState(
     "font-colle.view",
     "grid"
@@ -243,11 +245,11 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
     (id: string) => {
       navigate({
         to: "/$tab/$fontId",
-        params: { tab: "instances", fontId: id },
+        params: { tab: lastTab, fontId: id },
         viewTransition: true,
       });
     },
-    [navigate]
+    [navigate, lastTab]
   );
 
   const searchSuggestions = useMemo<SearchSuggestion[]>(() => {
