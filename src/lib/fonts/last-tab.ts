@@ -3,7 +3,7 @@ import { useLocalStorageState } from "@/hooks/use-local-storage-state";
 /** Detail-view slugs, in rail order. The rail builds its tabs from these. */
 export const TAB_SLUGS = [
   "instances",
-  "tester",
+  "paragraph",
   "glyphs",
   "detail",
   "designer",

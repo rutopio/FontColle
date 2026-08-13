@@ -44,8 +44,8 @@ export const TABS: {
   },
   {
     id: "tester" as const,
-    slug: "tester",
-    label: "Tester",
+    slug: "paragraph",
+    label: "Paragraph",
     icon: PenNibIcon,
   },
   {

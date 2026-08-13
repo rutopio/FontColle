@@ -26,7 +26,7 @@ function cacheKey(request: Request): Request {
 const DETAIL_CACHE_SECONDS = 86400;
 const DETAIL_TAB_SLUGS = new Set([
   "instances",
-  "tester",
+  "paragraph",
   "glyphs",
   "detail",
   "designer",
