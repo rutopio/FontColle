@@ -51,7 +51,7 @@ export function Detail({
   glyphLoading: boolean;
   glyphHighlightCp: number | null;
 }) {
-  const { text, setText, coverOnly } = usePreview();
+  const { text, setText } = usePreview();
   const versionHistory = font.versionHistory ?? [];
   const specimen = text || specimenFor(font);
   const seedLines = specimenLinesFor(font);
@@ -137,13 +137,13 @@ export function Detail({
     return {
       ...previewStyle({
         name: font.name,
-        showNotdef: !coverOnly,
+        showNotdef: true,
         coords,
         italic,
       }),
       fontFeatureSettings: featureSettings,
     };
-  }, [font.name, font.axes, axisState, italic, featureSettings, coverOnly]);
+  }, [font.name, font.axes, axisState, italic, featureSettings]);
 
   return (
     <>
@@ -158,8 +158,9 @@ export function Detail({
           ))
         }
         footer={
+          // No coverage toggle here: the detail page always boxes missing
+          // glyphs as notdef, so the control would have nothing to switch.
           <PreviewBar
-            coverageToggle
             onScrollTop={() =>
               scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" })
             }
@@ -183,7 +184,7 @@ export function Detail({
             instances={font.instances}
             specimen={specimen}
             italic={italic}
-            showNotdef={!coverOnly}
+            showNotdef
           />
         )}
 
@@ -196,7 +197,7 @@ export function Detail({
                 specimen={specimen}
                 fontName={font.name}
                 fontLoaded={fontLoaded}
-                showNotdef={!coverOnly}
+                showNotdef
                 size={size}
                 featureSettings={featureSettings}
                 varyingAxisTags={varyingAxisTags}
