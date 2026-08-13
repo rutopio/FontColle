@@ -24,6 +24,7 @@ import { Panel } from "./panel";
 import { type SpecRow, SpecTable } from "./spec-table";
 import { Tester } from "./tester";
 import { type UseMethod, UseMethodTabs, UsePanel } from "./use";
+import { VariableRow } from "./variable-row";
 
 export function Detail({
   font,
@@ -172,6 +173,17 @@ export function Detail({
             seedLines={seedLines}
             instances={font.instances}
             fontName={font.name}
+          />
+        )}
+
+        {tab === "sample" && (
+          <VariableRow
+            fontName={font.name}
+            axes={font.axes}
+            instances={font.instances}
+            specimen={specimen}
+            italic={italic}
+            showNotdef={!coverOnly}
           />
         )}
 
