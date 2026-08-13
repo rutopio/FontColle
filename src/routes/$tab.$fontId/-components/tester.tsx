@@ -377,17 +377,23 @@ function TesterInner({
 
         <div className="flex items-center gap-2 text-xs">
           <span>Size</span>
-          <Slider
-            label="Font size"
-            min={SIZE_MIN}
-            max={SIZE_MAX}
-            value={size}
-            onChange={(v) => setSize(v as number)}
-            showValue={false}
-            tooltipSide="bottom"
-            className="w-32"
-          />
-          <span className="flex w-8 shrink-0 justify-end">
+          {/* Slider's own wrapper is w-full, so the width has to be set here;
+              className lands on the inner track and would not constrain it. */}
+          <div className="w-32 shrink-0">
+            <Slider
+              label="Font size"
+              min={SIZE_MIN}
+              max={SIZE_MAX}
+              value={size}
+              onChange={(v) => setSize(v as number)}
+              showValue={false}
+              tooltipSide="bottom"
+              // Slider reserves mb-2 for the hover tooltip, which sits outside
+              // the control and pushes the track above the row's centre line.
+              className="mb-0"
+            />
+          </div>
+          <span className="flex w-8 shrink-0 items-center justify-end">
             <EditableValue
               value={size}
               min={SIZE_MIN}
@@ -402,18 +408,22 @@ function TesterInner({
 
         <div className="flex items-center gap-2 text-xs">
           <span>Leading</span>
-          <Slider
-            label="Line height"
-            min={LEADING_MIN}
-            max={LEADING_MAX}
-            step={LEADING_STEP}
-            value={leading}
-            onChange={(v) => setLeading(v as number)}
-            showValue={false}
-            tooltipSide="bottom"
-            className="w-32"
-          />
-          <span className="flex w-8 shrink-0 justify-end">
+          <div className="w-32 shrink-0">
+            <Slider
+              label="Line height"
+              min={LEADING_MIN}
+              max={LEADING_MAX}
+              step={LEADING_STEP}
+              value={leading}
+              onChange={(v) => setLeading(v as number)}
+              showValue={false}
+              tooltipSide="bottom"
+              // Slider reserves mb-2 for the hover tooltip, which sits outside
+              // the control and pushes the track above the row's centre line.
+              className="mb-0"
+            />
+          </div>
+          <span className="flex w-8 shrink-0 items-center justify-end">
             <EditableValue
               value={leading}
               min={LEADING_MIN}
