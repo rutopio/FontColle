@@ -277,10 +277,7 @@ export function ensureFontRangeLoaded(
   );
 }
 
-// A lone combining mark has no advance of its own, so it can only be measured as
-// part of its cluster. Fallback is per-cluster too: if the family misses the mark,
-// the browser re-renders the whole cluster (base included) in the fallback font.
-const CLUSTER_RE = /\P{M}\p{M}*|\p{M}+/gu;
+import { CLUSTER_RE } from "./text-clusters";
 
 /** Compares rendered widths against NotDef to detect truly missing glyphs. */
 function unpaintableCharacters(family: string, text: string): string[] {

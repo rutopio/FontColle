@@ -58,7 +58,7 @@ const coversAll = (ranges: Int32Array, s: string): boolean => {
   return true;
 };
 
-const CLUSTER_RE = /\P{M}\p{M}*|\p{M}+/gu;
+import { CLUSTER_RE } from "./text-clusters";
 const SKIP_RE = /[\s\p{Default_Ignorable_Code_Point}]/gu;
 
 /** Checks precomposed OR decomposed coverage (mirrors HarfBuzz normalization). */

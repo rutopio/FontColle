@@ -1,16 +1,7 @@
-import { createIsomorphicFn } from "@tanstack/react-start";
-import { getRequest } from "@tanstack/react-start/server";
+import { assetFetch } from "./asset-fetch";
 import { deriveFacets } from "./facets";
 import { slugKey } from "./slug";
 import type { FontRecord } from "./types";
-
-const assetFetch = createIsomorphicFn()
-  .server(async (path: string, signal?: AbortSignal) => {
-    const { env } = await import("cloudflare:workers");
-    const origin = new URL(getRequest().url).origin;
-    return env.ASSETS.fetch(new Request(`${origin}${path}`, { signal }));
-  })
-  .client((path: string, signal?: AbortSignal) => fetch(path, { signal }));
 
 export interface DesignerSibling {
   id: string;
