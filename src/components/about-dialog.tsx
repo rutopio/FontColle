@@ -17,12 +17,7 @@ import {
 } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAbout } from "@/lib/about/context";
-import {
-  ABOUT_DESCRIPTION_REST,
-  REPO_URL,
-  SITE_NAME,
-  SITE_NAME_PRONUNCIATION,
-} from "@/lib/site";
+import { REPO_URL, SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
 
 const AUTHOR_URL = "https://chingru.com";
 const SPONSOR_URL = "https://buymeacoffee.com/chingru";
@@ -49,11 +44,7 @@ function AboutBody({
     <>
       <div className="flex flex-col gap-4 text-center text-foreground text-sm leading-relaxed">
         <Description className="text-balance text-foreground">
-          {SITE_NAME}{" "}
-          <span className="text-muted-foreground">
-            (/{SITE_NAME_PRONUNCIATION}/)
-          </span>{" "}
-          {ABOUT_DESCRIPTION_REST}
+          {SITE_DESCRIPTION}
         </Description>
         <p className="text-balance">
           The fonts keep their own licenses, mostly the SIL Open Font License;

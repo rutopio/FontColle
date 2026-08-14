@@ -6,22 +6,22 @@ export function LogoIcon({ className }: { className?: string }) {
       className={cn("size-6 text-primary", className)}
       viewBox="0 0 24 24"
       fill="none"
-      strokeWidth={1.5}
       aria-hidden="true"
     >
       <rect width="24" height="24" rx="5.25" fill="currentColor" />
+      {/* The fridge is drawn on a 24px grid; inset it so the rounded plate
+          keeps a margin, the way the previous mark did. */}
       <g
         transform="translate(4 4) scale(0.667)"
         fill="none"
         stroke="var(--color-primary-foreground)"
-        strokeWidth="inherit"
+        strokeWidth="1.8"
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        <path d="M3 21H21V12C21 9.61305 20.0518 7.32387 18.364 5.63604C16.6761 3.94821 14.3869 3 12 3C9.61305 3 7.32387 3.94821 5.63604 5.63604C3.94821 7.32387 3 9.61305 3 12V21Z" />
-        <path d="M3 17L21 17" />
-        <path d="M9 17V13H21" />
-        <path d="M13 13V9H20" />
+        <path d="M5 10V2.6C5 2.26863 5.26863 2 5.6 2H18.4C18.7314 2 19 2.26863 19 2.6V10M5 10V21.4C5 21.7314 5.26863 22 5.6 22H18.4C18.7314 22 19 21.7314 19 21.4V10M5 10H19" />
+        <path d="M10 6L9 6" />
+        <path d="M10 14L9 14" />
       </g>
     </svg>
   );

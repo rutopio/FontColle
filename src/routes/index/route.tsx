@@ -8,12 +8,7 @@ import {
   searchToFilter,
 } from "@/lib/fonts/filter";
 import { fetchFirstPage } from "@/lib/fonts/first-page";
-import {
-  absoluteUrl,
-  SITE_DESCRIPTION,
-  SITE_NAME,
-  SITE_NAME_PRONUNCIATION,
-} from "@/lib/site";
+import { absoluteUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
 import { Catalog } from "./-components/catalog";
 import { FirstPagePending, ListPending } from "./-components/list-pending";
 
@@ -29,7 +24,6 @@ export const Route = createFileRoute("/")({
       "@context": "https://schema.org",
       "@type": "WebSite",
       name: SITE_NAME,
-      alternateName: SITE_NAME_PRONUNCIATION,
       description: SITE_DESCRIPTION,
       url: canonical,
       potentialAction: {

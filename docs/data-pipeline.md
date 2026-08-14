@@ -1,6 +1,6 @@
 # Data pipeline
 
-How the FontColle dataset is harvested, stored, built, and deployed. For where
+How the FontFridge dataset is harvested, stored, built, and deployed. For where
 each individual field comes from, see [`src/data/README.md`](../src/data/README.md).
 
 ## Where the data lives

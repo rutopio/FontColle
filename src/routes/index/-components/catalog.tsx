@@ -139,7 +139,7 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
   );
   const [lastTab] = useLastDetailTab();
   const [viewPref, setViewPref] = useLocalStorageState(
-    "font-colle.view",
+    "font-fridge.view",
     "grid"
   );
   const view: ViewMode = viewPref === "row" ? "row" : "grid";

@@ -30,7 +30,7 @@ export function AboutLink({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label="About FontColle"
+        aria-label="About FontFridge"
         aria-haspopup="dialog"
         aria-expanded={open}
         className={cn(chrome, hover, expanded)}

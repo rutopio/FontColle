@@ -72,7 +72,7 @@ def list_all_families():
     not the API display name, which is why we resolve dirs here.
     """
     req = urllib.request.Request(TREES_API)
-    req.add_header("User-Agent", "font-colle-harvest")
+    req.add_header("User-Agent", "font-fridge-harvest")
     tok = os.environ.get("GITHUB_TOKEN")
     if tok:
         req.add_header("Authorization", f"Bearer {tok}")

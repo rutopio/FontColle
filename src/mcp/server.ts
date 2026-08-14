@@ -23,7 +23,8 @@ type SlimFont = Pick<
   | "facets"
 > & { axes: string[]; weights: number[] };
 
-const SERVER_NAME = "fontcolle";
+// Must match `serverInfo.name` in public/.well-known/mcp/server-card.json.
+const SERVER_NAME = "font-fridge";
 const SERVER_VERSION = "1.0.0";
 const PROTOCOL_VERSION = "2025-06-18";
 
@@ -42,7 +43,7 @@ const TOOLS = [
   {
     name: "search_fonts",
     description:
-      "Search the FontColle catalog of open-source Google Fonts by style " +
+      "Search the FontFridge catalog of open-source Google Fonts by style " +
       "category, OpenType features, variable axes, writing system, and " +
       "weight. Returns the match count and the first " +
       `${MCP_MAX_RESULTS} families.`,

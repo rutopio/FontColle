@@ -21,11 +21,11 @@ function MobileTopBar({ favoriteFontId }: { favoriteFontId?: string }) {
     <div className="flex h-12 shrink-0 items-center justify-between border-border border-b bg-canvas px-3 md:hidden">
       <Link
         to="/"
-        aria-label="FontColle, all fonts"
+        aria-label="FontFridge, all fonts"
         className="flex items-center gap-1.5 text-primary"
       >
         <LogoIcon className="size-5" />
-        <span className="font-mono text-xs">FontColle</span>
+        <span className="font-mono text-xs">FontFridge</span>
       </Link>
       <div className="flex items-center gap-1">
         <ThemeToggle variant="bar" />
@@ -143,7 +143,7 @@ function ColumnHeader({ children }: { children: React.ReactNode }) {
     <header className="flex shrink-0 items-center gap-2 max-md:border-border max-md:border-b max-md:bg-background max-md:px-3 max-md:py-2 md:py-0">
       <Link
         to="/"
-        aria-label="FontColle, all fonts"
+        aria-label="FontFridge, all fonts"
         className="group/logo hidden w-(--rail-width) shrink-0 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl p-1 text-primary outline-none focus-visible:ring-2 focus-visible:ring-ring md:flex"
       >
         <LogoIcon className="size-7" />
@@ -179,12 +179,14 @@ export function Column({
     <motion.footer
       initial={false}
       animate={
-        footerHidden ? { height: 0, y: "100%" } : { height: "4rem", y: "0%" }
+        // "auto" so a wrapped multi-line preview field grows the footer
+        // instead of being clipped by a fixed height.
+        footerHidden ? { height: 0, y: "100%" } : { height: "auto", y: "0%" }
       }
       transition={{ duration: MOTION_S.base, ease: EASE_OUT }}
       className={cn(
-        "flex shrink-0 items-center gap-2 overflow-hidden bg-background p-2",
-        footerHidden ? "border-t-0" : "border-border border-t"
+        "flex min-h-16 shrink-0 items-center gap-2 overflow-hidden bg-background p-2",
+        footerHidden ? "min-h-0 border-t-0" : "border-border border-t"
       )}
     >
       <div className="flex flex-1 items-center gap-3">{footer}</div>

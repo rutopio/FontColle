@@ -27,7 +27,7 @@ concurrency:
 #    / glyphs AND the manifest (manifest/latest.json) all live in the
 #    fontcolle-assets R2 bucket now; git holds no data at all. The Pull/Publish
 #    steps call `wrangler r2 object put/get`; without R2 permission they fail.
-#  - CLOUDFLARE_DEPLOY_HOOK_URL: a Cloudflare Deploy Hook for the fontcolle
+#  - CLOUDFLARE_DEPLOY_HOOK_URL: a Cloudflare Deploy Hook for the font-fridge
 #    Worker. The "Trigger Cloudflare deploy" step POSTs it to redeploy, since no
 #    git push happens on a data-only day to drive the Git integration.
 

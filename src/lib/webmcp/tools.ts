@@ -51,7 +51,7 @@ export function buildTools(ctx: ToolContext): ToolDefinition[] {
     {
       name: "search_fonts",
       description:
-        "Filter the FontColle catalog of open-source Google Fonts and apply " +
+        "Filter the FontFridge catalog of open-source Google Fonts and apply " +
         "that filter to the page the user is looking at. The font list and " +
         "the URL both update, so the user sees the results and can keep " +
         "browsing from there. Returns the match count and the first " +

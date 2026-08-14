@@ -6,7 +6,7 @@
         {
           "href": "https://font.chingru.com/openapi.json",
           "type": "application/openapi+json",
-          "title": "FontColle Catalog API (OpenAPI 3.1)"
+          "title": "FontFridge Catalog API (OpenAPI 3.1)"
         }
       ],
       "service-doc": [
@@ -20,7 +20,7 @@
         {
           "href": "https://font.chingru.com/llms.txt",
           "type": "text/markdown",
-          "title": "Machine-readable description of FontColle"
+          "title": "Machine-readable description of FontFridge"
         }
       ],
       "item": [

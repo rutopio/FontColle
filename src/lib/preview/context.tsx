@@ -12,9 +12,9 @@ interface PreviewState {
 const PreviewContext = createContext<PreviewState | null>(null);
 
 export function PreviewProvider({ children }: { children: ReactNode }) {
-  const [text, setText] = useLocalStorageState("font-colle.preview-text", "");
+  const [text, setText] = useLocalStorageState("font-fridge.preview-text", "");
   const [cover, setCover] = useLocalStorageState(
-    "font-colle.preview-cover-only",
+    "font-fridge.preview-cover-only",
     "1"
   );
   const value = useMemo(

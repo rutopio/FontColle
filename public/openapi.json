@@ -1,10 +1,10 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "FontColle Catalog API",
+    "title": "FontFridge Catalog API",
     "version": "1.0.0",
     "summary": "Read-only JSON catalog of open-source Google Fonts families.",
-    "description": "FontColle serves its font catalog as static JSON files. Every family carries harvested font-binary data (variable axes, OpenType features, metrics, writing systems) plus Google's classification scores and subjective style tags. No authentication and no rate limit. `id` is the lowercased family name with spaces removed (e.g. \"Roboto Slab\" -> \"robotoslab\"). Start from /catalog-slim.json for filtering and ranking; fetch /catalog/{id}.json for a single family's full record.",
+    "description": "FontFridge serves its font catalog as static JSON files. Every family carries harvested font-binary data (variable axes, OpenType features, metrics, writing systems) plus Google's classification scores and subjective style tags. No authentication and no rate limit. `id` is the lowercased family name with spaces removed (e.g. \"Roboto Slab\" -> \"robotoslab\"). Start from /catalog-slim.json for filtering and ranking; fetch /catalog/{id}.json for a single family's full record.",
     "license": {
       "name": "Data: per-family OFL/Apache/UFL",
       "url": "https://font.chingru.com/llms.txt"

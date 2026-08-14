@@ -59,7 +59,7 @@ function detailDescription(font: FontRecord): string {
   }
   const specs = parts.length ? ` with ${parts.join(" and ")}` : "";
 
-  return `Preview ${lead}${by}${specs}. Test every variants and OpenType feature in FontColle.`;
+  return `Preview ${lead}${by}${specs}. Test every variants and OpenType feature in FontFridge.`;
 }
 
 export const Route = createFileRoute("/$tab/$fontId")({
