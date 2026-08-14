@@ -1,5 +1,6 @@
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { fontSpacing } from "../src/lib/fonts/filter/spacing.ts";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
@@ -134,6 +135,9 @@ export async function genFacets() {
   );
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(process.argv[1]).href
+) {
   await genFacets();
 }

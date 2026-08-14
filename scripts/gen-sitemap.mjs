@@ -1,5 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { SITE_DESCRIPTION, SITE_NAME } from "../src/lib/site-meta.ts";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
@@ -278,6 +279,9 @@ export async function genSitemap() {
   console.log("[sitemap] wrote public/llms.txt");
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(process.argv[1]).href
+) {
   await genSitemap();
 }

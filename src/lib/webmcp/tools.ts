@@ -15,6 +15,7 @@ import {
   mcpSummarise,
 } from "@/lib/fonts/mcp-shared";
 import type { FontRecord } from "@/lib/fonts/types";
+import { SITE_URL } from "@/lib/site";
 
 export interface ToolContext {
   router: AnyRouter;
@@ -130,7 +131,7 @@ export function buildTools(ctx: ToolContext): ToolDefinition[] {
 
         return json({
           count: matches.length,
-          appliedUrl: `https://font.chingru.com/${ctx.router.buildLocation({ to: "/", search }).searchStr}`,
+          appliedUrl: `${SITE_URL}/${ctx.router.buildLocation({ to: "/", search }).searchStr}`,
           fonts: matches.slice(0, MCP_MAX_RESULTS).map(mcpSummarise),
           truncated: matches.length > MCP_MAX_RESULTS,
         });
@@ -180,7 +181,15 @@ export function buildTools(ctx: ToolContext): ToolDefinition[] {
           },
           tab: {
             type: "string",
-            enum: ["instances", "glyphs", "metrics", "about"],
+            enum: [
+              "instances",
+              "paragraph",
+              "glyphs",
+              "detail",
+              "designer",
+              "use",
+              "license",
+            ],
             description: "Which detail tab to open. Defaults to instances.",
           },
         },
@@ -203,7 +212,7 @@ export function buildTools(ctx: ToolContext): ToolDefinition[] {
         });
         return json({
           opened: font.name,
-          url: `https://font.chingru.com/${tab}/${id}`,
+          url: `${SITE_URL}/${tab}/${id}`,
         });
       },
     },

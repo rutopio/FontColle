@@ -1,3 +1,4 @@
+import { SITE_URL } from "@/lib/site";
 import type { FontRecord } from "./types";
 
 export const MCP_CATEGORIES = [
@@ -37,6 +38,6 @@ export function mcpSummarise(
     isVariable: font.isVariable,
     isMonospace: font.isMonospace,
     designer: font.designer,
-    url: `https://font.chingru.com/instances/${font.id}`,
+    url: `${SITE_URL}/instances/${font.id}`,
   };
 }

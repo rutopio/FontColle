@@ -464,3 +464,4 @@ if __name__ == "__main__":
         print("errors:", file=sys.stderr)
         for fam, e in errors:
             print(f"  {fam}: {e}", file=sys.stderr)
+        sys.exit(1)

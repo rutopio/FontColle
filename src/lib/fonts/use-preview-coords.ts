@@ -41,12 +41,11 @@ export function usePreviewCoords(
       if (tag === "wght") weight = value;
       else coords[tag] = value;
     }
+    if (widthCoord != null && !("wdth" in coords)) {
+      coords.wdth = widthCoord;
+    }
     return { axisWeight: weight, variationCoords: coords };
-  }, [font.axes, selectedAxes, axisValues]);
-
-  if (widthCoord != null && !("wdth" in variationCoords)) {
-    variationCoords.wdth = widthCoord;
-  }
+  }, [font.axes, selectedAxes, axisValues, widthCoord]);
 
   const italic = selection.italic.includes("italic");
 
