@@ -1,4 +1,10 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Resvg } from "@resvg/resvg-js";
@@ -7,6 +13,8 @@ import opentype from "opentype.js";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT_DIR = resolve(ROOT, "public/og");
 const FONTS_JSON = resolve(ROOT, "src/data/fonts.json");
+const TTF_CACHE = resolve(ROOT, "scripts/harvester/ttf_cache");
+const CACHE_LICENSES = ["ofl", "apache", "ufl"];
 
 const W = 1200;
 const H = 630;
@@ -25,11 +33,13 @@ const NAME_MAX_SIZE = 200;
 // Old UA to get .ttf instead of .woff2 (opentype.js can't decompress woff2).
 const UA = "Mozilla/4.0";
 
+const WORDMARK = "FontFridge";
+
+// Keep in sync with src/components/logo-icon.tsx.
 const ICON_PATHS = [
-  "M3 21H21V12C21 9.61305 20.0518 7.32387 18.364 5.63604C16.6761 3.94821 14.3869 3 12 3C9.61305 3 7.32387 3.94821 5.63604 5.63604C3.94821 7.32387 3 9.61305 3 12V21Z",
-  "M3 17L21 17",
-  "M9 17V13H21",
-  "M13 13V9H20",
+  "M5 10V2.6C5 2.26863 5.26863 2 5.6 2H18.4C18.7314 2 19 2.26863 19 2.6V10M5 10V21.4C5 21.7314 5.26863 22 5.6 22H18.4C18.7314 22 19 21.7314 19 21.4V10M5 10H19",
+  "M10 6L9 6",
+  "M10 14L9 14",
 ];
 
 // Filled square mark matching LogoIcon; strokeWidth tunable because fill reads heavier.
@@ -69,7 +79,41 @@ async function fontUrl(family, text) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// The harvester already mirrors every family's TTF into ttf_cache/, so a full
+// re-render reads from disk instead of making ~1900 Google Fonts round trips.
+// Returns null when the family isn't cached, and the network path takes over.
+function cachedFont(family) {
+  const slug = family.toLowerCase().replace(/[^a-z0-9]/g, "");
+  for (const lic of CACHE_LICENSES) {
+    const dir = resolve(TTF_CACHE, lic, slug);
+    if (!existsSync(dir)) continue;
+    const files = readdirSync(dir).filter((f) => f.endsWith(".ttf"));
+    if (files.length === 0) continue;
+    // Upright only, then rank: variable file (`Inter[opsz,wght].ttf`) first
+    // since it carries the default instance, then an explicit -Regular, then
+    // anything else. Without the rank a plain shortest-name sort picks
+    // LondrinaSolid-Thin over -Regular and the card renders in the wrong weight.
+    const upright = files.filter((f) => !/italic/i.test(f));
+    const pool = upright.length > 0 ? upright : files;
+    const rank = (f) =>
+      f.includes("[") ? 0 : /-Regular\.ttf$/i.test(f) ? 1 : 2;
+    pool.sort((a, b) => rank(a) - rank(b) || a.length - b.length);
+    const buf = readFileSync(resolve(dir, pool[0]));
+    return opentype.parse(
+      buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength)
+    );
+  }
+  return null;
+}
+
 async function loadFont(family, text, tries = 3) {
+  try {
+    const hit = cachedFont(family);
+    if (hit) return hit;
+  } catch {
+    // Unreadable or unparseable cache entry: fall through to the network.
+  }
+
   let last;
   for (let i = 0; i < tries; i++) {
     try {
@@ -125,7 +169,7 @@ function wordmark() {
   const iconSize = 52;
   const gap = 16;
   const wordSize = 44;
-  const wordW = "FontColle".length * wordSize * 0.6;
+  const wordW = WORDMARK.length * wordSize * 0.6;
 
   const rowCenterY = H - 104;
   const totalW = iconSize + gap + wordW;
@@ -136,7 +180,7 @@ function wordmark() {
   const wordX = startX + iconSize + gap;
   const word =
     `<text x="${wordX.toFixed(2)}" y="${rowCenterY}" text-anchor="start" ` +
-    `dominant-baseline="central" font-family="Paper Mono" font-size="${wordSize}" fill="${FG}">FontColle</text>`;
+    `dominant-baseline="central" font-family="Paper Mono" font-size="${wordSize}" fill="${FG}">${WORDMARK}</text>`;
   return icon + word;
 }
 
@@ -155,7 +199,7 @@ function brandLockup() {
   const word =
     `<text x="${W / 2}" y="${wordCenterY.toFixed(2)}" text-anchor="middle" ` +
     `dominant-baseline="central" font-family="Paper Mono" font-size="${wordSize}" ` +
-    `fill="${FG}">FontColle</text>`;
+    `fill="${FG}">${WORDMARK}</text>`;
   return icon + word;
 }
 

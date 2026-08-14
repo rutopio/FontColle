@@ -25,7 +25,7 @@ import appCss from "@/styles.css?url";
 
 // Blocking scripts in <head> prevent theme/view FOUC.
 const themeScript = `try{if(localStorage.theme==='dark')document.documentElement.classList.add('dark')}catch(e){}`;
-const viewScript = `try{var v=localStorage['font-colle.view'];document.documentElement.dataset.view=v==='row'?'row':'grid'}catch(e){document.documentElement.dataset.view='grid'}`;
+const viewScript = `try{var v=localStorage['font-fridge.view'];document.documentElement.dataset.view=v==='row'?'row':'grid'}catch(e){document.documentElement.dataset.view='grid'}`;
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;

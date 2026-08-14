@@ -1,7 +1,7 @@
 import { useCallback, useSyncExternalStore } from "react";
 import { type FilterSearch, parseFilterSearch } from "./filter";
 
-const KEY = "font-colle.presets.v1";
+const KEY = "font-fridge.presets.v1";
 
 export interface FilterPreset {
   id: string;

@@ -1,8 +1,8 @@
 {
   "serverInfo": {
-    "name": "fontcolle",
+    "name": "font-fridge",
     "version": "1.0.0",
-    "title": "FontColle Catalog",
+    "title": "FontFridge Catalog",
     "description": "Search and inspect open-source Google Fonts families by style category, OpenType features, variable axes, writing system, and weight."
   },
   "transport": {

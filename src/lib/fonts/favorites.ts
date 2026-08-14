@@ -1,6 +1,6 @@
 import { useCallback, useSyncExternalStore } from "react";
 
-const KEY = "font-colle.favorites.v1";
+const KEY = "font-fridge.favorites.v1";
 
 interface FavStore {
   favorites: string[];

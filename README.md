@@ -1,12 +1,12 @@
 <div align="center">
 
-# FontColle
+# FontFridge
 
 ▌　[https://font.chingru.com](https://font.chingru.com)　▐
 
-[![FontColle](/cover.png)](https://font.chingru.com)
+[![FontFridge](/cover.png)](https://font.chingru.com)
 
-FontColle (*/font-koh-lay/*) is an enhanced Google **Font**s **Colle**ction that filters OpenType features, variable-font axes, weight/width steps, writing systems, languages, and color vs. monochrome. Preview any weight or named instance live, edit the specimen text inline, and save favorites.
+FontFridge is an enhanced Google Fonts collection that filters OpenType features, variable-font axes, weight/width steps, writing systems, languages, and color vs. monochrome. Preview any weight or named instance live, edit the specimen text inline, and save favorites.
 
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)
@@ -19,8 +19,8 @@ FontColle (*/font-koh-lay/*) is an enhanced Google **Font**s **Colle**ction that
 Host on ![Cloudflare Workers](https://img.shields.io/badge/Cloudflare_Workers-F38020?style=flat&logo=cloudflare&logoColor=white)
 
 
-[![Daily incremental harvest](https://github.com/rutopio/FontColle/actions/workflows/daily-harvest.yml/badge.svg)](https://github.com/rutopio/FontColle/actions/workflows/daily-harvest.yml)
-[![Full harvest](https://github.com/rutopio/FontColle/actions/workflows/full-harvest.yml/badge.svg)](https://github.com/rutopio/FontColle/actions/workflows/full-harvest.yml)
+[![Daily incremental harvest](https://github.com/rutopio/font-fridge/actions/workflows/daily-harvest.yml/badge.svg)](https://github.com/rutopio/font-fridge/actions/workflows/daily-harvest.yml)
+[![Full harvest](https://github.com/rutopio/font-fridge/actions/workflows/full-harvest.yml/badge.svg)](https://github.com/rutopio/font-fridge/actions/workflows/full-harvest.yml)
 
 
 </div>
@@ -78,8 +78,8 @@ The fonts listed in this project are not distributed here; every font file and d
 
 <div align="center">
 
-Made by [ChingRu(@rutopio)](https://chingru.com) - hello[AT]chingru.com
+Made by [ChingRu](https://chingru.com) - hello[AT]chingru.com
 
 </div>
 
-[![FontColle](/logo.png)](https://font.chingru.com)
+[![FontFridge](/logo.png)](https://font.chingru.com)

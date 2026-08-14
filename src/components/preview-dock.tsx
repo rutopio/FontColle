@@ -10,7 +10,6 @@ import {
   RAIL_HEADER_BTN,
   RAIL_HEADER_CELL,
 } from "@/components/rail-button";
-import { Input } from "@/components/ui/input";
 import { Tooltip } from "@/components/ui/tooltip";
 import { usePreview } from "@/lib/preview/context";
 
@@ -67,13 +66,20 @@ export function PreviewBar({
   };
 
   return (
-    <div className="flex flex-1 items-center gap-2">
-      <Input
+    <div className="flex flex-1 items-end gap-2">
+      <textarea
         dir="auto"
+        rows={1}
         value={draft}
         onChange={(e) => commit(e.target.value)}
+        // Stays single-value like the input it replaced: it only soft-wraps.
+        onKeyDown={(e) => {
+          if (e.key === "Enter") e.preventDefault();
+        }}
         placeholder="Type to preview and filter by glyph coverage…"
-        className="h-9 flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0"
+        // field-sizing grows the box line by line instead of scrolling a
+        // single line; max-h keeps a very long text from eating the list.
+        className="field-sizing-content max-h-40 min-h-9 w-full min-w-0 flex-1 resize-none rounded-lg border-0 bg-transparent px-2.5 py-1.5 text-base outline-none placeholder:text-muted-foreground md:text-sm"
         aria-label="Preview text"
       />
       <HeaderButtonGroup className="relative flex items-center gap-1">

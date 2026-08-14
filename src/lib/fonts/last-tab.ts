@@ -13,7 +13,7 @@ export const TAB_SLUGS = [
 
 export type TabSlug = (typeof TAB_SLUGS)[number];
 
-const KEY = "font-colle.detail-tab";
+const KEY = "font-fridge.detail-tab";
 const DEFAULT_TAB: TabSlug = "instances";
 
 const isTabSlug = (raw: string): raw is TabSlug =>

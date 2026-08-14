@@ -110,7 +110,7 @@ export async function genFacets() {
 
   const indexDoc = {
     description:
-      "Pre-sharded facet slices of the FontColle catalog. Fetch one slice " +
+      "Pre-sharded facet slices of the FontFridge catalog. Fetch one slice " +
       "instead of the 2 MB slim catalog when you can only read data into " +
       "context. Each slice is an array of projected family records; fetch " +
       "/catalog/{id}.json for a family's full record. Combine dimensions by " +

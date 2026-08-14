@@ -1,12 +1,12 @@
 ---
 name: find-fonts
-description: Find and compare open-source Google Fonts families by style, OpenType features, variable axes, writing system, and subjective mood, using FontColle's static JSON catalog.
+description: Find and compare open-source Google Fonts families by style, OpenType features, variable axes, writing system, and subjective mood, using FontFridge's static JSON catalog.
 version: 1.0.0
 ---
 
-# Find fonts with FontColle
+# Find fonts with FontFridge
 
-FontColle publishes a catalog of open-source Google Fonts families as static JSON.
+FontFridge publishes a catalog of open-source Google Fonts families as static JSON.
 No authentication, no rate limit. Use it to answer questions like "a playful
 variable sans", "a high-contrast serif that supports Devanagari", or "a monospace
 with slashed zero".
