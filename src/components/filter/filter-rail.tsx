@@ -63,7 +63,8 @@ export function FilterGroupButton({
       aria-pressed={active}
       data-proximity-active={proximityActive || undefined}
       className={cn(
-        cn(RAIL_BTN, "isolate focus-visible:ring-inset"),
+        RAIL_BTN,
+        "isolate focus-visible:ring-inset",
         horizontal ? "w-16 shrink-0 px-1" : "",
         active
           ? RAIL_BTN_ON_SLIDING
@@ -91,7 +92,9 @@ export function FilterGroupButton({
         </span>
       )}
       <span className="sr-only">
-        {count > 0 ? ` filters, ${count} selected` : " filters"}
+        {count > 0
+          ? `${group.label} filters, ${count} selected`
+          : `${group.label} filters`}
       </span>
     </button>
   );

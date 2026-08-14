@@ -64,7 +64,7 @@ const HEADER_SKELETON = (
         suggestions={EMPTY_SUGGESTIONS}
         onPick={PENDING_SORT}
       />
-      <div className="hidden md:block">
+      <div className="hidden lg:block">
         <SortControl sort={DEFAULT_SORT} onChange={PENDING_SORT} />
       </div>
     </div>

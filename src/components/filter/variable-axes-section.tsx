@@ -72,6 +72,7 @@ export function VariableAxesSection({
           type="button"
           onClick={() => onToggle(tag)}
           disabled={disabled}
+          aria-pressed={on}
           initial={false}
           animate={{ flexBasis: on ? "33.333333%" : "100%" }}
           transition={{ duration: MOTION_S.base, ease: EASE_OUT }}

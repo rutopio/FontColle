@@ -275,7 +275,7 @@ export function UnitsPerEmSection({
   );
 }
 
-const HINT_LABELS = { hinted: "Hinted", "no-hinted": "No Hinted" };
+const HINT_LABELS = { hinted: "Hinted", "no-hinted": "Unhinted" };
 
 export function HintSection({
   hasHinting,

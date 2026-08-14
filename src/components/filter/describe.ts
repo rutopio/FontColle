@@ -123,7 +123,7 @@ export function describeActiveFilters(f: FilterState): FilterChip[] {
     chips.push({
       id: "hint",
       section: "Hint",
-      value: f.hasHinting ? "Hinted" : "No Hinted",
+      value: f.hasHinting ? "Hinted" : "Unhinted",
       key: "hasHinting",
     });
 

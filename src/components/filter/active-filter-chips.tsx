@@ -98,9 +98,9 @@ export function ActiveFilterChips({
             }
             className={CHIP_CLASS}
           >
-            <span className="shrink-0">Input Preview |</span>
+            <span className="shrink-0">Preview Text |</span>
             <span className="text-foreground">
-              {coverOnly ? "No Tofu" : "Full"}
+              {coverOnly ? "Hide Missing" : "Show All"}
             </span>
           </motion.button>
         )}
