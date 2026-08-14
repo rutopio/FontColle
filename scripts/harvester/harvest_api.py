@@ -14,7 +14,11 @@ Requires GOOGLE_FONTS_API_KEY.
 Usage:
     GOOGLE_FONTS_API_KEY=... python3 harvest_api.py [stress_output.json]
 """
-import json, os, re, sys, urllib.request
+import json
+import os
+import re
+import sys
+import urllib.request
 
 import harvest
 import langcov
@@ -97,7 +101,11 @@ def main():
     out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(
         os.path.dirname(__file__), "stress_output.json"
     )
-    existing = json.load(open(out)) if os.path.exists(out) else []
+    if os.path.exists(out):
+        with open(out, encoding="utf-8") as fh:
+            existing = json.load(fh)
+    else:
+        existing = []
     have_dirs = {r.get("family_dir") for r in existing}
     have_names = {(r.get("name") or "").lower() for r in existing}
 
@@ -125,7 +133,8 @@ def main():
             print(f"  ERR {it['family']}: {e}", file=sys.stderr)
 
     merged = existing + added
-    json.dump(merged, open(out, "w"), indent=2, default=str, ensure_ascii=False)
+    with open(out, "w", encoding="utf-8") as fh:
+        json.dump(merged, fh, indent=2, default=str, ensure_ascii=False)
     print(f"added {len(added)} families; {out} now has {len(merged)}", file=sys.stderr)
 
 

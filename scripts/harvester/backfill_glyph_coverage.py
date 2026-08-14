@@ -72,7 +72,8 @@ def cmap_ranges(path):
 
 def main():
     only = set(sys.argv[1:])
-    records = json.load(open(FONTS_JSON))
+    with open(FONTS_JSON, encoding="utf-8") as fh:
+        records = json.load(fh)
     if only:
         records = [r for r in records if r["id"] in only]
 
@@ -87,7 +88,7 @@ def main():
         ranges = cmap_ranges(path)
         if not ranges:
             empty += 1
-        with open(os.path.join(OUT_DIR, f"{r['id']}.json"), "w") as fh:
+        with open(os.path.join(OUT_DIR, f"{r['id']}.json"), "w", encoding="utf-8") as fh:
             json.dump({"ranges": ranges}, fh, separators=(",", ":"))
         written += 1
 

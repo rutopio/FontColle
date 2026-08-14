@@ -38,7 +38,8 @@ def main():
         for subset, lang in langcov.SUBSET_TO_SPECIMEN_LANG.items()
     }
 
-    records = json.load(open(path))
+    with open(path, encoding="utf-8") as fh:
+        records = json.load(fh)
     changed = 0
     for r in records:
         subsets = r.get("subsets") or []
@@ -66,7 +67,7 @@ def main():
         r["specimen"] = text
         r["specimenTiers"] = tiers
 
-    with open(path, "w") as fh:
+    with open(path, "w", encoding="utf-8") as fh:
         json.dump(records, fh, indent=2, ensure_ascii=False)
 
     print(f"specimens updated on {changed}/{len(records)} records -> {path}", file=sys.stderr)

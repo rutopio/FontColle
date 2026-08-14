@@ -54,7 +54,8 @@ def main():
     by_family = fetch_tags()
     print(f"  {len(by_family)} families have tags", file=sys.stderr)
 
-    records = json.load(open(path))
+    with open(path, encoding="utf-8") as fh:
+        records = json.load(fh)
     hits = 0
     for r in records:
         tags = by_family.get(r.get("name"), {})
@@ -62,7 +63,7 @@ def main():
         if tags:
             hits += 1
 
-    with open(path, "w") as fh:
+    with open(path, "w", encoding="utf-8") as fh:
         json.dump(records, fh, indent=2, ensure_ascii=False)
 
     print(f"set tags on {hits}/{len(records)} records -> {path}", file=sys.stderr)

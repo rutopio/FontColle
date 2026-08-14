@@ -9,7 +9,9 @@ feature facets, script coverage). At build time gen-catalog.mjs slices this file
 into the static JSON the app actually serves (catalog.json, catalog/<id>.json,
 designer-index.json).
 """
-import json, os, sys
+import json
+import os
+import sys
 
 # Human-friendly feature labels for the ones we surface as facets
 FEATURE_FACETS = {
@@ -210,7 +212,7 @@ def write_label_maps(records, out):
     d = os.path.dirname(out) or "."
     for name, payload in (("scripts.json", scripts_out),
                           ("languages.json", langs_out)):
-        with open(os.path.join(d, name), "w") as fh:
+        with open(os.path.join(d, name), "w", encoding="utf-8") as fh:
             json.dump(payload, fh, indent=2, ensure_ascii=False)
             fh.write("\n")
     print(f"wrote {len(scripts_out)} scripts, {len(langs_out)} languages to {d}")
@@ -226,7 +228,8 @@ def load_published_map():
     path = os.path.join(os.path.dirname(__file__), "published.json")
     if not os.path.exists(path):
         return None
-    raw = json.load(open(path))
+    with open(path, encoding="utf-8") as fh:
+        raw = json.load(fh)
     return {name.lower(): sig for name, sig in raw.items()}
 
 
@@ -367,13 +370,15 @@ def apply_published_signals(records, published):
 if __name__ == "__main__":
     src = sys.argv[1] if len(sys.argv) > 1 else "stress_output.json"
     out = sys.argv[2] if len(sys.argv) > 2 else "fonts.json"
-    raw = json.load(open(src))
+    with open(src, encoding="utf-8") as fh:
+        raw = json.load(fh)
     records = [to_record(r) for r in raw if r.get("name")]
 
     apply_published_signals(records, load_published_map())
     apply_specimens(records)
 
     records.sort(key=lambda x: x["name"].lower())
-    json.dump(records, open(out, "w"), indent=2, ensure_ascii=False)
+    with open(out, "w", encoding="utf-8") as fh:
+        json.dump(records, fh, indent=2, ensure_ascii=False)
     print(f"wrote {len(records)} records to {out}")
     write_label_maps(records, out)

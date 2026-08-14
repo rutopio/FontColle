@@ -44,7 +44,8 @@ def main():
     path = os.path.abspath(path)
     workers = int(sys.argv[2]) if len(sys.argv) > 2 else 8
 
-    records = json.load(open(path))
+    with open(path, encoding="utf-8") as fh:
+        records = json.load(fh)
     # Only records with a repo directory can carry a METADATA.pb-sourced url.
     targets = [
         r
@@ -69,7 +70,7 @@ def main():
             if url:
                 hits += 1
 
-    with open(path, "w") as fh:
+    with open(path, "w", encoding="utf-8") as fh:
         json.dump(records, fh, indent=2, default=str, ensure_ascii=False)
 
     print(f"set repository_url on {hits}/{len(targets)} records -> {path}",

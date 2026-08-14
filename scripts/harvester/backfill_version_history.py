@@ -188,7 +188,8 @@ def main():
     )
     path = os.path.abspath(path)
 
-    records = json.load(open(path))
+    with open(path, encoding="utf-8") as fh:
+        records = json.load(fh)
     # A family is "done" once it has a firstCommitDate KEY (even null: no repo
     # commits found). --force reprocesses everything; otherwise resume by
     # skipping done families, so a rate-limit stop is safely re-runnable.
@@ -216,7 +217,7 @@ def main():
               file=sys.stderr)
 
     def save():
-        with open(path, "w") as fh:
+        with open(path, "w", encoding="utf-8") as fh:
             json.dump(records, fh, indent=2, ensure_ascii=False)
 
     hits = 0
@@ -258,12 +259,13 @@ def main():
         save()
         print(f"\nStopped on error after {done} families: {e}. "
               f"Progress saved; re-run to resume.", file=sys.stderr)
-        return
+        return 1
 
     save()
     print(f"done: {done} processed, {hits} with versions -> {path}",
           file=sys.stderr)
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

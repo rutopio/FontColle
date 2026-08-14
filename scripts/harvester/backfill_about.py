@@ -84,7 +84,8 @@ def main():
     )
     path = os.path.abspath(path)
 
-    records = json.load(open(path))
+    with open(path, encoding="utf-8") as fh:
+        records = json.load(fh)
     targets = records[:limit] if limit else records
 
     changed = 0
@@ -114,7 +115,7 @@ def main():
             print(f"  {i + 1}/{len(targets)} …", file=sys.stderr)
         time.sleep(0.15)  # gentle throttle
 
-    with open(path, "w") as fh:
+    with open(path, "w", encoding="utf-8") as fh:
         json.dump(records, fh, indent=2, ensure_ascii=False)
 
     print(f"about/profiles updated on {changed}/{len(targets)} records -> {path}", file=sys.stderr)

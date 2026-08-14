@@ -12,7 +12,10 @@ Sets displayName only where it differs from the family name; null otherwise.
 Usage:
     python3 backfill_display_names.py [path/to/fonts.json]
 """
-import json, os, sys, urllib.request
+import json
+import os
+import sys
+import urllib.request
 
 METADATA = "https://fonts.google.com/metadata/fonts"
 
@@ -40,7 +43,8 @@ def main():
     names = fetch_display_names()
     print(f"  {len(names)} families have a distinct display name", file=sys.stderr)
 
-    records = json.load(open(path))
+    with open(path, encoding="utf-8") as fh:
+        records = json.load(fh)
     hits = 0
     for r in records:
         dn = names.get(r.get("name"))
@@ -48,7 +52,7 @@ def main():
         if dn:
             hits += 1
 
-    with open(path, "w") as fh:
+    with open(path, "w", encoding="utf-8") as fh:
         json.dump(records, fh, indent=2, ensure_ascii=False)
 
     print(f"set displayName on {hits}/{len(records)} records → {path}", file=sys.stderr)

@@ -48,14 +48,13 @@ sys.path.insert(0, HERE)
 from to_dataset import (  # noqa: E402
     apply_published_signals,
     apply_specimens,
-    load_published_map,
     to_record,
     write_label_maps,
 )
 
 
 def load_json(path):
-    with open(path) as fh:
+    with open(path, encoding="utf-8") as fh:
         return json.load(fh)
 
 
@@ -230,7 +229,7 @@ def main():
     apply_specimens(dataset)
     dataset.sort(key=lambda x: x["name"].lower())
 
-    with open(DATASET, "w") as fh:
+    with open(DATASET, "w", encoding="utf-8") as fh:
         json.dump(dataset, fh, indent=2, ensure_ascii=False)
     write_label_maps(dataset, DATASET)
 
@@ -246,7 +245,7 @@ def main():
     # OG cards only depend on the family name in its own face, so only newly
     # harvested families need a (re)rendered card, rank/isPublished shifts don't
     # change the image. Removed families keep their card (page just 404s).
-    with open(OG_OUT, "w") as fh:
+    with open(OG_OUT, "w", encoding="utf-8") as fh:
         fh.write("\n".join(sorted(harvested_ids)))
 
     if not changed_ids and not removed:

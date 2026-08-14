@@ -6,7 +6,15 @@ Per family:
   - Download the primary TTF and parse GSUB/GPOS features, fvar axes, named instances.
 Outputs one merged JSON record per family conforming to a stable schema.
 """
-import json, os, re, sys, urllib.request, urllib.parse, io, time, resource
+import io
+import json
+import os
+import re
+import resource
+import sys
+import time
+import urllib.parse
+import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from fontTools.ttLib import TTFont
 from fontTools.pens.boundsPen import BoundsPen
@@ -455,7 +463,7 @@ if __name__ == "__main__":
                 errors.append((fam, repr(e)))
                 print(f"[{done:3d}/{len(families)}] ERR {fam}: {e}", file=sys.stderr)
     total = time.time() - run_t0
-    with open("stress_output.json", "w") as fh:
+    with open("stress_output.json", "w", encoding="utf-8") as fh:
         json.dump(results, fh, indent=2, default=str, ensure_ascii=False)
     print(f"\n=== SUMMARY ===", file=sys.stderr)
     print(f"ok={len(results)} err={len(errors)} total_time={total:.1f}s "

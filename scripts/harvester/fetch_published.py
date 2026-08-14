@@ -19,7 +19,10 @@ to_dataset.py to set is_published / popularity_rank / trending_rank on each row.
 Usage:
     GOOGLE_FONTS_API_KEY=... python3 fetch_published.py [out.json]
 """
-import json, os, sys, urllib.request
+import json
+import os
+import sys
+import urllib.request
 
 API = "https://www.googleapis.com/webfonts/v1/webfonts"
 # Unofficial batch endpoint (no key). The only source of the full specimen
@@ -88,7 +91,7 @@ def main():
     out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(
         os.path.dirname(__file__), "published.json"
     )
-    with open(out, "w") as fh:
+    with open(out, "w", encoding="utf-8") as fh:
         json.dump(out_map, fh, indent=2, ensure_ascii=False)
 
     print(f"saved {len(out_map)} published families → {out}", file=sys.stderr)

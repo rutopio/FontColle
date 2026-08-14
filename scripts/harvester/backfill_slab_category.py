@@ -39,7 +39,8 @@ def main():
     )
     path = os.path.abspath(path)
 
-    records = json.load(open(path))
+    with open(path, encoding="utf-8") as fh:
+        records = json.load(fh)
     slab, unemoji = [], []
     for r in records:
         # Fold back any record an older run of this script left on a class that
@@ -53,7 +54,7 @@ def main():
                 r["category"] = "Slab"
                 slab.append(r.get("name"))
 
-    with open(path, "w") as fh:
+    with open(path, "w", encoding="utf-8") as fh:
         json.dump(records, fh, indent=2, ensure_ascii=False)
 
     print(f"reclassified {len(slab)} -> Slab ({len(slab)} families)",

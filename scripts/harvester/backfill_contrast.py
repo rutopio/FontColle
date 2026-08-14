@@ -90,7 +90,8 @@ def main():
     by_family = fetch_stroke_widths()
     print(f"  {len(by_family)} families have stroke-width data", file=sys.stderr)
 
-    records = json.load(open(path))
+    with open(path, encoding="utf-8") as fh:
+        records = json.load(fh)
     hits = 0
     for r in records:
         c = contrast_for(by_family.get(r.get("name"), {}))
@@ -98,7 +99,7 @@ def main():
         if c is not None:
             hits += 1
 
-    with open(path, "w") as fh:
+    with open(path, "w", encoding="utf-8") as fh:
         json.dump(records, fh, indent=2, ensure_ascii=False)
 
     print(f"set contrast on {hits}/{len(records)} records -> {path}", file=sys.stderr)

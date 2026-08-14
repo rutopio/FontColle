@@ -76,7 +76,8 @@ def main():
     )
     path = os.path.abspath(path)
 
-    records = json.load(open(path))
+    with open(path, encoding="utf-8") as fh:
+        records = json.load(fh)
     # --ids restricts to a set of family ids (the daily loop passes the newly
     # harvested ones, so a repo-quiet day makes no per-family license fetch);
     # --limit takes the leading N (dev/debug). Absent both, the whole catalog.
@@ -102,7 +103,7 @@ def main():
             print(f"  {i + 1}/{len(targets)} …", file=sys.stderr)
         time.sleep(0.1)
 
-    with open(path, "w") as fh:
+    with open(path, "w", encoding="utf-8") as fh:
         json.dump(records, fh, indent=2, ensure_ascii=False)
 
     print(

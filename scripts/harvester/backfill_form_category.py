@@ -120,7 +120,8 @@ def main():
     )
     path = os.path.abspath(path)
 
-    records = json.load(open(path))
+    with open(path, encoding="utf-8") as fh:
+        records = json.load(fh)
     if not any(r.get("tags") for r in records):
         raise SystemExit("no record carries tags; run backfill_tags.py first")
 
@@ -143,7 +144,7 @@ def main():
             r["category"] = want
             changed += 1
 
-    with open(path, "w") as fh:
+    with open(path, "w", encoding="utf-8") as fh:
         json.dump(records, fh, indent=2, ensure_ascii=False)
 
     counts = Counter(r["category"] for r in records if r.get("isPublished"))

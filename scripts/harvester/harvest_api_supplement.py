@@ -9,7 +9,9 @@ See tasks/todo.md + the gf-website-repo-lag memory. Needs GOOGLE_FONTS_API_KEY.
 
   GOOGLE_FONTS_API_KEY=... python3 harvest_api_supplement.py [--dry-run]
 """
-import json, os, sys
+import json
+import os
+import sys
 
 import urllib.parse
 import urllib.request
@@ -195,7 +197,8 @@ def main():
         print("\n[dry-run] not writing fonts.json", file=sys.stderr)
         return
 
-    dataset = json.load(open(DATASET))
+    with open(DATASET, encoding="utf-8") as fh:
+        dataset = json.load(fh)
     dataset = dataset if isinstance(dataset, list) else dataset.get("fonts", [])
     by_id = {r["id"]: r for r in dataset}
     # A family "changed" when it's new OR its rebuilt record differs from the one
@@ -211,7 +214,8 @@ def main():
     for r in finals:
         by_id[r["id"]] = r
     dataset = sorted(by_id.values(), key=lambda x: x["name"].lower())
-    json.dump(dataset, open(DATASET, "w"), indent=2, ensure_ascii=False)
+    with open(DATASET, "w", encoding="utf-8") as fh:
+        json.dump(dataset, fh, indent=2, ensure_ascii=False)
 
     # Append changed ids to og_ids.txt so the daily workflow renders their OG
     # cards. daily_update.py writes the repo-side ids there first (or an empty
@@ -219,8 +223,9 @@ def main():
     og_path = os.path.join(HERE, "og_ids.txt")
     prev = set()
     if os.path.exists(og_path):
-        prev = {l.strip() for l in open(og_path) if l.strip()}
-    with open(og_path, "w") as fh:
+        with open(og_path, encoding="utf-8") as fh:
+            prev = {l.strip() for l in fh if l.strip()}
+    with open(og_path, "w", encoding="utf-8") as fh:
         fh.write("\n".join(sorted(prev | set(changed))))
 
     print(f"\nmerged {len(finals)} ({len(added)} new, {len(changed)} changed); "
