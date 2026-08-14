@@ -16,6 +16,7 @@ import {
   usePresets,
 } from "@/lib/fonts/presets";
 import { cn } from "@/lib/utils";
+import { PresetsTransfer } from "./presets-transfer";
 import { SectionHeader } from "./section-header";
 
 const conditionCount = (search: FilterSearch) =>
@@ -60,7 +61,7 @@ export function PresetSection({
             <EmptyTitle>No presets yet</EmptyTitle>
             <EmptyDescription className="text-xs">
               Filter the catalog, then use “Save to Preset” above the results to
-              keep that combination here.
+              keep that combination here, or import a presets file.
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
@@ -83,6 +84,10 @@ export function PresetSection({
           {MAX_PRESETS} presets saved, the maximum. Remove one to save another.
         </p>
       )}
+
+      <div className="mt-auto pt-2">
+        <PresetsTransfer />
+      </div>
     </div>
   );
 }

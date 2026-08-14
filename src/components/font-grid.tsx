@@ -11,6 +11,7 @@ import { FontCard } from "@/components/font-card";
 import { FontRow } from "@/components/font-row";
 import type { FilterSelection } from "@/lib/fonts/filter";
 import type { FontRecord } from "@/lib/fonts/types";
+import { cardHeight, rowHeight } from "@/lib/preview/size";
 import { cn } from "@/lib/utils";
 import { Separator } from "./ui/separator";
 
@@ -19,6 +20,7 @@ export type ViewMode = "grid" | "row";
 interface Props {
   fonts: FontRecord[];
   previewText: string;
+  previewSize: number;
   favorites: string[];
   onToggleFavorite: (id: string) => void;
   view: ViewMode;
@@ -34,16 +36,13 @@ export function columnsFor(width: number, view: ViewMode): number {
   return 1;
 }
 
-// Must match h-72/h-32 incl. border-box gridlines or virtual rows misalign.
-const CARD_H = 288;
-const LINE_H = 128;
-
 const rowKey = (view: ViewMode, firstFontId: string) =>
   `${view}-${firstFontId}`;
 
 export function FontGrid({
   fonts,
   previewText,
+  previewSize,
   favorites,
   onToggleFavorite,
   view,
@@ -72,14 +71,15 @@ export function FontGrid({
   const virtualizer = useVirtualizer({
     count: rowCount,
     getScrollElement: () => scrollRef.current,
-    estimateSize: () => (view === "row" ? LINE_H : CARD_H),
+    estimateSize: () =>
+      view === "row" ? rowHeight(previewSize) : cardHeight(previewSize),
     overscan: 4,
   });
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: cols/view are the re-measure triggers, not read in the body, a change to either must re-run measurement.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: cols/view/previewSize are the re-measure triggers, not read in the body, a change to any must re-run measurement.
   useEffect(() => {
     virtualizer.measure();
-  }, [cols, view, virtualizer]);
+  }, [cols, view, previewSize, virtualizer]);
 
   const renderCell = (font: FontRecord, isLastRow = false) =>
     view === "row" ? (
@@ -87,6 +87,7 @@ export function FontGrid({
         <FontRow
           font={font}
           previewText={previewText}
+          previewSize={previewSize}
           isFavorite={favSet.has(font.id)}
           onToggleFavorite={onToggleFavorite}
           selection={selection}
@@ -101,6 +102,7 @@ export function FontGrid({
         key={font.id}
         font={font}
         previewText={previewText}
+        previewSize={previewSize}
         isFavorite={favSet.has(font.id)}
         onToggleFavorite={onToggleFavorite}
         selection={selection}

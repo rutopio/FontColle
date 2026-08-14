@@ -19,6 +19,7 @@ import {
 import { useLastDetailTab } from "@/lib/fonts/last-tab";
 import type { FontRecord } from "@/lib/fonts/types";
 import { blockOf, parseGlyphQuery } from "@/lib/fonts/unicode-blocks";
+import { SIZE_DEFAULT } from "@/lib/preview/context";
 import { absoluteUrl, pageTitle } from "@/lib/site";
 import { BlockAxesProvider } from "@/lib/tester/block-axes";
 import { backWithViewTransition } from "@/lib/view-transition";
@@ -150,7 +151,7 @@ function DetailPage() {
     setAxisState((prev) => ({ ...prev, [tag]: value }));
   const resetAxes = () => setAxisState(axisDefaults());
   const italic = false;
-  const [size, setSize] = useState(24);
+  const [size, setSize] = useState(SIZE_DEFAULT);
 
   const tab = tabFromSlug(tabSlug) ?? "sample";
   const selectTab = (id: DetailTab) =>

@@ -13,6 +13,7 @@ import {
 import { AboutLink } from "@/components/about-link";
 import { CountFlash } from "@/components/count-flash";
 import { FavoriteToggle } from "@/components/favorite-toggle";
+import { FavoritesTransfer } from "@/components/favorites-transfer";
 import {
   ActiveFilterChips,
   hasActiveFilterChips,
@@ -81,11 +82,17 @@ function filterKey(f: FilterState): string {
 export function Catalog({ fonts }: { fonts: FontRecord[] }) {
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
-  const { text: previewText, coverOnly, setCoverOnly } = usePreview();
+  const {
+    text: previewText,
+    size: previewSize,
+    coverOnly,
+    setCoverOnly,
+  } = usePreview();
   const { favorites, toggle } = useFavorites();
 
   const { listScrollY, lastGroup } = useFilter();
   const facetIndex = useMemo(() => buildFacetIndex(fonts), [fonts]);
+  const knownIds = useMemo(() => new Set(fonts.map((f) => f.id)), [fonts]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -374,15 +381,26 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
       <Column
         scrollViewportRef={scrollRef}
         toolbar={
-          results.length > 0 &&
-          (hasActiveFilterChips(shownFilter) ||
-            previewText.trim().length > 0) && (
-            <ActiveFilterChips
-              filter={shownFilter}
-              onChange={commitFilter}
-              align="left"
-              currentSearch={filterToSearch(shownFilter)}
-            />
+          ((results.length > 0 &&
+            (hasActiveFilterChips(shownFilter) ||
+              previewText.trim().length > 0)) ||
+            (favOnly && results.length > 0)) && (
+            <div className="flex flex-wrap items-center gap-2">
+              {(hasActiveFilterChips(shownFilter) ||
+                previewText.trim().length > 0) && (
+                <ActiveFilterChips
+                  filter={shownFilter}
+                  onChange={commitFilter}
+                  align="left"
+                  currentSearch={filterToSearch(shownFilter)}
+                />
+              )}
+              {favOnly && (
+                <div className="ml-auto">
+                  <FavoritesTransfer knownIds={knownIds} />
+                </div>
+              )}
+            </div>
           )
         }
         footer={
@@ -421,7 +439,7 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
                 </EmptyTitle>
                 <EmptyDescription>
                   {favOnly
-                    ? "Tap the heart on a font to add it here."
+                    ? "Tap the heart on a font to add it here, or import a favorites file from another device."
                     : coverageEmpty
                       ? "No font in the catalog can render your preview text. Shorten it, or keep browsing with the missing characters shown as boxes."
                       : "No fonts match your filters and search. Remove a condition below, or broaden them."}
@@ -451,9 +469,12 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
               )}
               <ActiveFilterChips filter={shownFilter} onChange={commitFilter} />
               {favOnly ? (
-                <Button variant="outline" onClick={discoverFonts}>
-                  Discover Font
-                </Button>
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <Button variant="outline" onClick={discoverFonts}>
+                    Discover Font
+                  </Button>
+                  <FavoritesTransfer knownIds={knownIds} />
+                </div>
               ) : coverageEmpty ? (
                 <Button variant="outline" onClick={() => setCoverOnly(false)}>
                   Show every font anyway
@@ -468,6 +489,7 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
             <FontGrid
               fonts={results}
               previewText={previewText}
+              previewSize={previewSize}
               favorites={favorites}
               onToggleFavorite={toggle}
               view={shownView}

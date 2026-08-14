@@ -49,6 +49,7 @@ import {
 } from "./metrics-section";
 import { NotoSection } from "./noto-section";
 import { PresetSection } from "./preset-section";
+import { PreviewSizeSection } from "./preview-size-section";
 import { RadioPillSection } from "./radio-pill-section";
 import { RepositorySection } from "./repository-section";
 import { VariableAxesSection } from "./variable-axes-section";
@@ -431,6 +432,12 @@ export function FilterSidebar({
 
   return (
     <aside className="flex h-full w-full min-w-0 flex-col text-foreground">
+      {/* Display setting, not a filter — pinned so the list scroll never moves it. */}
+      {!showingPreset && (
+        <div className="shrink-0 border-border border-b p-4">
+          <PreviewSizeSection />
+        </div>
+      )}
       {/* Remount clears Base UI stale overflow when toggling preset/filters. */}
       <ScrollArea
         key={showingPreset ? "preset" : "filters"}

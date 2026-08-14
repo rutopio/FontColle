@@ -16,13 +16,17 @@ import { useScrollReset } from "@/hooks/use-scroll-reset";
 import { DEFAULT_ON, featureName } from "@/lib/fonts/features";
 import type { FontRecord } from "@/lib/fonts/types";
 import { EASE_OUT, MOTION_S } from "@/lib/motion";
+import {
+  SIZE_DEFAULT,
+  SIZE_MAX,
+  SIZE_MIN,
+  SIZE_PRESETS,
+} from "@/lib/preview/context";
 import { useBlockAxes } from "@/lib/tester/block-axes";
 
-export const SIZE_MIN = 12;
-export const SIZE_MAX = 72;
-export const SIZE_PRESETS = [
-  12, 14, 16, 18, 20, 24, 28, 32, 36, 40, 48, 52, 60, 72,
-];
+// Re-exported for tester.tsx, which imports them from here.
+export { SIZE_MAX, SIZE_MIN, SIZE_PRESETS };
+
 const AXIS_PRESETS: Record<string, number[]> = {
   wght: [100, 200, 300, 400, 500, 600, 700, 800, 900],
   wdth: [50, 62.5, 75, 87.5, 100, 112.5, 125, 150, 200],
@@ -146,6 +150,7 @@ export function DetailSidebar({
                   max={SIZE_MAX}
                   suffix="px"
                   presets={SIZE_PRESETS}
+                  defaultValue={SIZE_DEFAULT}
                   onChange={onSizeChange}
                   ariaLabel="Preview font size"
                 />
@@ -207,6 +212,7 @@ export function DetailSidebar({
                           min={min}
                           max={max}
                           presets={AXIS_PRESETS[a.tag]}
+                          defaultValue={a.default ?? undefined}
                           onChange={setValue}
                           ariaLabel={`${a.name ?? a.tag} value`}
                         />

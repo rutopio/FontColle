@@ -400,6 +400,7 @@ function TesterInner({
               max={SIZE_MAX}
               suffix="px"
               presets={SIZE_PRESETS}
+              defaultValue={DEFAULT_SIZE[block]}
               onChange={setSize}
               ariaLabel={`${block} font size`}
             />
@@ -429,6 +430,7 @@ function TesterInner({
               min={LEADING_MIN}
               max={LEADING_MAX}
               presets={LEADING_PRESETS}
+              defaultValue={DEFAULT_LEADING[block]}
               onChange={setLeading}
               ariaLabel={`${block} line height`}
             />

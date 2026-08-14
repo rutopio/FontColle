@@ -7,11 +7,13 @@ import type { FilterSelection } from "@/lib/fonts/filter";
 import { useLastDetailTab } from "@/lib/fonts/last-tab";
 import type { FontRecord } from "@/lib/fonts/types";
 import { useFontFacePreview } from "@/lib/fonts/use-font-face-preview";
+import { cardHeight, cardTextSize } from "@/lib/preview/size";
 import { cn } from "@/lib/utils";
 
 interface Props {
   font: FontRecord;
   previewText: string;
+  previewSize: number;
   isFavorite: boolean;
   onToggleFavorite: (id: string) => void;
   selection: FilterSelection;
@@ -23,6 +25,7 @@ interface Props {
 export const FontCard = memo(function FontCard({
   font,
   previewText,
+  previewSize,
   isFavorite,
   onToggleFavorite,
   selection,
@@ -44,8 +47,9 @@ export const FontCard = memo(function FontCard({
       to="/$tab/$fontId"
       params={{ tab: lastTab, fontId: font.id }}
       viewTransition
+      style={{ height: cardHeight(previewSize) }}
       className={cn(
-        "flex h-72 flex-col gap-4 overflow-hidden border-border border-r p-4 transition-[color,background-color] duration-fast ease-snap hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset",
+        "flex flex-col gap-4 overflow-hidden border-border border-r p-4 transition-[color,background-color] duration-fast ease-snap hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset",
         !lastRow && "border-b"
       )}
     >
@@ -76,8 +80,8 @@ export const FontCard = memo(function FontCard({
       {fontLoaded ? (
         <p
           dir="auto"
-          style={previewStyle}
-          className="min-h-16 flex-1 overflow-hidden break-words text-2xl leading-snug"
+          style={{ ...previewStyle, fontSize: cardTextSize(previewSize) }}
+          className="min-h-16 flex-1 overflow-hidden break-words leading-snug"
         >
           {text}
         </p>

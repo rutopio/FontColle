@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { cn } from "@/lib/utils";
 
 export function EditableValue({
   value,
@@ -7,6 +8,7 @@ export function EditableValue({
   max,
   suffix,
   presets,
+  defaultValue,
   onChange,
   ariaLabel,
 }: {
@@ -15,6 +17,8 @@ export function EditableValue({
   max: number;
   suffix?: string;
   presets?: number[];
+  /** Marked in the preset menu as the value this control starts at. */
+  defaultValue?: number;
   onChange: (v: number) => void;
   ariaLabel: string;
 }) {
@@ -91,7 +95,10 @@ export function EditableValue({
                       e.preventDefault();
                       commit(String(p));
                     }}
-                    className="block w-full px-3 py-1 text-right hover:bg-muted"
+                    className={cn(
+                      "block w-full px-3 py-1 text-right hover:bg-muted",
+                      p === defaultValue && "font-bold text-foreground"
+                    )}
                   >
                     {p}
                     {suffix}

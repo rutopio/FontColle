@@ -233,7 +233,7 @@ export function ListPending() {
 }
 
 export function FirstPagePending({ firstPage }: { firstPage: FontRecord[] }) {
-  const { text: previewText } = usePreview();
+  const { text: previewText, size: previewSize } = usePreview();
 
   if (firstPage.length === 0) return <ListPending />;
 
@@ -251,6 +251,7 @@ export function FirstPagePending({ firstPage }: { firstPage: FontRecord[] }) {
                 key={font.id}
                 font={font}
                 previewText={previewText}
+                previewSize={previewSize}
                 isFavorite={false}
                 onToggleFavorite={NOOP}
                 selection={FIRST_PAGE_SELECTION}
@@ -267,6 +268,7 @@ export function FirstPagePending({ firstPage }: { firstPage: FontRecord[] }) {
               <FontRow
                 font={font}
                 previewText={previewText}
+                previewSize={previewSize}
                 isFavorite={false}
                 onToggleFavorite={NOOP}
                 selection={FIRST_PAGE_SELECTION}
