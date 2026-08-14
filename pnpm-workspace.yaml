@@ -8,9 +8,15 @@ minimumReleaseAge: 10080
 # local/CI/.nvmrc versions cannot drift apart again.
 engineStrict: true
 
-# Packages allowed to run install scripts (pnpm 10 blocks them by default).
+# Stops pnpm aborting `pnpm run` in non-TTY/CI environments.
+verifyDepsBeforeRun: false
+
+# Packages allowed to run install scripts (pnpm 11 blocks them by default).
 # workerd is the Workers runtime behind `pnpm preview` / wrangler dev.
 onlyBuiltDependencies:
   - esbuild
-  - lightningcss
   - workerd
+
+allowBuilds:
+  esbuild: true
+  workerd: true
