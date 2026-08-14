@@ -121,7 +121,7 @@ export const Route = createFileRoute("/$tab/$fontId")({
     <NotFound
       title="Font not found"
       description={[
-        "This font family isn't in the catalog.",
+        "This font family is not in the catalog.",
         "It may have been renamed or removed.",
       ]}
     />

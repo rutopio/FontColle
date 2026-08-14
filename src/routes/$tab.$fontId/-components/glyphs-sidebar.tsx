@@ -116,7 +116,7 @@ export function GlyphsSidebar({
             />
             {searchMiss && (
               <p className="mt-1 text-3xs text-destructive">
-                This font doesn't cover that character.
+                This font does not cover that character.
               </p>
             )}
           </form>

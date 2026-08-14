@@ -12,7 +12,7 @@ import {
 export function ErrorState({
   onRetry,
   title = "Something went wrong",
-  description = ["We couldn't load the fonts just now.", "Please try again."],
+  description = ["We could not load the fonts just now.", "Please try again."],
 }: {
   onRetry?: () => void;
   title?: string;

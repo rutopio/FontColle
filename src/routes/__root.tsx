@@ -24,7 +24,9 @@ import { useWebMcp } from "@/lib/webmcp/register";
 import appCss from "@/styles.css?url";
 
 // Blocking scripts in <head> prevent theme/view FOUC.
-const themeScript = `try{if(localStorage.theme==='dark')document.documentElement.classList.add('dark')}catch(e){}`;
+// Reads the unprefixed `theme` key once and carries it over, so visitors who
+// picked a theme before the rename keep it. Safe to drop after a while.
+const themeScript = `try{var k='font-fridge.theme',t=localStorage[k];if(!t&&(t=localStorage.theme)){localStorage[k]=t;delete localStorage.theme}if(t==='dark')document.documentElement.classList.add('dark')}catch(e){}`;
 const viewScript = `try{var v=localStorage['font-fridge.view'];document.documentElement.dataset.view=v==='row'?'row':'grid'}catch(e){document.documentElement.dataset.view='grid'}`;
 
 export const Route = createRootRouteWithContext<{

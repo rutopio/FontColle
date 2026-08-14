@@ -40,8 +40,9 @@ export function BunnyMethod({ font }: { font: FontRecord }) {
       <MethodIntro blurb="A drop-in for the Google Fonts API that serves the same families without logging IPs or setting cookies." />
       {font.isVariable && (
         <p className="mb-3 rounded-md bg-muted/50 px-2.5 py-1.5 text-xs">
-          Bunny serves static weights only, this variable family's axes aren't
-          available here. Use the Google Fonts method above for the full axes.
+          Bunny serves static weights only, so this variable family's axes are
+          not available here. Use the Google Fonts method above for the full
+          axes.
         </p>
       )}
       <Steps>

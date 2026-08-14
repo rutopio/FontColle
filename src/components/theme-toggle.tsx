@@ -25,7 +25,7 @@ export function ThemeToggle({
     document.documentElement.classList.toggle("dark", next);
     setIsDark(next);
     try {
-      localStorage.theme = next ? "dark" : "light";
+      localStorage.setItem("font-fridge.theme", next ? "dark" : "light");
     } catch {}
   };
 
