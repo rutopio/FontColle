@@ -316,7 +316,10 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
               suggestions={searchSuggestions}
               onPick={openFont}
             />
-            <div className="hidden md:block">
+            {/* Sort appears beside the search box only from lg. The md row is
+                too tight for it, and the phone copy stops at md, so md trades
+                the control away to give the search box the width. */}
+            <div className="hidden lg:block">
               <SortControl
                 sort={sort}
                 onChange={setSort}

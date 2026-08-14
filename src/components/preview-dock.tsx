@@ -11,9 +11,15 @@ import {
   RAIL_HEADER_CELL,
 } from "@/components/rail-button";
 import { Tooltip } from "@/components/ui/tooltip";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { usePreview } from "@/lib/preview/context";
 
 const PREVIEW_DEBOUNCE_MS = 150;
+
+// The full wording wraps to a second line on a phone, which grows the dock.
+// Placeholder text is an attribute, so this is a JS branch rather than CSS.
+const PLACEHOLDER = "Type to preview and filter by glyph coverage…";
+const PLACEHOLDER_SHORT = "Type to preview";
 
 function ShowUncoveredToggle() {
   const { coverOnly, setCoverOnly } = usePreview();
@@ -44,6 +50,7 @@ export function PreviewBar({
   coverageToggle?: boolean;
 }) {
   const { text, setText } = usePreview();
+  const isMobile = useIsMobile();
   const [draft, setDraft] = useState(text);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
@@ -76,7 +83,7 @@ export function PreviewBar({
         onKeyDown={(e) => {
           if (e.key === "Enter") e.preventDefault();
         }}
-        placeholder="Type to preview and filter by glyph coverage…"
+        placeholder={isMobile ? PLACEHOLDER_SHORT : PLACEHOLDER}
         // field-sizing grows the box line by line instead of scrolling a
         // single line; max-h keeps a very long text from eating the list.
         className="field-sizing-content max-h-40 min-h-9 w-full min-w-0 flex-1 resize-none rounded-lg border-0 bg-transparent px-2.5 py-1.5 text-base outline-none placeholder:text-muted-foreground md:text-sm"

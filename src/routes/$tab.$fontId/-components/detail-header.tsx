@@ -70,23 +70,31 @@ export function DetailHeader({ font }: { font: FontRecord }) {
           )}
         </div>
         <Separator aria-hidden orientation="vertical" className="mx-2 h-5" />
-        <div className="flex min-w-0 items-baseline gap-2">
-          <h1 className="min-w-0 font-semibold text-lg leading-tight">
+        {/* Name and designer scroll together as one strip: they read as a
+            single line, so scrolling them independently would let the two drift
+            out of step. The scroller is this wrapper, never the button inside
+            it, since dragging to scroll on a button would fire the copy. */}
+        <div className="flex min-w-0 items-baseline gap-2 overflow-x-auto">
+          <h1 className="shrink-0 font-semibold text-lg leading-tight">
             <button
               type="button"
               onClick={copyName}
               aria-label={`Copy font name "${font.name}"`}
               title="Copy font name"
-              className="max-w-full cursor-pointer truncate rounded outline-none transition-colors hover:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+              className="cursor-pointer whitespace-nowrap rounded outline-none transition-colors hover:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
               style={{ fontFamily: `"${font.name}", sans-serif` }}
             >
               {font.name}
             </button>
           </h1>
-          {font.designer && <p className="truncate text-xs">{font.designer}</p>}
+          {font.designer && (
+            <p className="shrink-0 whitespace-nowrap text-xs">
+              {font.designer}
+            </p>
+          )}
         </div>
       </div>
-      <div className="hidden w-full flex-wrap items-center gap-2 md:ml-auto md:flex md:w-auto md:shrink-0 md:flex-nowrap">
+      <div className="hidden w-full flex-wrap items-center gap-2 lg:ml-auto lg:flex lg:w-auto lg:shrink-0 lg:flex-nowrap">
         <FontTraits font={font} selection={emptyFilter} />
         {font.license && (
           <Badge variant="outline" className="bg-background">
@@ -95,7 +103,7 @@ export function DetailHeader({ font }: { font: FontRecord }) {
         )}
       </div>
 
-      <div className="hidden shrink-0 items-center gap-1 md:flex">
+      <div className="ml-auto hidden shrink-0 items-center gap-1 md:flex">
         <Separator aria-hidden orientation="vertical" className="mx-2 h-5" />
         <HeaderButtonGroup className="relative flex items-center gap-1">
           <HeaderButtonGroupItem index={0} className={RAIL_HEADER_CELL}>

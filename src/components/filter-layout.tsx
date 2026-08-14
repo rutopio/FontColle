@@ -148,7 +148,10 @@ function ColumnHeader({ children }: { children: React.ReactNode }) {
       >
         <LogoIcon className="size-7" />
       </Link>
-      <div className="flex flex-1 flex-wrap items-center gap-3 md:flex-nowrap">
+      {/* min-w-0: a flex item defaults to min-width:auto and refuses to shrink
+          below its content, so long header text (a font's designer list) blew
+          this row past the viewport and got clipped instead of fitting. */}
+      <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3 md:flex-nowrap">
         {children}
       </div>
     </header>
