@@ -13,8 +13,8 @@ with slashed zero".
 
 ## Choose an access mode first
 
-**This catalog has 1942 families. The slim file is ~2 MB (~580k tokens) and
-does NOT fit in a typical context window.** Pick the mode that matches your
+**This catalog has 2000+ families (refreshed daily). The slim file is ~2 MB
+(~580k tokens) and does NOT fit in a typical context window.** Pick the mode that matches your
 environment:
 
 - **You can run code (fetch + filter):** use `/catalog-slim.json` and filter it
@@ -59,6 +59,6 @@ environment:
    queries ("joyful", "elegant", "technical") answerable.
 4. For a chosen family, fetch `/catalog/{id}.json` for the full record
    (specimen, contrast, metrics, version history, about prose).
-5. Link users to `https://font.chingru.com/{id}` for the human page.
+5. Link users to `https://font.chingru.com/instances/{id}` for the human page.
 
 See `/llms.txt` for the complete field tables and a worked style-query example.

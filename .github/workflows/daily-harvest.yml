@@ -48,25 +48,22 @@ jobs:
           # diff-check scripts.json/languages.json for the drift warning.
           fetch-depth: 1
 
+      - uses: pnpm/action-setup@v6
+
       - uses: actions/setup-node@v6
         with:
           node-version: "24"
-
-      # No `version:` on purpose. action-setup falls back to package.json's
-      # `packageManager` field, so the runner's pnpm tracks the pinned version
-      # instead of floating on the latest 10.x.
-      - uses: pnpm/action-setup@v6
+          cache: pnpm
 
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
+          cache: pip
+          cache-dependency-path: scripts/harvester/requirements.txt
 
       - name: Install dependencies
         run: |
           pnpm install --frozen-lockfile
-          # daily_update -> to_dataset.apply_specimens -> langcov needs the full
-          # Google Fonts language stack, not just fonttools. Pins live in
-          # scripts/harvester/requirements.txt (CLAUDE.md: pin exact versions).
           pip install -r scripts/harvester/requirements.txt
 
       - name: Pull data assets from R2

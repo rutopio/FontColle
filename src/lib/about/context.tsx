@@ -1,4 +1,10 @@
-import { createContext, type ReactNode, useContext, useState } from "react";
+import {
+  createContext,
+  type ReactNode,
+  useContext,
+  useMemo,
+  useState,
+} from "react";
 
 interface AboutState {
   open: boolean;
@@ -9,10 +15,9 @@ const AboutContext = createContext<AboutState | null>(null);
 
 export function AboutProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
+  const value = useMemo(() => ({ open, setOpen }), [open]);
   return (
-    <AboutContext.Provider value={{ open, setOpen }}>
-      {children}
-    </AboutContext.Provider>
+    <AboutContext.Provider value={value}>{children}</AboutContext.Provider>
   );
 }
 

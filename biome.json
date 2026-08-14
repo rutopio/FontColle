@@ -10,6 +10,7 @@
     "includes": [
       "**",
       "!dist",
+      "!public",
       "!.wrangler",
       "!.tanstack",
       "!src/routeTree.gen.ts",
@@ -51,7 +52,7 @@
       "react": "recommended"
     },
     "rules": {
-      "recommended": true,
+      "preset": "recommended",
       "nursery": {
         "useSortedClasses": {
           "level": "warn",

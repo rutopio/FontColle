@@ -18,7 +18,8 @@ const PREVIEW_DEBOUNCE_MS = 150;
 
 // The full wording wraps to a second line on a phone, which grows the dock.
 // Placeholder text is an attribute, so this is a JS branch rather than CSS.
-const PLACEHOLDER = "Type to preview and filter fonts that support these characters…";
+const PLACEHOLDER =
+  "Type to preview and filter fonts that support these characters…";
 const PLACEHOLDER_SHORT = "Type to preview";
 
 function ShowUncoveredToggle() {

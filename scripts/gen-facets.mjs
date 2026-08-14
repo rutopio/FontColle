@@ -129,9 +129,9 @@ export async function genFacets() {
     "utf8"
   );
 
-  const totalBytes = index.reduce((n, s) => n + s.count, 0);
+  const totalRecords = index.reduce((n, s) => n + s.count, 0);
   console.log(
-    `[facets] wrote ${index.length} slices (index.json + ${index.length} files, ~${totalBytes} projected records)`
+    `[facets] wrote ${index.length} slices (index.json + ${index.length} files, ~${totalRecords} projected records)`
   );
 }
 
