@@ -27,6 +27,10 @@ import appCss from "@/styles.css?url";
 const themeScript = `try{if(localStorage['font-fridge.theme']==='dark')document.documentElement.classList.add('dark')}catch(e){}`;
 const viewScript = `try{var v=localStorage['font-fridge.view'];document.documentElement.dataset.view=v==='row'?'row':'grid'}catch(e){document.documentElement.dataset.view='grid'}`;
 
+// Public site identifier, not a secret: it ships in the HTML of every page and
+// only tells the beacon which Web Analytics site to report to.
+const CF_BEACON_TOKEN = "43a47f0f85b94210a51857053ea45086";
+
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;
 }>()({
@@ -161,6 +165,18 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           />
         )}
         <Scripts />
+        {/* Cloudflare Web Analytics. The automatic edge injection that proxied
+            sites get does not apply here: this origin is a Worker Custom Domain,
+            and Cloudflare does not rewrite a Worker's own response body, so the
+            beacon has to be in the document. PROD-only so local runs and
+            previews stay out of the numbers. */}
+        {import.meta.env.PROD && (
+          <script
+            type="module"
+            src="https://static.cloudflareinsights.com/beacon.min.js"
+            data-cf-beacon={`{"token": "${CF_BEACON_TOKEN}"}`}
+          />
+        )}
       </body>
     </html>
   );
