@@ -29,10 +29,24 @@
     "directory": "./dist/client",
     "binding": "ASSETS"
   },
+  // Logs and traces are each opted in explicitly rather than via the top-level
+  // `enabled` switch, so adding a future signal type stays a deliberate choice
+  // instead of being turned on implicitly. The per-signal `enabled` takes
+  // precedence over the top-level one, which is why `enabled: false` here does
+  // not switch the two blocks below back off.
   "observability": {
+    "enabled": false,
+    "head_sampling_rate": 1,
     "logs": {
       "enabled": true,
+      "head_sampling_rate": 1,
+      "persist": true,
       "invocation_logs": true
+    },
+    "traces": {
+      "enabled": true,
+      "persist": true,
+      "head_sampling_rate": 1
     }
   }
 }
