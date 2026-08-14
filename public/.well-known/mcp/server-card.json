@@ -7,7 +7,7 @@
   },
   "transport": {
     "type": "streamable-http",
-    "endpoint": "https://fontcolle.com/mcp"
+    "endpoint": "https://font.chingru.com/mcp"
   },
   "capabilities": ["tools"],
   "tools": [
@@ -27,5 +27,5 @@
   "authentication": {
     "type": "none"
   },
-  "documentation": "https://fontcolle.com/llms.txt"
+  "documentation": "https://font.chingru.com/llms.txt"
 }

@@ -2,9 +2,9 @@
 
 # FontColle
 
-▌　[https://fontcolle.com](https://fontcolle.com)　▐
+▌　[https://font.chingru.com](https://font.chingru.com)　▐
 
-[![FontColle](/cover.png)](https://fontcolle.com)
+[![FontColle](/cover.png)](https://font.chingru.com)
 
 FontColle (*/font-koh-lay/*) is an enhanced Google **Font**s **Colle**ction that filters OpenType features, variable-font axes, weight/width steps, writing systems, languages, and color vs. monochrome. Preview any weight or named instance live, edit the specimen text inline, and save favorites.
 
@@ -82,4 +82,4 @@ Made by [ChingRu(@rutopio)](https://chingru.com) - hello[AT]chingru.com
 
 </div>
 
-[![FontColle](/logo.png)](https://fontcolle.com)
+[![FontColle](/logo.png)](https://font.chingru.com)

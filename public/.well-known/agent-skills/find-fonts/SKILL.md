@@ -24,23 +24,23 @@ environment:
 
 ## Data sources
 
-- `https://fontcolle.com/catalog/facets/index.json` — **read this first if you
+- `https://font.chingru.com/catalog/facets/index.json` — **read this first if you
   read data into context.** Lists every pre-sharded slice by `class`
   (Sans/Serif/Display/…), non-Latin `subset` (writing system), and `flag`
   (variable/monospace/color), each with a `count` and `href`. Fetch the one
   slice that matches your hardest constraint (e.g. the `devanagari` subset slice
   is ~14k tokens), then filter and rank within it.
-- `https://fontcolle.com/catalog-slim.json` — every published family projected
+- `https://font.chingru.com/catalog-slim.json` — every published family projected
   to the fields queries filter and rank on (~2 MB). Use only if you can filter
   it with code.
-- `https://fontcolle.com/catalog.json` — full `FontRecord[]` (~13 MB). Use only
+- `https://font.chingru.com/catalog.json` — full `FontRecord[]` (~13 MB). Use only
   when a slice/slim lacks a field you need (per-axis ranges, named instances,
   per-family language lists, about/version prose).
-- `https://fontcolle.com/catalog/{id}.json` — one full family record. `{id}` is
+- `https://font.chingru.com/catalog/{id}.json` — one full family record. `{id}` is
   the lowercased family name with spaces removed, e.g. `robotoslab`.
-- `https://fontcolle.com/designer-index.json` — `{id, name, designer}[]`.
-- `https://fontcolle.com/openapi.json` — OpenAPI 3.1 description of the above.
-- `https://fontcolle.com/llms.txt` — field-by-field guide and tag vocabulary.
+- `https://font.chingru.com/designer-index.json` — `{id, name, designer}[]`.
+- `https://font.chingru.com/openapi.json` — OpenAPI 3.1 description of the above.
+- `https://font.chingru.com/llms.txt` — field-by-field guide and tag vocabulary.
 
 ## How to answer a query
 
@@ -59,6 +59,6 @@ environment:
    queries ("joyful", "elegant", "technical") answerable.
 4. For a chosen family, fetch `/catalog/{id}.json` for the full record
    (specimen, contrast, metrics, version history, about prose).
-5. Link users to `https://fontcolle.com/{id}` for the human page.
+5. Link users to `https://font.chingru.com/{id}` for the human page.
 
 See `/llms.txt` for the complete field tables and a worked style-query example.

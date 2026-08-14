@@ -5,8 +5,8 @@
       "name": "find-fonts",
       "type": "skill",
       "description": "Find and compare open-source Google Fonts families by style, OpenType features, variable axes, writing system, and subjective mood, using FontColle's static JSON catalog.",
-      "url": "https://fontcolle.com/.well-known/agent-skills/find-fonts/SKILL.md",
-      "sha256": "a873c44836f930ad8226df762869e4cb832ae28fcedd166836eee475de722a5f"
+      "url": "https://font.chingru.com/.well-known/agent-skills/find-fonts/SKILL.md",
+      "sha256": "7816dd838a55934e3c392a4a0e606404a570f33587fa596a0e4d9240417cd8b3"
     }
   ]
 }

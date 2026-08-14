@@ -130,7 +130,7 @@ export function buildTools(ctx: ToolContext): ToolDefinition[] {
 
         return json({
           count: matches.length,
-          appliedUrl: `https://fontcolle.com/${ctx.router.buildLocation({ to: "/", search }).searchStr}`,
+          appliedUrl: `https://font.chingru.com/${ctx.router.buildLocation({ to: "/", search }).searchStr}`,
           fonts: matches.slice(0, MCP_MAX_RESULTS).map(mcpSummarise),
           truncated: matches.length > MCP_MAX_RESULTS,
         });
@@ -203,7 +203,7 @@ export function buildTools(ctx: ToolContext): ToolDefinition[] {
         });
         return json({
           opened: font.name,
-          url: `https://fontcolle.com/${tab}/${id}`,
+          url: `https://font.chingru.com/${tab}/${id}`,
         });
       },
     },

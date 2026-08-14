@@ -26,6 +26,6 @@ User-agent: AhrefsBot
 Disallow: /
 
 # LLMs / AI search tools: machine-readable catalog guide at
-# https://fontcolle.com/llms.txt (field tables, tag vocabulary, URL params).
+# https://font.chingru.com/llms.txt (field tables, tag vocabulary, URL params).
 
-Sitemap: https://fontcolle.com/sitemap.xml
+Sitemap: https://font.chingru.com/sitemap.xml

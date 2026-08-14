@@ -37,6 +37,6 @@ export function mcpSummarise(
     isVariable: font.isVariable,
     isMonospace: font.isMonospace,
     designer: font.designer,
-    url: `https://fontcolle.com/instances/${font.id}`,
+    url: `https://font.chingru.com/instances/${font.id}`,
   };
 }

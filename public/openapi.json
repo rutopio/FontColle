@@ -7,14 +7,14 @@
     "description": "FontColle serves its font catalog as static JSON files. Every family carries harvested font-binary data (variable axes, OpenType features, metrics, writing systems) plus Google's classification scores and subjective style tags. No authentication and no rate limit. `id` is the lowercased family name with spaces removed (e.g. \"Roboto Slab\" -> \"robotoslab\"). Start from /catalog-slim.json for filtering and ranking; fetch /catalog/{id}.json for a single family's full record.",
     "license": {
       "name": "Data: per-family OFL/Apache/UFL",
-      "url": "https://fontcolle.com/llms.txt"
+      "url": "https://font.chingru.com/llms.txt"
     },
-    "contact": { "url": "https://fontcolle.com/" }
+    "contact": { "url": "https://font.chingru.com/" }
   },
-  "servers": [{ "url": "https://fontcolle.com" }],
+  "servers": [{ "url": "https://font.chingru.com" }],
   "externalDocs": {
     "description": "Human- and machine-readable catalog guide (field tables, tag vocabulary, URL params).",
-    "url": "https://fontcolle.com/llms.txt"
+    "url": "https://font.chingru.com/llms.txt"
   },
   "paths": {
     "/catalog-slim.json": {
@@ -162,7 +162,7 @@
       },
       "FontRecord": {
         "type": "object",
-        "description": "Full family record. All FamilySummary fields plus per-axis ranges, named instances, per-family language lists, specimen, contrast, version history, and about/designer prose. See https://fontcolle.com/llms.txt for the field-by-field guide.",
+        "description": "Full family record. All FamilySummary fields plus per-axis ranges, named instances, per-family language lists, specimen, contrast, version history, and about/designer prose. See https://font.chingru.com/llms.txt for the field-by-field guide.",
         "required": ["id", "name", "designer", "category", "subsets"],
         "properties": {
           "id": { "type": "string" },

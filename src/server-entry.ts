@@ -10,7 +10,7 @@ const LINK_HEADER = [
 const CRAWLER_UA =
   /bot|crawler|spider|GPTBot|ClaudeBot|Bytespider|facebookexternalhit|slurp/i;
 
-const FILTERED_CRAWLER_HTML = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>FontColle</title><link rel="canonical" href="https://fontcolle.com/"><meta name="robots" content="noindex,follow"></head><body><p>Filtered views of the FontColle catalog are rendered in the browser. <a href="/">Browse the full catalog</a>.</p></body></html>`;
+const FILTERED_CRAWLER_HTML = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>FontColle</title><link rel="canonical" href="https://font.chingru.com/"><meta name="robots" content="noindex,follow"></head><body><p>Filtered views of the FontColle catalog are rendered in the browser. <a href="/">Browse the full catalog</a>.</p></body></html>`;
 
 const HOME_CACHE_SECONDS = 600;
 
