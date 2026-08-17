@@ -17,21 +17,49 @@ if (!ACCOUNT_ID) {
   );
 }
 
+// R2's API answers an occasional request with a transient 5xx (seen as
+// `503: Service Unavailable` + Cloudflare error code 10043) or drops the
+// connection outright. A single one of those used to fail the whole daily
+// harvest mid-publish, leaving the manifest pointing at the previous
+// snapshot. Retry only those; a 4xx (bad token, missing key) is a real
+// error and must still fail on the first try.
+const RETRIES = 3;
+const BACKOFF_MS = [2000, 6000, 15000];
+const TRANSIENT_RE =
+  /\b(408|429|5\d\d)\b|ECONNRESET|ETIMEDOUT|ENOTFOUND|EAI_AGAIN|socket hang up|fetch failed/i;
+
+function sleepSync(ms) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+
 function wrangler(args, { input } = {}) {
-  const res = spawnSync("npx", ["wrangler", ...args], {
-    cwd: ROOT,
-    env: { ...process.env, CLOUDFLARE_ACCOUNT_ID: ACCOUNT_ID },
-    input,
-    encoding: input ? undefined : "utf8",
-    maxBuffer: 1024 * 1024 * 1024,
-    stdio: input
-      ? ["pipe", "inherit", "inherit"]
-      : ["ignore", "pipe", "inherit"],
-  });
-  if (res.status !== 0) {
-    throw new Error(`wrangler ${args.join(" ")} failed (exit ${res.status})`);
+  let lastErr = "";
+  for (let attempt = 0; ; attempt++) {
+    const res = spawnSync("npx", ["wrangler", ...args], {
+      cwd: ROOT,
+      env: { ...process.env, CLOUDFLARE_ACCOUNT_ID: ACCOUNT_ID },
+      input,
+      encoding: "utf8",
+      maxBuffer: 1024 * 1024 * 1024,
+      // stderr is captured (not inherited) so a transient 5xx can be told
+      // apart from a permanent failure; it is echoed back on the way out.
+      stdio: [input ? "pipe" : "ignore", input ? "inherit" : "pipe", "pipe"],
+    });
+    if (res.status === 0) return res.stdout;
+
+    lastErr = res.stderr ?? "";
+    const retriable = attempt < RETRIES && TRANSIENT_RE.test(lastErr);
+    if (!retriable) {
+      if (lastErr) process.stderr.write(lastErr);
+      throw new Error(`wrangler ${args.join(" ")} failed (exit ${res.status})`);
+    }
+    const wait = BACKOFF_MS[attempt];
+    console.warn(
+      `[r2] transient failure on \`wrangler ${args.join(" ")}\` ` +
+        `(exit ${res.status}); retry ${attempt + 1}/${RETRIES} in ${wait}ms`
+    );
+    sleepSync(wait);
   }
-  return res.stdout;
 }
 
 export function r2Put(key, filePath) {
