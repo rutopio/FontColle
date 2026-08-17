@@ -13,17 +13,25 @@ const CRAWLER_UA =
 const FILTERED_CRAWLER_HTML = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>FontFridge</title><link rel="canonical" href="https://font.chingru.com/"><meta name="robots" content="noindex,follow"></head><body><p>Filtered views of the FontFridge catalog are rendered in the browser. <a href="/">Browse the full catalog</a>.</p></body></html>`;
 
 const HOME_CACHE_SECONDS = 600;
+const HOME_SWR_SECONDS = 3600;
 
-// Cache key includes the build ID so a deploy invalidates stale SSR entries.
+// Cache keys carry a version so a deploy invalidates stale SSR entries. The
+// home page embeds per-build hashed asset URLs, so it keys on the build ID.
+// Detail pages are a pure function of their catalog record, so they key on the
+// data version instead — a code-only deploy then leaves all ~13.6k cached
+// detail renders (1942 fonts x 7 tabs) valid rather than expiring them at once
+// and making the next crawl pay full SSR on every miss.
 declare const __BUILD_ID__: string;
+declare const __DATA_VERSION__: string;
 
-function cacheKey(request: Request): Request {
+function cacheKey(request: Request, version: string): Request {
   const url = new URL(request.url);
-  url.searchParams.set("__b", __BUILD_ID__);
+  url.searchParams.set("__b", version);
   return new Request(url, request);
 }
 
 const DETAIL_CACHE_SECONDS = 86400;
+const DETAIL_SWR_SECONDS = 604800;
 const DETAIL_TAB_SLUGS = new Set([
   "instances",
   "paragraph",
@@ -105,7 +113,9 @@ export default {
       import.meta.env.PROD &&
       (isCacheableHome || (isGet && isCacheableDetail(url)));
     const cache = (caches as unknown as { default: Cache }).default;
-    const key = isCacheablePage ? cacheKey(request) : request;
+    const key = isCacheablePage
+      ? cacheKey(request, isCacheableHome ? __BUILD_ID__ : __DATA_VERSION__)
+      : request;
     if (isCacheablePage) {
       const hit = await cache.match(key);
       if (hit) return hit;
@@ -123,11 +133,14 @@ export default {
     next.headers.set("Link", LINK_HEADER);
 
     if (isCacheablePage && next.status === 200) {
+      // stale-while-revalidate lets an expiring entry keep being served while a
+      // single refresh happens behind it, instead of every concurrent request
+      // on that URL missing at once and each paying a full SSR.
       next.headers.set(
         "Cache-Control",
-        `public, max-age=${
-          isCacheableHome ? HOME_CACHE_SECONDS : DETAIL_CACHE_SECONDS
-        }`
+        isCacheableHome
+          ? `public, max-age=${HOME_CACHE_SECONDS}, stale-while-revalidate=${HOME_SWR_SECONDS}`
+          : `public, max-age=${DETAIL_CACHE_SECONDS}, stale-while-revalidate=${DETAIL_SWR_SECONDS}`
       );
       const ctx = (args as unknown[])[2] as ExecutionContext | undefined;
       const write = cache.put(key, next.clone());

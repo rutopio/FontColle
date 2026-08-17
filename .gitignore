@@ -47,6 +47,9 @@ skills-lock.json
 # copy below is just a pull:data scratch artifact.
 /src/data/fonts.json
 /src/data/data-manifest.json
+# Content hash of fonts.json, emitted by gen-catalog.mjs and read by
+# vite.config.ts to key the detail-page SSR cache. Derived, like fonts.json.
+/src/data/version.json
 /public/glyphs/
 /public/og/
 # Scratch dir for R2 up/downloads (tarballs, fonts version) + manifest temp.

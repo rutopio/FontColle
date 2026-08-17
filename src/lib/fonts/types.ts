@@ -12,6 +12,11 @@ export interface FontInstance {
   italic: boolean;
 }
 
+export interface DesignerSibling {
+  id: string;
+  name: string;
+}
+
 export interface FontRecord {
   id: string;
   name: string;
@@ -79,4 +84,8 @@ export interface FontRecord {
   hasHinting: boolean | null;
   vendorId: string | null;
   fileSize: number | null;
+  /** Other families by each of this font's designers, keyed by designer name.
+   *  Precomputed by scripts/gen-catalog.mjs into the per-font detail files
+   *  only, so it is absent from the list/slim catalogs. */
+  siblingsByDesigner?: Record<string, DesignerSibling[]>;
 }

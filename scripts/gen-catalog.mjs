@@ -14,6 +14,23 @@ export async function genCatalog() {
     .filter((f) => f?.isPublished ?? true)
     .sort((a, b) => a.name.localeCompare(b.name));
 
+  // Version of the *data*, not the build. Detail pages are pure functions of
+  // public/catalog/<id>.json, so keying their SSR cache on this instead of
+  // __BUILD_ID__ keeps ~13.6k cached detail renders (1942 fonts x 7 tabs) warm
+  // across code-only deploys, instead of expiring them all at once and letting
+  // the next crawl pay full SSR on every miss. Hashing the source dataset
+  // covers every field that reaches any generated file.
+  const dataVersion = createHash("sha256")
+    .update(raw)
+    .digest("hex")
+    .slice(0, 16);
+  await writeFile(
+    path.join(ROOT, "src/data/version.json"),
+    `${JSON.stringify({ dataVersion })}\n`,
+    "utf8"
+  );
+  console.log(`[catalog] data version ${dataVersion}`);
+
   const DETAIL_ONLY_FIELDS = [
     "designerProfiles",
     "about",
@@ -46,6 +63,39 @@ export async function genCatalog() {
   );
   console.log(`[catalog] wrote hashed catalog + manifest -> ${hashedRel}`);
 
+  // Siblings ("More by <designer>") are folded into each per-font file so the
+  // detail SSR needs one ASSETS fetch instead of also pulling and scanning the
+  // 147 KB designer-index on every cache miss — that scan was pure Worker CPU
+  // recomputed identically for every family sharing a designer.
+  const splitDesigners = (designer) =>
+    (designer ?? "")
+      .split(",")
+      .map((d) => d.trim())
+      .filter(Boolean);
+
+  const byDesigner = new Map();
+  for (const f of fonts) {
+    for (const d of splitDesigners(f.designer)) {
+      const list = byDesigner.get(d);
+      if (list) list.push(f);
+      else byDesigner.set(d, [f]);
+    }
+  }
+  // Match the previous runtime sort so the rendered order does not change.
+  for (const list of byDesigner.values()) {
+    list.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  const siblingsFor = (font) => {
+    const out = {};
+    for (const d of splitDesigners(font.designer)) {
+      out[d] = (byDesigner.get(d) ?? [])
+        .filter((s) => s.id !== font.id)
+        .map((s) => ({ id: s.id, name: s.name }));
+    }
+    return out;
+  };
+
   const perFontDir = path.join(ROOT, "public/catalog");
   await rm(perFontDir, { recursive: true, force: true });
   await mkdir(perFontDir, { recursive: true });
@@ -53,7 +103,7 @@ export async function genCatalog() {
     fonts.map((f) =>
       writeFile(
         path.join(perFontDir, `${f.id}.json`),
-        JSON.stringify(f),
+        JSON.stringify({ ...f, siblingsByDesigner: siblingsFor(f) }),
         "utf8"
       )
     )
@@ -123,6 +173,7 @@ export async function genCatalog() {
 
   // Must match sortFonts(fonts, "popularity") in src/lib/fonts/sort.ts.
   const FIRST_PAGE_SIZE = 24;
+  const EMPTY_INSTANCE = {};
   const byNameBase = (a, b) =>
     a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
   const byPopularity = (a, b) => {
@@ -133,10 +184,53 @@ export async function genCatalog() {
     if (br == null) return -1;
     return ar - br || byNameBase(a, b);
   };
+  // This slice is rendered server-side AND re-serialized into the streamed HTML
+  // for hydration, so every byte is paid for twice. Keep only the fields the
+  // first-paint tree actually reads, traced from FirstPagePending down through
+  // FontCard/FontRow -> FontTraits/fontTraits, FontActions, and
+  // useFontFacePreview -> specimenFor/usePreviewCoords:
+  //
+  //   id, name, designer, category   card + row text and links
+  //   repositoryUrl                  FontActions repo link
+  //   isVariable, axes, features     fontTraits badges (+ preview coords)
+  //   colorTables                    isColorFont() badge
+  //   facets                         preview font-face selection; also keeps
+  //                                  withFacets() from calling deriveFacets()
+  //   specimen, specimenTiers, subsets   specimenFor() preview string
+  //   popularityRank                 asserted by first-page.test.ts
+  //
+  // `instances` is kept as empty placeholders: only `.length` is ever read
+  // (the badge, and sortFonts("instances-most")), never an instance's fields.
+  // deriveFacets() is the one caller that inspects instance.italic/.name, and
+  // it cannot run here because every record carries a non-empty `facets`.
+  const FIRST_PAGE_FIELDS = [
+    "id",
+    "name",
+    "displayName",
+    "designer",
+    "category",
+    "apiCategory",
+    "repositoryUrl",
+    "isVariable",
+    "axes",
+    "features",
+    "colorTables",
+    "facets",
+    "specimen",
+    "specimenTiers",
+    "subsets",
+    "popularityRank",
+  ];
+  const trimForFirstPage = (f) => {
+    const out = { languages: [] };
+    for (const k of FIRST_PAGE_FIELDS) out[k] = f[k];
+    out.instances = (f.instances ?? []).map(() => EMPTY_INSTANCE);
+    return out;
+  };
   const firstPage = [...fonts]
     .sort(byPopularity)
     .slice(0, FIRST_PAGE_SIZE)
-    .map((f) => ({ ...forList(f), languages: [] }));
+    .map(trimForFirstPage);
   const firstJson = JSON.stringify(firstPage);
   await writeFile(
     path.join(ROOT, "public/catalog-first.json"),

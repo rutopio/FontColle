@@ -10,7 +10,7 @@ import { AnimatePresence } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FilterLayout } from "@/components/filter-layout";
 import { NotFound } from "@/components/not-found";
-import { fetchFontById, fetchFontsByDesigners } from "@/lib/fonts/detail";
+import { fetchFontById } from "@/lib/fonts/detail";
 import { DEFAULT_ON } from "@/lib/fonts/features";
 import {
   blocksWithCoverage,
@@ -79,13 +79,8 @@ export const Route = createFileRoute("/$tab/$fontId")({
     if (!tabFromSlug(params.tab)) throw notFound();
     const font = await fetchFontById(params.fontId);
     if (!font) throw notFound();
-    const names = (font.designer ?? "")
-      .split(",")
-      .map((d) => d.trim())
-      .filter(Boolean);
-    const siblingsByDesigner =
-      names.length > 0 ? await fetchFontsByDesigners(names, font.id) : {};
-    return { font, siblingsByDesigner };
+    // Precomputed at build time by scripts/gen-catalog.mjs.
+    return { font, siblingsByDesigner: font.siblingsByDesigner ?? {} };
   },
   head: ({ loaderData, params }) => {
     const font = loaderData?.font;
