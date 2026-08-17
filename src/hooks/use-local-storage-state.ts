@@ -1,4 +1,5 @@
 import { useCallback, useSyncExternalStore } from "react";
+import { writeStorage } from "@/lib/storage-warning";
 
 const listeners = new Set<() => void>();
 const emit = () => {
@@ -34,11 +35,7 @@ export function useLocalStorageState(
   const set = useCallback(
     (v: string) => {
       memory.set(key, v);
-      try {
-        localStorage.setItem(key, v);
-      } catch {
-        // ignore quota / private-mode errors
-      }
+      writeStorage(key, v);
       emit();
     },
     [key]

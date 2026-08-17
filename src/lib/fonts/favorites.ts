@@ -1,4 +1,5 @@
 import { useCallback, useSyncExternalStore } from "react";
+import { writeStorage } from "@/lib/storage-warning";
 
 const KEY = "font-fridge.favorites.v1";
 
@@ -83,11 +84,7 @@ const getServerSnapshot = () => EMPTY;
 
 function write(next: string[]) {
   cache = next;
-  try {
-    localStorage.setItem(KEY, JSON.stringify({ favorites: next }));
-  } catch {
-    // ignore quota / private mode errors
-  }
+  writeStorage(KEY, JSON.stringify({ favorites: next }));
   emit();
 }
 

@@ -1,4 +1,5 @@
 import { useCallback, useSyncExternalStore } from "react";
+import { writeStorage } from "@/lib/storage-warning";
 import { type FilterSearch, parseFilterSearch } from "./filter";
 
 const KEY = "font-fridge.presets.v1";
@@ -84,11 +85,7 @@ const getServerSnapshot = () => EMPTY;
 
 function write(next: FilterPreset[]) {
   cache = next;
-  try {
-    localStorage.setItem(KEY, JSON.stringify({ presets: next }));
-  } catch {
-    // ignore quota / private mode errors
-  }
+  writeStorage(KEY, JSON.stringify({ presets: next }));
   emit();
 }
 
