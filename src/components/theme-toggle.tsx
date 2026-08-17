@@ -7,6 +7,7 @@ import {
   RAIL_HEADER_BTN,
 } from "@/components/rail-button";
 import { useMountEffect } from "@/hooks/use-mount-effect";
+import { writeStorage } from "@/lib/storage-warning";
 import { cn } from "@/lib/utils";
 
 export function ThemeToggle({
@@ -24,9 +25,7 @@ export function ThemeToggle({
     const next = !isDark;
     document.documentElement.classList.toggle("dark", next);
     setIsDark(next);
-    try {
-      localStorage.setItem("font-fridge.theme", next ? "dark" : "light");
-    } catch {}
+    writeStorage("font-fridge.theme", next ? "dark" : "light");
   };
 
   const target = isDark ? "Light" : "Dark";
