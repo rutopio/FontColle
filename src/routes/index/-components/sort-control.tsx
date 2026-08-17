@@ -5,6 +5,7 @@ import {
   SortDescendingIcon,
 } from "@phosphor-icons/react";
 import { useState } from "react";
+import { toast } from "sonner";
 import {
   Select,
   SelectContent,
@@ -22,6 +23,18 @@ import {
 import { cn } from "@/lib/utils";
 
 export const RELEVANCE_GROUP = "Relevance";
+
+/**
+ * The trigger only shows the group, and the direction lives in an icon — so
+ * every change announces the resulting order: the title states what the list
+ * is sorted by, the description spells out the direction. One shared id keeps
+ * rapid changes replacing a single toast instead of stacking.
+ */
+const announceSort = (group: string, direction?: string) =>
+  toast.info(`Sorted by ${group}`, {
+    description: direction,
+    id: "sort-mode",
+  });
 
 export function SortControl({
   sort,
@@ -51,10 +64,15 @@ export function SortControl({
   const selectGroup = (g: string | null) => {
     if (g === RELEVANCE_GROUP) {
       onRelevance?.();
+      announceSort(RELEVANCE_GROUP, "Best matches first");
       return;
     }
     const next = SORT_GROUPS.find((x) => x.group === g);
-    if (next) onChange(!asc && next.desc ? next.desc : next.asc);
+    if (!next) return;
+    // Keep the current direction when the new group also offers one.
+    const keepDesc = asc ? undefined : next.desc;
+    onChange(keepDesc ?? next.asc);
+    announceSort(next.group, keepDesc ? next.descLabel : next.ascLabel);
   };
 
   return (
@@ -73,7 +91,9 @@ export function SortControl({
             className="h-9 min-w-36 rounded-none rounded-l-md focus-visible:ring-0"
             aria-label="Sort by"
           />
-          <SelectContent>
+          {/* Every sort group fits at once — drop the shared 300px cap and
+              let only the viewport limit the popup. */}
+          <SelectContent className="max-h-[var(--available-height)]">
             {groups.map((g, i) => (
               <SelectItem key={g} index={i} value={g}>
                 {g}
@@ -87,9 +107,13 @@ export function SortControl({
         type="button"
         disabled={directionless}
         onClick={() => {
-          if (!directionless) {
-            onChange(asc ? (group.desc ?? group.asc) : group.asc);
-          }
+          if (directionless) return;
+          const nextAsc = !asc;
+          onChange(nextAsc ? group.asc : (group.desc ?? group.asc));
+          announceSort(
+            group.group,
+            nextAsc ? group.ascLabel : (group.descLabel ?? group.ascLabel)
+          );
         }}
         aria-label={
           onRelevanceNow

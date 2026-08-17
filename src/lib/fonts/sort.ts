@@ -11,10 +11,16 @@ export type SortKey =
   | "creator-desc"
   | "date-newest"
   | "date-oldest"
+  | "updated-newest"
+  | "updated-oldest"
   | "glyphs-most"
   | "glyphs-fewest"
   | "axes-most"
-  | "axes-fewest";
+  | "axes-fewest"
+  | "features-most"
+  | "features-fewest"
+  | "instances-most"
+  | "instances-fewest";
 
 export const DEFAULT_SORT: SortKey = "popularity";
 
@@ -63,6 +69,13 @@ export const SORT_GROUPS: SortGroup[] = [
     descLabel: "Oldest",
   },
   {
+    group: "Last updated",
+    asc: "updated-newest",
+    desc: "updated-oldest",
+    ascLabel: "Most recently updated",
+    descLabel: "Least recently updated",
+  },
+  {
     group: "Glyphs",
     asc: "glyphs-most",
     desc: "glyphs-fewest",
@@ -73,6 +86,20 @@ export const SORT_GROUPS: SortGroup[] = [
     group: "Axes",
     asc: "axes-most",
     desc: "axes-fewest",
+    ascLabel: "Most",
+    descLabel: "Fewest",
+  },
+  {
+    group: "Features",
+    asc: "features-most",
+    desc: "features-fewest",
+    ascLabel: "Most",
+    descLabel: "Fewest",
+  },
+  {
+    group: "Instances",
+    asc: "instances-most",
+    desc: "instances-fewest",
     ascLabel: "Most",
     descLabel: "Fewest",
   },
@@ -103,14 +130,19 @@ const numCmp = (av: number | null, bv: number | null, desc: boolean) => {
   return desc ? bv - av : av - bv;
 };
 
-const dateCmp = (a: FontRecord, b: FontRecord, newest: boolean) => {
-  const av = a.dateAdded ?? "";
-  const bv = b.dateAdded ?? "";
+/** ISO `YYYY-MM-DD` strings, so lexical order is chronological order. */
+const isoCmp = (av: string | null, bv: string | null, newest: boolean) => {
   if (!av && !bv) return 0;
   if (!av) return 1;
   if (!bv) return -1;
   return newest ? bv.localeCompare(av) : av.localeCompare(bv);
 };
+
+const dateCmp = (a: FontRecord, b: FontRecord, newest: boolean) =>
+  isoCmp(a.dateAdded, b.dateAdded, newest);
+
+const updatedCmp = (a: FontRecord, b: FontRecord, newest: boolean) =>
+  isoCmp(a.lastModifiedApi, b.lastModifiedApi, newest);
 
 export function sortFonts(fonts: FontRecord[], key: SortKey): FontRecord[] {
   const out = [...fonts];
@@ -145,6 +177,10 @@ export function sortFonts(fonts: FontRecord[], key: SortKey): FontRecord[] {
       return out.sort((a, b) => dateCmp(a, b, true) || byName(a, b));
     case "date-oldest":
       return out.sort((a, b) => dateCmp(a, b, false) || byName(a, b));
+    case "updated-newest":
+      return out.sort((a, b) => updatedCmp(a, b, true) || byName(a, b));
+    case "updated-oldest":
+      return out.sort((a, b) => updatedCmp(a, b, false) || byName(a, b));
     case "glyphs-most":
       return out.sort(
         (a, b) => numCmp(a.glyphCount, b.glyphCount, true) || byName(a, b)
@@ -160,6 +196,26 @@ export function sortFonts(fonts: FontRecord[], key: SortKey): FontRecord[] {
     case "axes-fewest":
       return out.sort(
         (a, b) => numCmp(a.axes.length, b.axes.length, false) || byName(a, b)
+      );
+    case "features-most":
+      return out.sort(
+        (a, b) =>
+          numCmp(a.features.length, b.features.length, true) || byName(a, b)
+      );
+    case "features-fewest":
+      return out.sort(
+        (a, b) =>
+          numCmp(a.features.length, b.features.length, false) || byName(a, b)
+      );
+    case "instances-most":
+      return out.sort(
+        (a, b) =>
+          numCmp(a.instances.length, b.instances.length, true) || byName(a, b)
+      );
+    case "instances-fewest":
+      return out.sort(
+        (a, b) =>
+          numCmp(a.instances.length, b.instances.length, false) || byName(a, b)
       );
     default:
       return out.sort(byName);

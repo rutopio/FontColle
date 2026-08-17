@@ -10,6 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { toast } from "sonner";
 import { AboutLink } from "@/components/about-link";
 import { CountFlash } from "@/components/count-flash";
 import { FavoriteToggle } from "@/components/favorite-toggle";
@@ -219,6 +220,29 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
     [navigate, search.sort, search.fav]
   );
 
+  /**
+   * Esc clears every filter at once with nothing on screen to explain it —
+   * unlike the Reset button, which the user aimed at. Say what happened and
+   * offer the way back, since the conditions are otherwise unrecoverable.
+   */
+  const resetFromKeyboard = useCallback(() => {
+    const before = search;
+    const { sort: _sort, fav: _fav, ...conditions } = before;
+    const cleared = Object.values(conditions).filter(
+      (v) => v !== undefined
+    ).length;
+    if (cleared === 0) return;
+    reset();
+    toast.success("Filters cleared", {
+      description: `${cleared} ${cleared === 1 ? "condition" : "conditions"} removed with Esc`,
+      action: {
+        label: "Undo",
+        onClick: () => navigate({ search: before, replace: true }),
+      },
+      id: "filters-cleared",
+    });
+  }, [navigate, reset, search]);
+
   const toggleFavOnly = useCallback(() => {
     navigate({
       search: (prev) => ({ ...prev, fav: favOnly ? undefined : "1" }),
@@ -239,7 +263,7 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
         e.preventDefault();
         searchRef.current?.focus();
       } else if (e.key === "Escape") {
-        reset();
+        resetFromKeyboard();
       } else if (e.key === "g") {
         setViewPref("grid");
       } else if (e.key === "r") {
@@ -250,7 +274,7 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [setViewPref, reset, toggleFavOnly]);
+  }, [setViewPref, resetFromKeyboard, toggleFavOnly]);
   const discoverFonts = () => {
     navigate({ search: { sort: search.sort }, replace: true });
   };
