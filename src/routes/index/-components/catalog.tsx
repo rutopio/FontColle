@@ -114,7 +114,7 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
   const commitFilter = (next: FilterState) => {
     pruneAxisValues(next.axes);
     navigate({
-      search: { ...filterToSearch(next), sort: search.sort, fav: search.fav },
+      search: { ...filterToSearch(next), fav: search.fav },
       replace: true,
     });
   };
@@ -135,7 +135,7 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
   const applyPreset = (preset: FilterSearch) => {
     pruneAxisValues(searchToFilter(preset).axes);
     navigate({
-      search: { ...preset, sort: search.sort, fav: search.fav },
+      search: { ...preset, fav: search.fav },
       replace: true,
     });
   };
@@ -164,7 +164,22 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
   const maxCols = clampCols(Number.parseInt(colsPref, 10));
   const [shownView, setShownView] = useState(view);
   const viewFading = view !== shownView;
-  const sort = (search.sort as SortKey) ?? DEFAULT_SORT;
+  /**
+   * Sort is a device preference, not part of the shared view, so it lives in
+   * localStorage rather than the URL — a copied link no longer carries the
+   * sender's ordering, and the choice survives a new tab.
+   *
+   * The empty string is a real value here, not "unset": it means sort by
+   * relevance, which is what an absent `?sort=` used to encode. Keeping it
+   * distinct from DEFAULT_SORT is what lets a query fall back to best-matches
+   * ordering while an explicit choice still wins.
+   */
+  const [sortPref, setSortPref] = useLocalStorageState(
+    "font-fridge.sort",
+    DEFAULT_SORT
+  );
+  const byRelevance = sortPref === "";
+  const sort = byRelevance ? DEFAULT_SORT : (sortPref as SortKey);
   const favOnly = search.fav === "1";
 
   const deferredFilter = useDeferredValue(shownFilter);
@@ -183,41 +198,28 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
     const order = (list: FontRecord[]) => {
       if (!deferredFilter.query.trim()) return sortFonts(list, sort);
       const matches = searchByQuery(list, deferredFilter.query);
-      return search.sort ? sortFonts(matches, sort) : matches;
+      return byRelevance ? matches : sortFonts(matches, sort);
     };
     return { results: order(filtered), coverageHid };
-  }, [fonts, deferredFilter, sort, search.sort, favDep, renderableIds]);
+  }, [fonts, deferredFilter, sort, byRelevance, favDep, renderableIds]);
 
   useListScrollRestore(scrollRef, listScrollY);
 
   const hasQuery = filter.query.trim().length > 0;
 
-  const setSort = (next: SortKey) => {
-    navigate({
-      search: {
-        ...filterToSearch(filter),
-        sort: next === DEFAULT_SORT && !hasQuery ? undefined : next,
-        fav: search.fav,
-      },
-      replace: true,
-    });
-  };
+  const setSort = (next: SortKey) => setSortPref(next);
 
-  const setRelevance = () => {
-    navigate({
-      search: { ...filterToSearch(filter), sort: undefined, fav: search.fav },
-      replace: true,
-    });
-  };
+  // "" is the stored form of relevance ordering; see sortPref above.
+  const setRelevance = () => setSortPref("");
 
   const setView = (next: ViewMode) => setViewPref(next);
   const reset = useCallback(
     () =>
       navigate({
-        search: { sort: search.sort, fav: search.fav },
+        search: { fav: search.fav },
         replace: true,
       }),
-    [navigate, search.sort, search.fav]
+    [navigate, search.fav]
   );
 
   /**
@@ -276,7 +278,7 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
     return () => document.removeEventListener("keydown", onKey);
   }, [setViewPref, resetFromKeyboard, toggleFavOnly]);
   const discoverFonts = () => {
-    navigate({ search: { sort: search.sort }, replace: true });
+    navigate({ search: {}, replace: true });
   };
 
   const activeCount = activeFilterCount(filter);
@@ -360,7 +362,7 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
                 onChange={setSort}
                 onRelevance={setRelevance}
                 relevance={hasQuery}
-                sortedByRelevance={!search.sort}
+                sortedByRelevance={byRelevance}
               />
             </div>
             {(activeCount > 0 || hasQuery) && (
@@ -386,7 +388,7 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
                 onChange={setSort}
                 onRelevance={setRelevance}
                 relevance={hasQuery}
-                sortedByRelevance={!search.sort}
+                sortedByRelevance={byRelevance}
               />
             </div>
             <ViewTabs
