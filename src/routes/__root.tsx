@@ -20,11 +20,16 @@ import { AboutProvider } from "@/lib/about/context";
 import { FilterProvider } from "@/lib/filter/context";
 import { PreviewProvider } from "@/lib/preview/context";
 import { absoluteUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
+import { THEME_COLOR_DARK, THEME_COLOR_LIGHT } from "@/lib/site-meta";
 import { useWebMcp } from "@/lib/webmcp/register";
 import appCss from "@/styles.css?url";
 
 // Blocking scripts in <head> prevent theme/view FOUC.
-const themeScript = `try{if(localStorage['font-fridge.theme']==='dark')document.documentElement.classList.add('dark')}catch(e){}`;
+// Light is the default: dark applies only when the user has explicitly turned
+// it on, never from prefers-color-scheme. The same script rewrites the
+// theme-color meta so browser chrome follows the page rather than the OS —
+// without it a system-dark device got dark chrome around a light page.
+const themeScript = `try{var d=localStorage['font-fridge.theme']==='dark';if(d)document.documentElement.classList.add('dark');var m=document.querySelector('meta[name="theme-color"]');if(m)m.content=d?'${THEME_COLOR_DARK}':'${THEME_COLOR_LIGHT}'}catch(e){}`;
 const viewScript = `try{var v=localStorage['font-fridge.view'];document.documentElement.dataset.view=v==='row'?'row':'grid'}catch(e){document.documentElement.dataset.view='grid'}`;
 // Grid density, same reasoning as viewScript: the pending list renders before
 // React can read localStorage, so the column cap is stamped on <html> and the
@@ -44,17 +49,11 @@ export const Route = createRootRouteWithContext<{
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: SITE_NAME },
       { name: "description", content: SITE_DESCRIPTION },
-      // Per-scheme theme-color so browser chrome matches the page (no flash).
-      {
-        name: "theme-color",
-        content: "#ffffff",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        name: "theme-color",
-        content: "#0a0a0a",
-        media: "(prefers-color-scheme: dark)",
-      },
+      // Light unless the user opted into dark, matching the page itself. A
+      // single unscoped tag, not a per-scheme pair: themeScript rewrites this
+      // to #0a0a0a when the stored preference is dark, so the value tracks the
+      // stored choice instead of the OS setting.
+      { name: "theme-color", content: THEME_COLOR_LIGHT },
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: SITE_NAME },
       { property: "og:title", content: SITE_NAME },

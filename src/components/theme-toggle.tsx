@@ -7,6 +7,7 @@ import {
   RAIL_HEADER_BTN,
 } from "@/components/rail-button";
 import { useMountEffect } from "@/hooks/use-mount-effect";
+import { THEME_COLOR_DARK, THEME_COLOR_LIGHT } from "@/lib/site-meta";
 import { writeStorage } from "@/lib/storage-warning";
 import { cn } from "@/lib/utils";
 
@@ -24,6 +25,12 @@ export function ThemeToggle({
   const toggle = () => {
     const next = !isDark;
     document.documentElement.classList.toggle("dark", next);
+    // Keep browser chrome in step with the page. themeScript sets this on load;
+    // without the same update here the chrome keeps the old colour until the
+    // next reload.
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute("content", next ? THEME_COLOR_DARK : THEME_COLOR_LIGHT);
     setIsDark(next);
     writeStorage("font-fridge.theme", next ? "dark" : "light");
   };
