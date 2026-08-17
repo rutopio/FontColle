@@ -25,6 +25,14 @@ import { emptyFilter } from "@/lib/fonts/filter/state";
 import type { FontRecord } from "@/lib/fonts/types";
 import { backWithViewTransition } from "@/lib/view-transition";
 
+/**
+ * On the detail page the site-wide utilities (theme, about, GitHub, favorite)
+ * are secondary to the font itself, so they sit dimmed and come back to full
+ * strength on hover. The list page keeps them at full strength — this class is
+ * local to this header, so navigating back restores them with no extra state.
+ */
+const SECONDARY_HEADER_CELL = `${RAIL_HEADER_CELL} text-muted-foreground transition-colors duration-base ease-snap hover:text-foreground`;
+
 export function DetailHeader({ font }: { font: FontRecord }) {
   const router = useRouter();
   // Deferred to avoid hydration mismatch (server can't read browser history).
@@ -94,6 +102,10 @@ export function DetailHeader({ font }: { font: FontRecord }) {
           )}
         </div>
       </div>
+      {/* This block owns the auto margin, so it and the icon group that follows
+          are pushed to the right together. The icon group must NOT also set
+          ml-auto: two adjacent auto margins split the free space between them,
+          which strands the badges mid-row instead of at the right edge. */}
       <div className="hidden w-full flex-wrap items-center gap-2 lg:ml-auto lg:flex lg:w-auto lg:shrink-0 lg:flex-nowrap">
         <FontTraits font={font} selection={emptyFilter} />
         {font.license && (
@@ -103,7 +115,10 @@ export function DetailHeader({ font }: { font: FontRecord }) {
         )}
       </div>
 
-      <div className="ml-auto hidden shrink-0 items-center gap-1 md:flex">
+      {/* ml-auto only below lg, where the badge block is hidden and nothing
+          else pushes this to the right; from lg the badge block's own auto
+          margin carries both. */}
+      <div className="ml-auto hidden shrink-0 items-center gap-1 md:flex lg:ml-0">
         <Separator aria-hidden orientation="vertical" className="mx-2 h-5" />
         <HeaderButtonGroup className="relative flex items-center gap-1">
           <HeaderButtonGroupItem index={0} className={RAIL_HEADER_CELL}>
@@ -125,25 +140,25 @@ export function DetailHeader({ font }: { font: FontRecord }) {
           <Separator aria-hidden orientation="vertical" className="mx-2 h-5" />
           <HeaderButtonGroupItem
             index={font.repositoryUrl ? 2 : 1}
-            className={RAIL_HEADER_CELL}
+            className={SECONDARY_HEADER_CELL}
           >
             <ThemeToggle variant="header" />
           </HeaderButtonGroupItem>
           <HeaderButtonGroupItem
             index={font.repositoryUrl ? 3 : 2}
-            className={RAIL_HEADER_CELL}
+            className={SECONDARY_HEADER_CELL}
           >
             <AboutLink variant="header" />
           </HeaderButtonGroupItem>
           <HeaderButtonGroupItem
             index={font.repositoryUrl ? 4 : 3}
-            className={RAIL_HEADER_CELL}
+            className={SECONDARY_HEADER_CELL}
           >
             <GithubLink variant="header" />
           </HeaderButtonGroupItem>
           <HeaderButtonGroupItem
             index={font.repositoryUrl ? 5 : 4}
-            className={RAIL_HEADER_CELL}
+            className={SECONDARY_HEADER_CELL}
           >
             <FavoriteToggle fontId={font.id} variant="header" />
           </HeaderButtonGroupItem>

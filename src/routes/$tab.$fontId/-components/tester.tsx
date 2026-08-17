@@ -117,16 +117,19 @@ const DEFAULT_SIZE: Record<BlockType, number> = {
   normal: 18,
 };
 
-// Unitless multiplier of font-size, matching the .tester-editor CSS default.
-const LEADING_MIN = 0.8;
-const LEADING_MAX = 2.5;
-const LEADING_STEP = 0.05;
-const LEADING_PRESETS = [1, 1.2, 1.4, 1.5, 1.6, 1.8, 2];
+// Percentage of font-size, same units and range as the catalog's Preview
+// Leading control. Divided by 100 for the unitless CSS line-height.
+const LEADING_MIN = 70;
+const LEADING_MAX = 250;
+const LEADING_STEP = 5;
+const LEADING_PRESETS = [
+  80, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 250,
+];
 const DEFAULT_LEADING: Record<BlockType, number> = {
-  h1: 1.2,
-  h2: 1.2,
-  h3: 1.2,
-  normal: 1.2,
+  h1: 120,
+  h2: 120,
+  h3: 120,
+  normal: 120,
 };
 
 const HEADING_WEIGHT: Record<"h1" | "h2" | "h3", number> = {
@@ -166,8 +169,6 @@ function alignedAs(
   return null;
 }
 
-const round2 = (v: number) => Math.round(v * 100) / 100;
-
 // Snap to nearest shipped weight to avoid browser synthesis.
 function headingInstance(
   instances: FontInstance[],
@@ -204,7 +205,7 @@ function TesterInner({
     useState<Record<BlockType, number>>(DEFAULT_LEADING);
   const leading = leadings[block];
   const setLeading = (v: number) =>
-    setLeadings((l) => ({ ...l, [block]: round2(v) }));
+    setLeadings((l) => ({ ...l, [block]: Math.round(v) }));
 
   const syncFromSelection = useCallback(() => {
     const selection = $getSelection();
@@ -346,10 +347,10 @@ function TesterInner({
     "--pg-size-h2": `${sizes.h2}px`,
     "--pg-size-h3": `${sizes.h3}px`,
     "--pg-size-normal": `${sizes.normal}px`,
-    "--pg-leading-h1": leadings.h1,
-    "--pg-leading-h2": leadings.h2,
-    "--pg-leading-h3": leadings.h3,
-    "--pg-leading-normal": leadings.normal,
+    "--pg-leading-h1": leadings.h1 / 100,
+    "--pg-leading-h2": leadings.h2 / 100,
+    "--pg-leading-h3": leadings.h3 / 100,
+    "--pg-leading-normal": leadings.normal / 100,
   } as CSSProperties;
 
   return (
@@ -424,11 +425,12 @@ function TesterInner({
               className="mb-0"
             />
           </div>
-          <span className="flex w-8 shrink-0 items-center justify-end">
+          <span className="flex w-10 shrink-0 items-center justify-end">
             <EditableValue
               value={leading}
               min={LEADING_MIN}
               max={LEADING_MAX}
+              suffix="%"
               presets={LEADING_PRESETS}
               defaultValue={DEFAULT_LEADING[block]}
               onChange={setLeading}
