@@ -27,7 +27,12 @@ import {
 } from "@/components/filter/groups";
 import { PresetToggle } from "@/components/filter/preset-toggle";
 import { Column, FilterLayout } from "@/components/filter-layout";
-import { FontGrid, type ViewMode } from "@/components/font-grid";
+import {
+  clampCols,
+  DEFAULT_COLS,
+  FontGrid,
+  type ViewMode,
+} from "@/components/font-grid";
 import { GithubLink } from "@/components/github-link";
 import {
   HeaderButtonGroup,
@@ -85,6 +90,7 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
   const {
     text: previewText,
     size: previewSize,
+    leading: previewLeading,
     coverOnly,
     setCoverOnly,
   } = usePreview();
@@ -150,6 +156,11 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
     "grid"
   );
   const view: ViewMode = viewPref === "row" ? "row" : "grid";
+  const [colsPref, setColsPref] = useLocalStorageState(
+    "font-fridge.cols",
+    String(DEFAULT_COLS)
+  );
+  const maxCols = clampCols(Number.parseInt(colsPref, 10));
   const [shownView, setShownView] = useState(view);
   const viewFading = view !== shownView;
   const sort = (search.sort as SortKey) ?? DEFAULT_SORT;
@@ -354,7 +365,12 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
                 sortedByRelevance={!search.sort}
               />
             </div>
-            <ViewTabs view={view} onChange={setView} />
+            <ViewTabs
+              view={view}
+              onChange={setView}
+              cols={maxCols}
+              onColsChange={(n) => setColsPref(String(n))}
+            />
 
             <div className="hidden shrink-0 items-center gap-1 md:flex">
               <Separator
@@ -493,9 +509,11 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
               fonts={results}
               previewText={previewText}
               previewSize={previewSize}
+              previewLeading={previewLeading}
               favorites={favorites}
               onToggleFavorite={toggle}
               view={shownView}
+              maxCols={maxCols}
               selection={shownFilter}
               axisValues={axisValues}
               scrollRef={scrollRef}

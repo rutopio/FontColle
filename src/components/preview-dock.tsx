@@ -86,8 +86,10 @@ export function PreviewBar({
         }}
         placeholder={isMobile ? PLACEHOLDER_SHORT : PLACEHOLDER}
         // field-sizing grows the box line by line instead of scrolling a
-        // single line; max-h keeps a very long text from eating the list.
-        className="field-sizing-content max-h-40 min-h-9 w-full min-w-0 flex-1 resize-none rounded-lg border-0 bg-transparent px-2.5 py-1.5 text-base outline-none placeholder:text-muted-foreground md:text-sm"
+        // single line; max-h caps it at 10 lines so a very long text cannot
+        // eat the list. leading-6 pins the line box at both text sizes, so
+        // the cap is 10 lines on phone and desktop alike.
+        className="field-sizing-content max-h-[calc(10*1.5rem+0.75rem)] min-h-9 w-full min-w-0 flex-1 resize-none rounded-lg border-0 bg-transparent px-2.5 py-1.5 text-base leading-6 outline-none placeholder:text-muted-foreground md:text-sm"
         aria-label="Preview text"
       />
       <HeaderButtonGroup className="relative flex items-center gap-1">

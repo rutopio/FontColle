@@ -233,7 +233,11 @@ export function ListPending() {
 }
 
 export function FirstPagePending({ firstPage }: { firstPage: FontRecord[] }) {
-  const { text: previewText, size: previewSize } = usePreview();
+  const {
+    text: previewText,
+    size: previewSize,
+    leading: previewLeading,
+  } = usePreview();
 
   if (firstPage.length === 0) return <ListPending />;
 
@@ -245,13 +249,14 @@ export function FirstPagePending({ firstPage }: { firstPage: FontRecord[] }) {
     >
       <Column footer={<PreviewBar />}>
         <div className="pending-grid-only @container flex-1">
-          <div className="grid @min-[1024px]:grid-cols-3 @min-[768px]:grid-cols-2 grid-cols-1 @min-[1024px]:[&>*:nth-child(2n)]:border-r @min-[768px]:[&>*:nth-child(2n)]:border-r-0 @min-[1024px]:[&>*:nth-child(3n)]:border-r-0 @min-[768px]:[&>*]:border-r [&>*]:border-r-0">
+          <div className="pending-cols grid [&>*]:border-r-0">
             {firstPage.map((font) => (
               <FontCard
                 key={font.id}
                 font={font}
                 previewText={previewText}
                 previewSize={previewSize}
+                previewLeading={previewLeading}
                 isFavorite={false}
                 onToggleFavorite={NOOP}
                 selection={FIRST_PAGE_SELECTION}
@@ -269,6 +274,7 @@ export function FirstPagePending({ firstPage }: { firstPage: FontRecord[] }) {
                 font={font}
                 previewText={previewText}
                 previewSize={previewSize}
+                previewLeading={previewLeading}
                 isFavorite={false}
                 onToggleFavorite={NOOP}
                 selection={FIRST_PAGE_SELECTION}

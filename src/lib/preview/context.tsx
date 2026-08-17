@@ -9,8 +9,22 @@ export const SIZE_PRESETS = [
   12, 14, 16, 18, 20, 24, 28, 32, 36, 40, 48, 52, 60, 72,
 ];
 
+/**
+ * Preview leading as a percentage of each view's own baseline leading, so 100
+ * keeps the list exactly as it was before this control existed.
+ */
+export const LEADING_MIN = 70;
+export const LEADING_MAX = 250;
+export const LEADING_DEFAULT = 100;
+export const LEADING_PRESETS = [
+  80, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 250,
+];
+
 const clampSize = (v: number) =>
   Math.min(SIZE_MAX, Math.max(SIZE_MIN, Math.round(v)));
+
+const clampLeading = (v: number) =>
+  Math.min(LEADING_MAX, Math.max(LEADING_MIN, Math.round(v)));
 
 interface PreviewState {
   text: string;
@@ -20,6 +34,8 @@ interface PreviewState {
   setCoverOnly: (v: boolean) => void;
   size: number;
   setSize: (v: number) => void;
+  leading: number;
+  setLeading: (v: number) => void;
 }
 
 const PreviewContext = createContext<PreviewState | null>(null);
@@ -34,8 +50,13 @@ export function PreviewProvider({ children }: { children: ReactNode }) {
     "font-fridge.preview-size",
     String(SIZE_DEFAULT)
   );
+  const [leading, setLeadingRaw] = useLocalStorageState(
+    "font-fridge.preview-leading",
+    String(LEADING_DEFAULT)
+  );
   const value = useMemo(() => {
     const parsed = Number(size);
+    const parsedLeading = Number(leading);
     return {
       text,
       setText,
@@ -43,8 +64,21 @@ export function PreviewProvider({ children }: { children: ReactNode }) {
       setCoverOnly: (v: boolean) => setCover(v ? "1" : "0"),
       size: Number.isFinite(parsed) ? clampSize(parsed) : SIZE_DEFAULT,
       setSize: (v: number) => setSizeRaw(String(clampSize(v))),
+      leading: Number.isFinite(parsedLeading)
+        ? clampLeading(parsedLeading)
+        : LEADING_DEFAULT,
+      setLeading: (v: number) => setLeadingRaw(String(clampLeading(v))),
     };
-  }, [text, setText, cover, setCover, size, setSizeRaw]);
+  }, [
+    text,
+    setText,
+    cover,
+    setCover,
+    size,
+    setSizeRaw,
+    leading,
+    setLeadingRaw,
+  ]);
   return (
     <PreviewContext.Provider value={value}>{children}</PreviewContext.Provider>
   );

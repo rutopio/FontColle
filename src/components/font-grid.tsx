@@ -21,19 +21,49 @@ interface Props {
   fonts: FontRecord[];
   previewText: string;
   previewSize: number;
+  previewLeading: number;
   favorites: string[];
   onToggleFavorite: (id: string) => void;
   view: ViewMode;
+  maxCols?: number;
   selection: FilterSelection;
   axisValues: Record<string, number>;
   scrollRef: RefObject<HTMLDivElement | null>;
 }
 
-export function columnsFor(width: number, view: ViewMode): number {
+/** Widest grid the layout offers. */
+export const MAX_COLS = 4;
+/** Used when nothing is stored — 4 is opt-in, not the out-of-the-box density. */
+export const DEFAULT_COLS = 3;
+export const COL_CHOICES = [1, 2, 3, 4] as const;
+/** Skeleton rows to show. Cards emitted = MAX_COLS * this; CSS trims the rest. */
+const SKELETON_ROWS = 3;
+
+export function clampCols(value: number): number {
+  if (!Number.isFinite(value)) return DEFAULT_COLS;
+  return Math.min(MAX_COLS, Math.max(1, Math.trunc(value)));
+}
+
+/**
+ * `maxCols` is the user's ceiling, not a target: the width still decides how
+ * many columns actually fit, so a narrow window stays 1–2 columns even when the
+ * preference says 4. Row view ignores both — it is a different cell component,
+ * not a one-column grid.
+ *
+ * `width` is the LIST CONTAINER, not the viewport. The shell caps at 120rem and
+ * then spends part of it on the rail and filter sidebar, so this measures at
+ * most ~1414px however wide the screen is — a threshold above that can never
+ * fire. Hence 4 columns at 1280px (~320px per card, about what 3 columns get on
+ * a 1440px screen), not at a viewport-sized 1536px.
+ */
+export function columnsFor(
+  width: number,
+  view: ViewMode,
+  maxCols: number = DEFAULT_COLS
+): number {
   if (view === "row") return 1;
-  if (width >= 1024) return 3;
-  if (width >= 768) return 2;
-  return 1;
+  const fits = width >= 1280 ? 4 : width >= 1024 ? 3 : width >= 768 ? 2 : 1;
+  return Math.min(fits, clampCols(maxCols));
 }
 
 const rowKey = (view: ViewMode, firstFontId: string) =>
@@ -43,28 +73,30 @@ export function FontGrid({
   fonts,
   previewText,
   previewSize,
+  previewLeading,
   favorites,
   onToggleFavorite,
   view,
+  maxCols = DEFAULT_COLS,
   selection,
   axisValues,
   scrollRef,
 }: Props) {
   const listRef = useRef<HTMLDivElement>(null);
   const favSet = useMemo(() => new Set(favorites), [favorites]);
-  const [cols, setCols] = useState(view === "row" ? 1 : 3);
+  const [cols, setCols] = useState(view === "row" ? 1 : clampCols(maxCols));
   const [virtualizerReady, setVirtualizerReady] = useState(false);
 
   useLayoutEffect(() => {
     const measure = () => {
       if (!listRef.current) return;
-      setCols(columnsFor(listRef.current.offsetWidth, view));
+      setCols(columnsFor(listRef.current.offsetWidth, view, maxCols));
     };
     measure();
     setVirtualizerReady(true);
     window.addEventListener("resize", measure);
     return () => window.removeEventListener("resize", measure);
-  }, [view]);
+  }, [view, maxCols]);
 
   const rowCount = Math.ceil(fonts.length / cols);
 
@@ -76,10 +108,10 @@ export function FontGrid({
     overscan: 4,
   });
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: cols/view/previewSize are the re-measure triggers, not read in the body, a change to any must re-run measurement.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: cols/view/previewSize/previewLeading are the re-measure triggers, not read in the body, a change to any must re-run measurement.
   useEffect(() => {
     virtualizer.measure();
-  }, [cols, view, previewSize, virtualizer]);
+  }, [cols, view, previewSize, previewLeading, virtualizer]);
 
   const renderCell = (font: FontRecord, isLastRow = false) =>
     view === "row" ? (
@@ -88,6 +120,7 @@ export function FontGrid({
           font={font}
           previewText={previewText}
           previewSize={previewSize}
+          previewLeading={previewLeading}
           isFavorite={favSet.has(font.id)}
           onToggleFavorite={onToggleFavorite}
           selection={selection}
@@ -103,6 +136,7 @@ export function FontGrid({
         font={font}
         previewText={previewText}
         previewSize={previewSize}
+        previewLeading={previewLeading}
         isFavorite={favSet.has(font.id)}
         onToggleFavorite={onToggleFavorite}
         selection={selection}
@@ -134,6 +168,10 @@ export function FontGrid({
             <div
               key={rowKey(view, rowFonts[0]?.id ?? String(row.key))}
               data-index={row.index}
+              // Cards/rows only set a *minimum* height — wrapped preview text
+              // can make a row taller, so measure it instead of trusting
+              // estimateSize.
+              ref={virtualizer.measureElement}
               className="group/slot has-[+.group\/slot:hover]:[&_[data-slot=separator]]:bg-transparent"
               style={{
                 position: "absolute",
@@ -169,8 +207,19 @@ export function FontGrid({
   );
 }
 
+/**
+ * Column count comes from the `pending-cols` utility (data-cols on <html>), not
+ * from a prop: this also renders pre-hydration in the SSR pending list, where
+ * React cannot read the stored preference. Driving both cases from the same CSS
+ * keeps the placeholder's columns identical to the grid that replaces it.
+ *
+ * The card *count* has to follow the same rule. It is always MAX_COLS rows'
+ * worth, and `pending-cols` hides the surplus so every density ends on a whole
+ * row: emitting a fixed 9 instead left 4-column layouts ragged (4+4+1) and
+ * changed the card count on hydration, which is the jump this avoids.
+ */
 export function SkeletonGrid({ view }: { view: ViewMode }) {
-  const count = view === "row" ? 8 : 9;
+  const count = view === "row" ? 8 : MAX_COLS * SKELETON_ROWS;
   const keys = Array.from({ length: count }, (_, i) => `skeleton-${i}`);
   return view === "row" ? (
     <div className="flex flex-col">
@@ -180,7 +229,7 @@ export function SkeletonGrid({ view }: { view: ViewMode }) {
     </div>
   ) : (
     <div className="@container">
-      <div className="grid @min-[1024px]:grid-cols-3 @min-[768px]:grid-cols-2 grid-cols-1 @min-[1024px]:[&>*:nth-child(2n)]:border-r @min-[768px]:[&>*:nth-child(2n)]:border-r-0 @min-[1024px]:[&>*:nth-child(3n)]:border-r-0 @min-[768px]:[&>*]:border-r">
+      <div className="pending-cols pending-rows grid">
         {keys.map((k) => (
           <SkeletonCard key={k} />
         ))}

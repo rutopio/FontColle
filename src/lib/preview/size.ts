@@ -1,4 +1,4 @@
-import { SIZE_DEFAULT } from "./context";
+import { LEADING_DEFAULT, SIZE_DEFAULT } from "./context";
 
 /**
  * The list's two views were typeset at different sizes before the size control
@@ -16,9 +16,10 @@ export const rowTextSize = (size: number) =>
   Math.max(1, ROW_TEXT_BASE + (size - SIZE_DEFAULT));
 
 /**
- * Card and row heights. The list is virtualized against these numbers, so the
- * card/row must apply exactly what the virtualizer estimates or the rows
- * misalign — hence one shared source. The baselines (h-72 / h-32) hold at
+ * Card and row *minimum* heights, and the virtualizer's size estimate — hence
+ * one shared source. Preview text wraps freely, so a card/row may end up taller
+ * than this; the virtualizer measures the real height and only falls back to
+ * these numbers before measurement. The baselines (h-72 / h-32) hold at
  * SIZE_DEFAULT; larger text grows the box, smaller text does not shrink it, so
  * the surrounding chrome keeps its usual breathing room.
  */
@@ -28,6 +29,17 @@ const LINE_BASE = 128;
 const CARD_LINES = 3;
 const CARD_LEADING = 1.375; // leading-snug
 const LINE_LEADING = 1.25; // leading-tight
+
+/**
+ * The leading control is a percentage of each view's own baseline, mirroring
+ * how the size control offsets two different text bases: at LEADING_DEFAULT
+ * both views keep the leading they were typeset with.
+ */
+export const cardLeading = (leading: number) =>
+  (CARD_LEADING * leading) / LEADING_DEFAULT;
+
+export const rowLeading = (leading: number) =>
+  (LINE_LEADING * leading) / LEADING_DEFAULT;
 
 const grow = (base: number, perPx: number, size: number) =>
   Math.round(base + Math.max(0, size - SIZE_DEFAULT) * perPx);

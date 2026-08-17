@@ -254,6 +254,112 @@
   }
 }
 
+/*
+ * SSR pending grid density. React cannot read the stored column cap before
+ * hydration, so data-cols on <html> caps the container queries the same way
+ * `columnsFor` caps the measured count — without this the placeholder renders
+ * 3 columns and visibly reflows to 1 or 2 once the real grid mounts.
+ * Widths mirror columnsFor and are container-relative, not viewport-relative:
+ * 4 columns from 1280px, 3 from 1024px, 2 from 768px.
+ */
+@utility pending-cols {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  & > * {
+    border-right-width: 0;
+  }
+
+  @container (min-width: 768px) {
+    :root:not([data-cols="1"]) & {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    :root:not([data-cols="1"]) & > * {
+      border-right-width: 1px;
+    }
+    :root:not([data-cols="1"]) & > *:nth-child(2n) {
+      border-right-width: 0;
+    }
+  }
+
+  @container (min-width: 1024px) {
+    :root:not([data-cols="1"]):not([data-cols="2"]) & {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    :root:not([data-cols="1"]):not([data-cols="2"]) & > *:nth-child(2n) {
+      border-right-width: 1px;
+    }
+    :root:not([data-cols="1"]):not([data-cols="2"]) & > *:nth-child(3n) {
+      border-right-width: 0;
+    }
+  }
+
+  /*
+   * The :not() chains above are deliberately mirrored here as
+   * :not([data-cols="1"]):not([data-cols="2"]):not([data-cols="3"]) rather than
+   * the shorter [data-cols="4"]. Specificity, not source order, decides this:
+   * the 3-column rule scores (0,4,1) and a bare [data-cols="4"] only (0,3,1),
+   * so the shorter form loses to it at >=1280px and the grid stays at 3.
+   */
+  @container (min-width: 1280px) {
+    :root:not([data-cols="1"]):not([data-cols="2"]):not([data-cols="3"]) & {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    :root:not([data-cols="1"]):not([data-cols="2"]):not([data-cols="3"])
+      &
+      > *:nth-child(3n) {
+      border-right-width: 1px;
+    }
+    :root:not([data-cols="1"]):not([data-cols="2"]):not([data-cols="3"])
+      &
+      > *:nth-child(4n) {
+      border-right-width: 0;
+    }
+  }
+}
+
+/*
+ * Trims the skeleton placeholder to whole rows. SkeletonGrid always emits
+ * MAX_COLS * 3 = 12 cards because it renders pre-hydration and cannot know the
+ * stored density; this hides the surplus so every effective width shows exactly
+ * 3 rows and the count never changes when the real grid mounts.
+ *
+ * Effective columns = min(what the width fits, data-cols), so the breakpoints
+ * and :not() chains below mirror `pending-cols` exactly — keep the two in sync.
+ * Visible cards: 1 col -> 3, 2 -> 6, 3 -> 9, 4 -> 12.
+ */
+@utility pending-rows {
+  & > *:nth-child(n + 4) {
+    display: none;
+  }
+
+  @container (min-width: 768px) {
+    :root:not([data-cols="1"]) & > *:nth-child(n + 4) {
+      display: flex;
+    }
+    :root:not([data-cols="1"]) & > *:nth-child(n + 7) {
+      display: none;
+    }
+  }
+
+  @container (min-width: 1024px) {
+    :root:not([data-cols="1"]):not([data-cols="2"]) & > *:nth-child(n + 7) {
+      display: flex;
+    }
+    :root:not([data-cols="1"]):not([data-cols="2"]) & > *:nth-child(n + 10) {
+      display: none;
+    }
+  }
+
+  /* Same specificity rule as pending-cols: mirror the :not() chain, don't
+     shorten it to [data-cols="4"] or the 1024px rule outranks this one. */
+  @container (min-width: 1280px) {
+    :root:not([data-cols="1"]):not([data-cols="2"]):not([data-cols="3"])
+      &
+      > *:nth-child(n + 10) {
+      display: flex;
+    }
+  }
+}
+
 @keyframes heart-pop {
   0% {
     transform: scale(1);

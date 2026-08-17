@@ -26,6 +26,10 @@ import appCss from "@/styles.css?url";
 // Blocking scripts in <head> prevent theme/view FOUC.
 const themeScript = `try{if(localStorage['font-fridge.theme']==='dark')document.documentElement.classList.add('dark')}catch(e){}`;
 const viewScript = `try{var v=localStorage['font-fridge.view'];document.documentElement.dataset.view=v==='row'?'row':'grid'}catch(e){document.documentElement.dataset.view='grid'}`;
+// Grid density, same reasoning as viewScript: the pending list renders before
+// React can read localStorage, so the column cap is stamped on <html> and the
+// SSR skeleton follows it via CSS. Anything outside 1/2/4 falls back to 3.
+const colsScript = `try{var c=localStorage['font-fridge.cols'];document.documentElement.dataset.cols=(c==='1'||c==='2'||c==='4')?c:'3'}catch(e){document.documentElement.dataset.cols='3'}`;
 
 // Public site identifier, not a secret: it ships in the HTML of every page and
 // only tells the beacon which Web Analytics site to report to.
@@ -129,6 +133,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         {/* biome-ignore lint/security/noDangerouslySetInnerHtml: static viewScript, no user input; must run blocking in <head> pre-hydration. */}
         <script dangerouslySetInnerHTML={{ __html: viewScript }} />
+        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: static colsScript, no user input; must run blocking in <head> pre-hydration. */}
+        <script dangerouslySetInnerHTML={{ __html: colsScript }} />
         <HeadContent />
       </head>
       <body>

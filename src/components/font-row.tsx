@@ -7,12 +7,13 @@ import type { FilterSelection } from "@/lib/fonts/filter";
 import { useLastDetailTab } from "@/lib/fonts/last-tab";
 import type { FontRecord } from "@/lib/fonts/types";
 import { useFontFacePreview } from "@/lib/fonts/use-font-face-preview";
-import { rowHeight, rowTextSize } from "@/lib/preview/size";
+import { rowHeight, rowLeading, rowTextSize } from "@/lib/preview/size";
 
 interface Props {
   font: FontRecord;
   previewText: string;
   previewSize: number;
+  previewLeading: number;
   isFavorite: boolean;
   onToggleFavorite: (id: string) => void;
   selection: FilterSelection;
@@ -24,6 +25,7 @@ export const FontRow = memo(function FontRow({
   font,
   previewText,
   previewSize,
+  previewLeading,
   isFavorite,
   onToggleFavorite,
   selection,
@@ -44,8 +46,8 @@ export const FontRow = memo(function FontRow({
       to="/$tab/$fontId"
       params={{ tab: lastTab, fontId: font.id }}
       viewTransition
-      style={{ height: rowHeight(previewSize) }}
-      className="flex flex-col justify-center gap-4 overflow-hidden rounded-lg transition-[color,background-color,transform] duration-fast ease-snap hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset active:scale-[0.995] active:bg-accent"
+      style={{ minHeight: rowHeight(previewSize) }}
+      className="flex flex-col justify-center gap-4 rounded-lg py-4 transition-[color,background-color,transform] duration-fast ease-snap hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset active:scale-[0.995] active:bg-accent"
     >
       <div className="flex flex-col gap-0.5 px-4">
         <div className="flex items-center justify-between gap-4">
@@ -85,8 +87,12 @@ export const FontRow = memo(function FontRow({
       {fontLoaded ? (
         <p
           dir="auto"
-          style={{ ...previewStyle, fontSize: rowTextSize(previewSize) }}
-          className="truncate px-4 leading-tight"
+          style={{
+            ...previewStyle,
+            fontSize: rowTextSize(previewSize),
+            lineHeight: rowLeading(previewLeading),
+          }}
+          className="line-clamp-10 break-words px-4"
         >
           {text}
         </p>
