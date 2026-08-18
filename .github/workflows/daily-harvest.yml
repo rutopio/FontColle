@@ -285,13 +285,13 @@ jobs:
             # gfTtfCommitDate: newest commit touching a font file in the
             # family's google/fonts directory. Same per-family REST cost model
             # as the two above (~2 calls each), so it belongs in this --ids
-            # scoped step rather than the whole-catalog upstream sweep. Scoping
-            # by og_ids.txt IS sound here, unlike for upstreamHeadDate: a new
-            # TTF landing in google/fonts is normally followed by Google
-            # re-serving the family, so the lastModifiedApi diff that built
-            # these ids does fire (Scheherazade New: TTF 2026-04-23 ->
-            # lastModifiedApi 2026-05-13). The residual ~3-week lag
-            # self-corrects on a later run.
+            # scoped step rather than the whole-catalog upstream sweep.
+            # This catches the COMMON case fast: a new TTF is normally followed
+            # by Google re-serving the family, so the lastModifiedApi diff that
+            # built these ids does fire (Scheherazade New: TTF 2026-04-23 ->
+            # lastModifiedApi 2026-05-13). It is not sufficient on its own —
+            # when Google never re-serves, the id never appears here at all —
+            # so the shard rotation step below backstops it.
             python3 scripts/harvester/backfill_gf_ttf_date.py --ids="$ids" 2>&1 | tee -a update.log
           else
             echo "no families re-harvested; repo-derived fields unchanged"
@@ -310,8 +310,39 @@ jobs:
             echo "no families with a newer upstream tag"
           fi
 
+      - name: Rotate one shard of gfTtfCommitDate
+        id: gfttf
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Backstop for the --ids step above, which can only see families whose
+          # lastModifiedApi moved. When a TTF lands in google/fonts and Google
+          # never re-serves the family, that id is never listed and the date
+          # rots indefinitely — notosansnandinagari sat 348 days out of date for
+          # 681 days. A whole-catalog refresh is ~4100 REST calls, so instead
+          # re-check 1/14th of the catalog per day (~145 families, ~290 calls):
+          # every family is revisited within a fortnight, at a fixed daily cost.
+          #
+          # Deliberately NOT gated on the change flags: a rotation must run on
+          # repo-quiet days too, since a stale value is exactly what a quiet day
+          # hides. The shard is keyed by day-of-year so consecutive runs advance,
+          # and by a hash of the id so a family keeps its slot as the catalog
+          # grows. Manual re-runs on the same day redo that day's shard, which is
+          # idempotent.
+          shard=$(( $(date -u +%j) % 14 ))
+          echo "rotating shard $shard/14"
+          before=$(shasum -a 256 src/data/fonts.json | cut -d' ' -f1)
+          python3 scripts/harvester/backfill_gf_ttf_date.py \
+            --shard="$shard/14" 2>&1 | tee -a update.log
+          after=$(shasum -a 256 src/data/fonts.json | cut -d' ' -f1)
+          if [ "$before" != "$after" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Publish assets to R2
-        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true' || steps.upstream.outputs.changed == 'true'
+        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true' || steps.upstream.outputs.changed == 'true' || steps.gfttf.outputs.changed == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -353,7 +384,7 @@ jobs:
           fi
 
       - name: Trigger Cloudflare deploy
-        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true' || steps.upstream.outputs.changed == 'true'
+        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true' || steps.upstream.outputs.changed == 'true' || steps.gfttf.outputs.changed == 'true'
         env:
           CLOUDFLARE_DEPLOY_HOOK_URL: ${{ secrets.CLOUDFLARE_DEPLOY_HOOK_URL }}
         run: |

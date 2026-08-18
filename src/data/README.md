@@ -91,6 +91,12 @@ Read straight out of the `OS/2`, `hhea`, `post`, `head`, `name`, `fvar`,
     directory's own newest commit is usually Google metadata housekeeping
     (foundry renames, the repo-wide `upstream_info.md` campaign), which would
     date most of the catalog to whenever that campaign last touched it.
+    Refreshed on **two** paths, because one is not enough: the daily `--ids`
+    pass covers families the harvest diff flagged, and a daily `--shard=i/14`
+    rotation re-checks 1/14th of the catalog so every family is revisited
+    within a fortnight. Without the rotation a family whose TTF changed but
+    which Google never re-served is never flagged, so its date rots forever
+    (`notosansnandinagari` sat 348 days stale for 681 days).
 - **license text**: per-family `OFL.txt` on `main` → `licenseHeader`
   (`backfill_license.py`).
 

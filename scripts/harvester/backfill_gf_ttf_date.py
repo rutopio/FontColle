@@ -46,11 +46,30 @@ default a family that already carries a `gfTtfCommitDate` key is skipped, so
 re-running the same command continues from the break. Use --refresh to re-check
 families that already have a value.
 
+Keeping the field FRESH needs --shard=i/n, not --ids
+----------------------------------------------------
+The daily workflow's --ids set comes from the harvest diff, which keys off
+`lastModifiedApi`. That misses the case this field exists to show: a new TTF
+lands in google/fonts and Google has NOT re-served the family, so
+lastModifiedApi never moves and the id never enters the set. Measured over the
+catalog, 10 of 2031 families are already in that state, and they do not recover
+on a later run -- notosansnandinagari's TTF commit is 681 days old and still
+348 days ahead of its re-serve date. (An earlier comment in the daily workflow
+claimed this "self-corrects"; it does not, because the trigger never fires.)
+
+A whole-catalog --refresh is ~4100 REST calls, too much to run daily. So the
+daily job re-checks one shard per run: --shard=i/n splits the catalog by a hash
+of the id (stable, so a family stays in its shard as the catalog grows) and
+rotates i by day-of-year. n=14 is ~145 families, ~290 calls, and every family is
+re-checked within a fortnight. --shard implies --refresh: the point is to
+re-check values that are already present.
+
 Usage:
     export $(grep GITHUB_TOKEN ../../.env)      # REST is 60/hr unauthenticated
     python3 backfill_gf_ttf_date.py [path/to/fonts.json] \
-        [--ids=a,b,c] [--limit N] [--changed-out FILE] [--refresh]
+        [--ids=a,b,c] [--shard=i/n] [--limit N] [--changed-out FILE] [--refresh]
 """
+import hashlib
 import http.client
 import json
 import os
@@ -169,12 +188,25 @@ def family_date(record, tok):
     return newest, True
 
 
+def shard_of(font_id, total):
+    """Which shard a family belongs to. Stable across runs and machines.
+
+    Keyed off a hash of the id, not the catalog position, so a family added or
+    removed upstream shifts only itself instead of renumbering everyone after
+    it (which would make a family skip or repeat a rotation). md5 because
+    Python's hash() is salted per process.
+    """
+    digest = hashlib.md5(font_id.encode("utf-8")).hexdigest()
+    return int(digest[:8], 16) % total
+
+
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     ids = None
     limit = None
     changed_out = None
     refresh = False
+    shard = None
     for a in sys.argv[1:]:
         if a.startswith("--ids="):
             ids = {s for s in a.split("=", 1)[1].split(",") if s}
@@ -184,6 +216,15 @@ def main():
             changed_out = a.split("=", 1)[1]
         elif a == "--refresh":
             refresh = True
+        elif a.startswith("--shard="):
+            spec = a.split("=", 1)[1]
+            try:
+                index, total = (int(x) for x in spec.split("/", 1))
+            except ValueError:
+                sys.exit(f"--shard expects i/n (e.g. --shard=0/14), got {spec!r}")
+            if total < 1 or not 0 <= index < total:
+                sys.exit(f"--shard index must be in [0,{total}) for i/n, got {spec!r}")
+            shard = (index, total)
 
     path = (
         args[0]
@@ -199,12 +240,23 @@ def main():
 
     if ids is not None:
         targets = [r for r in records if r["id"] in ids]
+    elif shard is not None:
+        index, total = shard
+        targets = [r for r in records if shard_of(r["id"], total) == index]
+        print(
+            f"shard {index}/{total}: {len(targets)} of {len(records)} families",
+            file=sys.stderr,
+        )
+        if limit:
+            targets = targets[:limit]
     else:
         targets = records[:limit] if limit else records
 
     # Resume: a family that already carries the key was done on an earlier pass.
     # --ids is an explicit request for those families, so it overrides this.
-    if not refresh and ids is None:
+    # So is --shard: a rotation exists to re-check values that are already
+    # there, so skipping the resolved ones would make it a no-op forever.
+    if not refresh and ids is None and shard is None:
         pending = [r for r in targets if "gfTtfCommitDate" not in r]
         done = len(targets) - len(pending)
         if done:
