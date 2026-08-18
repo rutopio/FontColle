@@ -7,12 +7,19 @@ import {
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import {
+  Drawer,
+  DrawerContent,
+  DrawerHandle,
+  DrawerTitle,
+} from "@/components/ui/drawer";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
-import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useMountEffect } from "@/hooks/use-mount-effect";
 import {
@@ -181,7 +188,7 @@ function GroupDrawer({
   const [open, setOpen] = useState(false);
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Drawer open={open} onOpenChange={setOpen} swipeDirection="down">
       <button
         type="button"
         onClick={() => setOpen(true)}
@@ -193,42 +200,48 @@ function GroupDrawer({
         <CaretUpDownIcon className="-me-1 size-4.5 shrink-0 opacity-80 sm:size-4" />
       </button>
 
-      <SheetContent side="bottom" className="gap-0 overflow-hidden p-0">
+      {/* The group list outgrew the viewport once the sort methods multiplied,
+          so the drawer takes a bounded height and only the list scrolls,
+          keeping the title and the swipe handle in place. */}
+      <DrawerContent className="max-h-[85dvh] gap-0 p-0">
+        <DrawerHandle />
         <div className="flex items-center gap-2 border-border border-b px-4 py-3">
           <SortAscendingIcon className="size-4 text-primary" />
-          <SheetTitle>Sort by</SheetTitle>
+          <DrawerTitle>Sort by</DrawerTitle>
         </div>
-        <div
-          className="flex flex-col overflow-y-auto p-2"
-          style={{
-            paddingBottom: "calc(0.5rem + env(safe-area-inset-bottom))",
-          }}
-        >
-          {groups.map((g) => {
-            const on = g === group;
-            return (
-              <button
-                key={g}
-                type="button"
-                onClick={() => {
-                  onSelect(g);
-                  setOpen(false);
-                }}
-                aria-pressed={on}
-                className={cn(
-                  "flex min-h-12 items-center justify-between gap-3 rounded-md px-3 text-left text-sm transition-colors",
-                  on
-                    ? "bg-accent font-medium text-accent-foreground"
-                    : "active:bg-accent/50"
-                )}
-              >
-                <span className="truncate">{g}</span>
-                {on && <CheckIcon className="size-4 shrink-0 text-primary" />}
-              </button>
-            );
-          })}
-        </div>
-      </SheetContent>
-    </Sheet>
+        <ScrollArea fade="b" className="min-h-0 flex-1">
+          <div
+            className="flex flex-col p-2"
+            style={{
+              paddingBottom: "calc(0.5rem + env(safe-area-inset-bottom))",
+            }}
+          >
+            {groups.map((g) => {
+              const on = g === group;
+              return (
+                <button
+                  key={g}
+                  type="button"
+                  onClick={() => {
+                    onSelect(g);
+                    setOpen(false);
+                  }}
+                  aria-pressed={on}
+                  className={cn(
+                    "flex min-h-12 shrink-0 items-center justify-between gap-3 rounded-md px-3 text-left text-sm transition-colors",
+                    on
+                      ? "bg-accent font-medium text-accent-foreground"
+                      : "active:bg-accent/50"
+                  )}
+                >
+                  <span className="truncate">{g}</span>
+                  {on && <CheckIcon className="size-4 shrink-0 text-primary" />}
+                </button>
+              );
+            })}
+          </div>
+        </ScrollArea>
+      </DrawerContent>
+    </Drawer>
   );
 }

@@ -1,7 +1,12 @@
 import type { Icon } from "@phosphor-icons/react";
 import { motion } from "motion/react";
 import { useState } from "react";
-import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHandle,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { FAB_MOTION, FAB_SHIFT, fabBottom, fabLift } from "./fab-motion";
 
 export function ControlsDrawer({
@@ -18,7 +23,7 @@ export function ControlsDrawer({
   const [open, setOpen] = useState(false);
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Drawer open={open} onOpenChange={setOpen} swipeDirection="down">
       <motion.button
         {...FAB_MOTION}
         animate={{ ...FAB_MOTION.animate, ...fabLift(dockVisible) }}
@@ -32,16 +37,14 @@ export function ControlsDrawer({
         <FabIcon className="size-6" weight="fill" />
       </motion.button>
 
-      <SheetContent
-        side="bottom"
-        className="h-[85dvh]! gap-0 overflow-hidden p-0"
-      >
+      <DrawerContent className="h-[85dvh] max-h-[85dvh] gap-0 p-0">
+        <DrawerHandle />
         <div className="flex items-center gap-2 border-border border-b px-4 py-3">
           <FabIcon className="size-4 text-primary" weight="fill" />
-          <SheetTitle>{title}</SheetTitle>
+          <DrawerTitle>{title}</DrawerTitle>
         </div>
         <div className="min-h-0 flex-1">{children(() => setOpen(false))}</div>
-      </SheetContent>
-    </Sheet>
+      </DrawerContent>
+    </Drawer>
   );
 }

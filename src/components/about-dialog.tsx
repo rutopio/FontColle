@@ -15,12 +15,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHandle,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAbout } from "@/lib/about/context";
 import { REPO_URL, SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
@@ -31,7 +32,7 @@ const SPONSOR_URL = "https://buymeacoffee.com/chingru";
 function AboutHeading({
   Title,
 }: {
-  Title: typeof DialogTitle | typeof SheetTitle;
+  Title: typeof DialogTitle | typeof DrawerTitle;
 }) {
   return (
     <div className="flex flex-wrap items-center justify-center gap-2 text-primary">
@@ -44,7 +45,7 @@ function AboutHeading({
 function AboutBody({
   Description,
 }: {
-  Description: typeof DialogDescription | typeof SheetDescription;
+  Description: typeof DialogDescription | typeof DrawerDescription;
 }) {
   return (
     <>
@@ -131,20 +132,20 @@ export function AboutDialog() {
 
   if (mobile) {
     return (
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent
-          side="bottom"
-          className="gap-4 px-4 pt-6"
+      <Drawer open={open} onOpenChange={setOpen} swipeDirection="down">
+        <DrawerContent
+          className="gap-4 px-4 pb-6"
           style={{
             paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom))",
           }}
         >
-          <SheetHeader className="items-center gap-2 p-0 text-center">
-            <AboutHeading Title={SheetTitle} />
-          </SheetHeader>
-          <AboutBody Description={SheetDescription} />
-        </SheetContent>
-      </Sheet>
+          <DrawerHandle />
+          <DrawerHeader className="items-center gap-2 p-0 text-center">
+            <AboutHeading Title={DrawerTitle} />
+          </DrawerHeader>
+          <AboutBody Description={DrawerDescription} />
+        </DrawerContent>
+      </Drawer>
     );
   }
 

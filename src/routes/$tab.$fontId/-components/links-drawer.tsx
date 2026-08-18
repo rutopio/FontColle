@@ -7,7 +7,12 @@ import {
 import { motion } from "motion/react";
 import { useState } from "react";
 import { releasesUrl, repoHostIcon } from "@/components/repo-host-icon";
-import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHandle,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import type { FontRecord } from "@/lib/fonts/types";
 import { FAB_MOTION, FAB_SHIFT, fabBottom, fabLift } from "./fab-motion";
 
@@ -24,7 +29,7 @@ export function LinksDrawer({
   const googleHref = `https://fonts.google.com/specimen/${font.name.replace(/\s+/g, "+")}`;
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Drawer open={open} onOpenChange={setOpen} swipeDirection="down">
       <motion.button
         {...FAB_MOTION}
         animate={{ ...FAB_MOTION.animate, ...fabLift(dockVisible) }}
@@ -38,10 +43,13 @@ export function LinksDrawer({
         <LinkIcon className="size-6" weight="bold" />
       </motion.button>
 
-      <SheetContent side="bottom" className="gap-0 p-0">
+      {/* Only ever three cards, so no height cap: the drawer sizes to its
+          content and stays swipe-dismissable. */}
+      <DrawerContent className="gap-0 p-0">
+        <DrawerHandle />
         <div className="flex items-center gap-2 border-border border-b px-4 py-3">
           <LinkIcon className="size-4 text-primary" weight="bold" />
-          <SheetTitle>Links</SheetTitle>
+          <DrawerTitle>Links</DrawerTitle>
         </div>
         <div
           className="flex gap-3 p-4"
@@ -73,8 +81,8 @@ export function LinksDrawer({
             />
           )}
         </div>
-      </SheetContent>
-    </Sheet>
+      </DrawerContent>
+    </Drawer>
   );
 }
 
