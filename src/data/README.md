@@ -85,8 +85,40 @@ Read straight out of the `OS/2`, `hhea`, `post`, `head`, `name`, `fvar`,
   - `contrast` — `tags/all/quant.csv` stroke-width min/max (`backfill_contrast.py`).
 - **google/fonts git history** (GitHub commits API):
   - `versionHistory`, `firstCommitDate` (`backfill_version_history.py`).
+  - `gfTtfCommitDate` — the newest commit touching a `.ttf`/`.otf` inside
+    `<licenseDir>/<id>/`, i.e. how new the file Google actually serves is
+    (`backfill_gf_ttf_date.py`). Scoped to the font FILES on purpose: the
+    directory's own newest commit is usually Google metadata housekeeping
+    (foundry renames, the repo-wide `upstream_info.md` campaign), which would
+    date most of the catalog to whenever that campaign last touched it.
 - **license text**: per-family `OFL.txt` on `main` → `licenseHeader`
   (`backfill_license.py`).
+
+### 3b. The family's OWN upstream repo — `backfill_upstream_activity.py`
+
+Queried from `repositoryUrl` (NOT google/fonts) over the GitHub GraphQL API:
+`upstreamHeadDate` (default-branch head), `upstreamAnyDate`, `upstreamPushedAt`,
+`upstreamArchived`, `upstreamRepoKey`, `upstreamNewestTag`. Null for the 35
+families with no GitHub repo: 29 have no `repositoryUrl` at all, and 6 are on
+GitLab/sr.ht, which this does not query. The `Repo updated` filter facet groups
+exactly those 35 as "Not tracked".
+
+**Four dates mean four different things — do not substitute one for another:**
+
+| Field | Answers |
+| --- | --- |
+| `upstreamHeadDate` | is the author still working on this font? |
+| `gfTtfCommitDate` | how new is the file Google serves? |
+| `modifiedMs` | when did Google last compile the binary? |
+| `lastModifiedApi` | when did Google last re-serve the family? |
+
+They disagree in both directions, so none is a correction of another: Donegal
+One's upstream moved 2026-07-20 while its packaged font dates to 2015-03-06, and
+Comfortaa's author stopped in 2017 while Google repackaged it in 2021.
+`lastModifiedApi` is the one to avoid for anything user-facing — Google
+re-serves in batches, so it takes only 57 distinct values across the catalog and
+groups unrelated fonts instead of ordering them. It is kept because
+`daily_update.py` diffs it to pick which families to re-harvest.
 
 ### 4. Derived locally by the harvester
 
@@ -113,4 +145,6 @@ Read straight out of the `OS/2`, `hhea`, `post`, `head`, `name`, `fvar`,
 | `displayName`, `about`, `designerProfiles` | metadata endpoint |
 | `tags`, `category`, `facets`, `contrast` | google/fonts tag CSVs |
 | `versionHistory`, `firstCommitDate`, `licenseHeader` | google/fonts git / license files |
+| `gfTtfCommitDate` | google/fonts git, scoped to the family's `.ttf`/`.otf` files |
+| `upstreamHeadDate`, `upstreamAnyDate`, `upstreamPushedAt`, `upstreamArchived`, `upstreamRepoKey`, `upstreamNewestTag` | the family's OWN repo (`repositoryUrl`), via the GitHub GraphQL API |
 | `languages`, `scripts`, `primaryScript`, `cjkCoverage`, `specimen` | `langcov.py` ← gflanguages |

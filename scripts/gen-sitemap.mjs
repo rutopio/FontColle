@@ -174,7 +174,8 @@ The site's own filter UI exposes exactly these, and all are computable from the 
 | Vendor | \`vendorId\` foundry codes | OR |
 | License | ${code(licenses)} | OR |
 | Repository host | \`github\` \`gitlab\` \`sourcehut\` \`none\` | OR |
-| Activity | \`latest\` (≤6m) \`active\` (≤1y) \`recent\` (≤3y) \`dormant\` (3y+), from last update | radio |
+| Repo updated | \`3m\` \`6m\` \`1y\` \`3y\` \`cold\` (over 3y) \`unknown\` (not tracked), from the last commit on the family's own upstream repo | OR |
+| Repo status | \`live\` \`archived\` | radio |
 | Source | \`noto\` \\| \`others\` | radio |
 | Italic | \`italic\` \\| \`upright\` | radio |
 | Units per em | \`1000\` \`2048\` and ~35 other values | OR |
@@ -206,9 +207,10 @@ Filters live in the URL of \`${siteUrl}/\`, so a query can be handed back to the
 | \`color\` \`cfmt\` | color / color formats | \`color=color\`, \`cfmt=COLR\` |
 | \`cls\` | classification paths, \`/\` written as \`.\` | \`cls=Expressive.Playful_Sans.Rounded\` |
 | \`dsr\` \`vnd\` \`lic\` | designer / vendor / license | \`lic=OFL\` |
-| \`repo\` \`act\` \`flag\` \`ital\` \`upm\` \`hint\` | repo host / activity / source / italic / upm / hinting | \`act=latest\`, \`ital=upright\`, \`hint=1\` |
+| \`repo\` \`activity\` \`repoStatus\` \`flag\` \`ital\` \`upm\` \`hint\` | repo host / repo updated / repo status / source / italic / upm / hinting | \`activity=3m_6m\`, \`repoStatus=live\`, \`ital=upright\`, \`hint=1\` |
 | \`mxh\` \`mch\` \`mlh\` \`maw\` \`mct\` \`mfs\` | metric ranges, \`lo-hi\` | \`mxh=0.45-0.55\`, \`mct=3-8.5\` |
-| \`sort\` | sort key | \`sort=trending\` |
+
+Sort order is a per-device preference kept in \`localStorage\`, not a URL parameter, so a shared link carries the filters but not the sender's ordering.
 
 So the worked example above links to:
 \`${siteUrl}/?class=Sans&facet=variable&cls=Expressive.Playful_Expressive.Happy\`

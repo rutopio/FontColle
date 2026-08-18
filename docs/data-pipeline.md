@@ -123,6 +123,8 @@ python3 backfill_about.py                       # description + designers
 python3 backfill_source.py                      # METADATA.pb repo/source
 python3 backfill_license.py                     # per-family OFL.txt
 python3 backfill_version_history.py             # google/fonts git history
+python3 backfill_upstream_activity.py           # the family's OWN repo (GraphQL)
+python3 backfill_gf_ttf_date.py                 # newest .ttf/.otf commit in google/fonts
 python3 backfill_glyph_coverage.py              # all fonts -> public/glyphs/<id>.json
 
 # 5. Render every OG card (--force = render all, not just changed).
