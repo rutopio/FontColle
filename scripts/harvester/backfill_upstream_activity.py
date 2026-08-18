@@ -52,6 +52,7 @@ Usage:
     python3 backfill_upstream_activity.py [path/to/fonts.json] \
         [--ids=a,b,c] [--limit N] [--stale-versions-out FILE] [--changed-out FILE]
 """
+import http.client
 import json
 import os
 import re
@@ -124,6 +125,15 @@ def gql(query, tok, retries=4):
             raise
         except urllib.error.URLError as e:
             print(f"    network error ({e.reason}), retrying…", file=sys.stderr)
+            time.sleep(2**attempt)
+        # A truncated response (IncompleteRead) is an HTTPException, NOT a
+        # URLError, so it escaped the clause above and killed a whole sweep
+        # mid-run. Retry it like any other transport hiccup.
+        except http.client.HTTPException as e:
+            print(
+                f"    truncated response ({type(e).__name__}), retrying…",
+                file=sys.stderr,
+            )
             time.sleep(2**attempt)
     return None
 

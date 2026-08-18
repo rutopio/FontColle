@@ -48,6 +48,15 @@ jobs:
     # A full reconcile re-harvests every family, so it needs more headroom than
     # the daily incremental's 60 minutes.
     timeout-minutes: 120
+    # Every harvester step pipes through `tee -a update.log`, and a pipeline's
+    # exit status is its LAST command (tee, which always succeeds). Without
+    # pipefail a Python traceback -- or a deliberate `sys.exit("ABORT: ...")`
+    # guard -- scrolls past and the job marches on to publish + deploy. Seen
+    # 2026-08-18: backfill_upstream_activity.py died on a truncated GraphQL
+    # response at 900/1302 repos and the run still deployed, green.
+    defaults:
+      run:
+        shell: bash -eo pipefail {0}
     steps:
       - name: Log run reason
         # inputs.reason is empty on the scheduled (cron) run, which has no inputs.
