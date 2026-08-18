@@ -1,11 +1,6 @@
-import { CheckIcon, GridFourIcon, ListIcon } from "@phosphor-icons/react";
+import { GridFourIcon, ListIcon } from "@phosphor-icons/react";
 import { useEffect, useRef, useState } from "react";
-import {
-  COL_CHOICES,
-  clampCols,
-  DEFAULT_COLS,
-  type ViewMode,
-} from "@/components/font-grid";
+import { clampCols, DEFAULT_COLS, type ViewMode } from "@/components/font-grid";
 import {
   Popover,
   PopoverContent,
@@ -13,7 +8,7 @@ import {
 } from "@/components/ui/popover";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { cn } from "@/lib/utils";
+import { ColumnChoices } from "./column-choices";
 
 export const VIEW_TABS_WIDTH = "max-md:w-[4.375rem]"; // aligns Reset button width below md
 
@@ -98,38 +93,13 @@ export function ViewTabs({
               onMouseEnter={cancelClose}
               onMouseLeave={scheduleClose}
             >
-              {COL_CHOICES.map((n) => {
-                const on = n === current;
-                return (
-                  <button
-                    key={n}
-                    type="button"
-                    onClick={() => {
-                      onColsChange?.(n);
-                      setOpen(false);
-                    }}
-                    aria-pressed={on}
-                    // "Col." is a visual abbreviation; speech gets the word.
-                    aria-label={`Maximum ${n} ${n === 1 ? "column" : "columns"}`}
-                    className={cn(
-                      "flex h-8 items-center gap-2.5 rounded-md px-2.5 text-left text-sm transition-colors",
-                      on
-                        ? "bg-accent font-medium text-accent-foreground"
-                        : "hover:bg-accent/50"
-                    )}
-                  >
-                    <span className="text-muted-foreground">Max</span>
-                    <span className="font-mono tabular-nums">{n}</span>
-                    <span className="text-muted-foreground">Col.</span>
-                    <CheckIcon
-                      className={cn(
-                        "size-4 shrink-0 text-primary",
-                        on ? "visible" : "invisible"
-                      )}
-                    />
-                  </button>
-                );
-              })}
+              <ColumnChoices
+                current={current}
+                onSelect={(n) => {
+                  onColsChange?.(n);
+                  setOpen(false);
+                }}
+              />
             </PopoverContent>
           </Popover>
         ) : (
