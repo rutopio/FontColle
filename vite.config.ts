@@ -5,15 +5,12 @@ import tailwindcss from "@tailwindcss/vite";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
+import type { Plugin } from "vite";
 import { defineConfig } from "vite";
 
 const BUILD_ID = Date.now().toString(36);
 
-// Content hash of src/data/fonts.json, written by scripts/gen-catalog.mjs
-// earlier in `pnpm build`. Detail pages key their SSR cache on this rather than
-// BUILD_ID so a code-only deploy does not invalidate every cached detail
-// render. Falls back to BUILD_ID when the file is absent (plain `vite dev`
-// without a prior catalog generation), which is only ever more conservative.
+// Data hash for SSR cache key; falls back to BUILD_ID when absent.
 const dataVersion = (() => {
   try {
     const raw = readFileSync(
@@ -27,6 +24,31 @@ const dataVersion = (() => {
     return BUILD_ID;
   }
 })();
+
+const PUBLIC_PRELOAD_FONTS: { path: string; type: string }[] = [
+  { path: "/fonts/albert-sans.woff2", type: "font/woff2" },
+  { path: "/fonts/host-grotesk.woff2", type: "font/woff2" },
+  { path: "/fonts/paper-mono.woff2", type: "font/woff2" },
+];
+
+function fontPreloadPlugin(): Plugin {
+  return {
+    name: "font-preload",
+    transformIndexHtml() {
+      return PUBLIC_PRELOAD_FONTS.map(({ path, type }) => ({
+        tag: "link",
+        attrs: {
+          rel: "preload",
+          href: path,
+          as: "font",
+          type,
+          crossorigin: "",
+        },
+        injectTo: "head" as const,
+      }));
+    },
+  };
+}
 
 const config = defineConfig({
   define: {
@@ -44,6 +66,7 @@ const config = defineConfig({
     tailwindcss(),
     tanstackStart(),
     viteReact(),
+    fontPreloadPlugin(),
   ],
 });
 
