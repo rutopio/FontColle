@@ -28,6 +28,7 @@ import {
 } from "@/lib/fonts/filter";
 import * as actions from "@/lib/fonts/filter-actions";
 import { EASE_OUT, MOTION_S } from "@/lib/motion";
+import { usePreview } from "@/lib/preview/context";
 import { cn } from "@/lib/utils";
 import { CardGrid } from "./card-grid";
 import { CategoryCards } from "./category-cards";
@@ -170,6 +171,7 @@ export function FilterSidebar({
   const { panelScrollY } = useFilter();
 
   const showingPreset = group === "preset";
+  const { showPreview } = usePreview();
   const { registerSection } = useSectionScrollspy({
     viewportRef,
     ids: FILTER_GROUP_IDS,
@@ -440,8 +442,9 @@ export function FilterSidebar({
 
   return (
     <aside className="flex h-full w-full min-w-0 flex-col text-foreground">
-      {/* Display setting, not a filter — pinned so the list scroll never moves it. */}
-      {!showingPreset && (
+      {/* Display setting, not a filter — pinned so the list scroll never moves it.
+          The rail's Preview toggle hides it to give the filters the full height. */}
+      {!showingPreset && showPreview && (
         <div className="flex shrink-0 flex-col gap-4 border-border border-b p-4">
           <PreviewSizeSection />
           <PreviewLeadingSection />

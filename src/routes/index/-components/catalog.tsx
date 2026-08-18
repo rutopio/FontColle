@@ -27,6 +27,7 @@ import {
   type FilterGroupId,
 } from "@/components/filter/groups";
 import { PresetToggle } from "@/components/filter/preset-toggle";
+import { PreviewToggle } from "@/components/filter/preview-toggle";
 import { Column, FilterLayout } from "@/components/filter-layout";
 import {
   clampCols,
@@ -94,6 +95,8 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
     leading: previewLeading,
     coverOnly,
     setCoverOnly,
+    showPreview,
+    setShowPreview,
   } = usePreview();
   const { favorites, toggle } = useFavorites();
 
@@ -316,6 +319,8 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
     <FilterLayout
       rail={
         <div className="flex flex-col gap-1">
+          <PreviewToggle active={showPreview} onToggle={setShowPreview} />
+          <Separator className="my-1" />
           <FilterRail
             active={group}
             filter={filter}

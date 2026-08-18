@@ -8,6 +8,7 @@ import { FavoriteToggle } from "@/components/favorite-toggle";
 import { FilterRail } from "@/components/filter/filter-rail";
 import { DEFAULT_FILTER_GROUP } from "@/components/filter/groups";
 import { PresetToggle } from "@/components/filter/preset-toggle";
+import { PreviewToggle } from "@/components/filter/preview-toggle";
 import { Column, FilterLayout } from "@/components/filter-layout";
 import { FontCard } from "@/components/font-card";
 import { SkeletonGrid } from "@/components/font-grid";
@@ -27,6 +28,7 @@ import { SortControl } from "./sort-control";
 import { ViewTabs } from "./view-tabs";
 
 const NOOP_GROUP = () => {};
+const NOOP_TOGGLE = () => {};
 
 // Mirrors the live card order in filter-sidebar.tsx.
 const CATEGORY_CARDS = [
@@ -108,6 +110,9 @@ const HEADER_SKELETON = (
 function PendingRail() {
   return (
     <div inert className="flex flex-col gap-1 opacity-60">
+      {/* Mirrors the real rail's layout so nothing shifts when it swaps in. */}
+      <PreviewToggle active onToggle={NOOP_TOGGLE} />
+      <Separator className="my-1" />
       <FilterRail
         active={DEFAULT_FILTER_GROUP}
         filter={emptyFilter}

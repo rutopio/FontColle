@@ -25,7 +25,8 @@ googlefonts/plex's newest branch is a dependabot postcss bump. Whatever GitHub
 reports as the repo's default branch counts, whether it is named master, main,
 or anything else.
 
-Written per family (null for the 42 with no github.com repository_url):
+Written per family (null for the 32 with no GitHub repository_url --
+26 have none at all, 6 are on gitlab/sr.ht, which this does not query):
     upstreamHeadDate    ISO date, default-branch head    <- drives sort + filter
     upstreamAnyDate     ISO date, newest across branches <- stored, unused
     upstreamPushedAt    ISO date, raw pushedAt           <- diagnostics
@@ -71,7 +72,10 @@ BRANCH_PAGE = 100
 # is a token/network fault, not 400 genuinely deleted repos.
 MAX_UNRESOLVED = 0.20
 
-REPO_RE = re.compile(r"https?://github\.com/([^/]+)/([^/#?]+)")
+# METADATA.pb is inconsistent about the host: 16 families (Inter, Cousine,
+# Maven Pro, the Noto Serif CJK set...) write "www.github.com", which a
+# bare github.com pattern silently skips, leaving their date null.
+REPO_RE = re.compile(r"https?://(?:www\.)?github\.com/([^/]+)/([^/#?]+)")
 
 
 def repo_key(url):

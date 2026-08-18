@@ -32,6 +32,9 @@ interface PreviewState {
   /** Hide fonts that cannot render the preview text. On unless switched off. */
   coverOnly: boolean;
   setCoverOnly: (v: boolean) => void;
+  /** Show the preview size/leading controls in the rail. On unless switched off. */
+  showPreview: boolean;
+  setShowPreview: (v: boolean) => void;
   size: number;
   setSize: (v: number) => void;
   leading: number;
@@ -44,6 +47,10 @@ export function PreviewProvider({ children }: { children: ReactNode }) {
   const [text, setText] = useLocalStorageState("font-fridge.preview-text", "");
   const [cover, setCover] = useLocalStorageState(
     "font-fridge.preview-cover-only",
+    "1"
+  );
+  const [preview, setPreview] = useLocalStorageState(
+    "font-fridge.preview-controls",
     "1"
   );
   const [size, setSizeRaw] = useLocalStorageState(
@@ -62,6 +69,8 @@ export function PreviewProvider({ children }: { children: ReactNode }) {
       setText,
       coverOnly: cover !== "0",
       setCoverOnly: (v: boolean) => setCover(v ? "1" : "0"),
+      showPreview: preview !== "0",
+      setShowPreview: (v: boolean) => setPreview(v ? "1" : "0"),
       size: Number.isFinite(parsed) ? clampSize(parsed) : SIZE_DEFAULT,
       setSize: (v: number) => setSizeRaw(String(clampSize(v))),
       leading: Number.isFinite(parsedLeading)
@@ -74,6 +83,8 @@ export function PreviewProvider({ children }: { children: ReactNode }) {
     setText,
     cover,
     setCover,
+    preview,
+    setPreview,
     size,
     setSizeRaw,
     leading,
