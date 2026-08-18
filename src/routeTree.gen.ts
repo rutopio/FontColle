@@ -9,18 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as FontIdRouteRouteImport } from './routes/$fontId/route'
 import { Route as IndexRouteRouteImport } from './routes/index/route'
+import { Route as FontIdRouteRouteImport } from './routes/$fontId/route'
 import { Route as TabFontIdRouteRouteImport } from './routes/$tab.$fontId/route'
 
-const FontIdRouteRoute = FontIdRouteRouteImport.update({
-  id: '/$fontId',
-  path: '/$fontId',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRouteRoute = IndexRouteRouteImport.update({
   id: '/',
   path: '',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FontIdRouteRoute = FontIdRouteRouteImport.update({
+  id: '/$fontId',
+  path: '/$fontId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TabFontIdRouteRoute = TabFontIdRouteRouteImport.update({
@@ -61,18 +61,18 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/$fontId': {
-      id: '/$fontId'
-      path: '/$fontId'
-      fullPath: '/$fontId'
-      preLoaderRoute: typeof FontIdRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$fontId': {
+      id: '/$fontId'
+      path: '/$fontId'
+      fullPath: '/$fontId'
+      preLoaderRoute: typeof FontIdRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/$tab/$fontId': {

@@ -1,3 +1,4 @@
+import { vendorLabel } from "./labels";
 import type { FontRecord } from "./types";
 
 export type SortKey =
@@ -9,6 +10,8 @@ export type SortKey =
   | "name-desc"
   | "creator-asc"
   | "creator-desc"
+  | "foundry-asc"
+  | "foundry-desc"
   | "date-newest"
   | "date-oldest"
   | "updated-newest"
@@ -22,7 +25,13 @@ export type SortKey =
   | "features-most"
   | "features-fewest"
   | "instances-most"
-  | "instances-fewest";
+  | "instances-fewest"
+  | "languages-most"
+  | "languages-fewest"
+  | "scripts-most"
+  | "scripts-fewest"
+  | "filesize-largest"
+  | "filesize-smallest";
 
 export const DEFAULT_SORT: SortKey = "popularity";
 
@@ -64,53 +73,81 @@ export const SORT_GROUPS: SortGroup[] = [
     descLabel: "Z → A",
   },
   {
-    group: "Instance count",
+    group: "Foundry Name",
+    asc: "foundry-asc",
+    desc: "foundry-desc",
+    ascLabel: "A → Z",
+    descLabel: "Z → A",
+  },
+  {
+    group: "Instance Count",
     asc: "instances-most",
     desc: "instances-fewest",
     ascLabel: "Most",
     descLabel: "Fewest",
   },
   {
-    group: "Glyph count",
+    group: "Glyph Count",
     asc: "glyphs-most",
     desc: "glyphs-fewest",
     ascLabel: "Most",
     descLabel: "Fewest",
   },
   {
-    group: "Axis count",
+    group: "Axis Count",
     asc: "axes-most",
     desc: "axes-fewest",
     ascLabel: "Most",
     descLabel: "Fewest",
   },
   {
-    group: "Feature count",
+    group: "Feature Count",
     asc: "features-most",
     desc: "features-fewest",
     ascLabel: "Most",
     descLabel: "Fewest",
   },
   {
-    group: "GF Added",
+    group: "Language Count",
+    asc: "languages-most",
+    desc: "languages-fewest",
+    ascLabel: "Most",
+    descLabel: "Fewest",
+  },
+  {
+    group: "Writing System Count",
+    asc: "scripts-most",
+    desc: "scripts-fewest",
+    ascLabel: "Most",
+    descLabel: "Fewest",
+  },
+  {
+    group: "Google Fonts Added",
     asc: "date-newest",
     desc: "date-oldest",
     ascLabel: "Newest additions",
     descLabel: "Oldest additions",
   },
   {
-    group: "GF Updated",
+    group: "Google Fonts Updated",
     asc: "gfupdated-newest",
     desc: "gfupdated-oldest",
     ascLabel: "Most recently updated",
     descLabel: "Least recently updated",
   },
   {
-    group: "Upstream Updated",
+    group: "Upstream Repo Updated",
     asc: "updated-newest",
     desc: "updated-oldest",
     ascLabel: "Most recently updated",
     descLabel: "Least recently updated",
+  },
+  {
+    group: "File Size",
+    asc: "filesize-largest",
+    desc: "filesize-smallest",
+    ascLabel: "Largest",
+    descLabel: "Smallest",
   },
 ];
 
@@ -131,6 +168,14 @@ const byCreator = (a: FontRecord, b: FontRecord) =>
   (a.designer ?? "￿").localeCompare(b.designer ?? "￿", undefined, {
     sensitivity: "base",
   });
+
+/** Resolved foundry name from the OS/2 vendor ID; unregistered codes sort as the raw ID. */
+const byFoundry = (a: FontRecord, b: FontRecord) =>
+  (a.vendorId ? vendorLabel(a.vendorId) : "￿").localeCompare(
+    b.vendorId ? vendorLabel(b.vendorId) : "￿",
+    undefined,
+    { sensitivity: "base" }
+  );
 
 const numCmp = (av: number | null, bv: number | null, desc: boolean) => {
   if (av == null && bv == null) return 0;
@@ -188,6 +233,10 @@ export function sortFonts(fonts: FontRecord[], key: SortKey): FontRecord[] {
       return out.sort(byCreator);
     case "creator-desc":
       return out.sort((a, b) => byCreator(b, a));
+    case "foundry-asc":
+      return out.sort((a, b) => byFoundry(a, b) || byName(a, b));
+    case "foundry-desc":
+      return out.sort((a, b) => byFoundry(b, a) || byName(a, b));
     case "date-newest":
       return out.sort((a, b) => dateCmp(a, b, true) || byName(a, b));
     case "date-oldest":
@@ -235,6 +284,34 @@ export function sortFonts(fonts: FontRecord[], key: SortKey): FontRecord[] {
       return out.sort(
         (a, b) =>
           numCmp(a.instances.length, b.instances.length, false) || byName(a, b)
+      );
+    case "languages-most":
+      return out.sort(
+        (a, b) =>
+          numCmp(a.languages.length, b.languages.length, true) || byName(a, b)
+      );
+    case "languages-fewest":
+      return out.sort(
+        (a, b) =>
+          numCmp(a.languages.length, b.languages.length, false) || byName(a, b)
+      );
+    case "scripts-most":
+      return out.sort(
+        (a, b) =>
+          numCmp(a.scripts.length, b.scripts.length, true) || byName(a, b)
+      );
+    case "scripts-fewest":
+      return out.sort(
+        (a, b) =>
+          numCmp(a.scripts.length, b.scripts.length, false) || byName(a, b)
+      );
+    case "filesize-largest":
+      return out.sort(
+        (a, b) => numCmp(a.fileSize, b.fileSize, true) || byName(a, b)
+      );
+    case "filesize-smallest":
+      return out.sort(
+        (a, b) => numCmp(a.fileSize, b.fileSize, false) || byName(a, b)
       );
     default:
       return out.sort(byName);

@@ -33,7 +33,7 @@ const SORT_NOTES: Record<string, string> = {
 const announceSort = (group: string, direction?: string) => {
   const note = SORT_NOTES[group];
   const description = [direction, note].filter(Boolean).join(" · ");
-  toast.info(`Sorted by ${group.replace(/^GF /, "Google Fonts ")}`, {
+  toast.info(`Sorted by ${group}`, {
     description: description || undefined,
     id: "sort-mode",
   });
@@ -113,7 +113,7 @@ export function SortControl({
         <Select value={current} onValueChange={selectGroup}>
           <SelectTrigger
             variant="borderless"
-            className="h-9 min-w-48 rounded-none rounded-l-md focus-visible:ring-0"
+            className="h-9 min-w-56 rounded-none rounded-l-md focus-visible:ring-0"
             aria-label="Sort by"
           />
           {/* Every sort group fits at once. Drop the shared 300px cap and

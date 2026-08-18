@@ -221,3 +221,75 @@ describe("sortFonts, axes count", () => {
     expect(sortedNames(fonts, "axes-fewest")).toEqual(["Zero", "One", "Three"]);
   });
 });
+
+describe("sortFonts, language and writing-system support", () => {
+  const fonts = [
+    font({
+      name: "Wide",
+      languages: ["en", "fr", "de"],
+      scripts: ["Latn", "Cyrl"],
+    }),
+    font({ name: "Narrow", languages: ["en"], scripts: ["Latn"] }),
+    font({ name: "Empty", languages: [], scripts: [] }),
+  ];
+  it("languages-most: widest support first", () => {
+    expect(sortedNames(fonts, "languages-most")).toEqual([
+      "Wide",
+      "Narrow",
+      "Empty",
+    ]);
+  });
+  it("languages-fewest: ascending by language count", () => {
+    expect(sortedNames(fonts, "languages-fewest")).toEqual([
+      "Empty",
+      "Narrow",
+      "Wide",
+    ]);
+  });
+  it("scripts-most: widest writing-system support first", () => {
+    expect(sortedNames(fonts, "scripts-most")).toEqual([
+      "Wide",
+      "Narrow",
+      "Empty",
+    ]);
+  });
+  it("scripts-fewest: ascending by writing-system count", () => {
+    expect(sortedNames(fonts, "scripts-fewest")).toEqual([
+      "Empty",
+      "Narrow",
+      "Wide",
+    ]);
+  });
+  it("ties break by name", () => {
+    const tie = [
+      font({ name: "Beta", languages: ["en", "fr"] }),
+      font({ name: "Alpha", languages: ["de", "es"] }),
+    ];
+    expect(sortedNames(tie, "languages-most")).toEqual(["Alpha", "Beta"]);
+  });
+});
+
+describe("sortFonts, file size", () => {
+  const fonts = [
+    font({ name: "Big", fileSize: 5_000_000 }),
+    font({ name: "Small", fileSize: 15_000 }),
+    font({ name: "Mid", fileSize: 300_000 }),
+    font({ name: "None", fileSize: null }),
+  ];
+  it("filesize-largest: descending, null last", () => {
+    expect(sortedNames(fonts, "filesize-largest")).toEqual([
+      "Big",
+      "Mid",
+      "Small",
+      "None",
+    ]);
+  });
+  it("filesize-smallest: ascending, null still last", () => {
+    expect(sortedNames(fonts, "filesize-smallest")).toEqual([
+      "Small",
+      "Mid",
+      "Big",
+      "None",
+    ]);
+  });
+});
