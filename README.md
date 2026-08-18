@@ -6,7 +6,7 @@
 
 [![FontFridge](/cover.png)](https://font.chingru.com)
 
-FontFridge is an enhanced Google Fonts collection that filters OpenType features, variable-font axes, weight/width steps, writing systems, languages, and color vs. monochrome. Preview any weight or named instance live, edit the specimen text inline, and save favorites — exportable as a JSON file and importable on another device.
+FontFridge is an enhanced Google Fonts collection that filters OpenType features, variable-font axes, weight/width steps, writing systems, languages, and color vs. monochrome. Preview any weight or named instance live, edit the specimen text inline, and save favorites. Export them as JSON and import on another device.
 
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)
@@ -16,7 +16,7 @@ FontFridge is an enhanced Google Fonts collection that filters OpenType features
 ![Vite 8](https://img.shields.io/badge/Vite_8-646CFF?style=flat&logo=vite&logoColor=white)
 
 
-Host on ![Cloudflare Workers](https://img.shields.io/badge/Cloudflare_Workers-F38020?style=flat&logo=cloudflare&logoColor=white)
+Hosted on ![Cloudflare Workers](https://img.shields.io/badge/Cloudflare_Workers-F38020?style=flat&logo=cloudflare&logoColor=white)
 
 
 [![Daily incremental harvest](https://github.com/rutopio/font-fridge/actions/workflows/daily-harvest.yml/badge.svg)](https://github.com/rutopio/font-fridge/actions/workflows/daily-harvest.yml)
@@ -35,7 +35,7 @@ pnpm pull:data    # fetch the data assets from R2 (first clone only)
 pnpm dev          # vite dev server on :3000
 ```
 
-`pnpm pull:data` needs a `CLOUDFLARE_API_TOKEN` with R2 read on the `fontcolle-assets` bucket, which only the maintainers have: see [docs/data-pipeline.md](docs/data-pipeline.md). **Outside contributors skip it** — `pnpm build` falls back to a committed 30-family sample, so `pnpm build && pnpm dev` runs with no Cloudflare account or API key. Details, and how to harvest more families, in [Running without R2 access](docs/data-pipeline.md#running-without-r2-access).
+`pnpm pull:data` needs a `CLOUDFLARE_API_TOKEN` with R2 read on the `fontcolle-assets` bucket, which only the maintainers have: see [docs/data-pipeline.md](docs/data-pipeline.md). **Outside contributors skip it.** `pnpm build` falls back to a committed 30-family sample, so `pnpm build && pnpm dev` runs with no Cloudflare account or API key. Details, and how to harvest more families, in [Running without R2 access](docs/data-pipeline.md#running-without-r2-access).
 
 `pnpm check` runs Biome (with `--write`) then `tsc --noEmit`; run it before committing. `pnpm build` produces the Workers bundle in `dist/`.
 
@@ -53,26 +53,26 @@ The font data is read-only, identical for every visitor, and refreshed once a da
 
 The dataset (harvest → R2 storage → build → deploy) is documented separately:
 
-- **[docs/data-pipeline.md](docs/data-pipeline.md)** — where the data lives, running without R2 access, building the dataset, bootstrapping from scratch, and the daily incremental CI update.
-- **[src/data/README.md](src/data/README.md)** — provenance of each data file and each `fonts.json` field.
+- **[docs/data-pipeline.md](docs/data-pipeline.md)**: where the data lives, running without R2 access, building the dataset, bootstrapping from scratch, and the daily incremental CI update.
+- **[src/data/README.md](src/data/README.md)**: provenance of each data file and each `fonts.json` field.
 
-The short version: `fonts.json` (~21 MB) and the manifest pointer live in R2, not git; the daily workflow harvests only what changed, publishes to R2, and fires a Cloudflare Deploy Hook — a data-only day makes zero commits. Forks with no R2 access build against a committed 30-family sample.
+The short version: `fonts.json` (~21 MB) and the manifest pointer live in R2, not git; the daily workflow harvests only what changed, publishes to R2, and fires a Cloudflare Deploy Hook. A data-only day makes zero commits. Forks with no R2 access build against a committed 30-family sample.
 
 ## Open Graph images
 
-Each published family has a share card at `public/og/<id>.png` with the family name set **in its own typeface** (traced to a path at build time via the [CSS2 API](https://developers.google.com/fonts/docs/css2) + [opentype.js](https://github.com/opentypejs/opentype.js), rasterized with [resvg](https://github.com/yisibl/resvg-js)). `pnpm gen:og` renders them all (`--force` re-renders existing; `--ids=<file>` restricts to a subset). The per-font route wires `og:image`; the daily workflow re-renders only changed families and pushes them to R2 as per-object deltas over the base tarball.
+Each published family has a share card at `public/og/<id>.png` with the family name set **in its own typeface** (traced to a path at build time via the [CSS2 API](https://developers.google.com/fonts/docs/css2) + [opentype.js](https://github.com/opentypejs/opentype.js), rasterized with [resvg](https://github.com/yisibl/resvg-js)). `pnpm gen:og` renders them all (`--force` re-renders existing; `--ids=<file>` restricts to a subset). The per-font route wires `og:image`; the daily workflow re-renders only changed families and uploads only the changed images to R2.
 
-## Contribution
+## Contributing
 
 Contributions are welcome. Run `pnpm check` before opening a PR.
 
-Font metadata errors (wrong tags, missing languages, bad axis ranges) are best reported as an issue, most trace back to the harvester, not the UI.
+Font metadata errors (wrong tags, missing languages, bad axis ranges) are best reported as an issue. Most trace back to the harvester, not the UI.
 
 ## License
 
 MIT, covering this project's own code and metadata index only.
 
-The fonts listed in this project are not distributed here; every font file and download links out to Google Fonts. Each font remains under its own license ([SIL Open Font License](https://openfontlicense.org), [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0), [Ubuntu Font License](https://ubuntu.com/legal/font-licence), etc.) as declared by its original authors and foundries. Check a family's license before using it.
+This project does not distribute any font files. All downloads link to Google Fonts. Each font keeps its own license ([SIL Open Font License](https://openfontlicense.org), [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0), [Ubuntu Font License](https://ubuntu.com/legal/font-licence), etc.). Check a family's license before using it.
 
 ---
 
