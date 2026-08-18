@@ -1,18 +1,7 @@
 #!/usr/bin/env python3
-"""Supplemental harvester for families served by the Google Fonts API but absent
-from the google/fonts GitHub repo main branch (e.g. Google Sans, the newer Edu
-Hand fonts).
+"""Harvest API-only families (not in the repo) via gstatic URLs.
 
-harvest.py can only see what's in the repo, so these never get harvested. Here we
-pull the TTF straight from the API's gstatic URLs and reuse harvest.parse_ttf /
-langcov.coverage to emit the SAME raw-record shape, then merge into
-stress_output.json. Icon families (Material Icons/Symbols) are excluded, they're
-not text faces and Google lists them separately.
-
-Requires GOOGLE_FONTS_API_KEY.
-
-Usage:
-    GOOGLE_FONTS_API_KEY=... python3 harvest_api.py [stress_output.json]
+    GOOGLE_FONTS_API_KEY=... python3 harvest_api.py [harvest_output.json]
 """
 import json
 import os
@@ -25,7 +14,6 @@ import langcov
 
 API = "https://www.googleapis.com/webfonts/v1/webfonts"
 
-# API families that aren't in the repo and that we don't want (icon fonts).
 EXCLUDE_PREFIXES = ("Material Icons", "Material Symbols")
 
 
@@ -44,7 +32,6 @@ def build_record(item):
     """Build a harvest.py-shaped raw record from one API family item."""
     name = item["family"]
     files = item.get("files", {})
-    # Prefer the upright 'regular' file; VF families expose the whole range there.
     primary_url = files.get("regular") or next(iter(files.values()), None)
     if not primary_url:
         return None
@@ -54,7 +41,6 @@ def build_record(item):
     parsed = harvest.parse_ttf(raw)
     cmap_chars = parsed.pop("_cmap_chars", set())
 
-    # Merge italic instances if a separate italic VF exists.
     instances = [{**i, "italic": False} for i in parsed.get("named_instances", [])]
     italic_url = files.get("italic")
     if italic_url:
@@ -70,25 +56,17 @@ def build_record(item):
     subsets = item.get("subsets", [])
     langs, scripts, cjk = langcov.coverage(cmap_chars, subsets)
 
-    # API category maps straight into to_dataset.primary_class (it upper-cases
-    # and substring-matches "SANS"/"HANDWRITING"/etc).
     return {
         "family_dir": family_dir(name),
         "license_dir": None,  # unknown from the API
         "name": name,
-        "designer": None,     # API doesn't expose designer
+        "designer": None,
         "category": item.get("category"),
         "license": None,
         "subsets": subsets,
-        # The webfonts API exposes no "date added" field, only lastModified.
-        # This used to fall back to it, which made dateAdded (the "Date added"
-        # sort = when Google took the family in) silently mean "last modified"
-        # for these families -- e.g. the Edu* fonts read 2025-09 while their
-        # google/fonts debut was 2024-03. Leave it null instead and let
-        # to_dataset fall back to firstCommitDate, which is the real debut.
-        "date_added": None,
+        "date_added": None,  # falls back to firstCommitDate in to_dataset
         "primary_script": None,
-        "fonts": [],          # VF: derive_weights uses the wght axis
+        "fonts": [],
         "primary_ttf": None,
         "ttf": parsed,
         "languages": langs,
@@ -98,51 +76,3 @@ def build_record(item):
     }
 
 
-def main():
-    api_key = os.environ.get("GOOGLE_FONTS_API_KEY", "")
-    if not api_key:
-        print("error: set GOOGLE_FONTS_API_KEY", file=sys.stderr)
-        sys.exit(1)
-
-    out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(
-        os.path.dirname(__file__), "stress_output.json"
-    )
-    if os.path.exists(out):
-        with open(out, encoding="utf-8") as fh:
-            existing = json.load(fh)
-    else:
-        existing = []
-    have_dirs = {r.get("family_dir") for r in existing}
-    have_names = {(r.get("name") or "").lower() for r in existing}
-
-    # VF capability so single-file variable families come back whole.
-    api = fetch_json(f"{API}?key={api_key}&capability=VF&sort=popularity")
-
-    supplement = []
-    for it in api.get("items", []):
-        name = it["family"]
-        if name.startswith(EXCLUDE_PREFIXES):
-            continue
-        if name.lower() in have_names or family_dir(name) in have_dirs:
-            continue
-        supplement.append(it)
-
-    print(f"{len(supplement)} API families to supplement:", file=sys.stderr)
-    added = []
-    for it in supplement:
-        try:
-            rec = build_record(it)
-            if rec:
-                added.append(rec)
-                print(f"  ok {it['family']}", file=sys.stderr)
-        except Exception as e:
-            print(f"  ERR {it['family']}: {e}", file=sys.stderr)
-
-    merged = existing + added
-    with open(out, "w", encoding="utf-8") as fh:
-        json.dump(merged, fh, indent=2, default=str, ensure_ascii=False)
-    print(f"added {len(added)} families; {out} now has {len(merged)}", file=sys.stderr)
-
-
-if __name__ == "__main__":
-    main()

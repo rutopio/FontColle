@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
-"""Harvest unified font metadata for a set of google/fonts families.
-
-Per family:
-  - Parse METADATA.pb (text protobuf) for category, designer, license, fonts, axes ranges.
-  - Download the primary TTF and parse GSUB/GPOS features, fvar axes, named instances.
-Outputs one merged JSON record per family conforming to a stable schema.
-"""
+"""Harvest font metadata from google/fonts: METADATA.pb + primary TTF parsing."""
 import io
 import json
 import os
@@ -22,20 +16,13 @@ import langcov
 
 RAW = "https://raw.githubusercontent.com/google/fonts/main"
 
-# sfnt tags of the color tables we report. "SVG " carries its padding space.
-# CPAL/CBLC are companion tables (palettes / bitmap locations) and are recorded
-# alongside their primary, since a font is only well-formed with both.
 COLOR_TABLES = ("COLR", "CPAL", "SVG ", "sbix", "CBDT", "CBLC")
 
-# Human weight names for synthesizing static-family style names (Thin..Black).
 WEIGHT_NAMES = {
     100: "Thin", 200: "ExtraLight", 300: "Light", 400: "Regular",
     500: "Medium", 600: "SemiBold", 700: "Bold", 800: "ExtraBold", 900: "Black",
 }
 
-# Dev-time cache for binary (TTF) downloads, mirroring the repo path under
-# TTF_CACHE_DIR. Cached files are trusted as-is: delete the directory (or set
-# TTF_CACHE=0) to force fresh downloads, e.g. for a release run.
 CACHE_DIR = os.environ.get(
     "TTF_CACHE_DIR", os.path.join(os.path.dirname(__file__), "ttf_cache")
 )
@@ -59,7 +46,6 @@ def fetch(url, binary=False, retries=3):
             with urllib.request.urlopen(req, timeout=60) as r:
                 data = r.read() if binary else r.read().decode("utf-8")
             if cpath:
-                # Atomic write so a concurrent worker never reads a torn file.
                 os.makedirs(os.path.dirname(cpath), exist_ok=True)
                 tmp = f"{cpath}.tmp.{os.getpid()}.{id(url)}"
                 with open(tmp, "wb") as fh:
@@ -72,7 +58,7 @@ def fetch(url, binary=False, retries=3):
     raise last
 
 def parse_metadata_pb(text):
-    """Minimal text-protobuf parser for the fields we care about."""
+    """Minimal text-protobuf parser for the fields we use."""
     def scalar(key):
         m = re.search(rf'^\s*{key}:\s*"?([^"\n]+)"?', text, re.M)
         return m.group(1).strip() if m else None
@@ -86,11 +72,8 @@ def parse_metadata_pb(text):
         "primary_script": scalar("primary_script"),  # e.g. "Latn"
         "stroke": scalar("stroke"),              # SERIF / SANS_SERIF stroke class
         "classifications": re.findall(r'classifications:\s*"([^"]+)"', text),
-        # source { repository_url: "..." }, the upstream GitHub repo. None when
-        # the source block is absent (older fonts, API-supplemented families).
         "repository_url": scalar("repository_url"),
     }
-    # fonts { ... } blocks -> weights/styles
     fonts = []
     for blk in re.findall(r'fonts\s*\{(.*?)\}', text, re.S):
         w = re.search(r'weight:\s*(\d+)', blk)
@@ -102,7 +85,6 @@ def parse_metadata_pb(text):
             "filename": fn.group(1) if fn else None,
         })
     meta["fonts"] = fonts
-    # axes { tag ... min_value ... max_value } blocks (VF range from metadata)
     axes = []
     for blk in re.findall(r'axes\s*\{(.*?)\}', text, re.S):
         tag = re.search(r'tag:\s*"([^"]+)"', blk)
@@ -115,8 +97,7 @@ def parse_metadata_pb(text):
     meta["metadata_axes"] = axes
     return meta
 
-# OpenType epoch: 1904-01-01. head.created/modified are seconds since then.
-_MAC_EPOCH_OFFSET = 2082844800  # seconds between 1904-01-01 and 1970-01-01
+_MAC_EPOCH_OFFSET = 2082844800  # 1904-01-01 to 1970-01-01
 
 def _epoch_ms(long_datetime):
     """head created/modified (secs since 1904) -> unix epoch ms, or None."""
@@ -126,10 +107,7 @@ def _epoch_ms(long_datetime):
         return None
 
 def _glyph_ymax(f, char):
-    """yMax of `char`'s outline bounding box, via the font's glyph set (works
-    for both glyf and CFF/CFF2 outlines since it goes through a pen, not raw
-    glyf coordinates). None if the font has no cmap entry for `char` or the
-    glyph has no contours (e.g. space)."""
+    """yMax of `char`'s outline bounding box, or None."""
     try:
         cmap = f.getBestCmap()
         gname = cmap.get(ord(char))
@@ -173,10 +151,7 @@ def _is_monospace(f, post):
 
 
 def _has_hinting(f, outline_format):
-    """True when fpgm or prep carries non-trivial bytecode. Only meaningful
-    for glyf-flavored fonts; CFF fonts hint via CFF charstrings, not
-    fpgm/prep, so this is null for them. Reads raw table bytes (cheap,
-    no decompile) rather than the parsed Program object."""
+    """Non-trivial fpgm/prep bytecode. Only meaningful for glyf fonts."""
     if outline_format != "glyf":
         return None
     for tag in ("fpgm", "prep"):
@@ -198,10 +173,7 @@ def _vendor_id(os2):
 
 
 def extract_style_metrics(f):
-    """New per-family style metrics (§ style-metric filters): x-height,
-    cap-height, italic angle, hhea/typo vertical metrics, avg char width,
-    monospace/hinting/outline-format flags, vendor id, raw values in font
-    units (ratios are derived later at the UI layer using units_per_em)."""
+    """Raw font-unit style metrics (ratios derived at the UI layer)."""
     os2 = f["OS/2"] if "OS/2" in f else None
     hhea = f["hhea"] if "hhea" in f else None
     post = f["post"] if "post" in f else None
@@ -226,9 +198,7 @@ def extract_style_metrics(f):
         "typo_descender": os2.sTypoDescender if os2 is not None else None,
         "typo_line_gap": os2.sTypoLineGap if os2 is not None else None,
         "win_ascent": os2.usWinAscent if os2 is not None else None,
-        "win_descent": os2.usWinDescent if os2 is not None else None,  # positive per spec
-        # fsSelection bit 7 (USE_TYPO_METRICS): renderers should prefer the
-        # sTypo* trio over win/hhea for default line height.
+        "win_descent": os2.usWinDescent if os2 is not None else None,
         "use_typo_metrics": bool(os2.fsSelection & 0x80) if os2 is not None else None,
         "avg_char_width": (os2.xAvgCharWidth or None) if os2 is not None else None,
         "is_monospace": _is_monospace(f, post),
@@ -238,7 +208,7 @@ def extract_style_metrics(f):
     }
 
 
-def parse_ttf(raw_bytes):
+def parse_ttf(raw_bytes: bytes) -> dict:
     f = TTFont(io.BytesIO(raw_bytes), lazy=True)
     nm = f["name"]
     out = {"axes": [], "named_instances": [], "gsub_features": [], "gpos_features": [],
@@ -263,7 +233,6 @@ def parse_ttf(raw_bytes):
                 feats.add(fr.FeatureTag)
         out[tag.lower() + "_features"] = sorted(feats)
 
-    # --- archival metadata (flat scalars, no blob) ---
     head = f["head"] if "head" in f else None
     os2 = f["OS/2"] if "OS/2" in f else None
     cmap = {}
@@ -272,8 +241,6 @@ def parse_ttf(raw_bytes):
     except Exception:
         pass
 
-    # Characters this file covers, for language-coverage math (kept out of the
-    # emitted record; the caller unions them across a family's files).
     out["_cmap_chars"] = {chr(cp) for cp in cmap.keys()} if cmap else set()
 
     out["version"] = round(head.fontRevision, 4) if head else None
@@ -282,15 +249,11 @@ def parse_ttf(raw_bytes):
     out["modified_ms"] = _epoch_ms(head.modified) if head else None
     out["weight_class"] = os2.usWeightClass if os2 else None
     out["width_class"] = os2.usWidthClass if os2 else None
-    out["fs_type"] = os2.fsType if os2 else None  # embedding permission bits
+    out["fs_type"] = os2.fsType if os2 else None
     out["glyph_count"] = f["maxp"].numGlyphs if "maxp" in f else None
     out["char_count"] = len(cmap)
     out["units_per_em"] = head.unitsPerEm if head else None
     out["has_stat"] = "STAT" in f
-    # Color-table presence, in table-directory order. A font may carry several at
-    # once (6 GF families ship both COLR and OpenType-SVG so old renderers can
-    # fall back), so this is a list, not an enum. lazy=True means `in` only reads
-    # the table directory, no parse cost.
     out["color_tables"] = [t for t in COLOR_TABLES if t in f]
     if os2 and hasattr(os2, "panose"):
         p = os2.panose
@@ -299,7 +262,6 @@ def parse_ttf(raw_bytes):
                          p.bMidline, p.bXHeight]
     else:
         out["panose"] = None
-    # Unicode block coverage bits (OS/2 ulUnicodeRange1..4) as a compact int list
     if os2:
         out["unicode_ranges"] = [getattr(os2, f"ulUnicodeRange{i}", 0) for i in (1, 2, 3, 4)]
     else:
@@ -317,9 +279,7 @@ def _vf_files(meta):
 
 
 def _synth_static_instances(meta):
-    """Static family: its 'styles' ARE the METADATA fonts[] entries (static
-    files expose no fvar instances). Synthesize one instance per file with a
-    name from weight+style and an italic flag."""
+    """Synthesize instances from METADATA fonts[] for static families."""
     out = []
     for fo in meta.get("fonts") or []:
         w = fo.get("weight")
@@ -355,10 +315,6 @@ def harvest(entry):
     total_bytes = t_dl = t_parse = 0.0
 
     if vf_files:
-        # Variable family: parse EVERY VF file (upright + italic + others).
-        # Family-level metadata (axes/features/OS2) comes from the FIRST file
-        # (the upright primary) to avoid double-counting; per-file named
-        # instances are merged, tagged with the file's style.
         primary_ttf = vf_files[0]
         rec["primary_ttf"] = primary_ttf
         primary_parsed = None
@@ -378,13 +334,9 @@ def harvest(entry):
             if fname == primary_ttf:
                 parsed["file_size"] = len(raw)
                 primary_parsed = parsed
-        # Family record uses the upright primary's axes/features/metrics.
         primary_parsed["named_instances"] = instances
         rec["ttf"] = primary_parsed
     else:
-        # Static family: one file per cut; parse the primary for metadata and
-        # union all files' cmaps for language coverage. Styles are synthesized
-        # from METADATA fonts[] (static files have no fvar instances).
         fonts = meta.get("fonts") or []
         primary_ttf = fonts[0]["filename"] if fonts and fonts[0].get("filename") else None
         rec["primary_ttf"] = primary_ttf
@@ -406,7 +358,6 @@ def harvest(entry):
                     parsed["file_size"] = len(raw)
                     rec["ttf"] = parsed
                 else:
-                    # Non-primary static cuts: only union the cmap (cheap).
                     try:
                         tf = TTFont(io.BytesIO(raw), lazy=True)
                         cm = tf.getBestCmap()
@@ -417,7 +368,6 @@ def harvest(entry):
             if "ttf" in rec:
                 rec["ttf"]["named_instances"] = _synth_static_instances(meta)
 
-    # Language / writing-system coverage over the family's union cmap.
     langs, scripts, cjk_cov = langcov.coverage(cmap_chars, meta.get("subsets"))
     rec["languages"] = langs
     rec["scripts"] = scripts
@@ -429,7 +379,6 @@ def harvest(entry):
     return rec
 
 def peak_mem_mb():
-    # ru_maxrss is bytes on macOS, KB on Linux
     rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
     return rss / (1024 * 1024) if sys.platform == "darwin" else rss / 1024
 
@@ -463,7 +412,7 @@ if __name__ == "__main__":
                 errors.append((fam, repr(e)))
                 print(f"[{done:3d}/{len(families)}] ERR {fam}: {e}", file=sys.stderr)
     total = time.time() - run_t0
-    with open("stress_output.json", "w", encoding="utf-8") as fh:
+    with open("harvest_output.json", "w", encoding="utf-8") as fh:
         json.dump(results, fh, indent=2, default=str, ensure_ascii=False)
     print(f"\n=== SUMMARY ===", file=sys.stderr)
     print(f"ok={len(results)} err={len(errors)} total_time={total:.1f}s "

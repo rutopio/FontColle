@@ -1,56 +1,10 @@
 #!/usr/bin/env python3
-"""Backfill upstream-repo activity onto src/data/fonts.json.
+"""Backfill upstream-repo activity (default-branch head date, not pushedAt).
 
-Answers "is this font's own repo still maintained", which NOTHING else in the
-dataset does:
-  - lastModifiedApi is Google's *serving* date. Across 1942 published families
-    it takes only 57 distinct values (353 of them share 2025-09-16), because
-    Google re-serves families in batches. Sorting by it groups unrelated fonts.
-  - modifiedMs is the TTF head-table stamp, i.e. when Google last *compiled*
-    the binary, not when anyone touched the source.
-  - The newest commit in google/fonts is worse still: 46/60 sampled families
-    have a housekeeping commit on top (Google is mid-campaign adding
-    upstream_info.md repo-wide), which would date most of the catalog to
-    March 2026.
+Groups families by repo and queries via GraphQL in batches (~22 calls for the
+whole catalog). Uses default-branch head, not pushedAt (inflated by CI/dependabot).
 
-So we ask the family's OWN repository (METADATA.pb `source.repository_url`).
-
-Signal: the DEFAULT BRANCH head commit date, not `pushedAt`.
-`pushedAt` counts a push to any ref, including CI and dependabot branches on an
-otherwise dead project. Measured over all 1275 repos: median gap to the default
-head is 0 days, but 171 repos (13%) are inflated and 95 by over a year --
-huertatipografica/Alegreya reports pushedAt 2026-06-10 while its master branch
-has not moved since 2020-10-07 (the side branch `at-updates-pipeline` did), and
-googlefonts/plex's newest branch is a dependabot postcss bump. Whatever GitHub
-reports as the repo's default branch counts, whether it is named master, main,
-or anything else.
-
-Written per family (null for the 32 with no GitHub repository_url --
-26 have none at all, 6 are on gitlab/sr.ht, which this does not query):
-    upstreamHeadDate    ISO date, default-branch head    <- drives sort + filter
-    upstreamAnyDate     ISO date, newest across branches <- stored, unused
-    upstreamPushedAt    ISO date, raw pushedAt           <- diagnostics
-    upstreamArchived    bool, repo is archived           <- Live/Archived facet
-    upstreamRepoKey     "owner/name" actually resolved
-    upstreamNewestTag   ISO date of the newest tag, or null
-
-Forks count as normal activity (no special handling): a fork that receives
-commits is being worked on.
-
-`upstreamNewestTag` exists so the caller can spot families whose versionHistory
-lags a new upstream release: when it is newer than the family's last
-versionHistory date, that id needs backfill_version_history.py re-run. Written
-to --stale-versions-out when given.
-
-Cost: families are grouped by repo (1942 families -> 1275 distinct repos) and
-queried through the GraphQL API in batches, so a WHOLE-CATALOG sweep is ~22
-queries costing ~22 of the 5000/hr budget. That is why the daily workflow can
-run this unconditionally instead of only over freshly harvested ids.
-
-Usage:
-    export $(grep GITHUB_TOKEN ../../.env)      # required, GraphQL needs auth
-    python3 backfill_upstream_activity.py [path/to/fonts.json] \
-        [--ids=a,b,c] [--limit N] [--stale-versions-out FILE] [--changed-out FILE]
+    GITHUB_TOKEN=... python3 backfill_upstream_activity.py [fonts.json] [--ids=a,b,c]
 """
 import http.client
 import json
@@ -62,20 +16,11 @@ import urllib.error
 import urllib.request
 
 GRAPHQL = "https://api.github.com/graphql"
-# Repos per GraphQL query. Cost is 1 regardless (measured at 3, 50 and 60), so
-# this only trades request count against response size and blast radius on a
-# retry. 50 keeps each response comfortably small.
 BATCH = 50
-# Branch heads pulled per repo for upstreamAnyDate. Ordered newest-first, so a
-# repo with more branches than this still yields the correct maximum.
 BRANCH_PAGE = 100
-# Refuse to write when more than this fraction of repos fail to resolve: that
-# is a token/network fault, not 400 genuinely deleted repos.
 MAX_UNRESOLVED = 0.20
 
-# METADATA.pb is inconsistent about the host: 16 families (Inter, Cousine,
-# Maven Pro, the Noto Serif CJK set...) write "www.github.com", which a
-# bare github.com pattern silently skips, leaving their date null.
+# Handles both github.com and www.github.com (METADATA.pb is inconsistent).
 REPO_RE = re.compile(r"https?://(?:www\.)?github\.com/([^/]+)/([^/#?]+)")
 
 
@@ -95,7 +40,7 @@ def _token():
 
 
 def gql(query, tok, retries=4):
-    """POST a GraphQL query, returning the `data` object (or None)."""
+    """POST a GraphQL query; returns `data` or None."""
     body = json.dumps({"query": query}).encode()
     for attempt in range(retries):
         req = urllib.request.Request(
@@ -110,8 +55,6 @@ def gql(query, tok, retries=4):
         try:
             with urllib.request.urlopen(req, timeout=90) as r:
                 payload = json.load(r)
-            # Partial errors are normal here: a deleted/renamed repo nulls its
-            # own alias while the rest of the batch resolves fine.
             return payload.get("data")
         except urllib.error.HTTPError as e:
             if e.code in (403, 429):
@@ -126,9 +69,6 @@ def gql(query, tok, retries=4):
         except urllib.error.URLError as e:
             print(f"    network error ({e.reason}), retrying…", file=sys.stderr)
             time.sleep(2**attempt)
-        # A truncated response (IncompleteRead) is an HTTPException, NOT a
-        # URLError, so it escaped the clause above and killed a whole sweep
-        # mid-run. Retry it like any other transport hiccup.
         except http.client.HTTPException as e:
             print(
                 f"    truncated response ({type(e).__name__}), retrying…",
@@ -142,7 +82,6 @@ def build_query(chunk):
     """One aliased `repository` selection per repo in the chunk."""
     parts = []
     for i, (owner, name) in enumerate(chunk):
-        # GraphQL string literals: escape backslashes and quotes.
         o = owner.replace("\\", "\\\\").replace('"', '\\"')
         n = name.replace("\\", "\\\\").replace('"', '\\"')
         parts.append(
@@ -162,13 +101,12 @@ def build_query(chunk):
 
 
 def _commit_date(node):
-    """ISO date from a Commit or an annotated Tag node, or None."""
+    """ISO date from a Commit or annotated Tag node, or None."""
     if not node:
         return None
     t = node.get("target") or {}
     d = t.get("committedDate")
     if not d:
-        # Annotated tag: the commit hangs one level deeper.
         d = ((t.get("target") or {}).get("committedDate")) if t.get("target") else None
     return d[:10] if d else None
 
@@ -266,8 +204,6 @@ def main():
     else:
         targets = records[:limit] if limit else records
 
-    # Group by repo: sibling families (Playwrite x104, Rubik x26, Plex x11)
-    # share one upstream, so this is what turns ~1900 families into ~1275 calls.
     by_repo = {}
     for r in targets:
         key = repo_key(r.get("repositoryUrl"))
@@ -301,16 +237,12 @@ def main():
             if any(r.get(k) != v for k, v in row.items()):
                 changed += 1
             r.update(row)
-            # A newer upstream tag than our last recorded release means the
-            # version timeline is behind and this id needs a version backfill.
             vh = r.get("versionHistory") or []
             last_release = max((x["date"] for x in vh), default=None)
             tag = row["upstreamNewestTag"]
             if tag and (last_release is None or tag > last_release):
                 stale.append(r["id"])
 
-    # Families with no github repo still need the keys present, so the catalog
-    # shape is uniform and the frontend can treat null as "unknown".
     for r in targets:
         if not repo_key(r.get("repositoryUrl")):
             if any(r.get(k) != v for k, v in NULL_ROW.items()):
@@ -326,7 +258,6 @@ def main():
         f"({archived} archived, {unresolved} repos unresolved) -> {path}",
         file=sys.stderr,
     )
-    # Machine-readable change signal for the CI gate.
     print(f"upstream-changed={changed}")
 
     if stale_out:

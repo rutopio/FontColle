@@ -1,73 +1,10 @@
 #!/usr/bin/env python3
-"""Backfill `gfTtfCommitDate` onto src/data/fonts.json.
+"""Backfill `gfTtfCommitDate`: newest commit touching .ttf/.otf in google/fonts.
 
-Answers "how new is the font file Google actually serves", which is NOT what
-`upstreamHeadDate` answers ("is the author still working on it"). The two
-diverge in both directions, so neither corrects the other:
+Scoped to font files (not directory-wide) to skip metadata housekeeping commits.
+Resumable with periodic checkpoints; --shard=i/n for daily rotation.
 
-    Donegal One   upstream=2026-07-20  gfTtf=2015-03-06  author active, GF stale
-    Comfortaa     upstream=2017-11-08  gfTtf=2021-08-26  author gone, GF rebuilt
-    Alegreya      upstream=2020-10-07  gfTtf=2021-01-08  genuinely finished
-
-Signal: newest commit touching a .ttf/.otf inside <licenseDir>/<id>/ in
-google/fonts. Scoping to the FONT FILES is the whole point -- a directory-wide
-query returns Google's metadata housekeeping instead. Alegreya's directory head
-is a foundry rename (199711f8c, "Huerta Tipografica" -> "HT Fonts", 4 files, no
-font among them), sitting on top of the `upstream_info.md` backfill campaign
-that ran repo-wide from 2026-03 through at least 2026-07. Filtering to
-Alegreya[wght].ttf skips all of it and lands on 2021-01-08, three months after
-the upstream head -- the author-commits-then-Google-packages lag.
-
-Rejected alternative: list the directory's commits and filter by touched files.
-The REST commits API does not return per-commit file lists, so that costs an
-extra commits/{sha} call per commit inspected. The file-scoped query gets the
-same answer in one.
-
-Cost (measured, 12-family sample): ~1.0 font files per family, so ~2 calls each
--- one contents/ listing plus one commits/ per font file. Full catalog ~4100
-REST calls against the 5000/hr authenticated budget; a daily --ids increment
-over ~14 ids is ~28.
-
-Path key is licenseDir + id. Do NOT derive the directory from the license
-field: Open Sans is Apache-licensed but lives in ofl/opensans.
-
-Written per family:
-    gfTtfCommitDate   ISO date of the newest .ttf/.otf commit, or null
-
-Null is expected and correct for the 8 apiOnly families (the Edu* set, Google
-Sans, Google Sans Flex), which have no google/fonts directory at all. A 404 on
-the directory therefore counts as resolved-null, not as a failure -- otherwise a
-small --ids run over exactly those families would trip the unresolved guard.
-
-Resumable. A full catalog pass takes ~30 minutes of wall clock, so it commits to
-disk every CHECKPOINT families instead of only at the end -- an interrupted run
-(Ctrl-C, shutdown, CI timeout) keeps everything it had already resolved. By
-default a family that already carries a `gfTtfCommitDate` key is skipped, so
-re-running the same command continues from the break. Use --refresh to re-check
-families that already have a value.
-
-Keeping the field FRESH needs --shard=i/n, not --ids
-----------------------------------------------------
-The daily workflow's --ids set comes from the harvest diff, which keys off
-`lastModifiedApi`. That misses the case this field exists to show: a new TTF
-lands in google/fonts and Google has NOT re-served the family, so
-lastModifiedApi never moves and the id never enters the set. Measured over the
-catalog, 10 of 2031 families are already in that state, and they do not recover
-on a later run -- notosansnandinagari's TTF commit is 681 days old and still
-348 days ahead of its re-serve date. (An earlier comment in the daily workflow
-claimed this "self-corrects"; it does not, because the trigger never fires.)
-
-A whole-catalog --refresh is ~4100 REST calls, too much to run daily. So the
-daily job re-checks one shard per run: --shard=i/n splits the catalog by a hash
-of the id (stable, so a family stays in its shard as the catalog grows) and
-rotates i by day-of-year. n=14 is ~145 families, ~290 calls, and every family is
-re-checked within a fortnight. --shard implies --refresh: the point is to
-re-check values that are already present.
-
-Usage:
-    export $(grep GITHUB_TOKEN ../../.env)      # REST is 60/hr unauthenticated
-    python3 backfill_gf_ttf_date.py [path/to/fonts.json] \
-        [--ids=a,b,c] [--shard=i/n] [--limit N] [--changed-out FILE] [--refresh]
+    GITHUB_TOKEN=... python3 backfill_gf_ttf_date.py [fonts.json] [--shard=i/n]
 """
 import hashlib
 import http.client
@@ -82,16 +19,8 @@ import urllib.request
 API = "https://api.github.com"
 REPO = "google/fonts"
 FONT_EXTS = (".ttf", ".otf")
-# Refuse to write when more than this fraction of families fail outright (a
-# network/token fault). Directory 404s are NOT failures -- see module docstring.
 MAX_UNRESOLVED = 0.20
-# Be polite between calls; the budget is per-hour, not per-second, but a tight
-# loop over thousands of requests trips secondary rate limits.
 SLEEP = 0.05
-# Write fonts.json every N families. A full pass is ~30 minutes, far too long to
-# risk losing to an interrupt, and the file is ~21 MB so writing it every family
-# would cost more than the API calls do. 50 caps the worst-case loss at ~35
-# seconds of work while keeping the writes to ~40 over a full pass.
 CHECKPOINT = 50
 
 
@@ -132,8 +61,6 @@ def rest(path, tok, retries=4):
         except urllib.error.URLError as e:
             print(f"    network error ({e.reason}), retrying…", file=sys.stderr)
             time.sleep(2**attempt)
-        # IncompleteRead is an HTTPException, not a URLError, and killed a whole
-        # sweep once before (see 525a669). Retry it like any transport hiccup.
         except http.client.HTTPException as e:
             print(
                 f"    truncated response ({type(e).__name__}), retrying…",
@@ -144,11 +71,7 @@ def rest(path, tok, retries=4):
 
 
 def font_files(directory, tok):
-    """(names, ok) -- the .ttf/.otf files in a family dir. ok=False on failure.
-
-    A 404 returns ([], True): the family genuinely has no directory, which is a
-    real answer, not an error.
-    """
+    """(names, ok). 404 = ([], True), not a failure."""
     quoted = urllib.parse.quote(directory)
     payload, status = rest(f"/repos/{REPO}/contents/{quoted}", tok)
     if status == 404:
@@ -189,13 +112,7 @@ def family_date(record, tok):
 
 
 def shard_of(font_id, total):
-    """Which shard a family belongs to. Stable across runs and machines.
-
-    Keyed off a hash of the id, not the catalog position, so a family added or
-    removed upstream shifts only itself instead of renumbering everyone after
-    it (which would make a family skip or repeat a rotation). md5 because
-    Python's hash() is salted per process.
-    """
+    """Stable shard assignment (md5, not hash() which is salted)."""
     digest = hashlib.md5(font_id.encode("utf-8")).hexdigest()
     return int(digest[:8], 16) % total
 
@@ -252,10 +169,6 @@ def main():
     else:
         targets = records[:limit] if limit else records
 
-    # Resume: a family that already carries the key was done on an earlier pass.
-    # --ids is an explicit request for those families, so it overrides this.
-    # So is --shard: a rotation exists to re-check values that are already
-    # there, so skipping the resolved ones would make it a no-op forever.
     if not refresh and ids is None and shard is None:
         pending = [r for r in targets if "gfTtfCommitDate" not in r]
         done = len(targets) - len(pending)
@@ -270,7 +183,6 @@ def main():
         return
 
     def flush():
-        """Write the whole catalog back. Called at each checkpoint and at exit."""
         with open(path, "w", encoding="utf-8") as fh:
             json.dump(records, fh, indent=2, ensure_ascii=False)
 
@@ -300,13 +212,8 @@ def main():
         interrupted = True
         print("\ninterrupted; saving what resolved so far…", file=sys.stderr)
 
-    # Always persist: an interrupted pass keeps its work, and re-running the
-    # same command picks up where it stopped.
     flush()
 
-    # The guard is a sanity check on THIS pass, and only meaningful once the
-    # pass is big enough for a ratio to mean anything. It never discards work --
-    # the data is already on disk -- it just makes a bad run exit loudly.
     ratio = failed / seen if seen else 0
     if seen >= 20 and ratio > MAX_UNRESOLVED:
         sys.exit(
@@ -325,7 +232,6 @@ def main():
         f"({nulls} null, {failed} unresolved, {remaining} still pending) -> {path}",
         file=sys.stderr,
     )
-    # Machine-readable change signal for the CI gate.
     print(f"gfttf-changed={changed}")
 
     if changed_out:

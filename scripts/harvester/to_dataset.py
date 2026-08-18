@@ -1,19 +1,9 @@
 #!/usr/bin/env python3
-"""Transform raw harvest output into the frontend dataset shape.
-
-Reads stress_output.json / harvest_output.json (list of raw records) and emits
-the dataset JSON at the output path given as argv[2] (the pipeline writes
-src/data/fonts.json; see README), plus scripts.json / languages.json label maps
-alongside it. Also derives the §12 facets (variable, has-italic, axis facets,
-feature facets, script coverage). At build time gen-catalog.mjs slices this file
-into the static JSON the app actually serves (catalog.json, catalog/<id>.json,
-designer-index.json).
-"""
+"""Transform raw harvest output into src/data/fonts.json."""
 import json
 import os
 import sys
 
-# Human-friendly feature labels for the ones we surface as facets
 FEATURE_FACETS = {
     "smcp": "small-caps", "c2sc": "small-caps",
     "dlig": "discretionary-ligatures", "hlig": "historical-ligatures",
@@ -26,12 +16,7 @@ AXIS_FACETS = {
     "slnt": "slant-axis", "ital": "italic-axis", "GRAD": "grade-axis",
 }
 
-# Families reassigned to the "Graphics" class regardless of Google's category:
-# emoji, symbol, icon, barcode and other non-linguistic display faces. A name
-# whitelist taken verbatim from Google Fonts' own search results for "emoji" (2)
-# and "symbols" (14), plus the emoji-only Compat Test face GF hides. A name
-# whitelist, not a heuristic: subset/name matching mis-classed normal fonts
-# (Open Sans has an emoji subset; "icon" matched Niconne).
+# Name whitelist (not heuristic) for emoji/symbol/icon/barcode faces.
 GRAPHICS_FAMILIES = {
     "Noto Color Emoji", "Noto Color Emoji Compat Test", "Noto Emoji",
     "Noto Sans Symbols", "Noto Sans Symbols 2", "Noto Music",
@@ -42,11 +27,7 @@ GRAPHICS_FAMILIES = {
 }
 
 def primary_class(cat, name=None):
-    # Category describes letterform only; advance width is carried separately by
-    # fontSpacing() (src/lib/fonts/filter/facets.ts) off the /Monospace tag and
-    # apiCategory, so the API's MONOSPACE bucket does not map to a class here.
-    # backfill_form_category.py refines this from Google's tag tree afterwards,
-    # which is what places most MONOSPACE families on Sans/Serif/Slab.
+    # Letterform only; spacing handled separately by fontSpacing().
     if name in GRAPHICS_FAMILIES: return "Graphics"
     c = (cat or "").upper()
     if "SERIF" in c and "SANS" not in c: return "Serif"
@@ -55,9 +36,6 @@ def primary_class(cat, name=None):
     if "HANDWRITING" in c or "SCRIPT" in c: return "Script"
     return "Sans"
 
-# Standard weight steps we expose as filter pills. A variable wght axis "covers"
-# every step inside [min, max]; a static family contributes its distinct
-# per-file weights snapped to the nearest step.
 WEIGHT_STEPS = [100, 200, 300, 400, 500, 600, 700, 800, 900]
 
 
@@ -69,11 +47,7 @@ def snap_weight(w):
 
 
 def derive_weights(r, ttf, axes):
-    """The set of standard weight steps this family offers.
-
-    Variable: all steps inside the wght axis range. Static: the distinct
-    per-file weights from METADATA, snapped. Fallback: the primary weight_class.
-    """
+    """Standard weight steps this family offers."""
     steps = set()
     wght = next((a for a in axes if a["tag"] == "wght"), None)
     if wght and wght.get("min") is not None and wght.get("max") is not None:
@@ -90,7 +64,7 @@ def derive_weights(r, ttf, axes):
     return sorted(steps)
 
 
-def to_record(r):
+def to_record(r: dict) -> dict:
     ttf = r.get("ttf", {}) or {}
     axes = ttf.get("axes", [])
     gsub = set(ttf.get("gsub_features", []))
@@ -110,7 +84,6 @@ def to_record(r):
         f = FEATURE_FACETS.get(feat)
         if f and f not in facets:
             facets.append(f)
-    # script coverage from subsets
     if "latin" in subsets: facets.append("latin")
     if any(s.startswith("chinese") or s in ("japanese", "korean") for s in subsets):
         facets.append("cjk")
@@ -130,10 +103,7 @@ def to_record(r):
         "isVariable": bool(ttf.get("is_variable")),
         "subsets": subsets,
         "primaryTtf": r.get("primary_ttf"),
-        # Upstream GitHub repo from METADATA.pb source block (backfill_source.py).
-        # None when the source block is absent (old / API-supplemented families).
         "repositoryUrl": r.get("repository_url"),
-        # archival metadata (flat)
         "version": ttf.get("version"),
         "versionString": ttf.get("version_string"),
         "createdMs": ttf.get("created_ms"),
@@ -147,12 +117,10 @@ def to_record(r):
         "charCount": ttf.get("char_count"),
         "unitsPerEm": ttf.get("units_per_em"),
         "hasStat": bool(ttf.get("has_stat")),
-        # sfnt tags, stripped of the padding space in "SVG ". Empty => monochrome.
         "colorTables": [t.strip() for t in ttf.get("color_tables", [])],
         "primaryScript": r.get("primary_script"),
         "panose": ",".join(str(x) for x in panose) if panose else None,
-        # Style metrics (raw font units; ratios derived at the UI layer using
-        # unitsPerEm above). null fields mean "unavailable", never guessed.
+        # Raw font units; ratios derived at the UI layer.
         "xHeight": ttf.get("x_height"),
         "capHeight": ttf.get("cap_height"),
         "italicAngle": ttf.get("italic_angle"),
@@ -167,9 +135,7 @@ def to_record(r):
         "useTypoMetrics": ttf.get("use_typo_metrics"),
         "avgCharWidth": ttf.get("avg_char_width"),
         "isMonospace": ttf.get("is_monospace"),
-        # outlineFormat deliberately NOT emitted: the 2026-07 sample was 100%
-        # glyf across google/fonts, so it would be a stored constant. The raw
-        # harvest output still records outline_format for verification.
+        # outlineFormat not emitted (100% glyf across google/fonts).
         "hasHinting": ttf.get("has_hinting"),
         "vendorId": ttf.get("vendor_id"),
         "fileSize": ttf.get("file_size"),
@@ -185,22 +151,15 @@ def to_record(r):
         ],
         "features": sorted(gsub | set(ttf.get("gpos_features", []))),
         "facets": sorted(set(facets)),
-        # Writing-system / language coverage (computed in harvest via gflanguages).
         "languages": r.get("languages", []) or [],
         "scripts": r.get("scripts", []) or [],
         "cjkCoverage": r.get("cjk_coverage", {}) or {},
-        # Google Fonts classification tags (google/fonts tags CSV), e.g.
-        # {"/Serif/Fat Face": 90}. Not exposed by the raw harvest; populated by
-        # backfill_tags.py post-harvest. Empty for families it doesn't cover.
+        # Populated by backfill_tags.py post-harvest.
         "tags": r.get("tags", {}) or {},
     }
 
 def write_label_maps(records, out):
-    """Emit compact code->human-name maps for the scripts/languages the catalog
-    actually uses, so the frontend renders human labels without shipping
-    gflanguages. Written next to the dataset (scripts.json / languages.json)."""
-    import os
-
+    """Emit scripts.json / languages.json for frontend label rendering."""
     import langcov
 
     used_scripts = {s for r in records for s in r.get("scripts", [])}
@@ -219,12 +178,7 @@ def write_label_maps(records, out):
 
 
 def load_published_map():
-    """Load the published-family signals (from fetch_published.py).
-
-    Returns a dict keyed by lowercase display name → {popularity, trending,
-    lastModified, ...}, or None if the file doesn't exist (all families treated
-    as published, with no ranking signals).
-    """
+    """Returns {name.lower(): signals} or None if published.json is absent."""
     path = os.path.join(os.path.dirname(__file__), "published.json")
     if not os.path.exists(path):
         return None
@@ -233,13 +187,7 @@ def load_published_map():
     return {name.lower(): sig for name, sig in raw.items()}
 
 
-# Per-family specimen overrides for the Graphics class (symbol/emoji/icon faces),
-# using the exact sample string Google Fonts shows so the card previews the
-# font's own glyphs, not a Latin sentence it can't render. Families that map
-# Latin letters to shapes (Yarndings, barcode, Linefont, Wavefont) are omitted:
-# Google previews them with the default Latin sentence, which the font renders as
-# graphics, so the normal Latin fallback already matches. AllKin previews blank
-# on Google (an icon font with no default text), so it gets an empty string.
+# Google Fonts-matching sample strings for symbol/emoji faces.
 GRAPHICS_SPECIMENS = {
     "Noto Sans Symbols": "⛾⛿☯☸ ⛩⛰⛱⛴⛷⛸⛹ ♸⚥☊☍☓☤ 🄰🄱🆈🆉 ⚖♇♪♬",
     "Noto Sans Symbols 2": "🌍✄✎ 🏔🏕🏌🏍🎭🎮 🯅🯆🯇🯉 🡢🡭🡱🡼 🯱🯲🯳🯴🯵🯶 🂮🂱🂲🂳",
@@ -250,19 +198,14 @@ GRAPHICS_SPECIMENS = {
 
 
 def apply_specimens(records):
-    """Set a per-font specimen string in the font's own script, matching how
-    Google Fonts previews non-Latin families. Uses gflanguages sample text keyed
-    by the font's primary (or first non-Latin) script. Latin-only fonts get None
-    so the frontend keeps its English UDHR default."""
+    """Set specimen text in the font's own script. Latin fonts get None."""
     import langcov
 
     by_script = langcov.specimen_by_script()
-    # Cache per-language CJK specimens once.
     by_lang = {
         subset: langcov.specimen_for_lang(lang)
         for subset, lang in langcov.SUBSET_TO_SPECIMEN_LANG.items()
     }
-    # Tier counterparts, keyed identically so `specimenTiers` tracks `specimen`.
     tiers_by_script = langcov.tiers_by_script()
     tiers_by_lang = {
         subset: langcov.tiers_for_lang(lang)
@@ -271,25 +214,18 @@ def apply_specimens(records):
     filled = 0
     for r in records:
         subsets = r.get("subsets") or []
-        # Graphics faces with a Google-matched sample string take it verbatim
-        # (an empty string is a deliberate blank preview, so check membership,
-        # not truthiness). No linguistic tiers for these.
         if r.get("name") in GRAPHICS_SPECIMENS:
             r["specimen"] = GRAPHICS_SPECIMENS[r["name"]]
             r["specimenTiers"] = None
             filled += 1
             continue
-        # Emoji fonts (only non-menu subset is "emoji") preview as emoji, like
-        # Google Fonts, not any linguistic sample.
         non_menu = [s for s in subsets if s != "menu"]
         if non_menu == ["emoji"]:
             r["specimen"] = langcov.EMOJI_SAMPLE
             r["specimenTiers"] = None
             filled += 1
             continue
-        # CJK next: the script alone is ambiguous (Hant = Traditional Chinese,
-        # Cantonese, Wu, …), so key off the font's CJK subset to get the same
-        # canonical text Google Fonts shows (HK -> Cantonese, TC -> zh_Hant).
+        # CJK: key off subset, not script (Hant is ambiguous).
         text = next(
             (by_lang[s] for s in subsets if by_lang.get(s)),
             None,
@@ -298,10 +234,6 @@ def apply_specimens(records):
             (tiers_by_lang[s] for s in subsets if tiers_by_lang.get(s)),
             None,
         )
-        # Otherwise, only non-Latin-primary fonts get a native sample. A missing/
-        # Latin primary_script means a Latin font (it may still cover Cyrillic/
-        # Greek), which should keep the English default, otherwise a Latin face
-        # that merely includes Armenian would wrongly specimen in Armenian.
         if text is None:
             script = r.get("primaryScript")
             text = by_script.get(script) if script and script != "Latn" else None
@@ -341,7 +273,6 @@ def apply_published_signals(records, published):
         r["popularityRank"] = sig.get("popularity") if sig else None
         r["trendingRank"] = sig.get("trending") if sig else None
         r["lastModifiedApi"] = sig.get("lastModified") if sig else None
-        # Source/provenance flags from metadata/fonts (null when unpublished).
         r["isNoto"] = sig.get("isNoto") if sig else None
         r["isBrandFont"] = sig.get("isBrandFont") if sig else None
         r["isOpenSource"] = sig.get("isOpenSource") if sig else None
@@ -350,14 +281,6 @@ def apply_published_signals(records, published):
         else:
             unmatched.append(r["id"])
     print(f"published whitelist: {pub_count}/{len(records)} families marked as published")
-    # Surface the families that matched NO published entry (join is on
-    # name.lower()). Most are correct — Google merges/retires families faster
-    # than the google/fonts repo drops the directory, so a repo dir with no API
-    # entry SHOULD read isPublished=False (e.g. "Big Shoulders Display", which
-    # Google folded into "Big Shoulders"). Printing them makes a genuine rename
-    # miss reviewable instead of silent; measured 2026-07-24 that slug
-    # normalisation recovers essentially none of these, so a looser join is not
-    # worth the false-positive risk — visibility is the fix.
     if unmatched:
         print(
             f"published join: {len(unmatched)} families matched no API entry "
@@ -368,7 +291,7 @@ def apply_published_signals(records, published):
 
 
 if __name__ == "__main__":
-    src = sys.argv[1] if len(sys.argv) > 1 else "stress_output.json"
+    src = sys.argv[1] if len(sys.argv) > 1 else "harvest_output.json"
     out = sys.argv[2] if len(sys.argv) > 2 else "fonts.json"
     with open(src, encoding="utf-8") as fh:
         raw = json.load(fh)

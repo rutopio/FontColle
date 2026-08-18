@@ -1,24 +1,7 @@
 #!/usr/bin/env python3
-"""Backfill the per-family license copyright header on src/data/fonts.json.
+"""Backfill OFL copyright headers (Apache/UFL are pure boilerplate -> null).
 
-Google Fonts' /specimen/<Family>/license page shows the family's full license
-file (OFL.txt / LICENSE.txt / UFL.txt in google/fonts). Those files are almost
-entirely a fixed boilerplate shared across every family under the same license;
-the only per-family part is the leading "Copyright ..." paragraph in OFL files.
-Apache and UFL files carry no per-family header at all (pure boilerplate).
-
-So we store just the OFL copyright header here, and the frontend prepends it to
-the shared boilerplate it ships as a constant. This avoids storing ~4.5 KB of
-duplicated license text on all ~2000 families.
-
-  ofl   -> ofl/<dir>/OFL.txt,     header = text before "This Font Software..."
-  apache-> apache/<dir>/LICENSE.txt, no header (licenseHeader = null)
-  ufl   -> ufl/<dir>/UFL.txt,      no header (licenseHeader = null)
-
-Independent backfill: a full reharvest drops licenseHeader, so re-run after one.
-
-Usage:
-    python3 backfill_license.py [path/to/fonts.json] [--limit N] [--ids=a,b,c]
+    python3 backfill_license.py [path/to/fonts.json] [--ids=a,b,c]
 """
 import json
 import os
@@ -40,8 +23,8 @@ def fetch_text(url, retries=3):
         except urllib.error.HTTPError as e:
             if e.code == 404:
                 return None
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"  warn: {url} attempt {attempt+1} failed: {e}", file=sys.stderr)
         time.sleep(1.0 * (attempt + 1))
     return None
 
@@ -78,9 +61,6 @@ def main():
 
     with open(path, encoding="utf-8") as fh:
         records = json.load(fh)
-    # --ids restricts to a set of family ids (the daily loop passes the newly
-    # harvested ones, so a repo-quiet day makes no per-family license fetch);
-    # --limit takes the leading N (dev/debug). Absent both, the whole catalog.
     if ids is not None:
         targets = [r for r in records if r["id"] in ids]
     else:
@@ -88,8 +68,6 @@ def main():
 
     changed = 0
     for i, r in enumerate(targets):
-        # Only OFL files carry a per-family header; Apache/UFL are pure
-        # boilerplate, so leave licenseHeader null for them.
         header = None
         if r.get("licenseDir") == "ofl":
             url = f"{RAW}/ofl/{r['id']}/OFL.txt"

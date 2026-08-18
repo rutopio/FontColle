@@ -1,22 +1,6 @@
 #!/usr/bin/env python3
-"""Fetch the canonical published-family metadata from the Google Fonts API.
+"""Fetch published-family signals (popularity, trending, lastModified) from the GF API.
 
-The google/fonts GitHub repo (what harvest.py reads) has no notion of which
-families are actually served, nor any popularity/trending signal. The Developer
-API provides both, so we use it to enrich the catalog:
-
-  - the published whitelist (families currently served by Google Fonts)
-  - popularity rank  (sort=popularity → 1-based index)
-  - trending rank    (sort=trending   → 1-based index)
-  - lastModified     (per-family, "yyyy-MM-dd")
-
-Requires a GOOGLE_FONTS_API_KEY env var (free key at
-https://console.cloud.google.com/ → APIs & Services → Credentials).
-
-Outputs published.json: a map of display-name → signals, consumed by
-to_dataset.py to set is_published / popularity_rank / trending_rank on each row.
-
-Usage:
     GOOGLE_FONTS_API_KEY=... python3 fetch_published.py [out.json]
 """
 import json
@@ -25,8 +9,6 @@ import sys
 import urllib.request
 
 API = "https://www.googleapis.com/webfonts/v1/webfonts"
-# Unofficial batch endpoint (no key). The only source of the full specimen
-# title ("displayName"), which the Developer API / METADATA.pb both omit.
 METADATA = "https://fonts.google.com/metadata/fonts"
 
 
@@ -40,10 +22,7 @@ def fetch_sorted(api_key, sort):
 
 
 def fetch_family_metadata():
-    """family name -> its metadata/fonts entry. This unofficial batch endpoint is
-    the only source of both the full specimen title ("displayName") and the
-    boolean flags (isNoto / isBrandFont / isOpenSource / colorCapabilities),
-    none of which the Developer API or METADATA.pb expose."""
+    """Unofficial endpoint: displayName + boolean flags not in the Developer API."""
     req = urllib.request.Request(METADATA, headers={"User-Agent": "font-harvester/1.0"})
     with urllib.request.urlopen(req, timeout=30) as r:
         data = json.loads(r.read().decode("utf-8"))
@@ -64,7 +43,6 @@ def main():
     print("fetching family metadata (display names + flags)…", file=sys.stderr)
     fam_meta = fetch_family_metadata()
 
-    # 1-based ranks keyed by display name.
     pop_rank = {it["family"]: i + 1 for i, it in enumerate(by_pop)}
     trend_rank = {it["family"]: i + 1 for i, it in enumerate(by_trend)}
 
@@ -79,9 +57,7 @@ def main():
             "lastModified": it.get("lastModified"),
             "category": it.get("category"),
             "variants": len(it.get("variants", [])),
-            # displayName only when it differs from the plain family name.
             "displayName": dn if dn and dn != name else None,
-            # Boolean flags from metadata/fonts (absent -> None).
             "isNoto": meta.get("isNoto"),
             "isBrandFont": meta.get("isBrandFont"),
             "isOpenSource": meta.get("isOpenSource"),

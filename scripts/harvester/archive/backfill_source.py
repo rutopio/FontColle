@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""One-shot backfill of `repository_url` onto stress_output.json.
+"""One-shot backfill of `repository_url` onto harvest_output.json.
 
 METADATA.pb carries `source { repository_url: "..." }`, the upstream GitHub
 repo, which the harvester didn't previously capture. This fetches ONLY the
@@ -9,10 +9,10 @@ field but re-downloads every TTF, so this lightweight backfill is preferred.
 
 Records whose _source == "api" have no repo directory (they're supplemented from
 the Developer API, not the google/fonts repo), so they're skipped and keep a
-null repository_url. Idempotent; writes stress_output.json back.
+null repository_url. Idempotent; writes harvest_output.json back.
 
 Usage:
-    python3 backfill_source.py [path/to/stress_output.json] [workers]
+    python3 backfill_source.py [path/to/harvest_output.json] [workers]
 """
 import json
 import os
@@ -40,7 +40,7 @@ def fetch_repo_url(license_dir, family_dir):
 
 
 def main():
-    path = sys.argv[1] if len(sys.argv) > 1 else "stress_output.json"
+    path = sys.argv[1] if len(sys.argv) > 1 else "harvest_output.json"
     path = os.path.abspath(path)
     workers = int(sys.argv[2]) if len(sys.argv) > 2 else 8
 
