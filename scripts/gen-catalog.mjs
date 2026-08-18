@@ -159,6 +159,9 @@ export async function genCatalog() {
     dateAdded: f.dateAdded,
     upstreamHeadDate: f.upstreamHeadDate,
     upstreamArchived: f.upstreamArchived,
+    // Needed in the slim catalog, not just the detail files: the "GF repo
+    // updated" sort runs over the list view.
+    gfTtfCommitDate: f.gfTtfCommitDate ?? null,
     repositoryUrl: f.repositoryUrl,
     vendorId: f.vendorId,
     tags: f.tags ?? {},

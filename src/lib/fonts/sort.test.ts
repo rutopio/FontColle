@@ -92,6 +92,59 @@ describe("sortFonts, date added", () => {
   });
 });
 
+describe("sortFonts, the two update dates", () => {
+  // Real shapes from the catalog: the two signals disagree in both directions,
+  // so neither sort may be derived from the other.
+  const fonts = [
+    // author active, Google has not repackaged since 2015
+    font({
+      name: "Donegal",
+      upstreamHeadDate: "2026-07-20",
+      gfTtfCommitDate: "2015-03-06",
+    }),
+    // author stopped in 2017, Google rebuilt it in 2021
+    font({
+      name: "Comfortaa",
+      upstreamHeadDate: "2017-11-08",
+      gfTtfCommitDate: "2021-08-26",
+    }),
+    // both agree: genuinely finished
+    font({
+      name: "Alegreya",
+      upstreamHeadDate: "2020-10-07",
+      gfTtfCommitDate: "2021-01-08",
+    }),
+    font({ name: "None", upstreamHeadDate: null, gfTtfCommitDate: null }),
+  ];
+
+  it("updated-newest ranks by the upstream head", () => {
+    expect(sortedNames(fonts, "updated-newest")).toEqual([
+      "Donegal",
+      "Alegreya",
+      "Comfortaa",
+      "None",
+    ]);
+  });
+
+  it("gfupdated-newest ranks by the packaged font, a different order", () => {
+    expect(sortedNames(fonts, "gfupdated-newest")).toEqual([
+      "Comfortaa",
+      "Alegreya",
+      "Donegal",
+      "None",
+    ]);
+  });
+
+  it("gfupdated-oldest reverses it, missing still last", () => {
+    expect(sortedNames(fonts, "gfupdated-oldest")).toEqual([
+      "Donegal",
+      "Alegreya",
+      "Comfortaa",
+      "None",
+    ]);
+  });
+});
+
 describe("sortFonts, popularity and trending", () => {
   const fonts = [
     font({ name: "C", popularityRank: 3, trendingRank: 1 }),

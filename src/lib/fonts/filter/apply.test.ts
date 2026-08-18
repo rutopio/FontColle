@@ -48,6 +48,7 @@ function font(over: Partial<FontRecord> = {}): FontRecord {
     upstreamArchived: null,
     upstreamRepoKey: null,
     upstreamNewestTag: null,
+    gfTtfCommitDate: null,
     versionHistory: [],
     specimen: null,
     about: null,

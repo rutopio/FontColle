@@ -13,6 +13,8 @@ export type SortKey =
   | "date-oldest"
   | "updated-newest"
   | "updated-oldest"
+  | "gfupdated-newest"
+  | "gfupdated-oldest"
   | "glyphs-most"
   | "glyphs-fewest"
   | "axes-most"
@@ -55,53 +57,60 @@ export const SORT_GROUPS: SortGroup[] = [
     descLabel: "Z → A",
   },
   {
-    group: "Designer",
+    group: "Designer Name",
     asc: "creator-asc",
     desc: "creator-desc",
     ascLabel: "A → Z",
     descLabel: "Z → A",
   },
   {
-    group: "Added to GF",
-    asc: "date-newest",
-    desc: "date-oldest",
-    ascLabel: "Newest additions",
-    descLabel: "Oldest additions",
+    group: "Instance count",
+    asc: "instances-most",
+    desc: "instances-fewest",
+    ascLabel: "Most",
+    descLabel: "Fewest",
   },
   {
-    group: "Last updated",
-    asc: "updated-newest",
-    desc: "updated-oldest",
-    ascLabel: "Most recently updated",
-    descLabel: "Least recently updated",
-  },
-  {
-    group: "Glyphs",
+    group: "Glyph count",
     asc: "glyphs-most",
     desc: "glyphs-fewest",
     ascLabel: "Most",
     descLabel: "Fewest",
   },
   {
-    group: "Axes",
+    group: "Axis count",
     asc: "axes-most",
     desc: "axes-fewest",
     ascLabel: "Most",
     descLabel: "Fewest",
   },
   {
-    group: "Features",
+    group: "Feature count",
     asc: "features-most",
     desc: "features-fewest",
     ascLabel: "Most",
     descLabel: "Fewest",
   },
   {
-    group: "Instances",
-    asc: "instances-most",
-    desc: "instances-fewest",
-    ascLabel: "Most",
-    descLabel: "Fewest",
+    group: "GF Added",
+    asc: "date-newest",
+    desc: "date-oldest",
+    ascLabel: "Newest additions",
+    descLabel: "Oldest additions",
+  },
+  {
+    group: "GF Updated",
+    asc: "gfupdated-newest",
+    desc: "gfupdated-oldest",
+    ascLabel: "Most recently updated",
+    descLabel: "Least recently updated",
+  },
+  {
+    group: "Upstream Updated",
+    asc: "updated-newest",
+    desc: "updated-oldest",
+    ascLabel: "Most recently updated",
+    descLabel: "Least recently updated",
   },
 ];
 
@@ -143,12 +152,21 @@ const dateCmp = (a: FontRecord, b: FontRecord, newest: boolean) =>
   isoCmp(a.dateAdded, b.dateAdded, newest);
 
 /**
- * "Last updated" — the family's own upstream default-branch head. NOT
+ * "Upstream Updated" — the family's own upstream default-branch head. NOT
  * lastModifiedApi, which is Google's batch re-serving date and collapses the
  * whole catalog onto 57 distinct values.
  */
 const updatedCmp = (a: FontRecord, b: FontRecord, newest: boolean) =>
   isoCmp(a.upstreamHeadDate, b.upstreamHeadDate, newest);
+
+/**
+ * "GF Updated" — newest commit touching a font file in the family's
+ * google/fonts directory, i.e. how new the file Google serves is. A separate
+ * question from updatedCmp above, not a correction of it: an author can ship
+ * while Google lags, and Google can repackage a font its author abandoned.
+ */
+const gfUpdatedCmp = (a: FontRecord, b: FontRecord, newest: boolean) =>
+  isoCmp(a.gfTtfCommitDate, b.gfTtfCommitDate, newest);
 
 export function sortFonts(fonts: FontRecord[], key: SortKey): FontRecord[] {
   const out = [...fonts];
@@ -187,6 +205,10 @@ export function sortFonts(fonts: FontRecord[], key: SortKey): FontRecord[] {
       return out.sort((a, b) => updatedCmp(a, b, true) || byName(a, b));
     case "updated-oldest":
       return out.sort((a, b) => updatedCmp(a, b, false) || byName(a, b));
+    case "gfupdated-newest":
+      return out.sort((a, b) => gfUpdatedCmp(a, b, true) || byName(a, b));
+    case "gfupdated-oldest":
+      return out.sort((a, b) => gfUpdatedCmp(a, b, false) || byName(a, b));
     case "glyphs-most":
       return out.sort(
         (a, b) => numCmp(a.glyphCount, b.glyphCount, true) || byName(a, b)

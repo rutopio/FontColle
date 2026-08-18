@@ -74,6 +74,19 @@ export interface FontRecord {
   upstreamArchived: boolean | null;
   upstreamRepoKey: string | null;
   upstreamNewestTag: string | null;
+  /**
+   * Newest commit touching a .ttf/.otf inside this family's google/fonts
+   * directory — how new the file Google actually serves is. Orthogonal to
+   * `upstreamHeadDate` (the author's own repo), and the two disagree in both
+   * directions: Donegal One's upstream moved in 2026 while its packaged font
+   * dates to 2015, and Comfortaa's author stopped in 2017 while Google
+   * repackaged it in 2021. Deliberately scoped to the font FILES: the
+   * directory's own head is usually Google metadata housekeeping (Alegreya's
+   * is a foundry rename sitting on the repo-wide upstream_info.md campaign).
+   * Null for the 8 apiOnly families, which have no directory there.
+   * See scripts/harvester/backfill_gf_ttf_date.py.
+   */
+  gfTtfCommitDate: string | null;
   versionHistory?: { version: string; date: string }[];
   specimen: string | null;
   specimenTiers?: string[] | null;

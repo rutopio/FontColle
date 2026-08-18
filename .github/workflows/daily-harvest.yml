@@ -275,6 +275,17 @@ jobs:
             ids=$(paste -sd, scripts/harvester/og_ids.txt)
             python3 scripts/harvester/backfill_license.py --ids="$ids" 2>&1 | tee -a update.log
             python3 scripts/harvester/backfill_version_history.py --ids="$ids" 2>&1 | tee -a update.log
+            # gfTtfCommitDate: newest commit touching a font file in the
+            # family's google/fonts directory. Same per-family REST cost model
+            # as the two above (~2 calls each), so it belongs in this --ids
+            # scoped step rather than the whole-catalog upstream sweep. Scoping
+            # by og_ids.txt IS sound here, unlike for upstreamHeadDate: a new
+            # TTF landing in google/fonts is normally followed by Google
+            # re-serving the family, so the lastModifiedApi diff that built
+            # these ids does fire (Scheherazade New: TTF 2026-04-23 ->
+            # lastModifiedApi 2026-05-13). The residual ~3-week lag
+            # self-corrects on a later run.
+            python3 scripts/harvester/backfill_gf_ttf_date.py --ids="$ids" 2>&1 | tee -a update.log
           else
             echo "no families re-harvested; repo-derived fields unchanged"
           fi

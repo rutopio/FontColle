@@ -95,9 +95,16 @@ export function Detail({
       badge: versionOnDate(versionHistory, font.dateAdded) ?? undefined,
     },
     font.upstreamHeadDate && {
-      label: "Last updated",
+      label: "Upstream Updated",
       value: formatDate(font.upstreamHeadDate),
       badge: font.upstreamArchived ? "Archived" : undefined,
+    },
+    // Shown alongside the upstream date on purpose: where the two disagree, the
+    // gap is the point (the author shipped and Google has not repackaged, or
+    // Google rebuilt a font its author left years ago).
+    font.gfTtfCommitDate && {
+      label: "GF Updated",
+      value: formatDate(font.gfTtfCommitDate),
     },
     font.modifiedMs != null &&
       font.modifiedMs > 0 && {

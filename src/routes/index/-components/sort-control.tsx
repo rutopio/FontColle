@@ -4,7 +4,7 @@ import {
   SortAscendingIcon,
   SortDescendingIcon,
 } from "@phosphor-icons/react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   Select,
@@ -67,6 +67,32 @@ export function SortControl({
   const { group, asc } = sortGroupOf(sort);
   const mobile = useIsMobile();
 
+  // The Select popup renders in a portal, so it cannot inherit a variable set
+  // on this wrapper. Publish the control's measured width on :root instead and
+  // let the popup read it, so its right edge tracks the direction button's
+  // through font-size and zoom changes rather than a hardcoded sum.
+  // Two SortControls mount at once (the layout renders a desktop and a mobile
+  // copy, one of them display:none), so a zero width means "this is the hidden
+  // one" and must not overwrite the visible one's measurement.
+  const wrapRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const publish = () => {
+      const w = el.getBoundingClientRect().width;
+      if (w > 0) {
+        document.documentElement.style.setProperty(
+          "--sort-control-w",
+          `${w}px`
+        );
+      }
+    };
+    publish();
+    const ro = new ResizeObserver(publish);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   const onRelevanceNow = relevance && sortedByRelevance;
   const directionless = onRelevanceNow || isDirectionless(group);
   const dirLabel = asc ? group.ascLabel : (group.descLabel ?? group.ascLabel);
@@ -91,7 +117,10 @@ export function SortControl({
   };
 
   return (
-    <div className="flex h-9 items-center rounded-lg border border-input bg-background dark:bg-input/30">
+    <div
+      ref={wrapRef}
+      className="flex h-9 items-center rounded-lg border border-input bg-background dark:bg-input/30"
+    >
       {mobile ? (
         <GroupDrawer
           group={current}
@@ -103,12 +132,21 @@ export function SortControl({
         <Select value={current} onValueChange={selectGroup}>
           <SelectTrigger
             variant="borderless"
-            className="h-9 min-w-36 rounded-none rounded-l-md focus-visible:ring-0"
+            className="h-9 min-w-48 rounded-none rounded-l-md focus-visible:ring-0"
             aria-label="Sort by"
           />
           {/* Every sort group fits at once — drop the shared 300px cap and
-              let only the viewport limit the popup. */}
-          <SelectContent className="max-h-[var(--available-height)]">
+              let only the viewport limit the popup.
+              The popup anchors to the trigger, which is only the left segment
+              of this control, so by default it stops short of the direction
+              button and the two read as separate widgets. Pinning its width to
+              the whole control lines the right edges up, so trigger, direction
+              button and popup read as one selector. Measured rather than
+              derived from the class names: the gap is the divider plus the
+              button plus the wrapper's own borders, which a hardcoded sum gets
+              subtly wrong. The -ml-px cancels the wrapper's left border: the
+              popup anchors to the trigger's content box, one pixel inside it. */}
+          <SelectContent className="-ml-px max-h-[var(--available-height)] w-[var(--sort-control-w)]">
             {groups.map((g, i) => (
               <SelectItem key={g} index={i} value={g}>
                 {g}
