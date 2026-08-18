@@ -4,6 +4,7 @@ import {
   CLASSIFICATION_SECTIONS,
   classificationGroupOf,
   type FilterState,
+  FLAG_LABELS,
   INSTANCE_BUCKETS,
   ITALIC_LABELS,
   instanceBucketOf,
@@ -11,6 +12,7 @@ import {
   type ModeKey,
   matchMode,
   REPO_HOST_LABELS,
+  REPO_STATUS_LABELS,
   SPACING_LABELS,
 } from "@/lib/fonts/filter";
 import { languageLabel, scriptLabel, vendorLabel } from "@/lib/fonts/labels";
@@ -85,9 +87,19 @@ export function describeActiveFilters(f: FilterState): FilterChip[] {
   for (const v of f.designers) push(`dsr:${v}`, "Designer", v, "designers", v);
   for (const v of f.vendors)
     push(`vnd:${v}`, "Vendor", vendorLabel(v), "vendors", v);
+  for (const v of f.source)
+    push(`source:${v}`, "Noto Family", FLAG_LABELS[v] ?? v, "source", v);
   for (const v of f.license) push(`lic:${v}`, "License", v, "license", v);
   for (const v of f.repoHosts)
     push(`repo:${v}`, "Repository", REPO_HOST_LABELS[v] ?? v, "repoHosts", v);
+  for (const v of f.repoStatus)
+    push(
+      `repostatus:${v}`,
+      "Repo status",
+      REPO_STATUS_LABELS[v] ?? v,
+      "repoStatus",
+      v
+    );
   for (const v of f.activity)
     push(`act:${v}`, "Last updated", ACTIVITY_LABELS[v] ?? v, "activity", v);
   for (const v of f.italic)
