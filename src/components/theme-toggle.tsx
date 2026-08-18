@@ -25,9 +25,7 @@ export function ThemeToggle({
   const toggle = () => {
     const next = !isDark;
     document.documentElement.classList.toggle("dark", next);
-    // Keep browser chrome in step with the page. themeScript sets this on load;
-    // without the same update here the chrome keeps the old colour until the
-    // next reload.
+    // Sync theme-color meta so browser chrome matches the page.
     document
       .querySelector('meta[name="theme-color"]')
       ?.setAttribute("content", next ? THEME_COLOR_DARK : THEME_COLOR_LIGHT);

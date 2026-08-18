@@ -50,7 +50,6 @@ const STYLE_SUBGROUPS = [
   pillKeys: Array.from({ length: sub.count }, (_, i) => `pill:${sub.id}:${i}`),
 }));
 
-// Inert real-sized controls so the header doesn't shift when the catalog loads.
 const PENDING_SORT = () => {};
 const EMPTY_SUGGESTIONS: SearchSuggestion[] = [];
 
@@ -75,7 +74,6 @@ const HEADER_SKELETON = (
       <div className="flex-1">
         <div className="h-5 w-20 animate-pulse rounded bg-muted" />
       </div>
-      {/* `contents` keeps flex layout; children dim themselves (opacity ignores contents). */}
       <div inert className="contents">
         <div className="opacity-60 md:hidden">
           <SortControl sort={DEFAULT_SORT} onChange={PENDING_SORT} />
@@ -110,7 +108,6 @@ const HEADER_SKELETON = (
 function PendingRail() {
   return (
     <div inert className="flex flex-col gap-1 opacity-60">
-      {/* Mirrors the real rail's layout so nothing shifts when it swaps in. */}
       <PreviewToggle active onToggle={NOOP_TOGGLE} />
       <Separator className="my-1" />
       <FilterRail
@@ -167,8 +164,6 @@ const SIDEBAR_SKELETON = (
           Reset
         </div>
       </div>
-      {/* Mirrors SegmentedPills: the same bordered row, so the 1px border adds
-          the same 2px as it does once the real pills render. */}
       <div className="flex rounded-md border">
         {SPACING_PILLS.map((pill, i) => (
           <div
@@ -225,7 +220,6 @@ export function ListPending() {
       header={HEADER_SKELETON}
     >
       <Column footer={<PreviewBar />}>
-        {/* SSR picks grid vs row via data-view on <html>. */}
         <div className="pending-grid-only flex-1">
           <SkeletonGrid view="grid" />
         </div>

@@ -36,8 +36,6 @@ export function ActiveFilterChips({
   const groups = groupActiveFilters(filter);
   const query = filter.query.trim();
   const { text: previewText, coverOnly, setCoverOnly } = usePreview();
-  // The coverage chip stands on its own: it shows whenever there is preview
-  // text, even with no filter or search active.
   if (!(hasActiveFilterChips(filter) || previewText.trim())) return null;
   return (
     <div
@@ -82,9 +80,6 @@ export function ActiveFilterChips({
             <XIcon className="ml-auto size-3 shrink-0 opacity-60" />
           </motion.button>
         ))}
-        {/* The coverage filter reads as a condition on the list, so it sits
-            with the other chips — but it toggles between two states rather
-            than being removed, which is why it carries no ✕. */}
         {previewText.trim() && (
           <motion.button
             key="__coverage__"

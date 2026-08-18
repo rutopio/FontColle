@@ -2,14 +2,6 @@ import { FadersHorizontalIcon } from "@phosphor-icons/react";
 import { RAIL_BTN, RAIL_BTN_OFF, RAIL_BTN_ON } from "@/components/rail-button";
 import { cn } from "@/lib/utils";
 
-/**
- * Shows/hides the pinned preview size + leading controls above the filters.
- *
- * Deliberately NOT part of FilterRail: those buttons pick which filter group
- * the sidebar shows and share one sliding indicator, whereas this is an
- * independent on/off that owns its own surface. Same reason PresetToggle sits
- * outside the rail.
- */
 export function PreviewToggle({
   active,
   onToggle,

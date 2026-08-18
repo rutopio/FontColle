@@ -137,11 +137,9 @@ export function BlockGrid({
     if (popRef.current) popRef.current.style.display = "none";
   };
 
-  /* Shared hover highlight slides between cells; skips empty/missing glyphs. */
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
   const sessionRef = useRef(0);
 
-  /* Row top/size from virtualizer (cellSize estimate drifts over many rows). */
   const hoverRow =
     hoverIdx == null
       ? null
@@ -296,7 +294,7 @@ export function BlockGrid({
         btn.focus();
         return;
       }
-      // Virtualizer may not have rendered the cell yet — scroll then poll.
+      // Cell may not be rendered yet; scroll then poll.
       cancelAnimationFrame(pendingFocusRafRef.current);
       let tries = 0;
       const tick = () => {
@@ -399,7 +397,6 @@ export function BlockGrid({
           {hoverRect && (
             <motion.div
               key={sessionRef.current}
-              /* Inset ring above opaque cells — fill would hide glyph text. */
               className="pointer-events-none absolute z-20 rounded-lg ring-2 ring-accent ring-inset"
               initial={{ opacity: 0, ...hoverRect }}
               animate={{ opacity: 1, ...hoverRect }}

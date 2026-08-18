@@ -17,9 +17,7 @@ describe("previewFontFamily", () => {
     );
   });
 
-  /* The fallback tracks the toggle alone. Deriving it from load state made a
-     font flip Blank -> NotDef once loading gave up, boxing glyphs the user had
-     asked to keep hidden. */
+  /* Fallback tracks the toggle alone, not load state. */
   it("does not depend on load state", () => {
     expect(previewFontFamily("Inter")).toBe(previewFontFamily("Inter"));
     expect(previewFontFamily("Inter", true)).toBe(
@@ -39,17 +37,11 @@ describe("previewFontFamily", () => {
   });
 });
 
-/** Minimal document.fonts stand-in: the subscription logic only needs check(),
- *  load() and the loadingdone event, so no DOM environment is required. */
+/** Minimal document.fonts stub for subscription tests. */
 function stubFontFaceSet() {
   const ready = new Set<string>();
   const listeners = new Set<() => void>();
-  // Registered @font-face rules, which the loader requires before it trusts
-  // check() — see hasFaces().
   const faces = new Set<{ family: string }>();
-  // Faces are per unicode-range, as a css2 stylesheet serves them, so readiness
-  // is tracked per (probe, character): check(probe, text) is true only when
-  // every character's face has arrived.
   const readyChars = new Map<string, Set<string>>();
   const check = vi.fn((probe: string, text = " ") => {
     if (ready.has(probe)) return true;
@@ -72,26 +64,21 @@ function stubFontFaceSet() {
     check,
     load,
     listenerCount: () => listeners.size,
-    /** The family's @font-face rules have registered but not yet downloaded —
-     *  what a css2 <link> gives you before the file arrives. */
+    /** Register a face without marking it loaded. */
     register(name: string) {
       faces.add({ family: name });
     },
-    /** The same, as WebKit reports it: css2 writes `font-family: 'Noto Sans'`
-     *  and Safari reads the descriptor back with the quotes still on. */
+    /** Register with Safari-style quoted name. */
     registerQuoted(name: string) {
       faces.add({ family: `'${name}'` });
     },
-    /** Mark one weight of a family loaded and fire loadingdone, as the browser
-     *  would. Weight-specific: check() is asked about the exact face a row
-     *  renders, so finishing 400 must not report 700 as ready. Registers the
-     *  face too, since a loaded family necessarily has one. */
+    /** Mark one weight loaded and fire loadingdone. */
     finish(name: string, weight = 400) {
       faces.add({ family: name });
       ready.add(`${weight} 16px "${name}"`);
       for (const cb of [...listeners]) cb();
     },
-    /** One unicode-range subset of a family arrives, covering only `chars`. */
+    /** Mark one unicode-range subset loaded. */
     finishSubset(name: string, chars: string, weight = 400) {
       faces.add({ family: name });
       const probe = `${weight} 16px "${name}"`;
@@ -185,10 +172,7 @@ describe("font-family subscriptions", () => {
     expect(onInter).not.toHaveBeenCalled();
   });
 
-  /* Safari kept the quotes css2 writes around multi-word families, so every
-     face.family comparison missed and hasFaces() reported none. That gated the
-     whole readiness path — and the gap-fill pass with it, so characters the
-     default subsets omit never got refetched. */
+  /* Safari keeps quotes on face.family from css2 stylesheets. */
   it("recognises a family whose faces report a quoted name", () => {
     const onNoto = vi.fn();
     env.check.mockReturnValue(true);
@@ -199,26 +183,18 @@ describe("font-family subscriptions", () => {
     expect(__loaderInternals.isReady("Noto Sans")).toBe(true);
   });
 
-  /* The NotDef flash. check() means "renderable without loading anything new",
-     which is true for a family with no @font-face at all — it resolves to a
-     system font. Mid-fling a row subscribes before its css2 <link> registers,
-     so the row went ready instantly, dropped the skeleton, and sat on the
-     NotDef chain while the real font had not started downloading. */
+  /* No @font-face registered yet -> check() would lie; must stay pending. */
   it("stays pending for a family whose faces have not registered yet", () => {
     const onInter = vi.fn();
-    // No register()/finish(): nothing for this family exists in document.fonts,
-    // and the bare check() stub would still have to be consulted.
     env.check.mockReturnValue(true);
 
     __loaderInternals.subscribeFamily("Inter", 400, onInter);
 
-    // Synchronously still pending — the retry has not had a chance to run.
     expect(__loaderInternals.isReady("Inter")).toBe(false);
     expect(onInter).not.toHaveBeenCalled();
   });
 
-  /* A skeleton that never resolves is worse than a brief fallback, so the
-     chase gives up after a deadline and lets the text through. */
+  /* Gives up after a deadline rather than blocking text forever. */
   it("gives up and shows text if the face never registers", async () => {
     vi.useFakeTimers();
     try {
@@ -244,7 +220,6 @@ describe("font-family subscriptions", () => {
       __loaderInternals.subscribeFamily("Inter", 400, onInter);
       expect(__loaderInternals.isReady("Inter")).toBe(false);
 
-      // The css2 <link> lands a moment later, as it does mid-fling.
       await vi.advanceTimersByTimeAsync(150);
       env.register("Inter");
       env.check.mockImplementation(
@@ -272,9 +247,7 @@ describe("font-family subscriptions", () => {
     expect(onInter).toHaveBeenCalledTimes(1);
   });
 
-  /* A row needing 700 must not go ready because an earlier row's 400 arrived.
-     It would swap its skeleton for text the real face cannot paint yet, with
-     the chain already on NotDef. */
+  /* 400 arriving must not mark 700 as ready. */
   it("keeps a weight pending when a different weight of the same family loads", () => {
     const onRegular = vi.fn();
     const onBold = vi.fn();
@@ -294,15 +267,11 @@ describe("font-family subscriptions", () => {
     expect(__loaderInternals.isReady("Inter", 700)).toBe(true);
   });
 
-  /* The half-a-sentence NotDef flash. A css2 family is split across many
-     unicode-range faces; probing with the default single space answered for the
-     latin face alone, so the row went ready and flipped its chain to NotDef
-     while the face covering the rest of the sentence was still downloading. */
+  /* Must wait for all unicode-range subsets the text needs. */
   it("stays pending while a subset the text needs is still loading", () => {
     const onInter = vi.fn();
     __loaderInternals.subscribeFamily("Inter", 400, onInter, "aé");
 
-    // Latin lands; the face carrying "é" has not.
     env.finishSubset("Inter", "a");
     expect(__loaderInternals.isReady("Inter", 400, "aé")).toBe(false);
     expect(onInter).not.toHaveBeenCalled();
@@ -331,13 +300,9 @@ describe("font-family subscriptions", () => {
     expect(onCjk).not.toHaveBeenCalled();
   });
 
-  /* A font that genuinely lacks a character has no face to wait for, so
-     check() returns true and the chain resolves to NotDef — the box is the
-     honest answer, and must not be held back as if it were still loading. */
+  /* Missing characters resolve to NotDef immediately, not held as loading. */
   it("does not wait forever on a character no face covers", () => {
     const onInter = vi.fn();
-    // The stub reports the whole family loaded, matching check()'s behaviour
-    // when nothing in the text maps to an unloaded face.
     env.finish("Inter");
     __loaderInternals.subscribeFamily("Inter", 400, onInter, "a\u{10FFFF}");
 

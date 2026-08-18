@@ -28,8 +28,7 @@ export type DetailTab =
   | "designer"
   | "license";
 
-// slug is typed against TabSlug so the rail and the persisted-tab vocabulary
-// in lib/fonts/last-tab.ts cannot drift apart.
+// slug typed against TabSlug to stay in sync with last-tab.ts.
 export const TABS: {
   id: DetailTab;
   slug: TabSlug;

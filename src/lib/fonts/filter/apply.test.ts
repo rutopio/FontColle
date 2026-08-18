@@ -369,9 +369,6 @@ describe("applyFilters, noto flag, italic, hinting, monospace-metric", () => {
     ]);
   });
   it("italic and slant are independent traits, not a radio", () => {
-    // Google ships italics as a separate file, so no family exposes an `ital`
-    // axis -- italic is read off the named instances. A family can hold both
-    // traits (Roboto Flex, Recursive), which a radio could not express.
     const slnt = {
       tag: "slnt",
       name: null,
@@ -393,7 +390,6 @@ describe("applyFilters, noto flag, italic, hinting, monospace-metric", () => {
       "SlantOnly",
       "Both",
     ]);
-    // Selecting both pills is a union, so "Both" is listed once, not twice.
     expect(
       names(applyFilters(cohort, filter({ italic: ["italic", "slant"] })))
     ).toEqual(["ItalicOnly", "SlantOnly", "Both"]);
@@ -518,7 +514,6 @@ describe("fontActivity", () => {
     new Date(Date.now() - n * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
   it("reads the upstream head, not the build stamp", () => {
-    // Alegreya's shape: Google rebuilt it recently, but master is years cold.
     const f = font({
       modifiedMs: monthsAgo(1),
       upstreamHeadDate: daysAgoIso(365 * 5),
@@ -559,8 +554,6 @@ describe("fontActivity", () => {
   });
 
   it("reports a family with no upstream repo as unknown, never as stale", () => {
-    // No fallback to modifiedMs: a fresh build stamp must not imply upstream
-    // activity the family does not have.
     expect(
       fontActivity(font({ upstreamHeadDate: null, modifiedMs: monthsAgo(1) }))
     ).toBe("unknown");
@@ -580,8 +573,6 @@ describe("fontSpacing", () => {
   });
 
   it("keeps a mono face's letterform tag orthogonal to its spacing", () => {
-    // Roboto Mono is Sans AND mono in Google's own tag data, so it sits on the
-    // Sans card while the Spacing filter still reports it as monospaced.
     const roboto = font({
       category: "Sans",
       tags: { "/Monospace/Monospace": 100, "/Sans/Grotesque": 100 },
@@ -597,12 +588,10 @@ describe("fontSpacing", () => {
   });
 
   it("falls back to the API category when the tags CSV is silent", () => {
-    // Iosevka Charon: no tag row, but the API knows it is monospace.
     expect(fontSpacing(font({ apiCategory: "MONOSPACE" }))).toBe("mono");
   });
 
   it("ignores isFixedPitch, which claims non-mono display faces", () => {
-    // Press Start 2P / Rubik Mono One set the post-table flag but are not mono.
     expect(fontSpacing(font({ isMonospace: true }))).toBe("proportional");
   });
 

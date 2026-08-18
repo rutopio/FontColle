@@ -94,7 +94,6 @@ export function Tester({
         block.append($createTextNode(line));
         root.append(block);
       }
-      // selectStart(), not focus(): avoid scroll-into-view and mobile keyboard.
       root.getFirstChild()?.selectStart();
     },
   };
@@ -117,8 +116,6 @@ const DEFAULT_SIZE: Record<BlockType, number> = {
   normal: 18,
 };
 
-// Percentage of font-size, same units and range as the catalog's Preview
-// Leading control. Divided by 100 for the unitless CSS line-height.
 const LEADING_MIN = 70;
 const LEADING_MAX = 250;
 const LEADING_STEP = 5;
@@ -169,7 +166,6 @@ function alignedAs(
   return null;
 }
 
-// Snap to nearest shipped weight to avoid browser synthesis.
 function headingInstance(
   instances: FontInstance[],
   tag: "h1" | "h2" | "h3"
@@ -267,7 +263,7 @@ function TesterInner({
     );
   }, [editor, syncFromSelection]);
 
-  // DOM attribute avoids polluting Lexical undo history.
+  // DOM attribute instead of Lexical state to avoid polluting undo history.
   useEffect(() => {
     const marked = activeKeys
       .map((key) => editor.getElementByKey(key))
@@ -278,7 +274,6 @@ function TesterInner({
     };
   }, [editor, activeKeys]);
 
-  // Rebuild full style from coords so one axis change never drops others (incl. italic).
   const setBlockAxis = useCallback(
     (tag: string, value: number) => {
       editor.update(() => {
@@ -378,8 +373,6 @@ function TesterInner({
 
         <div className="flex items-center gap-2 text-xs">
           <span>Size</span>
-          {/* Slider's own wrapper is w-full, so the width has to be set here;
-              className lands on the inner track and would not constrain it. */}
           <div className="w-32 shrink-0">
             <Slider
               label="Font size"
@@ -389,8 +382,6 @@ function TesterInner({
               onChange={(v) => setSize(v as number)}
               showValue={false}
               tooltipSide="bottom"
-              // Slider reserves mb-2 for the hover tooltip, which sits outside
-              // the control and pushes the track above the row's centre line.
               className="mb-0"
             />
           </div>
@@ -420,8 +411,6 @@ function TesterInner({
               onChange={(v) => setLeading(v as number)}
               showValue={false}
               tooltipSide="bottom"
-              // Slider reserves mb-2 for the hover tooltip, which sits outside
-              // the control and pushes the track above the row's centre line.
               className="mb-0"
             />
           </div>

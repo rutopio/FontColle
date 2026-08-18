@@ -15,10 +15,7 @@ function scrollParent(el: HTMLElement) {
   return null;
 }
 
-/**
- * Keeps a toggle button visually still while the block above it collapses.
- * Without this the content below jumps up by the collapsed height.
- */
+/** Keeps a toggle button still while the block above it collapses. */
 export function useCollapseAnchor() {
   const ref = useRef<HTMLButtonElement>(null);
   const raf = useRef(0);

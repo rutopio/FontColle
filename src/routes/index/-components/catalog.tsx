@@ -55,7 +55,7 @@ import { Kbd } from "@/components/ui/kbd";
 import { Separator } from "@/components/ui/separator";
 import { useListScrollRestore } from "@/hooks/use-list-scroll-restore";
 import { useLocalStorageState } from "@/hooks/use-local-storage-state";
-import { useFilter } from "@/lib/filter/context";
+import { useFilterLayout } from "@/lib/filter/context";
 import { useFavorites } from "@/lib/fonts/favorites";
 import {
   activeFilterCount,
@@ -80,7 +80,6 @@ import { VIEW_TABS_WIDTH, ViewTabs } from "./view-tabs";
 
 const Route = getRouteApi("/");
 
-// Excludes text query so typing doesn't trigger fade transitions.
 function filterKey(f: FilterState): string {
   const { q: _q, ...rest } = filterToSearch(f);
   return JSON.stringify(rest);
@@ -100,7 +99,7 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
   } = usePreview();
   const { favorites, toggle } = useFavorites();
 
-  const { listScrollY, lastGroup } = useFilter();
+  const { listScrollY, lastGroup } = useFilterLayout();
   const facetIndex = useMemo(() => buildFacetIndex(fonts), [fonts]);
   const knownIds = useMemo(() => new Set(fonts.map((f) => f.id)), [fonts]);
 
@@ -143,7 +142,6 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
     });
   };
 
-  // Survives route unmount via context ref.
   const [group, setGroupState] = useState<FilterGroupId>(
     () => lastGroup.current ?? DEFAULT_FILTER_GROUP
   );
@@ -167,16 +165,7 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
   const maxCols = clampCols(Number.parseInt(colsPref, 10));
   const [shownView, setShownView] = useState(view);
   const viewFading = view !== shownView;
-  /**
-   * Sort is a device preference, not part of the shared view, so it lives in
-   * localStorage rather than the URL — a copied link no longer carries the
-   * sender's ordering, and the choice survives a new tab.
-   *
-   * The empty string is a real value here, not "unset": it means sort by
-   * relevance, which is what an absent `?sort=` used to encode. Keeping it
-   * distinct from DEFAULT_SORT is what lets a query fall back to best-matches
-   * ordering while an explicit choice still wins.
-   */
+  // "" = relevance ordering; distinct from DEFAULT_SORT so a query keeps best-match order.
   const [sortPref, setSortPref] = useLocalStorageState(
     "font-fridge.sort",
     DEFAULT_SORT
@@ -212,7 +201,6 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
 
   const setSort = (next: SortKey) => setSortPref(next);
 
-  // "" is the stored form of relevance ordering; see sortPref above.
   const setRelevance = () => setSortPref("");
 
   const setView = (next: ViewMode) => setViewPref(next);
@@ -225,11 +213,6 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
     [navigate, search.fav]
   );
 
-  /**
-   * Esc clears every filter at once with nothing on screen to explain it —
-   * unlike the Reset button, which the user aimed at. Say what happened and
-   * offer the way back, since the conditions are otherwise unrecoverable.
-   */
   const resetFromKeyboard = useCallback(() => {
     const before = search;
     const { sort: _sort, fav: _fav, ...conditions } = before;
@@ -285,7 +268,6 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
   };
 
   const activeCount = activeFilterCount(filter);
-  // Preview text isn't a filter chip; distinguish coverage-empty from filter-empty.
   const coverageEmpty = results.length === 0 && coverageHid > 0 && !favOnly;
 
   const openFont = useCallback(
@@ -358,9 +340,6 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
               suggestions={searchSuggestions}
               onPick={openFont}
             />
-            {/* Sort appears beside the search box only from lg. The md row is
-                too tight for it, and the phone copy stops at md, so md trades
-                the control away to give the search box the width. */}
             <div className="hidden lg:block">
               <SortControl
                 sort={sort}

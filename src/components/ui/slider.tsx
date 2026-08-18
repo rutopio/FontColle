@@ -1,5 +1,3 @@
-"use client";
-
 import {
   forwardRef,
   useRef,
@@ -217,7 +215,7 @@ function ValueDisplay({
 
 
   const widestValue = isRange
-    ? `${label ? `${label}: ` : ""}${formatValue(max)} — ${formatValue(max)}`
+    ? `${label ? `${label}: ` : ""}${formatValue(max)} – ${formatValue(max)}`
     : `${label ? `${label}: ` : ""}${formatValue(max)}`;
 
   return (
@@ -246,7 +244,7 @@ function ValueDisplay({
         {isRange ? (
           <>
             {renderValue(0)}
-            <span className="mx-1 text-muted-foreground/50">—</span>
+            <span className="mx-1 text-muted-foreground/50">–</span>
             {renderValue(1)}
           </>
         ) : (
@@ -456,7 +454,6 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
       return () => ro.disconnect();
     }, [isRange, motionX0, motionX1]);
 
-    // Keyed on primitive string, not the array (which reallocates every render).
     const valuesKey = values.join(",");
     useEffect(() => {
       if (!initialSyncDone.current) return;
@@ -509,7 +506,7 @@ const Slider = forwardRef<HTMLDivElement, SliderProps>(
         const trackRect = trackEl.getBoundingClientRect();
         const layoutWidth = trackEl.offsetWidth;
         if (layoutWidth <= 0 || trackRect.width <= 0) return;
-        // Layout space, not visual — ancestor transform: scale() skews getBoundingClientRect.
+        // Layout space: scale() on ancestors skews getBoundingClientRect.
         const scale = trackRect.width / layoutWidth;
         const localX = (e.clientX - trackRect.left) / scale - THUMB_SIZE / 2;
         const clamped = Math.max(

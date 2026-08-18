@@ -93,22 +93,17 @@ describe("sortFonts, date added", () => {
 });
 
 describe("sortFonts, the two update dates", () => {
-  // Real shapes from the catalog: the two signals disagree in both directions,
-  // so neither sort may be derived from the other.
   const fonts = [
-    // author active, Google has not repackaged since 2015
     font({
       name: "Donegal",
       upstreamHeadDate: "2026-07-20",
       gfTtfCommitDate: "2015-03-06",
     }),
-    // author stopped in 2017, Google rebuilt it in 2021
     font({
       name: "Comfortaa",
       upstreamHeadDate: "2017-11-08",
       gfTtfCommitDate: "2021-08-26",
     }),
-    // both agree: genuinely finished
     font({
       name: "Alegreya",
       upstreamHeadDate: "2020-10-07",

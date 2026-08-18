@@ -24,7 +24,6 @@ import {
 } from "@/lib/preview/context";
 import { useBlockAxes } from "@/lib/tester/block-axes";
 
-// Re-exported for tester.tsx, which imports them from here.
 export { SIZE_MAX, SIZE_MIN, SIZE_PRESETS };
 
 const AXIS_PRESETS: Record<string, number[]> = {
@@ -107,7 +106,6 @@ export function DetailSidebar({
     (a) => axisState[a.tag] !== (a.default ?? a.min ?? 0)
   );
 
-  // Tester axes follow the selected block; other tabs use page-wide preview.
   const blockAxesCtx = useBlockAxes();
   const blockTarget = blockAxesCtx?.target ?? null;
   const axesDisabled = blockAxesCtx != null && blockTarget == null;

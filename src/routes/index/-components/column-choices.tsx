@@ -6,12 +6,6 @@ import { useProximityHover } from "@/hooks/use-proximity-hover";
 import { spring } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
-/**
- * The column cap list, matching the Select popup's proximity hover: the
- * highlight is one shared block that springs between rows as the pointer
- * approaches, rather than a per-row background that pops on and off. The
- * checked row keeps its own layer underneath so the two never fight.
- */
 export function ColumnChoices({
   current,
   onSelect,
@@ -29,7 +23,7 @@ export function ColumnChoices({
     sessionRef,
   } = useProximityHover(containerRef);
 
-  // COL_CHOICES is a readonly tuple of literals, so widen before searching.
+  // Widen readonly tuple for indexOf.
   const checkedIndex = (COL_CHOICES as readonly number[]).indexOf(current);
   const activeRect = activeIndex != null ? itemRects[activeIndex] : undefined;
   const checkedRect = useMemo(
@@ -40,9 +34,6 @@ export function ColumnChoices({
   return (
     <div
       ref={containerRef}
-      // The pointer handlers drive the shared highlight, so the wrapper needs a
-      // role. `menu` over `listbox`: the rows are real buttons that act on
-      // click, not options in a value set.
       role="menu"
       aria-label="Maximum columns"
       className="relative flex flex-col gap-0.5"
@@ -111,7 +102,6 @@ export function ColumnChoices({
               if ((e.target as HTMLElement).matches(":focus-visible"))
                 setActiveIndex(index);
             }}
-            // "Col." is a visual abbreviation; speech gets the word.
             aria-label={`Maximum ${n} ${n === 1 ? "column" : "columns"}`}
             className={cn(
               "relative z-10 flex h-8 items-center gap-2.5 rounded-md px-2.5 text-left text-sm outline-none transition-colors duration-80",

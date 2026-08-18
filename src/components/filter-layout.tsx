@@ -81,10 +81,7 @@ export function FilterLayout({
           <FilterRailColumn>
             {rail ? <RouteFade>{rail}</RouteFade> : null}
           </FilterRailColumn>
-          {/* Desktop only. Motion writes an inline `width`, which no class can
-              override, so the breakpoint is enforced via `display` instead —
-              otherwise SSR ships a 20rem panel that squeezes the content column
-              until hydration measures the viewport. */}
+          {/* Desktop only. Breakpoint via display, not width (motion overrides inline width). */}
           <AnimatePresence initial={false}>
             {sidebar && !isMobile ? (
               <motion.div
@@ -107,9 +104,7 @@ export function FilterLayout({
                 exit={{
                   width: 0,
                   opacity: 0,
-                  // Before the viewport resolves this exit is the phone
-                  // correcting a wrong desktop guess, not a user collapsing
-                  // the panel — snap it shut instead of sweeping.
+                  // Snap shut before viewport resolves (SSR correction, not user action).
                   transition: viewportKnown
                     ? {
                         duration: MOTION_S.slow,
@@ -148,9 +143,6 @@ function ColumnHeader({ children }: { children: React.ReactNode }) {
       >
         <LogoIcon className="size-7" />
       </Link>
-      {/* min-w-0: a flex item defaults to min-width:auto and refuses to shrink
-          below its content, so long header text (a font's designer list) blew
-          this row past the viewport and got clipped instead of fitting. */}
       <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3 md:flex-nowrap">
         {children}
       </div>
@@ -167,11 +159,7 @@ export function Column({
   scrollViewportRef,
 }: {
   subheader?: React.ReactNode;
-  /**
-   * Controls that sit above the list. Rendered outside the ScrollArea: its
-   * scroll-fade is a mask over the whole subtree, so anything inside dissolves
-   * as it enters the top fade band (see detail.tsx for the same constraint).
-   */
+  /** Rendered outside ScrollArea so it doesn't dissolve into the scroll-fade. */
   toolbar?: React.ReactNode;
   footer?: React.ReactNode;
   footerHidden?: boolean;
@@ -182,8 +170,6 @@ export function Column({
     <motion.footer
       initial={false}
       animate={
-        // "auto" so a wrapped multi-line preview field grows the footer
-        // instead of being clipped by a fixed height.
         footerHidden ? { height: 0, y: "100%" } : { height: "auto", y: "0%" }
       }
       transition={{ duration: MOTION_S.base, ease: EASE_OUT }}

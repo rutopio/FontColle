@@ -79,7 +79,6 @@ export const Route = createFileRoute("/$tab/$fontId")({
     if (!tabFromSlug(params.tab)) throw notFound();
     const font = await fetchFontById(params.fontId);
     if (!font) throw notFound();
-    // Precomputed at build time by scripts/gen-catalog.mjs.
     return { font, siblingsByDesigner: font.siblingsByDesigner ?? {} };
   },
   head: ({ loaderData, params }) => {
@@ -87,7 +86,6 @@ export const Route = createFileRoute("/$tab/$fontId")({
     const name = font?.name;
     if (!name || !font) return {};
     const description = detailDescription(font);
-    // Each tab is its own canonical URL (not all pointed at /instances/).
     const canonical = absoluteUrl(`/${params.tab}/${font.id}`);
     const ogImage = absoluteUrl(`/og/${font.id}.png`);
     return {
@@ -155,9 +153,6 @@ function DetailPage() {
       replace: true,
     });
 
-  // Remember the view the user ended on so the next font opens on it. Driven by
-  // the resolved tab, not by selectTab, so the mobile tab bar and deep links
-  // (which never call selectTab) are recorded too.
   const [, setLastTab] = useLastDetailTab();
   useEffect(() => {
     setLastTab(slugFromTab(tab));
@@ -204,7 +199,7 @@ function DetailPage() {
     setSearchMiss(false);
     setGlyphBlock(block.name);
     setHighlightCp(cp);
-    // WCAG 2.2.2: auto-retire the highlight after 3s.
+    // WCAG 2.2.2: auto-retire after 3s.
     clearTimeout(highlightTimerRef.current);
     highlightTimerRef.current = setTimeout(() => setHighlightCp(null), 3000);
     return true;
@@ -252,7 +247,6 @@ function DetailPage() {
       />
     );
 
-  // JSON-LD describes the family, not the active tab view.
   const familyUrl = absoluteUrl(`/instances/${font.id}`);
   const jsonLd = familyUrl
     ? JSON.stringify({

@@ -212,7 +212,7 @@ describe("searchToFilter reverse-direction edge cases", () => {
     expect(searchToFilter({ xheight: "abc" }).metrics).toEqual({});
   });
 
-  // Number("") is 0 — half-open ranges like "0.4-" used to decode to [0.4, 0].
+  // Number("") is 0, so half-open ranges like "0.4-" used to decode to [0.4, 0].
   it("drops a half-open metric range instead of mis-parsing it", () => {
     expect(searchToFilter({ xheight: "0.4-" }).metrics).toEqual({});
     expect(searchToFilter({ xheight: "-0.4" }).metrics).toEqual({});

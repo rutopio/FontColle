@@ -92,7 +92,7 @@ export function PresetSection({
   );
 }
 
-// Delete is a sibling — nested buttons are invalid and inherit row click.
+// Delete is a sibling; nested buttons are invalid and inherit row click.
 function PresetRow({
   preset,
   active,

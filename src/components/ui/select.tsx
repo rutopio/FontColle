@@ -1,5 +1,3 @@
-"use client";
-
 import {
     Children,
     forwardRef,
@@ -273,7 +271,7 @@ const SelectContent = forwardRef<HTMLDivElement, SelectContentProps>(
             return idx !== -1 ? idx : undefined;
         }, [open, value, items]);
 
-        // Fallback when rAF-driven onAnimationComplete stalls (background tab).
+        // Fallback unmount when rAF stalls (e.g. background tab).
         useEffect(() => {
             if (open) return;
             const id = setTimeout(
@@ -283,13 +281,11 @@ const SelectContent = forwardRef<HTMLDivElement, SelectContentProps>(
             return () => clearTimeout(id);
         }, [open, actionsRef]);
 
-        // Items stay registered while hidden; reopen needs an explicit remeasure.
         useEffect(() => {
             if (!open) return;
             remeasure();
         }, [open, remeasure]);
 
-        // Clear stale indices before exit tween finishes — Base UI keeps popup mounted.
         useEffect(() => {
             if (open) return;
             setActiveIndex(null);

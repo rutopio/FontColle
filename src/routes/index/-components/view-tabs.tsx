@@ -1,5 +1,5 @@
 import { GridFourIcon, ListIcon } from "@phosphor-icons/react";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { clampCols, DEFAULT_COLS, type ViewMode } from "@/components/font-grid";
 import {
   Popover,
@@ -8,17 +8,13 @@ import {
 } from "@/components/ui/popover";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useMountEffect } from "@/hooks/use-mount-effect";
 import { ColumnChoices } from "./column-choices";
 
 export const VIEW_TABS_WIDTH = "max-md:w-[4.375rem]"; // aligns Reset button width below md
 
 const TABS_LIST = `h-9 bg-accent/50 ${VIEW_TABS_WIDTH}`;
 
-/**
- * Hovering the Grid tab reveals its density choice, so the column cap costs no
- * extra chrome in the toolbar. Closing is delayed to survive the pointer
- * crossing the gap between trigger and popup.
- */
 const CLOSE_DELAY_MS = 120;
 
 export function ViewTabs({
@@ -45,18 +41,10 @@ export function ViewTabs({
     cancelClose();
     closeTimer.current = setTimeout(() => setOpen(false), CLOSE_DELAY_MS);
   };
-  // Drop a pending close if the toolbar unmounts mid-hover.
-  useEffect(
-    () => () => {
-      if (closeTimer.current) clearTimeout(closeTimer.current);
-    },
-    []
-  );
+  useMountEffect(() => () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+  });
 
-  // Density only applies to the grid, and below md the viewport already caps
-  // the grid at 1–2 columns — so the menu is desktop-only and grid-only. It is
-  // also hover-driven, which has no touch equivalent. The pending-list copies
-  // pass no handler and get plain tabs.
   const mobile = useIsMobile();
   const density = onColsChange != null && !mobile;
   const current = clampCols(cols ?? DEFAULT_COLS);
@@ -77,8 +65,6 @@ export function ViewTabs({
       <TabsList className={TABS_LIST}>
         {density ? (
           <Popover open={open && view === "grid"} onOpenChange={setOpen}>
-            {/* `render` keeps the Tabs trigger as the real element, so tab
-                selection and keyboard roving behaviour are untouched. */}
             <PopoverTrigger
               render={gridTrigger}
               onMouseEnter={() => {

@@ -4,7 +4,7 @@ import {
   SortAscendingIcon,
   SortDescendingIcon,
 } from "@phosphor-icons/react";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   Select,
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useMountEffect } from "@/hooks/use-mount-effect";
 import {
   isDirectionless,
   SORT_GROUPS,
@@ -24,28 +25,15 @@ import { cn } from "@/lib/utils";
 
 export const RELEVANCE_GROUP = "Relevance";
 
-/**
- * Groups whose everyday reading does not match what they actually sort by.
- * Appended to the toast description so the surprise is explained where it is
- * noticed, rather than in a tooltip the Select popup has no room for.
- */
 const SORT_NOTES: Record<string, string> = {
-  // Google's API ranks trending by growth relative to a family's own baseline,
-  // so obscure faces with a tiny download base outrank household names — the
-  // top of this list is Noto Sans Khudawadi, not Roboto.
+  // Google ranks by growth rate, not absolute downloads.
   Trending: "Google ranks by growth rate, so niche families can lead",
 };
 
-/**
- * The trigger only shows the group, and the direction lives in an icon — so
- * every change announces the resulting order: the title states what the list
- * is sorted by, the description spells out the direction. One shared id keeps
- * rapid changes replacing a single toast instead of stacking.
- */
 const announceSort = (group: string, direction?: string) => {
   const note = SORT_NOTES[group];
   const description = [direction, note].filter(Boolean).join(" · ");
-  toast.info(`Sorted by ${group}`, {
+  toast.info(`Sorted by ${group.replace(/^GF /, "Google Fonts ")}`, {
     description: description || undefined,
     id: "sort-mode",
   });
@@ -67,15 +55,9 @@ export function SortControl({
   const { group, asc } = sortGroupOf(sort);
   const mobile = useIsMobile();
 
-  // The Select popup renders in a portal, so it cannot inherit a variable set
-  // on this wrapper. Publish the control's measured width on :root instead and
-  // let the popup read it, so its right edge tracks the direction button's
-  // through font-size and zoom changes rather than a hardcoded sum.
-  // Two SortControls mount at once (the layout renders a desktop and a mobile
-  // copy, one of them display:none), so a zero width means "this is the hidden
-  // one" and must not overwrite the visible one's measurement.
+  // Publish measured width on :root so the portal-rendered popup can match it.
   const wrapRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
+  useMountEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
     const publish = () => {
@@ -91,7 +73,7 @@ export function SortControl({
     const ro = new ResizeObserver(publish);
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  });
 
   const onRelevanceNow = relevance && sortedByRelevance;
   const directionless = onRelevanceNow || isDirectionless(group);
@@ -110,7 +92,6 @@ export function SortControl({
     }
     const next = SORT_GROUPS.find((x) => x.group === g);
     if (!next) return;
-    // Keep the current direction when the new group also offers one.
     const keepDesc = asc ? undefined : next.desc;
     onChange(keepDesc ?? next.asc);
     announceSort(next.group, keepDesc ? next.descLabel : next.ascLabel);
@@ -135,7 +116,7 @@ export function SortControl({
             className="h-9 min-w-48 rounded-none rounded-l-md focus-visible:ring-0"
             aria-label="Sort by"
           />
-          {/* Every sort group fits at once — drop the shared 300px cap and
+          {/* Every sort group fits at once. Drop the shared 300px cap and
               let only the viewport limit the popup.
               The popup anchors to the trigger, which is only the left segment
               of this control, so by default it stops short of the direction

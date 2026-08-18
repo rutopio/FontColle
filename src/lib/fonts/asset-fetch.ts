@@ -1,11 +1,7 @@
 import { createIsomorphicFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 
-/**
- * Isomorphic fetch for static catalog assets. On the server, routes through the
- * Workers ASSETS binding to avoid an external HTTP hop; on the client, a plain
- * fetch against the same origin.
- */
+/** Server: ASSETS binding (no HTTP hop). Client: plain fetch. */
 export const assetFetch = createIsomorphicFn()
   .server(async (path: string, signal?: AbortSignal) => {
     const { env } = await import("cloudflare:workers");

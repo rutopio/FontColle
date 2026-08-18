@@ -12,15 +12,12 @@ const font = (name: string, popularityRank: number): FontRecord =>
     features: [],
   }) as unknown as FontRecord;
 
-// "Sans Beta" wins on relevance (same prefix tier, shorter name) but is the
-// least popular, so the two orders are guaranteed to disagree.
 const fonts = [
   font("Sans Alpha", 1),
   font("Sans Beta", 9),
   font("Gamma Sans", 5),
 ];
 
-// Mirrors the results useMemo in routes/index/-components/catalog.tsx.
 const order = (query: string, sort: string | undefined) => {
   if (!query.trim()) return sortFonts(fonts, "popularity").map((f) => f.name);
   const matches = searchByQuery(fonts, query);

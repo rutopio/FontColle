@@ -70,7 +70,7 @@ export function InstancesSection({
       <SectionHeader
         title="Instances"
         icon={StackSimpleIcon}
-        info="An instance is one named style the family ships. A full family usually covers the nine standard weights (100-900), and adding a matching italic for each brings it to 18 instances. Most families are far smaller: over half of the catalog ships a single style."
+        info="An instance is one named style the family ships. A full family covers the nine standard weights (100-900); with matching italics, that's 18 instances. Most families are far smaller: over half the catalog ships a single style."
         hasSelection={value != null}
         onReset={() => onChange(undefined)}
         canSort={false}

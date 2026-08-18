@@ -11,7 +11,6 @@ import {
 import { useFavoriteAdded, useFavorites } from "@/lib/fonts/favorites";
 import { cn } from "@/lib/utils";
 
-// Long enough to notice, short enough not to read as a selected state.
 const FLASH_MS = 900;
 
 function HeartLabel({
@@ -33,7 +32,6 @@ function HeartLabel({
   return (
     <>
       <HeartIcon
-        // Keyed on the tick so the pop replays on every add, not just the first.
         key={flash ? `flash-${flashKey}` : red && active ? "on" : "off"}
         className={cn(
           "size-5 group-hover/rail-btn:hidden",
@@ -143,9 +141,7 @@ function FavoriteViewLink({
   const fav = useRouterState({
     select: (s) => s.location.search.fav === "1",
   });
-  // Flash on add to point at where the font landed — pointless while the
-  // favorites view is already open. Keyed on the tick alone so opening that
-  // view mid-flash can't cancel the timer and strand the heart lit.
+  // Flash heart on add (skipped while favorites view is open).
   const added = useFavoriteAdded();
   const [flash, setFlash] = useState(false);
   const seenTick = useRef(added);

@@ -81,7 +81,7 @@ export function FontActions({
           />
         </button>
       </Tooltip>
-      {/* Card is a Link — nested <a> is invalid HTML. */}
+      {/* Card is a Link, so a nested <a> is invalid HTML. */}
       <Tooltip content="View on Google Fonts">
         <button
           type="button"

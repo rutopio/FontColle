@@ -80,7 +80,6 @@ function MetricRangeRow({
   const lo = localTrack ? map.fromTrack(localTrack[0]) : baseLo;
   const hi = localTrack ? map.fromTrack(localTrack[1]) : baseHi;
 
-  // Snap to spec step before storing (avoids float drift in filter state/URL).
   const snap = (v: number) =>
     spec.scale === "log" ? Math.round(v) : roundTo(v, spec.step);
 
@@ -288,9 +287,6 @@ export function HintSection({
   unhintedCount: number;
   onSetHinting: (value: boolean) => void;
 }) {
-  // Hint is stored as a tristate boolean rather than the string list the shared
-  // radio section speaks, so translate at the boundary and leave the filter
-  // state alone.
   return (
     <RadioPillSection
       title="Hint"

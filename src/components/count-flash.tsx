@@ -3,11 +3,7 @@ import { useState } from "react";
 
 type Direction = "up" | "down" | null;
 
-/**
- * Slower than the shared spring tokens on purpose: this is a passive readout in
- * the corner of the eye, so the roll needs to last long enough to be noticed
- * rather than register as a flicker. A little bounce sells the travel.
- */
+/** Deliberately slower than shared springs — must be noticeable, not a flicker. */
 const ROLL = {
   type: "spring" as const,
   duration: 0.55,
@@ -15,10 +11,6 @@ const ROLL = {
   exit: { duration: 0.4 },
 } as const;
 
-/**
- * A number that rolls when it changes: the outgoing value slides away in the
- * direction of travel and the incoming one slides in behind it.
- */
 export function CountFlash({
   value,
   className = "",
@@ -26,17 +18,13 @@ export function CountFlash({
   value: number;
   className?: string;
 }) {
-  // Direction is pinned to the value that produced it. Deriving it from a bare
-  // "previous" ref breaks here: the count arrives through useDeferredValue, so
-  // the component re-renders after the swap and the comparison collapses to
-  // equal before the keyed child has mounted with its initial state.
+  // Pin direction to the value that produced it (useDeferredValue re-renders break bare refs).
   const [seen, setSeen] = useState({ value, direction: null as Direction });
   if (seen.value !== value) {
     setSeen({ value, direction: value > seen.value ? "up" : "down" });
   }
   const direction = seen.value === value ? seen.direction : null;
 
-  // Rising counts travel up out of the slot, falling counts travel down.
   const offset = direction === "down" ? -14 : 14;
 
   return (

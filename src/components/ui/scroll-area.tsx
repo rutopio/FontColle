@@ -1,12 +1,9 @@
-"use client"
-
 import { ScrollArea as ScrollAreaPrimitive } from "@base-ui/react/scroll-area"
 import type * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-// Spelled out so Tailwind's scanner sees each class; a template string built
-// from `fade` would never be generated.
+// Tailwind needs static class names; can't be a template string.
 const FADE_CLASS = {
   y: "scroll-fade-y",
   x: "scroll-fade-x",
@@ -41,7 +38,6 @@ function ScrollArea({
         data-slot="scroll-area-viewport"
         className={cn(
           "size-full overscroll-contain rounded-[inherit] outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-          // scroll-fade resolves against this element's scrollport.
           fade === true && "scroll-fade",
           typeof fade === "string" && FADE_CLASS[fade],
           viewportClassName

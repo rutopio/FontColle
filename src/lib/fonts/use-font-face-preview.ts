@@ -26,7 +26,7 @@ export function useFontFacePreview(
   fontLoaded: boolean;
   previewStyle: React.CSSProperties;
   previewRef: React.RefObject<HTMLAnchorElement | null>;
-  /** The string the caller must paint — readiness is probed against exactly it. */
+  /** The string the caller must paint. Readiness is probed against exactly it. */
   text: string;
 } {
   const {
@@ -47,8 +47,7 @@ export function useFontFacePreview(
     if (!inView) return;
     return ensureTextSubsetLoaded(font.name, covered);
   }, [inView, font.name, covered]);
-  // Hold the reveal until the gap pass settles, otherwise the first paint shows
-  // only the clusters the default subsets happen to cover and the rest pop in.
+  // Wait for gap-fill pass so all subsets are ready, not just the default ones.
   const gapSettling = useGapSettling(font.name);
   const fontLoaded = inView && fontReady && !gapSettling;
   const settings = variationSettings(variationCoords);
@@ -99,9 +98,7 @@ function useInView(
     return () => observer.disconnect();
   });
 
-  // Must pass the italic flag too: whichever request lands first claims the
-  // family in `loaded`, so a roman-only request here would suppress the
-  // italic one in loadFont and leave the preview on a synthesised slant.
+  // Must include italic: first request claims the family in `loaded`.
   const hasItalic = font.facets.includes("has-italic");
   useEffect(() => {
     if (!inView || font.isVariable) return;
@@ -116,9 +113,7 @@ function loadFont(font: FontRecord, activeWeight: number) {
   if (font.isVariable) {
     ensureFontRangeLoaded(font.name, font.axes, hasItalic);
   } else {
-    // Static families ship italic as its own file, so it has to be requested
-    // explicitly — without this the Italic filter previewed a synthesised
-    // slant on the 164 static families that have a real italic.
+    // Static italic is a separate file; must request explicitly.
     ensureFontLoaded(font.name, [activeWeight], hasItalic);
   }
 }

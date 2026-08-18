@@ -99,11 +99,8 @@ export function Detail({
       value: formatDate(font.upstreamHeadDate),
       badge: font.upstreamArchived ? "Archived" : undefined,
     },
-    // Shown alongside the upstream date on purpose: where the two disagree, the
-    // gap is the point (the author shipped and Google has not repackaged, or
-    // Google rebuilt a font its author left years ago).
     font.gfTtfCommitDate && {
-      label: "GF Updated",
+      label: "Google Fonts Updated",
       value: formatDate(font.gfTtfCommitDate),
     },
     font.modifiedMs != null &&
@@ -166,8 +163,6 @@ export function Detail({
           ))
         }
         footer={
-          // No coverage toggle here: the detail page always boxes missing
-          // glyphs as notdef, so the control would have nothing to switch.
           <PreviewBar
             onScrollTop={() =>
               scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" })
@@ -303,7 +298,6 @@ export function Detail({
 
         {tab === "license" && <LicensePanel font={font} />}
       </Column>
-      {/* Outside Column: ScrollArea's scroll-fade mask would fade a fixed FAB. */}
       <LinksDrawer font={font} dockVisible={tab === "sample"} />
     </>
   );

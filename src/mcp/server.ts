@@ -23,7 +23,7 @@ type SlimFont = Pick<
   | "facets"
 > & { axes: string[]; weights: number[] };
 
-// Must match `serverInfo.name` in public/.well-known/mcp/server-card.json.
+// Must match public/.well-known/mcp/server-card.json.
 const SERVER_NAME = "font-fridge";
 const SERVER_VERSION = "1.0.0";
 const PROTOCOL_VERSION = "2025-06-18";
@@ -272,8 +272,7 @@ async function handleToolCall(
   return undefined;
 }
 
-/** Handle a JSON-RPC request against the MCP server. Returns null for
- *  notifications, which take no response body. */
+/** Returns null for notifications (no response body). */
 export async function handleMcpRequest(
   body: JsonRpcRequest,
   assets: AssetsBinding,
@@ -314,8 +313,7 @@ export async function handleMcpRequest(
   }
 }
 
-/** Route a request to the MCP endpoint. Returns undefined when the request is
- *  not for /mcp, so the caller falls through to the normal SSR path. */
+/** Returns undefined for non-/mcp requests (falls through to SSR). */
 export async function mcpEndpoint(
   request: Request,
   assets: AssetsBinding | undefined

@@ -1,5 +1,3 @@
-"use client";
-
 import {
   createContext,
   useContext,
@@ -30,7 +28,6 @@ function TooltipPortalContainer({
 
 const DEFAULT_DELAY = 200;
 
-// Per-instance Provider breaks skip-delay grouping between adjacent tooltips.
 const TooltipGroupContext = createContext(false);
 
 interface TooltipProviderProps {
@@ -119,7 +116,7 @@ function Tooltip({
               const exiting = state.transitionStatus === "ending";
               const {
                 style: baseStyle,
-                // motion owns drag/animation handlers; strip React-DOM versions.
+                // Strip React-DOM motion handler conflicts.
                 onDrag: _onDrag,
                 onDragStart: _onDragStart,
                 onDragEnd: _onDragEnd,
@@ -132,7 +129,6 @@ function Tooltip({
                 <motion.div
                   {...rest}
                   className={cn(
-                    // py-2 only where trim is supported — keeps ~26px height elsewhere.
                     "bg-foreground text-background text-[12px] px-2 py-1",
                     "[text-box:trim-both_cap_alphabetic] supports-[text-box:trim-both]:py-2",
                     "rounded-lg",

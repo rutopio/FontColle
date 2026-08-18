@@ -52,8 +52,7 @@
 @theme inline {
   --breakpoint-3xl: 120rem;
 
-  /* Keep in sync with --motion-* in :root and MOTION in src/lib/motion.ts.
-     Literals required: @theme inline substitutes values at use sites. */
+  /* Keep in sync with :root --motion-* and lib/motion.ts. */
   --default-transition-duration: 120ms;
   --default-transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
 
@@ -64,7 +63,6 @@
   --ease-snap: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 
-  /* No --line-height companion: these are used in fixed-height rows/badges. */
   --text-2xs: 11px;
   --text-3xs: 10px;
 
@@ -123,7 +121,7 @@
   --ring: oklch(0.709 0.01 56.259);
   --radius: 0.45rem;
 
-  /* Keep in sync with @theme --transition-duration-* and MOTION in lib/motion.ts. */
+  /* Sync with @theme --transition-duration-*. */
   --motion-fast: 120ms;
   --motion-base: 180ms;
   --motion-slow: 240ms;
@@ -232,8 +230,7 @@
   }
 }
 
-/* Without scroll-driven animations, disable the top scroll-fade edge
-   (it incorrectly dissolves the first row even at scroll-top 0). */
+/* Disable top scroll-fade without scroll-driven animations. */
 @supports not (animation-timeline: scroll()) {
   [data-slot="scroll-area-viewport"] {
     --scroll-fade-t: 0px;
@@ -254,14 +251,7 @@
   }
 }
 
-/*
- * SSR pending grid density. React cannot read the stored column cap before
- * hydration, so data-cols on <html> caps the container queries the same way
- * `columnsFor` caps the measured count — without this the placeholder renders
- * 3 columns and visibly reflows to 1 or 2 once the real grid mounts.
- * Widths mirror columnsFor and are container-relative, not viewport-relative:
- * 4 columns from 1280px, 3 from 1024px, 2 from 768px.
- */
+/* SSR density: data-cols caps columns before hydration (mirrors columnsFor). */
 @utility pending-cols {
   grid-template-columns: repeat(1, minmax(0, 1fr));
   & > * {
@@ -292,13 +282,7 @@
     }
   }
 
-  /*
-   * The :not() chains above are deliberately mirrored here as
-   * :not([data-cols="1"]):not([data-cols="2"]):not([data-cols="3"]) rather than
-   * the shorter [data-cols="4"]. Specificity, not source order, decides this:
-   * the 3-column rule scores (0,4,1) and a bare [data-cols="4"] only (0,3,1),
-   * so the shorter form loses to it at >=1280px and the grid stays at 3.
-   */
+  /* :not() chain must match prior rules' specificity; [data-cols="4"] is too weak. */
   @container (min-width: 1280px) {
     :root:not([data-cols="1"]):not([data-cols="2"]):not([data-cols="3"]) & {
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -316,16 +300,7 @@
   }
 }
 
-/*
- * Trims the skeleton placeholder to whole rows. SkeletonGrid always emits
- * MAX_COLS * 3 = 12 cards because it renders pre-hydration and cannot know the
- * stored density; this hides the surplus so every effective width shows exactly
- * 3 rows and the count never changes when the real grid mounts.
- *
- * Effective columns = min(what the width fits, data-cols), so the breakpoints
- * and :not() chains below mirror `pending-cols` exactly — keep the two in sync.
- * Visible cards: 1 col -> 3, 2 -> 6, 3 -> 9, 4 -> 12.
- */
+/* Trim skeleton to whole rows. Mirrors pending-cols breakpoints. */
 @utility pending-rows {
   & > *:nth-child(n + 4) {
     display: none;
@@ -349,8 +324,7 @@
     }
   }
 
-  /* Same specificity rule as pending-cols: mirror the :not() chain, don't
-     shorten it to [data-cols="4"] or the 1024px rule outranks this one. */
+  /* Same specificity rule as pending-cols. */
   @container (min-width: 1280px) {
     :root:not([data-cols="1"]):not([data-cols="2"]):not([data-cols="3"])
       &
@@ -454,7 +428,7 @@
   margin-top: 1em;
 }
 
-/* Active block highlight. Data attribute (not Lexical state) to stay out of undo. */
+/* Data attribute avoids polluting Lexical undo. */
 .tester-editor [data-pg-active] {
   background-color: var(--color-muted);
   border-radius: var(--radius-sm);

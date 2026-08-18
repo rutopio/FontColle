@@ -38,11 +38,7 @@ const subscribe = (cb: () => void) => {
   };
 };
 
-/**
- * Bumped whenever a font is favorited, so the header heart can flag where the
- * font just went. Kept out of the favorites snapshot: subscribers of the list
- * shouldn't re-render for a cue, and unfavoriting doesn't fire one.
- */
+// Bumped on add only; separate from the list so list subscribers don't re-render.
 let addTick = 0;
 const tickListeners = new Set<() => void>();
 const subscribeAdd = (cb: () => void) => {
@@ -107,11 +103,7 @@ export function parseFavoritesFile(raw: unknown): string[] | null {
   return [...new Set(ids)];
 }
 
-/**
- * Merge keeps existing ids and appends the new ones; replace swaps the list
- * outright. Ids missing from `known` are dropped — the catalog changes over
- * time and a stale id can never be shown or unfavorited.
- */
+/** Ids missing from `known` are dropped (catalog changes over time). */
 export function applyImport(
   current: string[],
   incoming: string[],

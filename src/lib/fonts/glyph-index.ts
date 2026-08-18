@@ -114,7 +114,7 @@ export function renderableFontIds(
   return ids;
 }
 
-export function coveredCharacters(
+function coveredCharacters(
   index: GlyphIndex,
   fontId: string,
   text: string
@@ -129,7 +129,7 @@ export function coveredCharacters(
   return out;
 }
 
-export function glyphIndexQueryOptions(enabled: boolean) {
+function glyphIndexQueryOptions(enabled: boolean) {
   return queryOptions({
     queryKey: ["glyph-index"],
     queryFn: async ({ signal }): Promise<GlyphIndex> => {

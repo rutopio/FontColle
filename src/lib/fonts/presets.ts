@@ -110,13 +110,7 @@ export function parsePresetsFile(raw: unknown): FilterPreset[] | null {
   return presets.map(revivePreset).filter((p): p is FilterPreset => p !== null);
 }
 
-/**
- * Merge appends the incoming presets after the existing ones; replace swaps
- * the list outright. Incoming ids are reissued so a file imported twice can
- * never collide with — or silently overwrite — a preset already stored. A
- * preset whose conditions match one already kept is counted as a duplicate and
- * skipped, and anything past MAX_PRESETS is dropped.
- */
+/** Incoming ids are reissued; duplicates skipped; excess past MAX_PRESETS dropped. */
 export function applyImport(
   current: FilterPreset[],
   incoming: FilterPreset[],

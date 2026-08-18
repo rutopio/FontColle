@@ -24,7 +24,7 @@ export function ItalicSection({
         canSort={false}
         sort="count"
         onToggleSort={() => {}}
-        info="Two separate things, so a family can be both. Italic means the family ships italic styles — a redrawn companion, not a tilted roman. Slant Axis means a variable slnt axis you can dial to any angle on the detail page."
+        info="Two separate things, so a family can be both. Italic means the family ships italic styles: a redrawn companion, not a tilted roman. Slant Axis means a variable slnt axis you can dial to any angle on the detail page."
       />
       <div className="grid grid-cols-2 gap-1.5">
         {items.map(([value, count]) => (

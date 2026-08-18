@@ -8,8 +8,8 @@ import { familyWeightSet, familyWidthSet } from "./weights";
 
 export type FacetIndex = ReturnType<typeof buildFacetIndex>;
 
-export const FORM_TAG_THRESHOLD = 1;
-export const MOOD_TAG_THRESHOLD = 50;
+const FORM_TAG_THRESHOLD = 1;
+const MOOD_TAG_THRESHOLD = 50;
 
 export function meetsTagThreshold(tag: string, score: number): boolean {
   return score >= tagThreshold(tag);
@@ -143,14 +143,14 @@ export function classificationGroupOf(tag: string): "style" | "mood" | null {
   return section?.group ?? null;
 }
 
-export const LICENSE_VALUES = ["OFL", "APACHE2", "UFL"];
+const LICENSE_VALUES = ["OFL", "APACHE2", "UFL"];
 export const LICENSE_LABELS: Record<string, string> = {
   OFL: "OFL",
   APACHE2: "Apache 2.0",
   UFL: "UFL",
 };
 
-export const REPO_HOST_VALUES = ["github", "gitlab", "sourcehut", "none"];
+const REPO_HOST_VALUES = ["github", "gitlab", "sourcehut", "none"];
 export const REPO_HOST_LABELS: Record<string, string> = {
   github: "GitHub",
   gitlab: "GitLab",
@@ -158,7 +158,7 @@ export const REPO_HOST_LABELS: Record<string, string> = {
   none: "None",
 };
 
-export const ACTIVITY_VALUES = ["3m", "6m", "1y", "3y", "cold", "unknown"];
+const ACTIVITY_VALUES = ["3m", "6m", "1y", "3y", "cold", "unknown"];
 export const ACTIVITY_LABELS: Record<string, string> = {
   "3m": "Past 3 months",
   "6m": "Past 6 months",
@@ -168,16 +168,7 @@ export const ACTIVITY_LABELS: Record<string, string> = {
   unknown: "Not tracked",
 };
 
-/**
- * How recently the family's OWN upstream repo was touched, as the default-branch
- * head commit. Strictly upstream: there is deliberately no fallback to
- * modifiedMs (when Google last COMPILED the binary) or firstCommitDate, because
- * the facet is labelled "Repo updated" and mixing in a Google build stamp
- * would put families with no tracked upstream repo into a bucket that claims
- * to describe one. Those 35 families are reported as `unknown`
- * ("Not tracked") instead: 29 have no repository_url at all, and 6 host theirs
- * on GitLab or SourceHut, which backfill_upstream_activity.py does not query.
- */
+/** Upstream repo recency. No fallback to modifiedMs (Google's build stamp). */
 export function fontActivity(font: FontRecord): string {
   if (!font.upstreamHeadDate) return "unknown";
   const stamp = Date.parse(font.upstreamHeadDate);
@@ -190,7 +181,7 @@ export function fontActivity(font: FontRecord): string {
   return "cold";
 }
 
-export const REPO_STATUS_VALUES = ["live", "archived"];
+const REPO_STATUS_VALUES = ["live", "archived"];
 export const REPO_STATUS_LABELS: Record<string, string> = {
   live: "Live",
   archived: "Archived",
@@ -216,28 +207,20 @@ export const FACET_LABELS: Record<string, string> = {
   variable: "Variable",
 };
 
-export const FLAG_VALUES = ["noto", "others"];
+const FLAG_VALUES = ["noto", "others"];
 export const FLAG_LABELS: Record<string, string> = {
   noto: "Noto",
   others: "Non-Noto",
 };
 
-export const ITALIC_VALUES = ["italic", "slant"];
+const ITALIC_VALUES = ["italic", "slant"];
 export const ITALIC_LABELS: Record<string, string> = {
   italic: "Italic",
   slant: "Slant Axis",
 };
 
-/**
- * The two are independent, not alternatives: a family can ship italic styles
- * AND carry a slnt axis (Roboto Flex, Recursive, Commissioner, the Bitcount
- * family -- 20 in all), so a font can count under both.
- *
- * `italic` reads the named instances rather than an `ital` axis: Google Fonts
- * ships italics as a separate file (Roboto-Italic[wght].ttf) instead of adding
- * an axis to the roman, so NO family in the catalog exposes an `ital` axis --
- * keying off it would leave the pill permanently empty.
- */
+/** Italic + slant are independent (a family can have both).
+ *  Reads named instances, not `ital` axis (GF ships italic as separate file). */
 export function italicTraits(font: FontRecord): string[] {
   const out: string[] = [];
   if (
@@ -250,8 +233,7 @@ export function italicTraits(font: FontRecord): string[] {
   return out;
 }
 
-// Defined in ./spacing, which stays free of `@/` imports so gen-facets.mjs can
-// share it. Re-exported here so the facet call sites read uniformly.
+// Re-export from ./spacing (kept @/-free for gen-facets.mjs).
 export { fontSpacing, SPACING_LABELS, SPACING_VALUES };
 
 const UNKNOWN_VENDORS = new Set(["NONE", "UKWN", "----", ""]);

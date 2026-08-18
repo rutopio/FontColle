@@ -85,7 +85,7 @@ export const TESTER_NODES = [
   },
 ];
 
-// Must override all inherited properties (mirrors previewStyle).
+// Must override all inherited properties to mirror previewStyle.
 export function instanceStyle(
   coords: Record<string, number>,
   italic: boolean
@@ -104,10 +104,7 @@ export function instanceStyle(
   return `${parts.join("; ")};`;
 }
 
-/** Inverse of the font-variation-settings half of instanceStyle: reads a
- *  block's inline style back into axis coords, so the sliders can show what
- *  the selected block is actually set to. Returns {} for a block with no
- *  style of its own, which reads as "inheriting the page defaults". */
+/** Parses font-variation-settings back into axis coords. */
 export function coordsFromStyle(style: string): Record<string, number> {
   const match = /font-variation-settings:\s*([^;]+)/.exec(style);
   if (!match) return {};

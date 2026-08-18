@@ -50,11 +50,15 @@ export function useWebMcp(): void {
       },
     }));
 
-    if (typeof ctx.registerTool === "function") {
-      for (const tool of guarded)
-        void ctx.registerTool({ ...tool, signal: controller.signal });
-    } else if (typeof ctx.provideContext === "function") {
-      void ctx.provideContext({ tools: guarded });
+    try {
+      if (typeof ctx.registerTool === "function") {
+        for (const tool of guarded)
+          void ctx.registerTool({ ...tool, signal: controller.signal });
+      } else if (typeof ctx.provideContext === "function") {
+        void ctx.provideContext({ tools: guarded });
+      }
+    } catch {
+      // MCP registration is best-effort; don't crash the app.
     }
 
     // provideContext has no teardown API; re-provide an empty list on unmount.

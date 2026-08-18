@@ -21,7 +21,6 @@ function useActiveBlock(blockName: string) {
   );
 }
 
-// Outside ScrollArea so the scroll-fade mask doesn't dissolve it.
 export function GlyphsBlockHeading({ blockName }: { blockName: string }) {
   const active = useActiveBlock(blockName);
   return (

@@ -16,8 +16,6 @@ describe("weight/width multi-select (last pick at the tail)", () => {
     f = select(f, "weights", "300"); // Light
     f = select(f, "weights", "700"); // Bold
     f = select(f, "weights", "400"); // Regular
-    // OR filter keeps all three; the tail is the last one clicked, which the
-    // preview renders (Light -> Bold -> Regular).
     expect(f.weights).toEqual(["300", "700", "400"]);
     expect(f.weights.at(-1)).toBe("400");
   });

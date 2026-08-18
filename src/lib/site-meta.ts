@@ -1,11 +1,6 @@
 export const SITE_NAME = "FontFridge";
 
-/**
- * Browser-chrome colours, matching --background in styles.css. Light is the
- * default: dark applies only when the user has explicitly turned it on, never
- * from prefers-color-scheme. Kept here (a dependency-free module) so both the
- * blocking theme script in __root.tsx and the runtime toggle share one source.
- */
+// Browser-chrome colors (matches --background in styles.css).
 export const THEME_COLOR_LIGHT = "#ffffff";
 export const THEME_COLOR_DARK = "#0a0a0a";
 

@@ -1,14 +1,10 @@
 import { useCallback, useSyncExternalStore } from "react";
+import { CLUSTER_RE } from "./text-clusters";
 
 const loaded = new Set<string>();
 const loadedWeights = new Map<string, Set<number>>();
-/** Families whose italic face has been requested (separate from weights). */
 const loadedItalic = new Set<string>();
 
-/**
- * The fallback follows the notdef toggle alone, never load state: missing glyphs
- * are hidden by default, and only an explicit opt-in boxes them as notdef.
- */
 export function previewFontFamily(name: string, showNotdef = false): string {
   const fallback = showNotdef ? "Adobe NotDef" : "Adobe Blank";
   return `"${name}", "${fallback}", sans-serif`;
@@ -36,10 +32,7 @@ function probeFor(name: string, weight: number) {
   return `${weight} 16px "${name}"`;
 }
 
-// WebKit keeps the quotes the CSS source wrote, so css2's `font-family: 'Noto
-// Sans'` reads back quoted; Blink strips them. Every family whose name has a
-// space is quoted in that stylesheet, so comparing raw would miss almost all of
-// them on Safari.
+// WebKit keeps quotes around font-family values; Blink strips them.
 function sameFamily(faceFamily: string, name: string) {
   return faceFamily.replace(/^['"]|['"]$/g, "") === name;
 }
@@ -51,7 +44,6 @@ function hasFaces(name: string) {
   return false;
 }
 
-/** Whether fonts.check reports all faces needed for `text` are loaded. */
 function canPaint(name: string, weight: number, text: string) {
   return hasFaces(name) && document.fonts.check(probeFor(name, weight), text);
 }
@@ -160,7 +152,6 @@ function subscribeFamily(
   };
 }
 
-/** True while `name` still has an unresolved gap-face pass. */
 export function useGapSettling(name: string): boolean {
   return useSyncExternalStore(
     subscribeGapSettled,
@@ -220,10 +211,6 @@ export function ensureFontLoaded(
     .filter((w) => !seen.has(w))
     .sort((a, b) => a - b);
 
-  // Italic is a second face, not a weight, so it needs its own request even
-  // when every weight is already loaded — otherwise `font-style: italic` has
-  // no real italic to use and the browser synthesises one by shearing the
-  // roman. Tracked apart from the weight set for that reason.
   const italicMissing = hasItalic && !loadedItalic.has(family);
 
   if (
@@ -239,8 +226,6 @@ export function ensureFontLoaded(
   if (hasItalic) loadedItalic.add(family);
 
   const uniq = [...seen].sort((a, b) => a - b);
-  // css2 requires the axis tuple to be sorted, so `ital` precedes `wght`, and
-  // every listed axis must get a value in each tuple.
   let spec: string;
   if (hasItalic && uniq.length > 0) {
     const tuples = [
@@ -308,9 +293,6 @@ export function ensureFontRangeLoaded(
   );
 }
 
-import { CLUSTER_RE } from "./text-clusters";
-
-/** Compares rendered widths against NotDef to detect truly missing glyphs. */
 function unpaintableCharacters(family: string, text: string): string[] {
   const el = document.createElement("span");
   el.setAttribute("aria-hidden", "true");
@@ -325,8 +307,6 @@ function unpaintableCharacters(family: string, text: string): string[] {
     };
     const missing = new Set<string>();
     for (const unit of new Set(text.match(CLUSTER_RE) ?? [])) {
-      // Probe through the fallback, the way the preview itself paints: measuring
-      // the family alone would let a system font supply the mark and hide the gap.
       const notdef = widthIn('"Adobe NotDef"', unit);
       const withFamily = widthIn(`"${family}", "Adobe NotDef"`, unit);
       if (Math.abs(withFamily - notdef) < 0.5) missing.add(unit);
@@ -368,10 +348,6 @@ function familyWeightRange(family: string): [number, number] | null {
   return [parts[0], parts[1]];
 }
 
-/**
- * Registers supplemental faces with matching weight/stretch descriptors,
- * because linking the stylesheet alone loses to the variable family's broader range.
- */
 async function addGapFace(family: string, chars: string) {
   const descriptors = familyDescriptors(family);
   const weights = familyWeightRange(family);
@@ -386,8 +362,6 @@ async function addGapFace(family: string, chars: string) {
   const faces = parseFaces(await res.text());
   if (faces.length === 0) return;
 
-  // `chars` may hold whole clusters, so this walks every codepoint in them: the
-  // face has to claim the combining marks as well, not just the base letters.
   const wanted = new Set<number>();
   for (const c of chars) wanted.add(c.codePointAt(0) as number);
   const unicodeRange = [...wanted]
@@ -407,10 +381,6 @@ async function addGapFace(family: string, chars: string) {
   );
 }
 
-// A family whose gap pass has not settled yet still paints partial text, so the
-// preview keeps it hidden until then. `fonts.check` cannot stand in for this: it
-// answers "is loading pending", not "does this family cover the text", and returns
-// true even for a family that does not exist.
 const settling = new Map<string, number>();
 const settleWatchers = new Set<() => void>();
 
@@ -429,16 +399,15 @@ function endSettling(family: string) {
   notifySettled();
 }
 
-export function subscribeGapSettled(onChange: () => void): () => void {
+function subscribeGapSettled(onChange: () => void): () => void {
   settleWatchers.add(onChange);
   return () => settleWatchers.delete(onChange);
 }
 
-export function isGapSettling(family: string): boolean {
+function isGapSettling(family: string): boolean {
   return settling.has(family);
 }
 
-/** Fills in characters the family covers but the CDN's default subsets omit. */
 export function ensureTextSubsetLoaded(
   family: string,
   text: string
@@ -448,9 +417,6 @@ export function ensureTextSubsetLoaded(
   }
 
   let cancelled = false;
-  // Held from the outset, not from the first measurement: the probe below resolves
-  // a few frames in, and a paint before that would show partially covered text.
-  // Released exactly once, whichever path finishes first.
   beginSettling(family);
   let released = false;
   const release = () => {
@@ -459,7 +425,6 @@ export function ensureTextSubsetLoaded(
     endSettling(family);
   };
 
-  /** Confirm candidates twice (a frame apart) to avoid race with late faces. */
   const confirm = (candidates: string[]) => {
     requestAnimationFrame(() => {
       if (cancelled) return release();
@@ -495,7 +460,6 @@ export function ensureTextSubsetLoaded(
       .catch(() => {})
       .then(() => attempt());
   };
-  // A family whose faces never arrive would otherwise hold the skeleton forever.
   const giveUp = setTimeout(release, GIVE_UP_MS);
   measureWhenSettled();
   document.fonts.addEventListener("loadingdone", measureWhenSettled);

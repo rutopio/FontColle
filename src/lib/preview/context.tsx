@@ -10,10 +10,7 @@ export const SIZE_PRESETS = [
   12, 14, 16, 18, 20, 24, 28, 32, 36, 40, 48, 52, 60, 72,
 ];
 
-/**
- * Preview leading as a percentage of each view's own baseline leading, so 100
- * keeps the list exactly as it was before this control existed.
- */
+/** Leading as % of baseline. 100 = original leading. */
 export const LEADING_MIN = 70;
 export const LEADING_MAX = 250;
 export const LEADING_DEFAULT = 100;
@@ -33,11 +30,6 @@ interface PreviewState {
   /** Hide fonts that cannot render the preview text. On unless switched off. */
   coverOnly: boolean;
   setCoverOnly: (v: boolean) => void;
-  /**
-   * Show the preview size/leading controls. Tracked per form factor: the
-   * desktop rail has room for them so they are on unless switched off, while
-   * the mobile drawer trades that height for filters so they start off.
-   */
   showPreview: boolean;
   setShowPreview: (v: boolean) => void;
   size: number;
@@ -62,8 +54,6 @@ export function PreviewProvider({ children }: { children: ReactNode }) {
     "font-fridge.preview-controls-mobile",
     "0"
   );
-  // `undefined` until measured — fall back to the desktop key, which is what
-  // the rail (the only preview toggle painted before measurement) reads.
   const isMobile = useIsMobileState() === true;
   const [size, setSizeRaw] = useLocalStorageState(
     "font-fridge.preview-size",

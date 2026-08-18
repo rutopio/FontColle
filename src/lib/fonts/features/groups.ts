@@ -15,7 +15,7 @@ export type FeatureGroupId =
   | "vertical"
   | "other";
 
-export const FEATURE_GROUPS: {
+const FEATURE_GROUPS: {
   id: FeatureGroupId;
   title: string;
   topN?: number;
@@ -153,7 +153,7 @@ const FEATURE_GROUP_OF: Record<string, FeatureGroupId> = {
   vchw: "vertical",
 };
 
-export function featureGroupOf(tag: string): FeatureGroupId {
+function featureGroupOf(tag: string): FeatureGroupId {
   if (/^ss\d\d$/.test(tag)) return "stylisticSets";
   if (/^cv\d\d$/.test(tag)) return "characterVariants";
   return FEATURE_GROUP_OF[tag] ?? "other";

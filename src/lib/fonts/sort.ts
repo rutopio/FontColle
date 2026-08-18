@@ -147,24 +147,15 @@ const isoCmp = (av: string | null, bv: string | null, newest: boolean) => {
   return newest ? bv.localeCompare(av) : av.localeCompare(bv);
 };
 
-/** When Google Fonts took the family in, NOT when the font itself was made. */
+/** When GF added the family, not when the font was made. */
 const dateCmp = (a: FontRecord, b: FontRecord, newest: boolean) =>
   isoCmp(a.dateAdded, b.dateAdded, newest);
 
-/**
- * "Upstream Updated" — the family's own upstream default-branch head. NOT
- * lastModifiedApi, which is Google's batch re-serving date and collapses the
- * whole catalog onto 57 distinct values.
- */
+/** Upstream repo head date (not lastModifiedApi, which is Google's batch date). */
 const updatedCmp = (a: FontRecord, b: FontRecord, newest: boolean) =>
   isoCmp(a.upstreamHeadDate, b.upstreamHeadDate, newest);
 
-/**
- * "GF Updated" — newest commit touching a font file in the family's
- * google/fonts directory, i.e. how new the file Google serves is. A separate
- * question from updatedCmp above, not a correction of it: an author can ship
- * while Google lags, and Google can repackage a font its author abandoned.
- */
+/** Newest commit in google/fonts for this family's TTFs. */
 const gfUpdatedCmp = (a: FontRecord, b: FontRecord, newest: boolean) =>
   isoCmp(a.gfTtfCommitDate, b.gfTtfCommitDate, newest);
 

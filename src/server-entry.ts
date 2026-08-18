@@ -15,12 +15,8 @@ const FILTERED_CRAWLER_HTML = `<!DOCTYPE html><html lang="en"><head><meta charse
 const HOME_CACHE_SECONDS = 600;
 const HOME_SWR_SECONDS = 3600;
 
-// Cache keys carry a version so a deploy invalidates stale SSR entries. The
-// home page embeds per-build hashed asset URLs, so it keys on the build ID.
-// Detail pages are a pure function of their catalog record, so they key on the
-// data version instead — a code-only deploy then leaves all ~13.6k cached
-// detail renders (1942 fonts x 7 tabs) valid rather than expiring them at once
-// and making the next crawl pay full SSR on every miss.
+// Home keys on BUILD_ID (asset hashes change); detail keys on DATA_VERSION
+// so code-only deploys don't invalidate cached detail renders.
 declare const __BUILD_ID__: string;
 declare const __DATA_VERSION__: string;
 
@@ -55,8 +51,7 @@ const SECURITY_HEADERS: Record<string, string> = {
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "X-Frame-Options": "DENY",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
-  // Keep in sync with the same header in public/_headers, which covers static
-  // asset responses; this one covers SSR HTML.
+  // Keep in sync with public/_headers (static assets); this covers SSR HTML.
   "Content-Security-Policy":
     "default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://lh3.googleusercontent.com; connect-src 'self' https://fonts.googleapis.com https://cloudflareinsights.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
 };
@@ -133,9 +128,6 @@ export default {
     next.headers.set("Link", LINK_HEADER);
 
     if (isCacheablePage && next.status === 200) {
-      // stale-while-revalidate lets an expiring entry keep being served while a
-      // single refresh happens behind it, instead of every concurrent request
-      // on that URL missing at once and each paying a full SSR.
       next.headers.set(
         "Cache-Control",
         isCacheableHome

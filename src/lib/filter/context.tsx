@@ -25,10 +25,10 @@ export function FilterProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useFilter(): FilterContextValue {
+export function useFilterLayout(): FilterContextValue {
   const ctx = useContext(FilterContext);
   if (!ctx) {
-    throw new Error("useFilter must be used within a FilterProvider");
+    throw new Error("useFilterLayout must be used within a FilterProvider");
   }
   return ctx;
 }

@@ -105,8 +105,7 @@ export function BunnyMethod({ font }: { font: FontRecord }) {
   );
 }
 
-// Bunny's grammar is `css?family=<slug>:<weight>`, italic taking an `i`
-// suffix (e.g. `700i`).
+// Bunny API: `css?family=<slug>:<weight>[i]`
 function bunnyHref(slug: string, weight: number, italic: boolean): string {
   return `https://fonts.bunny.net/css?family=${slug}:${weight}${
     italic ? "i" : ""

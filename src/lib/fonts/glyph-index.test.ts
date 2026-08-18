@@ -58,9 +58,7 @@ describe("canRenderWithCoverage", () => {
     expect(canRenderWithCoverage(coverage([]), "   ")).toBe(true);
   });
 
-  // The two shaper-normalization cases measured against real families:
-  // adlamdisplay lacks U+1EC7 but shapes it from base + marks; abel lacks
-  // U+0301 but composes "e" + U+0301 into its precomposed U+00E9.
+  // Shaper normalization: base+marks ↔ precomposed equivalence.
   it("accepts a precomposed character the font builds from base + marks", () => {
     const cov = coverage(cps("ệ"));
     expect(canRenderWithCoverage(cov, "ệ")).toBe(true);
@@ -69,12 +67,10 @@ describe("canRenderWithCoverage", () => {
   it("accepts base + mark when the font only has the precomposed form", () => {
     const cov = coverage(cps("eé"));
     expect(canRenderWithCoverage(cov, "é")).toBe(true);
-    // The mark alone still has nothing to compose with.
     expect(canRenderWithCoverage(cov, "ó")).toBe(false);
   });
 
   it("requires marks that cannot compose to exist on their own", () => {
-    // U+0301 composes onto "e" (U+00E9 present) but not onto "s".
     const cov = coverage(cps("esé"));
     expect(canRenderWithCoverage(cov, "ś")).toBe(false);
   });
@@ -97,8 +93,6 @@ describe("renderableFontIds", () => {
   });
 
   it("omits fonts that are absent from the index", () => {
-    // An unindexed font cannot be vouched for, so it is not in the set and the
-    // caller filters it out.
     expect(renderableFontIds(index, "ab").has("unknown")).toBe(false);
   });
 });

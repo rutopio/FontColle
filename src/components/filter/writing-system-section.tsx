@@ -34,7 +34,7 @@ export function WritingSystemSection({
       onToggle={onToggleScript}
       onReset={onResetScripts}
       searchPlaceholder="Search writing systems"
-      info="The 10 most spoken writing systems show up front, ranked by how many people write in them, then sorted by how many fonts support each. Speaker figures come from gflanguages, summed across every language written in each system."
+      info="The 10 most common writing systems are listed first, ranked by number of speakers, then by how many fonts support each. Speaker figures come from gflanguages, summed across every language written in each system."
       rankBy={scriptPopulation}
       topN={10}
       mode={mode}

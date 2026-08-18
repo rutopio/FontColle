@@ -22,7 +22,7 @@ const AXES: Record<
 const TOP_N = 4;
 const PCT_PRESETS = [0, 25, 50, 75, 100];
 
-// Sibling layout — range inputs can't live inside buttons.
+// Sibling layout: range inputs can't live inside buttons.
 export function VariableAxesSection({
   icon,
   items,

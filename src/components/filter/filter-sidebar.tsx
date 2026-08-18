@@ -13,7 +13,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useListScrollRestore } from "@/hooks/use-list-scroll-restore";
 import { useScrollReset } from "@/hooks/use-scroll-reset";
 import { useSectionScrollspy } from "@/hooks/use-section-scrollspy";
-import { useFilter } from "@/lib/filter/context";
+import { useFilterLayout } from "@/lib/filter/context";
 import {
   type FacetIndex,
   type FilterSearch,
@@ -168,7 +168,7 @@ export function FilterSidebar({
   const currentSearch = useMemo(() => filterToSearch(filter), [filter]);
 
   const viewportRef = useScrollReset<HTMLDivElement>(!restoreScroll);
-  const { panelScrollY } = useFilter();
+  const { panelScrollY } = useFilterLayout();
 
   const showingPreset = group === "preset";
   const { showPreview } = usePreview();
@@ -228,7 +228,7 @@ export function FilterSidebar({
                 styleClassifications.flatMap((s) => s.items)
               )
             }
-            info="Letterform classifications published by Google Fonts, from the google/fonts tags data. A family can carry several, so these combine rather than partition — unlike the Category cards above, where each family sits in exactly one."
+            info="Letterform classifications published by Google Fonts, from the google/fonts tags data. A family can carry several, so these combine rather than partition. Unlike the Category cards above, where each family sits in exactly one."
             mode={modeOf("style")}
             onToggleMode={() => toggleMode("style")}
           />
@@ -238,7 +238,7 @@ export function FilterSidebar({
         <ClassificationSection
           title="Mood"
           icon={SmileyMeltingIcon}
-          info="Subjective trait ratings published by Google Fonts, scored 0–100 per family. A pill lists the families scoring 50 or above, so it reads as “this is a vintage face” rather than “this has a trace of vintage” — Google rates nearly every family on nearly every trait."
+          info="Subjective trait ratings published by Google Fonts, scored 0–100 per family. A pill lists the families scoring 50 or above, so it reads as “this is a vintage face” rather than “this has a trace of vintage.” Google rates nearly every family on nearly every trait."
           groups={moodClassifications}
           selected={filter.style}
           onToggle={(v) => toggle("style", v)}
@@ -319,7 +319,7 @@ export function FilterSidebar({
             onReset={() => onChange({ ...filter, weights: [] })}
             label={weightLabel}
             axis="wght"
-            info="The nine standard steps a family can reach, not the styles it ships. A variable family matches every step inside its wght axis range, so it can appear here for a weight it has no named instance for — reach that weight by dragging the axis on the detail page. A static family matches the weights of its own files, snapped to the nearest step."
+            info="The nine standard steps a family can reach, not the styles it ships. A variable family matches every step inside its wght axis range, so it can appear here for a weight it has no named instance for. Reach that weight by dragging the axis on the detail page. A static family matches the weights of its own files, snapped to the nearest step."
             flashKey={flashKeyFor("weights")}
             mode={modeOf("weights")}
             onToggleMode={() => toggleMode("weights")}
@@ -333,7 +333,7 @@ export function FilterSidebar({
             onReset={() => onChange({ ...filter, widths: [] })}
             label={widthLabel}
             axis="wdth"
-            info="The nine standard steps a family can reach, not the styles it ships. A variable family matches every step inside its wdth axis range, so a family whose named instances are all normal width still appears under Ultra Cond. and Ultra Expd. if its axis stretches that far — reach those widths by dragging the axis on the detail page. A static family matches the single width recorded in its OS/2 table."
+            info="The nine standard steps a family can reach, not the styles it ships. A variable family matches every step inside its wdth axis range, so a family whose named instances are all normal width still appears under Ultra Cond. and Ultra Expd. if its axis stretches that far. Reach those widths by dragging the axis on the detail page. A static family matches the single width recorded in its OS/2 table."
             mode={modeOf("widths")}
             onToggleMode={() => toggleMode("widths")}
           />
@@ -442,15 +442,12 @@ export function FilterSidebar({
 
   return (
     <aside className="flex h-full w-full min-w-0 flex-col text-foreground">
-      {/* Display setting, not a filter — pinned so the list scroll never moves it.
-          The rail's Preview toggle hides it to give the filters the full height. */}
       {!showingPreset && showPreview && (
         <div className="flex shrink-0 flex-col gap-4 border-border border-b p-4">
           <PreviewSizeSection />
           <PreviewLeadingSection />
         </div>
       )}
-      {/* Remount clears Base UI stale overflow when toggling preset/filters. */}
       <ScrollArea
         key={showingPreset ? "preset" : "filters"}
         fade

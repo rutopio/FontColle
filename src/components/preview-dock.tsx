@@ -16,8 +16,6 @@ import { usePreview } from "@/lib/preview/context";
 
 const PREVIEW_DEBOUNCE_MS = 150;
 
-// The full wording wraps to a second line on a phone, which grows the dock.
-// Placeholder text is an attribute, so this is a JS branch rather than CSS.
 const PLACEHOLDER =
   "Type to preview and filter fonts that support these characters…";
 const PLACEHOLDER_SHORT = "Type to preview";
@@ -80,15 +78,10 @@ export function PreviewBar({
         rows={1}
         value={draft}
         onChange={(e) => commit(e.target.value)}
-        // Stays single-value like the input it replaced: it only soft-wraps.
         onKeyDown={(e) => {
           if (e.key === "Enter") e.preventDefault();
         }}
         placeholder={isMobile ? PLACEHOLDER_SHORT : PLACEHOLDER}
-        // field-sizing grows the box line by line instead of scrolling a
-        // single line; max-h caps it at 10 lines so a very long text cannot
-        // eat the list. leading-6 pins the line box at both text sizes, so
-        // the cap is 10 lines on phone and desktop alike.
         className="field-sizing-content max-h-[calc(10*1.5rem+0.75rem)] min-h-9 w-full min-w-0 flex-1 resize-none rounded-lg border-0 bg-transparent px-2.5 py-1.5 text-base leading-6 outline-none placeholder:text-muted-foreground md:text-sm"
         aria-label="Preview text"
       />

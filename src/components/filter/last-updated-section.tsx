@@ -24,7 +24,7 @@ export function LastUpdatedSection({
         canSort={false}
         sort="count"
         onToggleSort={() => {}}
-        info="From the last commit on the default branch of the font's own upstream repository, so it tracks whether anyone is still working on the font rather than when Google last rebuilt or re-served it. Families whose upstream repository is not tracked — none recorded, or hosted outside GitHub — are grouped as Not tracked."
+        info="From the last commit on the default branch of the font's own upstream repository, so it tracks whether anyone is still working on the font rather than when Google last rebuilt or re-served it. Families whose upstream repository is not tracked (none recorded, or hosted outside GitHub) are grouped as Not tracked."
       />
       <div className="grid grid-cols-2 gap-1.5">
         {items.map(([value, count]) => (

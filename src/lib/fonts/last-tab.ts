@@ -19,11 +19,6 @@ const DEFAULT_TAB: TabSlug = "instances";
 const isTabSlug = (raw: string): raw is TabSlug =>
   (TAB_SLUGS as readonly string[]).includes(raw);
 
-/**
- * The detail tab the user last opened, so returning to a detail page from the
- * list reopens the same view instead of resetting to Instances. Unknown or
- * stale slugs (renamed tabs, hand-edited storage) fall back to the default.
- */
 export function useLastDetailTab(): [TabSlug, (slug: TabSlug) => void] {
   const [raw, setRaw] = useLocalStorageState(KEY, DEFAULT_TAB);
   return [isTabSlug(raw) ? raw : DEFAULT_TAB, setRaw];
