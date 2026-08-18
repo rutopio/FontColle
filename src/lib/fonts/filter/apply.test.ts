@@ -367,13 +367,35 @@ describe("applyFilters, noto flag, italic, hinting, monospace-metric", () => {
       "Other",
     ]);
   });
-  it("italic radio uses the has-italic facet", () => {
-    expect(names(applyFilters(fonts, filter({ italic: ["italic"] })))).toEqual([
-      "Noto",
-    ]);
-    expect(names(applyFilters(fonts, filter({ italic: ["upright"] })))).toEqual(
-      ["Other"]
+  it("italic and slant are independent traits, not a radio", () => {
+    // Google ships italics as a separate file, so no family exposes an `ital`
+    // axis -- italic is read off the named instances. A family can hold both
+    // traits (Roboto Flex, Recursive), which a radio could not express.
+    const slnt = {
+      tag: "slnt",
+      name: null,
+      min: null,
+      default: null,
+      max: null,
+    };
+    const italicInstance = { name: "Italic", italic: true, coords: {} };
+    const cohort = [
+      font({ name: "ItalicOnly", instances: [italicInstance] }),
+      font({ name: "SlantOnly", axes: [slnt] }),
+      font({ name: "Both", axes: [slnt], instances: [italicInstance] }),
+      font({ name: "Neither" }),
+    ];
+    expect(names(applyFilters(cohort, filter({ italic: ["italic"] })))).toEqual(
+      ["ItalicOnly", "Both"]
     );
+    expect(names(applyFilters(cohort, filter({ italic: ["slant"] })))).toEqual([
+      "SlantOnly",
+      "Both",
+    ]);
+    // Selecting both pills is a union, so "Both" is listed once, not twice.
+    expect(
+      names(applyFilters(cohort, filter({ italic: ["italic", "slant"] })))
+    ).toEqual(["ItalicOnly", "SlantOnly", "Both"]);
   });
   it("hinting true requires the trait; false excludes hinted", () => {
     expect(names(applyFilters(fonts, filter({ hasHinting: true })))).toEqual([

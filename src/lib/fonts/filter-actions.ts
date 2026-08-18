@@ -34,6 +34,7 @@ type ArrayKey =
   | "repoHosts"
   | "activity"
   | "repoStatus"
+  | "italic"
   | "upm";
 
 const AXIS_EXCLUSIVE: Record<string, "weights" | "widths"> = {
@@ -142,11 +143,6 @@ export function resetFontType(filter: FilterState): FilterState {
 export function selectFlag(filter: FilterState, value: string): FilterState {
   const next = filter.source.includes(value) ? [] : [value];
   return { ...filter, source: next };
-}
-
-export function selectItalic(filter: FilterState, value: string): FilterState {
-  const next = filter.italic.includes(value) ? [] : [value];
-  return { ...filter, italic: next };
 }
 
 export function selectSpacing(filter: FilterState, value: string): FilterState {

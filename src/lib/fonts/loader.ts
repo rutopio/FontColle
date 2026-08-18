@@ -2,6 +2,8 @@ import { useCallback, useSyncExternalStore } from "react";
 
 const loaded = new Set<string>();
 const loadedWeights = new Map<string, Set<number>>();
+/** Families whose italic face has been requested (separate from weights). */
+const loadedItalic = new Set<string>();
 
 /**
  * The fallback follows the notdef toggle alone, never load state: missing glyphs
@@ -202,10 +204,15 @@ export const __loaderInternals = {
     pursuing.clear();
     loaded.clear();
     loadedWeights.clear();
+    loadedItalic.clear();
   },
 };
 
-export function ensureFontLoaded(family: string, weights: number[]) {
+export function ensureFontLoaded(
+  family: string,
+  weights: number[],
+  hasItalic = false
+) {
   if (typeof document === "undefined") return;
 
   const seen = loadedWeights.get(family) ?? new Set<number>();
@@ -213,17 +220,41 @@ export function ensureFontLoaded(family: string, weights: number[]) {
     .filter((w) => !seen.has(w))
     .sort((a, b) => a - b);
 
-  if (!missing.length && (loaded.has(family) || seen.size > 0)) return;
+  // Italic is a second face, not a weight, so it needs its own request even
+  // when every weight is already loaded — otherwise `font-style: italic` has
+  // no real italic to use and the browser synthesises one by shearing the
+  // roman. Tracked apart from the weight set for that reason.
+  const italicMissing = hasItalic && !loadedItalic.has(family);
+
+  if (
+    !missing.length &&
+    !italicMissing &&
+    (loaded.has(family) || seen.size > 0)
+  )
+    return;
 
   loaded.add(family);
   for (const w of missing) seen.add(w);
   loadedWeights.set(family, seen);
+  if (hasItalic) loadedItalic.add(family);
 
   const uniq = [...seen].sort((a, b) => a - b);
-  const spec =
-    uniq.length > 0
-      ? `${encodeFamily(family)}:wght@${uniq.join(";")}`
-      : encodeFamily(family);
+  // css2 requires the axis tuple to be sorted, so `ital` precedes `wght`, and
+  // every listed axis must get a value in each tuple.
+  let spec: string;
+  if (hasItalic && uniq.length > 0) {
+    const tuples = [
+      ...uniq.map((w) => `0,${w}`),
+      ...uniq.map((w) => `1,${w}`),
+    ].join(";");
+    spec = `${encodeFamily(family)}:ital,wght@${tuples}`;
+  } else if (hasItalic) {
+    spec = `${encodeFamily(family)}:ital@0;1`;
+  } else if (uniq.length > 0) {
+    spec = `${encodeFamily(family)}:wght@${uniq.join(";")}`;
+  } else {
+    spec = encodeFamily(family);
+  }
 
   appendLink(`https://fonts.googleapis.com/css2?family=${spec}&display=block`);
 }

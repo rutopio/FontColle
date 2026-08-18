@@ -224,11 +224,33 @@ export const FLAG_LABELS: Record<string, string> = {
   others: "Non-Noto",
 };
 
-export const ITALIC_VALUES = ["italic", "upright"];
+export const ITALIC_VALUES = ["italic", "slant"];
 export const ITALIC_LABELS: Record<string, string> = {
-  italic: "Has Italic",
-  upright: "Non-Italic",
+  italic: "Italic",
+  slant: "Slant Axis",
 };
+
+/**
+ * The two are independent, not alternatives: a family can ship italic styles
+ * AND carry a slnt axis (Roboto Flex, Recursive, Commissioner, the Bitcount
+ * family -- 20 in all), so a font can count under both.
+ *
+ * `italic` reads the named instances rather than an `ital` axis: Google Fonts
+ * ships italics as a separate file (Roboto-Italic[wght].ttf) instead of adding
+ * an axis to the roman, so NO family in the catalog exposes an `ital` axis --
+ * keying off it would leave the pill permanently empty.
+ */
+export function italicTraits(font: FontRecord): string[] {
+  const out: string[] = [];
+  if (
+    font.instances.some(
+      (i) => i.italic || (i.name ?? "").toLowerCase().includes("ital")
+    )
+  )
+    out.push("italic");
+  if (font.axes.some((a) => a.tag === "slnt")) out.push("slant");
+  return out;
+}
 
 // Defined in ./spacing, which stays free of `@/` imports so gen-facets.mjs can
 // share it. Re-exported here so the facet call sites read uniformly.
@@ -307,7 +329,7 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     bump(activity, fontActivity(font));
     bump(repoStatus, fontRepoStatus(font));
     bump(flags, font.isNoto ? "noto" : "others");
-    bump(italic, font.facets.includes("has-italic") ? "italic" : "upright");
+    for (const t of italicTraits(font)) bump(italic, t);
     bump(spacing, fontSpacing(font));
     bump(instances, String(instanceCount(font)));
   }

@@ -5,6 +5,7 @@ import {
   classificationGroupOf,
   type FilterState,
   INSTANCE_BUCKETS,
+  ITALIC_LABELS,
   instanceBucketOf,
   MODE_KEYS,
   type ModeKey,
@@ -90,13 +91,7 @@ export function describeActiveFilters(f: FilterState): FilterChip[] {
   for (const v of f.activity)
     push(`act:${v}`, "Last updated", ACTIVITY_LABELS[v] ?? v, "activity", v);
   for (const v of f.italic)
-    push(
-      `ital:${v}`,
-      "Italic",
-      v === "italic" ? "Italic" : "Non-Italic",
-      "italic",
-      v
-    );
+    push(`ital:${v}`, "Italic & Slant", ITALIC_LABELS[v] ?? v, "italic", v);
   for (const v of f.spacing)
     push(`spacing:${v}`, "Spacing", SPACING_LABELS[v] ?? v, "spacing", v);
   for (const v of f.upm) push(`upm:${v}`, "Units per em", v, "upm", v);

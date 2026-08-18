@@ -99,22 +99,26 @@ function useInView(
     return () => observer.disconnect();
   });
 
+  // Must pass the italic flag too: whichever request lands first claims the
+  // family in `loaded`, so a roman-only request here would suppress the
+  // italic one in loadFont and leave the preview on a synthesised slant.
+  const hasItalic = font.facets.includes("has-italic");
   useEffect(() => {
     if (!inView || font.isVariable) return;
-    ensureFontLoaded(font.name, [activeWeight]);
-  }, [inView, activeWeight, font.isVariable, font.name]);
+    ensureFontLoaded(font.name, [activeWeight], hasItalic);
+  }, [inView, activeWeight, font.isVariable, font.name, hasItalic]);
 
   return [ref, inView];
 }
 
 function loadFont(font: FontRecord, activeWeight: number) {
+  const hasItalic = font.facets.includes("has-italic");
   if (font.isVariable) {
-    ensureFontRangeLoaded(
-      font.name,
-      font.axes,
-      font.facets.includes("has-italic")
-    );
+    ensureFontRangeLoaded(font.name, font.axes, hasItalic);
   } else {
-    ensureFontLoaded(font.name, [activeWeight]);
+    // Static families ship italic as its own file, so it has to be requested
+    // explicitly — without this the Italic filter previewed a synthesised
+    // slant on the 164 static families that have a real italic.
+    ensureFontLoaded(font.name, [activeWeight], hasItalic);
   }
 }

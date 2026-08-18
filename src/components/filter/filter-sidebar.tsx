@@ -6,7 +6,6 @@ import {
   SlidersHorizontalIcon,
   SmileyMeltingIcon,
   TextAaIcon,
-  TextItalicIcon,
 } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useMemo, useState } from "react";
@@ -20,7 +19,6 @@ import {
   type FilterSearch,
   type FilterState,
   filterToSearch,
-  ITALIC_LABELS,
   type MetricKey,
   type MetricRange,
   type ModeKey,
@@ -41,6 +39,7 @@ import { FeatureSection } from "./feature-section";
 import { FontTypeSection } from "./font-type-section";
 import { FILTER_GROUP_IDS, FILTER_GROUPS, type FilterGroupId } from "./groups";
 import { InstancesSection } from "./instances-section";
+import { ItalicSection } from "./italic-section";
 import { LanguageSection } from "./language-section";
 import { LastUpdatedSection } from "./last-updated-section";
 import { LicenseSection } from "./license-section";
@@ -128,8 +127,6 @@ export function FilterSidebar({
     }))
     .filter((c) => c.count > 0 || c.selected);
   const toggleCategory = (value: string) => toggle("categories", value);
-  const selectItalic = (value: string) =>
-    onChange(actions.selectItalic(filter, value));
   const selectSpacing = (value: string) =>
     onChange(actions.selectSpacing(filter, value));
   const selectRepoStatus = (value: string) =>
@@ -300,13 +297,10 @@ export function FilterSidebar({
             onToggle={selectFontType}
             onReset={resetFontType}
           />
-          <RadioPillSection
-            title="Italic"
-            icon={TextItalicIcon}
+          <ItalicSection
             items={index.italic}
-            labels={ITALIC_LABELS}
             selected={filter.italic}
-            onToggle={selectItalic}
+            onToggle={(v) => toggle("italic", v)}
             onReset={() => onChange({ ...filter, italic: [] })}
           />
           <InstancesSection

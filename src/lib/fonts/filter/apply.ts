@@ -13,6 +13,7 @@ import {
   fontActivity,
   fontRepoStatus,
   fontSpacing,
+  italicTraits,
   meetsTagThreshold,
   repoHost,
 } from "./facets";
@@ -214,8 +215,10 @@ export function applyFilters(
     if (f.activity.length && !f.activity.includes(fontActivity(font)))
       return false;
     if (!radio(f.source, "noto", !!font.isNoto)) return false;
-    if (!radio(f.italic, "italic", font.facets.includes("has-italic")))
-      return false;
+    if (f.italic.length) {
+      const traits = italicTraits(font);
+      if (!f.italic.some((v) => traits.includes(v))) return false;
+    }
     if (f.spacing.length && !f.spacing.includes(fontSpacing(font)))
       return false;
     if (f.upm.length && !f.upm.includes(String(font.unitsPerEm))) return false;
