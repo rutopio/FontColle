@@ -158,38 +158,36 @@ export const REPO_HOST_LABELS: Record<string, string> = {
   none: "None",
 };
 
-export const ACTIVITY_VALUES = ["latest", "active", "recent", "dormant"];
+export const ACTIVITY_VALUES = ["3m", "6m", "1y", "3y", "cold", "unknown"];
 export const ACTIVITY_LABELS: Record<string, string> = {
-  latest: "Latest (≤6m)",
-  active: "Active (≤1y)",
-  recent: "Recent (≤3y)",
-  dormant: "Dormant (3y+)",
+  "3m": "Past 3 months",
+  "6m": "Past 6 months",
+  "1y": "Past year",
+  "3y": "Past 3 years",
+  cold: "Over 3 years",
+  unknown: "Not tracked",
 };
 
+/**
+ * How recently the family's OWN upstream repo was touched, as the default-branch
+ * head commit. Strictly upstream: there is deliberately no fallback to
+ * modifiedMs (when Google last COMPILED the binary) or firstCommitDate, because
+ * the facet is labelled "Repo updated" and mixing in a Google build stamp
+ * would put families with no tracked upstream repo into a bucket that claims
+ * to describe one. Those 35 families are reported as `unknown`
+ * ("Not tracked") instead: 29 have no repository_url at all, and 6 host theirs
+ * on GitLab or SourceHut, which backfill_upstream_activity.py does not query.
+ */
 export function fontActivity(font: FontRecord): string {
-  const months = monthsSince(font);
-  if (months === null) return "dormant";
-  if (months <= 6) return "latest";
-  if (months <= 12) return "active";
-  if (months <= 36) return "recent";
-  return "dormant";
-}
-
-function monthsSince(font: FontRecord): number | null {
-  // Upstream repo activity first: it answers "is anyone still working on this
-  // font", which is what "Last updated" claims to show. modifiedMs only says when
-  // Google last COMPILED the binary, so an actively developed family reads as
-  // dormant until Google happens to rebuild it. Fall back to it (then to the
-  // repo debut) only for the ~42 families with no resolvable github repo.
-  const stamp = font.upstreamHeadDate
-    ? Date.parse(font.upstreamHeadDate)
-    : font.modifiedMs && font.modifiedMs > 0
-      ? font.modifiedMs
-      : font.firstCommitDate
-        ? Date.parse(font.firstCommitDate)
-        : Number.NaN;
-  if (!Number.isFinite(stamp)) return null;
-  return (Date.now() - stamp) / (1000 * 60 * 60 * 24 * 30.44);
+  if (!font.upstreamHeadDate) return "unknown";
+  const stamp = Date.parse(font.upstreamHeadDate);
+  if (!Number.isFinite(stamp)) return "unknown";
+  const months = (Date.now() - stamp) / (1000 * 60 * 60 * 24 * 30.44);
+  if (months <= 3) return "3m";
+  if (months <= 6) return "6m";
+  if (months <= 12) return "1y";
+  if (months <= 36) return "3y";
+  return "cold";
 }
 
 export const REPO_STATUS_VALUES = ["live", "archived"];

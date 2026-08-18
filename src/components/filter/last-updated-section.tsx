@@ -17,14 +17,14 @@ export function LastUpdatedSection({
   return (
     <div className="flex flex-col gap-2">
       <SectionHeader
-        title="Last updated"
+        title="Repo updated"
         icon={ClockCounterClockwiseIcon}
         hasSelection={selected.length > 0}
         onReset={onReset}
         canSort={false}
         sort="count"
         onToggleSort={() => {}}
-        info="From the last commit on the default branch of the font's own upstream repository, so it tracks whether anyone is still working on the font rather than when Google last rebuilt or re-served it."
+        info="From the last commit on the default branch of the font's own upstream repository, so it tracks whether anyone is still working on the font rather than when Google last rebuilt or re-served it. Families whose upstream repository is not tracked — none recorded, or hosted outside GitHub — are grouped as Not tracked."
       />
       <div className="grid grid-cols-2 gap-1.5">
         {items.map(([value, count]) => (

@@ -101,7 +101,7 @@ export function describeActiveFilters(f: FilterState): FilterChip[] {
       v
     );
   for (const v of f.activity)
-    push(`act:${v}`, "Last updated", ACTIVITY_LABELS[v] ?? v, "activity", v);
+    push(`act:${v}`, "Repo updated", ACTIVITY_LABELS[v] ?? v, "activity", v);
   for (const v of f.italic)
     push(`ital:${v}`, "Italic & Slant", ITALIC_LABELS[v] ?? v, "italic", v);
   for (const v of f.spacing)

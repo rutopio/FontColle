@@ -516,13 +516,13 @@ describe("fontActivity", () => {
   const daysAgoIso = (n: number) =>
     new Date(Date.now() - n * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
-  it("prefers upstream repo activity over the build stamp", () => {
+  it("reads the upstream head, not the build stamp", () => {
     // Alegreya's shape: Google rebuilt it recently, but master is years cold.
     const f = font({
       modifiedMs: monthsAgo(1),
       upstreamHeadDate: daysAgoIso(365 * 5),
     });
-    expect(fontActivity(f)).toBe("dormant");
+    expect(fontActivity(f)).toBe("cold");
   });
 
   it("counts a live upstream repo even when the binary is old", () => {
@@ -530,33 +530,44 @@ describe("fontActivity", () => {
       modifiedMs: monthsAgo(120),
       upstreamHeadDate: daysAgoIso(30),
     });
-    expect(fontActivity(f)).toBe("latest");
+    expect(fontActivity(f)).toBe("3m");
   });
 
-  it("buckets by how long ago the font was compiled", () => {
-    expect(fontActivity(font({ modifiedMs: monthsAgo(1) }))).toBe("latest");
-    expect(fontActivity(font({ modifiedMs: monthsAgo(9) }))).toBe("active");
-    expect(fontActivity(font({ modifiedMs: monthsAgo(24) }))).toBe("recent");
-    expect(fontActivity(font({ modifiedMs: monthsAgo(60) }))).toBe("dormant");
+  it("buckets by how long ago the upstream repo was touched", () => {
+    expect(fontActivity(font({ upstreamHeadDate: daysAgoIso(30) }))).toBe("3m");
+    expect(fontActivity(font({ upstreamHeadDate: daysAgoIso(150) }))).toBe(
+      "6m"
+    );
+    expect(fontActivity(font({ upstreamHeadDate: daysAgoIso(300) }))).toBe(
+      "1y"
+    );
+    expect(fontActivity(font({ upstreamHeadDate: daysAgoIso(700) }))).toBe(
+      "3y"
+    );
+    expect(fontActivity(font({ upstreamHeadDate: daysAgoIso(2000) }))).toBe(
+      "cold"
+    );
   });
 
   it("ignores the Google publish date", () => {
     const f = font({
-      modifiedMs: monthsAgo(120),
+      upstreamHeadDate: daysAgoIso(365 * 5),
       lastModifiedApi: new Date().toISOString().slice(0, 10),
     });
-    expect(fontActivity(f)).toBe("dormant");
+    expect(fontActivity(f)).toBe("cold");
   });
 
-  it("falls back to the first commit when head.modified is unset", () => {
-    const f = font({ modifiedMs: 0, firstCommitDate: "2024-01-15" });
-    expect(fontActivity(f)).toBe("recent");
-  });
-
-  it("is dormant when nothing dates the family", () => {
+  it("reports a family with no upstream repo as unknown, never as stale", () => {
+    // No fallback to modifiedMs: a fresh build stamp must not imply upstream
+    // activity the family does not have.
     expect(
-      fontActivity(font({ modifiedMs: null, firstCommitDate: null }))
-    ).toBe("dormant");
+      fontActivity(font({ upstreamHeadDate: null, modifiedMs: monthsAgo(1) }))
+    ).toBe("unknown");
+    expect(
+      fontActivity(
+        font({ upstreamHeadDate: null, firstCommitDate: "2024-01-15" })
+      )
+    ).toBe("unknown");
   });
 });
 
