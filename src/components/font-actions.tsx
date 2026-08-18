@@ -1,11 +1,12 @@
-import { GoogleLogoIcon, HeartIcon } from "@phosphor-icons/react";
+import { CopyIcon, GoogleLogoIcon, HeartIcon } from "@phosphor-icons/react";
+import { toast } from "sonner";
 import { HoverBoldIcon } from "@/components/hover-bold-icon";
 import { repoHostIcon } from "@/components/repo-host-icon";
 import { Tooltip } from "@/components/ui/tooltip";
 import type { FontRecord } from "@/lib/fonts/types";
 import { cn } from "@/lib/utils";
 
-const STATIC_SLOTS = ["favorite", "specimen", "repo"];
+const STATIC_SLOTS = ["copy", "favorite", "specimen", "repo"];
 
 export function FontActions({
   font,
@@ -24,7 +25,7 @@ export function FontActions({
     const slots =
       font.repositoryUrl || reserveRepoSlot
         ? STATIC_SLOTS
-        : STATIC_SLOTS.slice(0, 2);
+        : STATIC_SLOTS.slice(0, 3);
     return (
       <div aria-hidden className="flex shrink-0 items-center gap-4">
         {slots.map((slot) => (
@@ -34,8 +35,29 @@ export function FontActions({
     );
   }
 
+  const copyName = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(font.name);
+      toast.success("Copied font name", { description: font.name });
+    } catch {
+      toast.error("Copy failed");
+    }
+  };
+
   return (
     <div className="flex shrink-0 items-center gap-4">
+      <Tooltip content="Copy font name">
+        <button
+          type="button"
+          onClick={copyName}
+          aria-label={`Copy font name "${font.name}"`}
+          className="-m-2 p-2 text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <HoverBoldIcon icon={CopyIcon} className="size-5" />
+        </button>
+      </Tooltip>
       <Tooltip
         content={isFavorite ? "Remove from favorites" : "Add to favorites"}
       >
