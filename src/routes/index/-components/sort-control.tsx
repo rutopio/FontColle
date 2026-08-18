@@ -25,16 +25,31 @@ import { cn } from "@/lib/utils";
 export const RELEVANCE_GROUP = "Relevance";
 
 /**
+ * Groups whose everyday reading does not match what they actually sort by.
+ * Appended to the toast description so the surprise is explained where it is
+ * noticed, rather than in a tooltip the Select popup has no room for.
+ */
+const SORT_NOTES: Record<string, string> = {
+  // Google's API ranks trending by growth relative to a family's own baseline,
+  // so obscure faces with a tiny download base outrank household names — the
+  // top of this list is Noto Sans Khudawadi, not Roboto.
+  Trending: "Google ranks by growth rate, so niche families can lead",
+};
+
+/**
  * The trigger only shows the group, and the direction lives in an icon — so
  * every change announces the resulting order: the title states what the list
  * is sorted by, the description spells out the direction. One shared id keeps
  * rapid changes replacing a single toast instead of stacking.
  */
-const announceSort = (group: string, direction?: string) =>
+const announceSort = (group: string, direction?: string) => {
+  const note = SORT_NOTES[group];
+  const description = [direction, note].filter(Boolean).join(" · ");
   toast.info(`Sorted by ${group}`, {
-    description: direction,
+    description: description || undefined,
     id: "sort-mode",
   });
+};
 
 export function SortControl({
   sort,
