@@ -1,5 +1,6 @@
 import { createContext, type ReactNode, useContext, useMemo } from "react";
 import { useLocalStorageState } from "@/hooks/use-local-storage-state";
+import { useIsMobileState } from "@/hooks/use-mobile";
 
 /** Preview type size in px. Shared by the catalog list and the detail tester. */
 export const SIZE_MIN = 12;
@@ -32,7 +33,11 @@ interface PreviewState {
   /** Hide fonts that cannot render the preview text. On unless switched off. */
   coverOnly: boolean;
   setCoverOnly: (v: boolean) => void;
-  /** Show the preview size/leading controls in the rail. On unless switched off. */
+  /**
+   * Show the preview size/leading controls. Tracked per form factor: the
+   * desktop rail has room for them so they are on unless switched off, while
+   * the mobile drawer trades that height for filters so they start off.
+   */
   showPreview: boolean;
   setShowPreview: (v: boolean) => void;
   size: number;
@@ -53,6 +58,13 @@ export function PreviewProvider({ children }: { children: ReactNode }) {
     "font-fridge.preview-controls",
     "1"
   );
+  const [previewMobile, setPreviewMobile] = useLocalStorageState(
+    "font-fridge.preview-controls-mobile",
+    "0"
+  );
+  // `undefined` until measured — fall back to the desktop key, which is what
+  // the rail (the only preview toggle painted before measurement) reads.
+  const isMobile = useIsMobileState() === true;
   const [size, setSizeRaw] = useLocalStorageState(
     "font-fridge.preview-size",
     String(SIZE_DEFAULT)
@@ -69,8 +81,9 @@ export function PreviewProvider({ children }: { children: ReactNode }) {
       setText,
       coverOnly: cover !== "0",
       setCoverOnly: (v: boolean) => setCover(v ? "1" : "0"),
-      showPreview: preview !== "0",
-      setShowPreview: (v: boolean) => setPreview(v ? "1" : "0"),
+      showPreview: (isMobile ? previewMobile : preview) !== "0",
+      setShowPreview: (v: boolean) =>
+        (isMobile ? setPreviewMobile : setPreview)(v ? "1" : "0"),
       size: Number.isFinite(parsed) ? clampSize(parsed) : SIZE_DEFAULT,
       setSize: (v: number) => setSizeRaw(String(clampSize(v))),
       leading: Number.isFinite(parsedLeading)
@@ -85,6 +98,9 @@ export function PreviewProvider({ children }: { children: ReactNode }) {
     setCover,
     preview,
     setPreview,
+    previewMobile,
+    setPreviewMobile,
+    isMobile,
     size,
     setSizeRaw,
     leading,

@@ -1,6 +1,7 @@
-import { FunnelIcon } from "@phosphor-icons/react";
+import { FadersHorizontalIcon, FunnelIcon } from "@phosphor-icons/react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Drawer,
   DrawerContent,
@@ -10,6 +11,7 @@ import {
 import type { FacetIndex } from "@/lib/fonts/filter/facets";
 import type { FilterSearch, FilterState } from "@/lib/fonts/filter/state";
 import { activeFilterCount } from "@/lib/fonts/filter/state";
+import { usePreview } from "@/lib/preview/context";
 import { FilterGroupButton, FilterRail } from "./filter-rail";
 import { FilterSidebar } from "./filter-sidebar";
 import { type FilterGroupId, PRESET_GROUP } from "./groups";
@@ -35,6 +37,7 @@ export function FilterDrawer({
 }) {
   const [open, setOpen] = useState(false);
   const count = activeFilterCount(filter);
+  const { showPreview, setShowPreview } = usePreview();
 
   return (
     <Drawer open={open} onOpenChange={setOpen} swipeDirection="down">
@@ -67,6 +70,19 @@ export function FilterDrawer({
               {count} active
             </span>
           )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowPreview(!showPreview)}
+            aria-pressed={showPreview}
+            className="ml-auto aria-pressed:bg-muted aria-pressed:text-foreground"
+          >
+            <FadersHorizontalIcon
+              data-icon="inline-start"
+              weight={showPreview ? "duotone" : "regular"}
+            />
+            Preview Settings
+          </Button>
         </div>
         <div className="flex border-border border-b px-3 pt-2">
           <FilterRail
