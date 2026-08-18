@@ -150,6 +150,20 @@ BACKFILLED_FIELDS = (
     "designerProfiles",
     "contrast",
     "glyphCoverage",
+    # Repo-activity dates. Same reasoning as versionHistory above, and the same
+    # failure mode: a --full run would blank them catalog-wide, and only the
+    # daily job's --ids scoped re-backfill would refill them, a few families a
+    # day. The upstream sweep would recover its own six on the next daily run
+    # (it is unconditional and whole-catalog), but gfTtfCommitDate is --ids
+    # scoped, so without this it would stay null for most of the catalog until
+    # each family happened to be re-served.
+    "gfTtfCommitDate",
+    "upstreamHeadDate",
+    "upstreamAnyDate",
+    "upstreamPushedAt",
+    "upstreamArchived",
+    "upstreamRepoKey",
+    "upstreamNewestTag",
 )
 
 

@@ -195,6 +195,12 @@ jobs:
           # that field across a re-harvest, so this set is just the genuinely new
           # families rather than all 2030.
           python3 scripts/harvester/backfill_version_history.py 2>&1 | tee -a update.log
+          # Same shape: bare (no --ids) so it resumes, processing only families
+          # that do not already carry gfTtfCommitDate. daily_update carries the
+          # field across a re-harvest, so on a normal full reconcile this is
+          # just the genuinely new families; after a bucket wipe it is the whole
+          # catalog at ~2 requests each.
+          python3 scripts/harvester/backfill_gf_ttf_date.py 2>&1 | tee -a update.log
 
       - name: Publish assets to R2
         if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'
