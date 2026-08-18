@@ -148,15 +148,31 @@ jobs:
             echo "changed=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Sweep upstream repo activity
+        id: upstream
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          before=$(shasum -a 256 src/data/fonts.json | cut -d' ' -f1)
+          python3 scripts/harvester/backfill_upstream_activity.py \
+            --stale-versions-out=scripts/harvester/version_ids.txt \
+            2>&1 | tee -a update.log
+          after=$(shasum -a 256 src/data/fonts.json | cut -d' ' -f1)
+          if [ "$before" != "$after" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Guard against catalog shrinkage
-        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'
+        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true' || steps.upstream.outputs.changed == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: node scripts/shrinkage-guard.mjs
 
       - name: Regenerate OG cards for newly harvested families
-        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'
+        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true' || steps.upstream.outputs.changed == 'true'
         run: |
           if [ -s scripts/harvester/og_ids.txt ]; then
             node scripts/gen-og-images.mjs --ids=scripts/harvester/og_ids.txt
@@ -166,7 +182,7 @@ jobs:
 
       - name: Regenerate glyph coverage for newly harvested families
         id: glyphs
-        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'
+        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true' || steps.upstream.outputs.changed == 'true'
         run: |
           if [ -s scripts/harvester/og_ids.txt ]; then
             python3 scripts/harvester/backfill_glyph_coverage.py \
@@ -178,36 +194,41 @@ jobs:
           fi
 
       - name: Backfill repo-derived fields for families still missing them
-        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'
+        id: backfill
+        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true' || steps.upstream.outputs.changed == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          before=$(shasum -a 256 src/data/fonts.json | cut -d' ' -f1)
           if [ -s scripts/harvester/og_ids.txt ]; then
             ids=$(paste -sd, scripts/harvester/og_ids.txt)
-            # License text comes from raw.githubusercontent.com, which is not
-            # metered against the core API quota, so scoping by --ids is only a
-            # time saving and stays as-is.
             python3 scripts/harvester/backfill_license.py --ids="$ids" 2>&1 | tee -a update.log
           else
             echo "no families re-harvested; license headers unchanged"
           fi
-          # version_history hits api.github.com, which IS metered (5000/hr). On a
-          # full reconcile --ids is the whole catalog: ~6000 requests, so the run
-          # always died around the same family and the tail of the alphabet was
-          # left with no history at all. Bare, the script resumes -- it processes
-          # only families still missing firstCommitDate. daily_update now carries
-          # that field across a re-harvest, so this set is just the genuinely new
-          # families rather than all 2030.
           python3 scripts/harvester/backfill_version_history.py 2>&1 | tee -a update.log
-          # Same shape: bare (no --ids) so it resumes, processing only families
-          # that do not already carry gfTtfCommitDate. daily_update carries the
-          # field across a re-harvest, so on a normal full reconcile this is
-          # just the genuinely new families; after a bucket wipe it is the whole
-          # catalog at ~2 requests each.
           python3 scripts/harvester/backfill_gf_ttf_date.py 2>&1 | tee -a update.log
+          after=$(shasum -a 256 src/data/fonts.json | cut -d' ' -f1)
+          if [ "$before" != "$after" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Backfill about descriptions and designer profiles
+        id: about
+        run: |
+          before=$(shasum -a 256 src/data/fonts.json | cut -d' ' -f1)
+          python3 scripts/harvester/backfill_about.py 2>&1 | tee -a update.log
+          after=$(shasum -a 256 src/data/fonts.json | cut -d' ' -f1)
+          if [ "$before" != "$after" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Publish assets to R2
-        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'
+        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true' || steps.upstream.outputs.changed == 'true' || steps.backfill.outputs.changed == 'true' || steps.about.outputs.changed == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -226,7 +247,7 @@ jobs:
           fi
 
       - name: Warn if build-time source data drifted
-        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'
+        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true' || steps.upstream.outputs.changed == 'true' || steps.backfill.outputs.changed == 'true' || steps.about.outputs.changed == 'true'
         run: |
           if ! git diff --quiet -- src/data/scripts.json src/data/languages.json; then
             echo "::warning::scripts.json/languages.json changed this run but are not auto-committed. Review and commit them manually:"
@@ -236,7 +257,7 @@ jobs:
           fi
 
       - name: Trigger Cloudflare deploy
-        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'
+        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true' || steps.upstream.outputs.changed == 'true' || steps.backfill.outputs.changed == 'true' || steps.about.outputs.changed == 'true'
         env:
           CLOUDFLARE_DEPLOY_HOOK_URL: ${{ secrets.CLOUDFLARE_DEPLOY_HOOK_URL }}
         run: |
