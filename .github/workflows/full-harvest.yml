@@ -118,6 +118,10 @@ jobs:
         id: supplement
         env:
           GOOGLE_FONTS_API_KEY: ${{ secrets.GOOGLE_FONTS_API_KEY }}
+          # The supplement set is derived (webfonts catalog minus the
+          # google/fonts tree), so this step now enumerates the repo tree too.
+          # Unauthenticated that shares the 60 req/hr bucket and fails.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           python3 scripts/harvester/harvest_api_supplement.py | tee -a update.log
           if [ "${{ steps.update.outputs.changed }}" = "true" ] \

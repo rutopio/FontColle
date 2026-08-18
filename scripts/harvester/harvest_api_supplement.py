@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
-"""One-off / on-demand supplement: harvest the 8 families that live in the
-webfonts v1 API but NOT in the google/fonts repo (Google Sans, Google Sans Flex,
-Edu Hand batch), transform them with the same to_record() the full pipeline uses,
-and merge by id into src/data/fonts.json.
+"""On-demand supplement: harvest the families that live in the webfonts v1 API
+but NOT in the google/fonts repo (today: Google Sans, Google Sans Flex, the Edu
+Hand batch), transform them with the same to_record() the full pipeline uses, and
+merge by id into src/data/fonts.json.
 
-Repo stays the primary source (harvest.py); this only fills the repo-absent gap.
-See tasks/todo.md + the gf-website-repo-lag memory. Needs GOOGLE_FONTS_API_KEY.
+The set is DERIVED, not hardcoded: every run diffs the live webfonts catalog
+against the live google/fonts tree, so a newly added API-only family is picked up
+on the next daily run, and one that graduates INTO the repo is dropped here and
+left to the repo harvester (which produces the strictly richer record). See
+tasks/todo.md + the gf-website-repo-lag memory.
+
+Needs GOOGLE_FONTS_API_KEY; GITHUB_TOKEN is optional but avoids the 60 req/hr
+unauthenticated limit when enumerating the repo tree.
 
   GOOGLE_FONTS_API_KEY=... python3 harvest_api_supplement.py [--dry-run]
 """
@@ -16,6 +22,7 @@ import sys
 import urllib.parse
 import urllib.request
 
+import daily_update
 import harvest
 import harvest_api
 from to_dataset import apply_published_signals, load_published_map, to_record
@@ -115,12 +122,42 @@ def seed_cache(rec, item):
     rec["primaryTtf"] = fname
 
 
-# The families we want that the repo lacks. Kept explicit so we never pull the
-# whole webfonts catalog by accident.
-WANT = {
-    "Edu NSW ACT Cursive", "Edu NSW ACT Hand Pre", "Edu QLD Hand", "Edu SA Hand",
-    "Edu VIC WA NT Hand", "Edu VIC WA NT Hand Pre", "Google Sans", "Google Sans Flex",
-}
+# Sanity bound on the derived set. The real gap has been 8 families for as long
+# as this script has existed; a sudden jump to dozens means the repo-tree
+# enumeration came back wrong (partial tree, auth failure), not that Google
+# published 50 API-only families overnight. Abort rather than harvest — and
+# rewrite — a hundred families off a bad diff.
+MAX_SUPPLEMENT = 40
+
+
+def wanted_families(items):
+    """Derive the API-only set: webfonts catalog MINUS the google/fonts tree.
+
+    Was a hardcoded 8-name WANT set, which silently missed both directions: a new
+    API-only family Google adds is never harvested, and one that graduates into
+    the repo keeps getting overwritten here with the poorer API record every day.
+    Diffing live sources fixes both.
+
+    Icon families are excluded via harvest_api.EXCLUDE_PREFIXES (the same rule
+    harvest_api.py applies) — they are not text faces and Google lists them
+    separately.
+
+    Returns (wanted_items, repo_dirs) so the caller can reuse the tree without a
+    second GitHub round-trip.
+    """
+    repo_dirs = set(daily_update.list_all_families())
+    if not repo_dirs:
+        sys.exit("ABORT: google/fonts tree enumeration returned no families")
+    out = {}
+    for name, it in items.items():
+        if name.startswith(harvest_api.EXCLUDE_PREFIXES):
+            continue
+        # Join on the same key to_record() uses for `id`, so "in the repo" is
+        # tested exactly the way the merge below identifies a record.
+        if harvest_api.family_dir(name) in repo_dirs:
+            continue
+        out[name] = it
+    return out, repo_dirs
 
 
 def main():
@@ -130,10 +167,14 @@ def main():
         sys.exit("error: set GOOGLE_FONTS_API_KEY")
 
     api = harvest_api.fetch_json(f"{API}?key={key}&capability=VF&sort=alpha")
-    items = {it["family"]: it for it in api.get("items", []) if it["family"] in WANT}
-    missing = WANT - set(items)
-    if missing:
-        print("WARN: not in API:", sorted(missing), file=sys.stderr)
+    all_items = {it["family"]: it for it in api.get("items", [])}
+    items, repo_dirs = wanted_families(all_items)
+    print(f"API-only families (webfonts {len(all_items)} minus repo): "
+          f"{len(items)} -> {sorted(items)}", file=sys.stderr)
+    if len(items) > MAX_SUPPLEMENT:
+        sys.exit(f"ABORT: {len(items)} API-only families exceeds the "
+                 f"MAX_SUPPLEMENT={MAX_SUPPLEMENT} sanity bound; refusing to "
+                 f"harvest off a suspect repo-tree diff")
 
     raws = []
     for name in sorted(items):
@@ -213,6 +254,26 @@ def main():
     added = [r["id"] for r in finals if r["id"] not in by_id]
     for r in finals:
         by_id[r["id"]] = r
+
+    # Graduation: a family that used to be API-only and has since landed in
+    # google/fonts. It is no longer in `finals` (wanted_families dropped it), so
+    # the loop above leaves the stale apiOnly=True on the record — and that flag
+    # is exactly what exempts a record from daily_update's "removed" check. Left
+    # set, a family later DELETED from the repo would never flip to
+    # isPublished=false. Clear it here, the one place that knows the repo tree
+    # and the dataset at the same time. The repo harvester owns the record from
+    # now on and will overwrite it with the richer version on its next diff.
+    graduated = [
+        rec["id"] for rec in by_id.values()
+        if rec.get("apiOnly") and rec["id"] in repo_dirs
+    ]
+    for gid in graduated:
+        by_id[gid].pop("apiOnly", None)
+    if graduated:
+        print(f"graduated into google/fonts, apiOnly cleared: {graduated}",
+              file=sys.stderr)
+        changed = sorted(set(changed) | set(graduated))
+
     dataset = sorted(by_id.values(), key=lambda x: x["name"].lower())
     with open(DATASET, "w", encoding="utf-8") as fh:
         json.dump(dataset, fh, indent=2, ensure_ascii=False)

@@ -114,14 +114,21 @@ jobs:
         id: supplement
         env:
           GOOGLE_FONTS_API_KEY: ${{ secrets.GOOGLE_FONTS_API_KEY }}
+          # The supplement set is derived (webfonts catalog minus the
+          # google/fonts tree), so this step enumerates the repo tree too.
+          # Unauthenticated that shares the 60 req/hr bucket and fails.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # daily_update.py only diffs the google/fonts repo tree, so the apiOnly
-          # families (Google Sans, Google Sans Flex, Edu Hand batch) served by the
-          # webfonts API but absent from the repo are never picked up there. This
-          # step re-harvests them from the API and merges into the same
-          # fonts.json, appending any changed ids to og_ids.txt. Idempotent: a
-          # no-op run reports supplement-changed=0. Runs AFTER daily_update (which
-          # writes fonts.json + og_ids.txt) and BEFORE the shrinkage guard (so the
+          # families (today: Google Sans, Google Sans Flex, the Edu Hand batch)
+          # served by the webfonts API but absent from the repo are never picked
+          # up there. This step re-harvests them from the API and merges into the
+          # same fonts.json, appending any changed ids to og_ids.txt. The set is
+          # DERIVED per run, not a fixed list: a newly published API-only family
+          # is picked up automatically, and one that graduates into the repo is
+          # handed back to daily_update. Idempotent: a no-op run reports
+          # supplement-changed=0. Runs AFTER daily_update (which writes
+          # fonts.json + og_ids.txt) and BEFORE the shrinkage guard (so the
           # merged families are in the baseline the guard and publish see).
           python3 scripts/harvester/harvest_api_supplement.py | tee -a update.log
           # Combined change signal, the single gate the downstream steps read:
