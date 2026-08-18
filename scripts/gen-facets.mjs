@@ -13,8 +13,7 @@ const project = (f) => ({
   license: f.license,
   isVariable: f.isVariable,
   isMonospace: f.isMonospace,
-  // The reliable spacing signal; isMonospace above is the raw isFixedPitch bit
-  // and disagrees with it in both directions.
+  // Tag-based (reliable); isMonospace is raw isFixedPitch (unreliable).
   spacing: fontSpacing(f),
   weights: f.weights,
   axes: f.axes,
@@ -90,10 +89,7 @@ export async function genFacets() {
     "variable",
     slim.filter((f) => f.isVariable)
   );
-  // fontSpacing(), not the `isMonospace` field: post.isFixedPitch is wrong in
-  // both directions (it misses Azeret Mono and Sono, and claims Press Start 2P
-  // and Noto Color Emoji), so a slice built from it does not match what the
-  // site's own Spacing filter returns.
+  // fontSpacing() (tag-based), not isMonospace (isFixedPitch, wrong in both directions).
   await writeSlice(
     "flag",
     "monospace",

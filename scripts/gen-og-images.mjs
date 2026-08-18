@@ -79,9 +79,7 @@ async function fontUrl(family, text) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-// The harvester already mirrors every family's TTF into ttf_cache/, so a full
-// re-render reads from disk instead of making ~1900 Google Fonts round trips.
-// Returns null when the family isn't cached, and the network path takes over.
+// Prefer TTF from ttf_cache/ to avoid network round trips.
 function cachedFont(family) {
   const slug = family.toLowerCase().replace(/[^a-z0-9]/g, "");
   for (const lic of CACHE_LICENSES) {
@@ -89,10 +87,7 @@ function cachedFont(family) {
     if (!existsSync(dir)) continue;
     const files = readdirSync(dir).filter((f) => f.endsWith(".ttf"));
     if (files.length === 0) continue;
-    // Upright only, then rank: variable file (`Inter[opsz,wght].ttf`) first
-    // since it carries the default instance, then an explicit -Regular, then
-    // anything else. Without the rank a plain shortest-name sort picks
-    // LondrinaSolid-Thin over -Regular and the card renders in the wrong weight.
+    // Prefer variable file > -Regular > shortest name.
     const upright = files.filter((f) => !/italic/i.test(f));
     const pool = upright.length > 0 ? upright : files;
     const rank = (f) =>
@@ -110,9 +105,7 @@ async function loadFont(family, text, tries = 3) {
   try {
     const hit = cachedFont(family);
     if (hit) return hit;
-  } catch {
-    // Unreadable or unparseable cache entry: fall through to the network.
-  }
+  } catch {}
 
   let last;
   for (let i = 0; i < tries; i++) {

@@ -73,7 +73,7 @@ run("harvest all families", py, ["harvest.py", "-"], {
 
 run("fetch published signals", py, ["fetch_published.py"], { cwd: HARVESTER });
 
-run("to_dataset", py, ["to_dataset.py", "stress_output.json", FONTS_JSON], {
+run("to_dataset", py, ["to_dataset.py", "harvest_output.json", FONTS_JSON], {
   cwd: HARVESTER,
 });
 
@@ -83,7 +83,7 @@ for (const [label, script] of [
   ["contrast", "backfill_contrast.py"],
   ["display names", "backfill_display_names.py"],
   ["about + designers", "backfill_about.py"],
-  ["source repo url", "backfill_source.py"],
+  ["source repo url", "archive/backfill_source.py"],
   ["license header", "backfill_license.py"],
   ["version history", "backfill_version_history.py"],
   ["glyph coverage", "backfill_glyph_coverage.py"],

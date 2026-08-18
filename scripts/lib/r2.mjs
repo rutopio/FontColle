@@ -17,12 +17,7 @@ if (!ACCOUNT_ID) {
   );
 }
 
-// R2's API answers an occasional request with a transient 5xx (seen as
-// `503: Service Unavailable` + Cloudflare error code 10043) or drops the
-// connection outright. A single one of those used to fail the whole daily
-// harvest mid-publish, leaving the manifest pointing at the previous
-// snapshot. Retry only those; a 4xx (bad token, missing key) is a real
-// error and must still fail on the first try.
+// Retry transient R2 5xx / network errors; 4xx fails immediately.
 const RETRIES = 3;
 const BACKOFF_MS = [2000, 6000, 15000];
 const TRANSIENT_RE =
@@ -41,8 +36,7 @@ function wrangler(args, { input } = {}) {
       input,
       encoding: "utf8",
       maxBuffer: 1024 * 1024 * 1024,
-      // stderr is captured (not inherited) so a transient 5xx can be told
-      // apart from a permanent failure; it is echoed back on the way out.
+      // stderr captured for transient-vs-permanent discrimination.
       stdio: [input ? "pipe" : "ignore", input ? "inherit" : "pipe", "pipe"],
     });
     if (res.status === 0) return res.stdout;

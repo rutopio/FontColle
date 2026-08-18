@@ -61,8 +61,7 @@ export async function genGlyphIndex() {
   );
 }
 
-// pathToFileURL, not `file://${argv[1]}`: this repo's path contains brackets,
-// which import.meta.url percent-encodes and a raw concatenation does not.
+// pathToFileURL: repo path has brackets that need percent-encoding.
 if (
   process.argv[1] &&
   import.meta.url === pathToFileURL(process.argv[1]).href

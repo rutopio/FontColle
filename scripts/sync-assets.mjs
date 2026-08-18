@@ -16,7 +16,7 @@ const FONTS_JSON = path.join(ROOT, "src/data/fonts.json");
 const GLYPHS_DIR = path.join(ROOT, "public/glyphs");
 const OG_DIR = path.join(ROOT, "public/og");
 const SCRATCH = path.join(ROOT, ".r2-tmp");
-// Daily runs add a few dozen OG cards; hundreds means the base tarball is stale.
+// Hundreds of deltas means the base tarball is stale.
 const MAX_OG_DELTAS = 300;
 // Harvests pass --skip-og-deltas; builds enforce the limit to avoid timeout deadlock.
 const SKIP_OG_DELTAS = process.argv.includes("--skip-og-deltas");
@@ -50,7 +50,6 @@ console.log(`[sync] fonts.json <- ${manifest.fonts.key} (verified)`);
       `[sync] skipping ${manifest.og.deltas.length} OG deltas (--skip-og-deltas)`
     );
   }
-  // One wrangler subprocess per delta (~1s each); fail fast before build timeout.
   if (deltas.length > MAX_OG_DELTAS) {
     throw new Error(
       `manifest carries ${deltas.length} OG deltas (limit ${MAX_OG_DELTAS}). ` +

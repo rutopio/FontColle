@@ -14,12 +14,8 @@ export async function genCatalog() {
     .filter((f) => f?.isPublished ?? true)
     .sort((a, b) => a.name.localeCompare(b.name));
 
-  // Version of the *data*, not the build. Detail pages are pure functions of
-  // public/catalog/<id>.json, so keying their SSR cache on this instead of
-  // __BUILD_ID__ keeps ~13.6k cached detail renders (1942 fonts x 7 tabs) warm
-  // across code-only deploys, instead of expiring them all at once and letting
-  // the next crawl pay full SSR on every miss. Hashing the source dataset
-  // covers every field that reaches any generated file.
+  // Hash the dataset, not the build: detail SSR caches key on this so
+  // code-only deploys don't invalidate every cached render at once.
   const dataVersion = createHash("sha256")
     .update(raw)
     .digest("hex")
@@ -63,10 +59,7 @@ export async function genCatalog() {
   );
   console.log(`[catalog] wrote hashed catalog + manifest -> ${hashedRel}`);
 
-  // Siblings ("More by <designer>") are folded into each per-font file so the
-  // detail SSR needs one ASSETS fetch instead of also pulling and scanning the
-  // 147 KB designer-index on every cache miss — that scan was pure Worker CPU
-  // recomputed identically for every family sharing a designer.
+  // Pre-fold siblings into per-font files so detail SSR needs one fetch, not two.
   const splitDesigners = (designer) =>
     (designer ?? "")
       .split(",")
@@ -81,7 +74,7 @@ export async function genCatalog() {
       else byDesigner.set(d, [f]);
     }
   }
-  // Match the previous runtime sort so the rendered order does not change.
+  // Keep stable order across rebuilds.
   for (const list of byDesigner.values()) {
     list.sort((a, b) => a.name.localeCompare(b.name));
   }
@@ -132,8 +125,7 @@ export async function genCatalog() {
     name: f.name,
     designer: f.designer ?? null,
     category: f.category,
-    // Backs fontSpacing() for the families the google/fonts tags CSV has not
-    // reached (Hibur Mono, Iosevka Charon).
+    // Fallback for families the tags CSV hasn't reached yet.
     apiCategory: f.apiCategory,
     license: f.license,
     isVariable: f.isVariable,
@@ -159,8 +151,7 @@ export async function genCatalog() {
     dateAdded: f.dateAdded,
     upstreamHeadDate: f.upstreamHeadDate,
     upstreamArchived: f.upstreamArchived,
-    // Needed in the slim catalog, not just the detail files: the "GF repo
-    // updated" sort runs over the list view.
+    // Needed in slim catalog for the "GF repo updated" sort.
     gfTtfCommitDate: f.gfTtfCommitDate ?? null,
     repositoryUrl: f.repositoryUrl,
     vendorId: f.vendorId,
@@ -176,7 +167,7 @@ export async function genCatalog() {
     `[catalog] wrote catalog-slim.json (${slim.length} records, ${(slimJson.length / 1024 / 1024).toFixed(1)} MB)`
   );
 
-  // Must match sortFonts(fonts, "popularity") in src/lib/fonts/sort.ts.
+  // Must match sortFonts(fonts, "popularity") in sort.ts.
   const FIRST_PAGE_SIZE = 24;
   const EMPTY_INSTANCE = {};
   const byNameBase = (a, b) =>
@@ -189,25 +180,8 @@ export async function genCatalog() {
     if (br == null) return -1;
     return ar - br || byNameBase(a, b);
   };
-  // This slice is rendered server-side AND re-serialized into the streamed HTML
-  // for hydration, so every byte is paid for twice. Keep only the fields the
-  // first-paint tree actually reads, traced from FirstPagePending down through
-  // FontCard/FontRow -> FontTraits/fontTraits, FontActions, and
-  // useFontFacePreview -> specimenFor/usePreviewCoords:
-  //
-  //   id, name, designer, category   card + row text and links
-  //   repositoryUrl                  FontActions repo link
-  //   isVariable, axes, features     fontTraits badges (+ preview coords)
-  //   colorTables                    isColorFont() badge
-  //   facets                         preview font-face selection; also keeps
-  //                                  withFacets() from calling deriveFacets()
-  //   specimen, specimenTiers, subsets   specimenFor() preview string
-  //   popularityRank                 asserted by first-page.test.ts
-  //
-  // `instances` is kept as empty placeholders: only `.length` is ever read
-  // (the badge, and sortFonts("instances-most")), never an instance's fields.
-  // deriveFacets() is the one caller that inspects instance.italic/.name, and
-  // it cannot run here because every record carries a non-empty `facets`.
+  // SSR-inlined slice: only fields the first-paint components read.
+  // Instances kept as empty placeholders (only .length is read).
   const FIRST_PAGE_FIELDS = [
     "id",
     "name",

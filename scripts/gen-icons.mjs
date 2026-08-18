@@ -1,6 +1,4 @@
-// Regenerates the raster brand icons from public/favicon.svg, so the favicon,
-// the iOS home-screen icon and the SVG never drift apart. Run after changing
-// the mark: `node scripts/gen-icons.mjs`.
+// Regenerate raster brand icons from public/favicon.svg.
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -15,8 +13,7 @@ function png(size) {
     .asPng();
 }
 
-// .ico with a single 64x64 PNG-compressed entry. Every current browser reads
-// PNG-in-ICO; the format's own BMP encoding is not worth hand-rolling.
+// ICO with a single PNG-compressed entry.
 function ico(pngBuf, size) {
   const header = Buffer.alloc(6);
   header.writeUInt16LE(0, 0); // reserved
