@@ -26,6 +26,7 @@ export interface FilterState {
   license: string[];
   repoHosts: string[];
   activity: string[];
+  repoStatus: string[];
   source: string[];
   italic: string[];
   spacing: string[];
@@ -59,6 +60,7 @@ export const emptyFilter: FilterState = {
   license: [],
   repoHosts: [],
   activity: [],
+  repoStatus: [],
   source: [],
   italic: [],
   spacing: [],
@@ -88,6 +90,7 @@ export interface FilterSearch {
   license?: string;
   repo?: string;
   activity?: string;
+  repoStatus?: string;
   noto?: string;
   italic?: string;
   spacing?: string;
@@ -236,6 +239,7 @@ export function searchToFilter(s: FilterSearch): FilterState {
     license: splitUnderscore(s.license),
     repoHosts: splitUnderscore(s.repo),
     activity: splitUnderscore(s.activity),
+    repoStatus: splitUnderscore(s.repoStatus),
     source: splitUnderscore(s.noto).map(decodeSource),
     italic: splitUnderscore(s.italic),
     spacing: splitUnderscore(s.spacing),
@@ -271,6 +275,7 @@ export function filterToSearch(f: FilterState): FilterSearch {
   if (f.license.length) s.license = joinUnderscore(f.license);
   if (f.repoHosts.length) s.repo = joinUnderscore(f.repoHosts);
   if (f.activity.length) s.activity = joinUnderscore(f.activity);
+  if (f.repoStatus.length) s.repoStatus = joinUnderscore(f.repoStatus);
   if (f.source.length) s.noto = joinUnderscore(f.source.map(encodeSource));
   if (f.italic.length) s.italic = joinUnderscore(f.italic);
   if (f.spacing.length) s.spacing = joinUnderscore(f.spacing);
@@ -306,6 +311,7 @@ export function activeFilterCount(f: FilterState): number {
     f.license.length +
     f.repoHosts.length +
     f.activity.length +
+    f.repoStatus.length +
     f.source.length +
     f.italic.length +
     f.spacing.length +
@@ -338,6 +344,7 @@ export function parseFilterSearch(raw: Record<string, unknown>): FilterSearch {
     license: str(raw.license),
     repo: str(raw.repo),
     activity: str(raw.activity),
+    repoStatus: str(raw.repoStatus),
     noto: str(raw.noto),
     italic: str(raw.italic),
     spacing: str(raw.spacing),

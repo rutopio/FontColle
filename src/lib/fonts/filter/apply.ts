@@ -11,6 +11,7 @@ import {
   designerTokens,
   foldVendor,
   fontActivity,
+  fontRepoStatus,
   fontSpacing,
   meetsTagThreshold,
   repoHost,
@@ -207,6 +208,8 @@ export function applyFilters(
       f.repoHosts.length &&
       !f.repoHosts.includes(repoHost(font.repositoryUrl))
     )
+      return false;
+    if (f.repoStatus.length && !f.repoStatus.includes(fontRepoStatus(font)))
       return false;
     if (f.activity.length && !f.activity.includes(fontActivity(font)))
       return false;

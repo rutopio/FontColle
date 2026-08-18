@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { FontRecord } from "@/lib/fonts/types";
 import { applyFilters, searchByQuery, suggestFamilies } from "./apply";
-import { fontActivity, fontSpacing } from "./facets";
+import { fontActivity, fontRepoStatus, fontSpacing } from "./facets";
 import { emptyFilter, type FilterState } from "./state";
 
 function font(over: Partial<FontRecord> = {}): FontRecord {
@@ -42,6 +42,12 @@ function font(over: Partial<FontRecord> = {}): FontRecord {
     popularityRank: null,
     trendingRank: null,
     lastModifiedApi: null,
+    upstreamHeadDate: null,
+    upstreamAnyDate: null,
+    upstreamPushedAt: null,
+    upstreamArchived: null,
+    upstreamRepoKey: null,
+    upstreamNewestTag: null,
     versionHistory: [],
     specimen: null,
     about: null,
@@ -472,8 +478,38 @@ describe("suggestFamilies", () => {
   });
 });
 
+describe("fontRepoStatus", () => {
+  it("reports the upstream archived flag", () => {
+    expect(fontRepoStatus(font({ upstreamArchived: false }))).toBe("live");
+    expect(fontRepoStatus(font({ upstreamArchived: true }))).toBe("archived");
+  });
+
+  it("is unknown when the family has no resolvable repo", () => {
+    expect(fontRepoStatus(font({ upstreamArchived: null }))).toBe("unknown");
+  });
+});
+
 describe("fontActivity", () => {
   const monthsAgo = (n: number) => Date.now() - n * 30.44 * 24 * 60 * 60 * 1000;
+  const daysAgoIso = (n: number) =>
+    new Date(Date.now() - n * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+  it("prefers upstream repo activity over the build stamp", () => {
+    // Alegreya's shape: Google rebuilt it recently, but master is years cold.
+    const f = font({
+      modifiedMs: monthsAgo(1),
+      upstreamHeadDate: daysAgoIso(365 * 5),
+    });
+    expect(fontActivity(f)).toBe("dormant");
+  });
+
+  it("counts a live upstream repo even when the binary is old", () => {
+    const f = font({
+      modifiedMs: monthsAgo(120),
+      upstreamHeadDate: daysAgoIso(30),
+    });
+    expect(fontActivity(f)).toBe("latest");
+  });
 
   it("buckets by how long ago the font was compiled", () => {
     expect(fontActivity(font({ modifiedMs: monthsAgo(1) }))).toBe("latest");

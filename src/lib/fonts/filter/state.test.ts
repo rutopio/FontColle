@@ -28,6 +28,7 @@ const fullFilter: FilterState = {
   license: ["OFL", "APACHE2"],
   repoHosts: ["github", "gitlab"],
   activity: ["active"],
+  repoStatus: ["live"],
   source: ["others"],
   italic: ["italic"],
   spacing: ["mono"],

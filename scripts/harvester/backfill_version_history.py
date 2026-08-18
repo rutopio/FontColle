@@ -234,6 +234,11 @@ def main():
             tl, first = harvest_for(family_dir, dirs)
             r["versionHistory"] = tl
             r["firstCommitDate"] = first
+            # API-harvested families have no METADATA.pb, so no date_added. The
+            # google/fonts debut commit is the closest true answer to "when did
+            # Google take this family in", and powers the "Date added" sort.
+            if not r.get("dateAdded") and first:
+                r["dateAdded"] = first
             done += 1
             if tl:
                 hits += 1

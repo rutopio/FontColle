@@ -90,13 +90,14 @@ export function Detail({
     },
     font.version != null && { label: "Version", value: String(font.version) },
     font.dateAdded && {
-      label: "Added",
+      label: "Added to Google Fonts",
       value: formatDate(font.dateAdded),
       badge: versionOnDate(versionHistory, font.dateAdded) ?? undefined,
     },
-    font.lastModifiedApi && {
-      label: "Published",
-      value: formatDate(font.lastModifiedApi),
+    font.upstreamHeadDate && {
+      label: "Last updated",
+      value: formatDate(font.upstreamHeadDate),
+      badge: font.upstreamArchived ? "Archived" : undefined,
     },
     font.modifiedMs != null &&
       font.modifiedMs > 0 && {
@@ -268,7 +269,7 @@ export function Detail({
                       {[...versionHistory].reverse().map((v, i) => (
                         <TableRow key={v.version} index={i}>
                           <TableCell className="px-0 py-1.5 font-mono text-sm">
-                            v{v.version}
+                            {v.version}
                           </TableCell>
                           <TableCell className="px-0 py-1.5 text-right font-mono text-muted-foreground text-sm">
                             {formatDate(v.date)}

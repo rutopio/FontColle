@@ -176,14 +176,32 @@ export function fontActivity(font: FontRecord): string {
 }
 
 function monthsSince(font: FontRecord): number | null {
-  const stamp =
-    font.modifiedMs && font.modifiedMs > 0
+  // Upstream repo activity first: it answers "is anyone still working on this
+  // font", which is what "Last updated" claims to show. modifiedMs only says when
+  // Google last COMPILED the binary, so an actively developed family reads as
+  // dormant until Google happens to rebuild it. Fall back to it (then to the
+  // repo debut) only for the ~42 families with no resolvable github repo.
+  const stamp = font.upstreamHeadDate
+    ? Date.parse(font.upstreamHeadDate)
+    : font.modifiedMs && font.modifiedMs > 0
       ? font.modifiedMs
       : font.firstCommitDate
         ? Date.parse(font.firstCommitDate)
         : Number.NaN;
   if (!Number.isFinite(stamp)) return null;
   return (Date.now() - stamp) / (1000 * 60 * 60 * 24 * 30.44);
+}
+
+export const REPO_STATUS_VALUES = ["live", "archived"];
+export const REPO_STATUS_LABELS: Record<string, string> = {
+  live: "Live",
+  archived: "Archived",
+};
+
+/** Whether the family's upstream repo is archived. `unknown` when it has none. */
+export function fontRepoStatus(font: FontRecord): string {
+  if (font.upstreamArchived == null) return "unknown";
+  return font.upstreamArchived ? "archived" : "live";
 }
 
 export function repoHost(url: string | null): string {
@@ -250,6 +268,7 @@ export function buildFacetIndex(fonts: FontRecord[]) {
   const license = new Map<string, number>();
   const repoHosts = new Map<string, number>();
   const activity = new Map<string, number>();
+  const repoStatus = new Map<string, number>();
   const flags = new Map<string, number>();
   const italic = new Map<string, number>();
   const spacing = new Map<string, number>();
@@ -286,6 +305,7 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     if (font.license) bump(license, font.license);
     bump(repoHosts, repoHost(font.repositoryUrl));
     bump(activity, fontActivity(font));
+    bump(repoStatus, fontRepoStatus(font));
     bump(flags, font.isNoto ? "noto" : "others");
     bump(italic, font.facets.includes("has-italic") ? "italic" : "upright");
     bump(spacing, fontSpacing(font));
@@ -338,6 +358,9 @@ export function buildFacetIndex(fonts: FontRecord[]) {
     ),
     activity: ACTIVITY_VALUES.map(
       (v) => [v, activity.get(v) ?? 0] as [string, number]
+    ),
+    repoStatus: REPO_STATUS_VALUES.map(
+      (v) => [v, repoStatus.get(v) ?? 0] as [string, number]
     ),
     flags: FLAG_VALUES.map((v) => [v, flags.get(v) ?? 0] as [string, number]),
     italic: ITALIC_VALUES.map(

@@ -19,7 +19,7 @@ export function SpecTable({ rows }: { rows: SpecRow[] }) {
               <span className="flex items-center justify-end gap-2">
                 {row.badge && (
                   <Badge variant="secondary" className="font-mono">
-                    v{row.badge}
+                    {row.badge}
                   </Badge>
                 )}
                 <span className="font-mono text-sm">{row.value}</span>

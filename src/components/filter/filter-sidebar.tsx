@@ -2,6 +2,7 @@ import {
   ArrowsOutLineHorizontalIcon,
   BracketsSquareIcon,
   DiscoBallIcon,
+  SealCheckIcon,
   SlidersHorizontalIcon,
   SmileyMeltingIcon,
   TextAaIcon,
@@ -24,6 +25,7 @@ import {
   type MetricRange,
   type ModeKey,
   matchMode,
+  REPO_STATUS_LABELS,
   SPACING_LABELS,
 } from "@/lib/fonts/filter";
 import * as actions from "@/lib/fonts/filter-actions";
@@ -40,8 +42,8 @@ import { FontTypeSection } from "./font-type-section";
 import { FILTER_GROUP_IDS, FILTER_GROUPS, type FilterGroupId } from "./groups";
 import { InstancesSection } from "./instances-section";
 import { LanguageSection } from "./language-section";
+import { LastUpdatedSection } from "./last-updated-section";
 import { LicenseSection } from "./license-section";
-import { MaintenanceSection } from "./maintenance-section";
 import {
   HintSection,
   MetricsSection,
@@ -130,6 +132,8 @@ export function FilterSidebar({
     onChange(actions.selectItalic(filter, value));
   const selectSpacing = (value: string) =>
     onChange(actions.selectSpacing(filter, value));
+  const selectRepoStatus = (value: string) =>
+    onChange(actions.selectRepoStatus(filter, value));
   const toggleMode = (key: ModeKey) =>
     onChange(actions.toggleMatchMode(filter, key));
   const modeOf = (key: ModeKey) => matchMode(filter, key);
@@ -420,7 +424,16 @@ export function FilterSidebar({
             onToggle={(v) => toggle("repoHosts", v)}
             onReset={() => onChange({ ...filter, repoHosts: [] })}
           />
-          <MaintenanceSection
+          <RadioPillSection
+            title="Repo status"
+            icon={SealCheckIcon}
+            items={index.repoStatus}
+            labels={REPO_STATUS_LABELS}
+            selected={filter.repoStatus}
+            onToggle={selectRepoStatus}
+            onReset={() => onChange({ ...filter, repoStatus: [] })}
+          />
+          <LastUpdatedSection
             items={index.activity}
             selected={filter.activity}
             onToggle={(v) => toggle("activity", v)}

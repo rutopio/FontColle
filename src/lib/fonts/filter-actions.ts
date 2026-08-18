@@ -33,6 +33,7 @@ type ArrayKey =
   | "license"
   | "repoHosts"
   | "activity"
+  | "repoStatus"
   | "upm";
 
 const AXIS_EXCLUSIVE: Record<string, "weights" | "widths"> = {
@@ -151,6 +152,15 @@ export function selectItalic(filter: FilterState, value: string): FilterState {
 export function selectSpacing(filter: FilterState, value: string): FilterState {
   const next = filter.spacing.includes(value) ? [] : [value];
   return { ...filter, spacing: next };
+}
+
+/** Radio behaviour: re-picking the selected value clears the section. */
+export function selectRepoStatus(
+  filter: FilterState,
+  value: string
+): FilterState {
+  const next = filter.repoStatus.includes(value) ? [] : [value];
+  return { ...filter, repoStatus: next };
 }
 
 export function toggleMatchMode(

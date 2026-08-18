@@ -62,11 +62,11 @@ export const SORT_GROUPS: SortGroup[] = [
     descLabel: "Z → A",
   },
   {
-    group: "Date added",
+    group: "Added to GF",
     asc: "date-newest",
     desc: "date-oldest",
-    ascLabel: "Newest",
-    descLabel: "Oldest",
+    ascLabel: "Newest additions",
+    descLabel: "Oldest additions",
   },
   {
     group: "Last updated",
@@ -138,11 +138,17 @@ const isoCmp = (av: string | null, bv: string | null, newest: boolean) => {
   return newest ? bv.localeCompare(av) : av.localeCompare(bv);
 };
 
+/** When Google Fonts took the family in, NOT when the font itself was made. */
 const dateCmp = (a: FontRecord, b: FontRecord, newest: boolean) =>
   isoCmp(a.dateAdded, b.dateAdded, newest);
 
+/**
+ * "Last updated" — the family's own upstream default-branch head. NOT
+ * lastModifiedApi, which is Google's batch re-serving date and collapses the
+ * whole catalog onto 57 distinct values.
+ */
 const updatedCmp = (a: FontRecord, b: FontRecord, newest: boolean) =>
-  isoCmp(a.lastModifiedApi, b.lastModifiedApi, newest);
+  isoCmp(a.upstreamHeadDate, b.upstreamHeadDate, newest);
 
 export function sortFonts(fonts: FontRecord[], key: SortKey): FontRecord[] {
   const out = [...fonts];

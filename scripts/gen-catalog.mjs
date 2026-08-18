@@ -157,6 +157,8 @@ export async function genCatalog() {
     popularityRank: f.popularityRank,
     trendingRank: f.trendingRank,
     dateAdded: f.dateAdded,
+    upstreamHeadDate: f.upstreamHeadDate,
+    upstreamArchived: f.upstreamArchived,
     repositoryUrl: f.repositoryUrl,
     vendorId: f.vendorId,
     tags: f.tags ?? {},

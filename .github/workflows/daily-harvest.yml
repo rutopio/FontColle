@@ -166,8 +166,41 @@ jobs:
             echo "changed=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Sweep upstream repo activity
+        id: upstream
+        env:
+          # GraphQL rejects anonymous calls outright, so this token is required
+          # rather than merely advisable.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Whole-catalog, UNCONDITIONAL. This is the only signal that answers
+          # "is the font's own repo still maintained"; lastModifiedApi is
+          # Google's batch re-serving date (57 distinct values over 1942
+          # families) and modifiedMs is just when Google last compiled the TTF.
+          #
+          # Deliberately NOT gated on supplement/classify, and deliberately not
+          # scoped by og_ids.txt: those ids come from daily_update.py's diff,
+          # which keys off lastModifiedApi. A family whose upstream moved but
+          # which Google has not re-served would never be re-checked, i.e. the
+          # field would rot exactly where it matters most.
+          #
+          # Affordable because families are grouped by repo (1942 -> ~1275) and
+          # batched 50 per GraphQL query: a full sweep measured 26 points of the
+          # 5000/hr budget. The script aborts without writing if >20% of repos
+          # fail to resolve (bad token / outage, not 400 dead repos).
+          before=$(shasum -a 256 src/data/fonts.json | cut -d' ' -f1)
+          python3 scripts/harvester/backfill_upstream_activity.py \
+            --stale-versions-out=scripts/harvester/version_ids.txt \
+            2>&1 | tee -a update.log
+          after=$(shasum -a 256 src/data/fonts.json | cut -d' ' -f1)
+          if [ "$before" != "$after" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Guard against catalog shrinkage
-        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'
+        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true' || steps.upstream.outputs.changed == 'true'
         env:
           # The guard imports scripts/lib/r2.mjs (for the manifest helpers),
           # which requires an account id at module load even when it makes no
@@ -184,7 +217,7 @@ jobs:
           node scripts/shrinkage-guard.mjs
 
       - name: Regenerate OG cards for newly harvested families
-        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'
+        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true' || steps.upstream.outputs.changed == 'true'
         run: |
           # Only newly added/updated families need a fresh card (rank shifts
           # don't change the image). Skip when none were harvested.
@@ -196,7 +229,7 @@ jobs:
 
       - name: Regenerate glyph coverage for newly harvested families
         id: glyphs
-        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'
+        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true' || steps.upstream.outputs.changed == 'true'
         run: |
           # public/glyphs/<id>.json (the cmap ranges the Glyphs panel renders) is
           # a cache-reading backfill, NOT part of the harvest: daily_update and
@@ -215,7 +248,7 @@ jobs:
           fi
 
       - name: Backfill repo-derived fields for newly harvested families
-        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'
+        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true' || steps.upstream.outputs.changed == 'true'
         env:
           # version_history walks git history via the authenticated GitHub API
           # (60 req/hr unauthenticated would stall). license fetches raw OFL.txt.
@@ -236,9 +269,22 @@ jobs:
           else
             echo "no families re-harvested; repo-derived fields unchanged"
           fi
+          # Independently of the harvest diff: the upstream sweep lists families
+          # whose newest upstream TAG is newer than their last recorded
+          # versionHistory entry, i.e. a release we have not picked up. Without
+          # this, versionHistory only ever refreshes for families lastModifiedApi
+          # says changed, so an upstream release Google has not yet packaged
+          # would never appear.
+          if [ -s scripts/harvester/version_ids.txt ]; then
+            vids=$(paste -sd, scripts/harvester/version_ids.txt)
+            echo "refreshing versionHistory for $(wc -l < scripts/harvester/version_ids.txt) families with a newer upstream tag"
+            python3 scripts/harvester/backfill_version_history.py --ids="$vids" --force 2>&1 | tee -a update.log
+          else
+            echo "no families with a newer upstream tag"
+          fi
 
       - name: Publish assets to R2
-        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'
+        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true' || steps.upstream.outputs.changed == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -264,7 +310,7 @@ jobs:
       # Deploy Hook instead of by a git push.
 
       - name: Warn if build-time source data drifted
-        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'
+        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true' || steps.upstream.outputs.changed == 'true'
         run: |
           # scripts.json / languages.json are build-time imports compiled into the
           # bundle (src/lib/fonts/labels.ts), NOT pulled from R2 at runtime, so
@@ -280,7 +326,7 @@ jobs:
           fi
 
       - name: Trigger Cloudflare deploy
-        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true'
+        if: steps.supplement.outputs.changed == 'true' || steps.classify.outputs.changed == 'true' || steps.upstream.outputs.changed == 'true'
         env:
           CLOUDFLARE_DEPLOY_HOOK_URL: ${{ secrets.CLOUDFLARE_DEPLOY_HOOK_URL }}
         run: |

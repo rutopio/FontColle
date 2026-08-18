@@ -80,7 +80,13 @@ def build_record(item):
         "category": item.get("category"),
         "license": None,
         "subsets": subsets,
-        "date_added": item.get("lastModified"),
+        # The webfonts API exposes no "date added" field, only lastModified.
+        # This used to fall back to it, which made dateAdded (the "Date added"
+        # sort = when Google took the family in) silently mean "last modified"
+        # for these families -- e.g. the Edu* fonts read 2025-09 while their
+        # google/fonts debut was 2024-03. Leave it null instead and let
+        # to_dataset fall back to firstCommitDate, which is the real debut.
+        "date_added": None,
         "primary_script": None,
         "fonts": [],          # VF: derive_weights uses the wght axis
         "primary_ttf": None,
