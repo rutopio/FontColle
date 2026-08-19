@@ -2,10 +2,12 @@ import { XIcon } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from "motion/react";
 import { Fragment } from "react";
 import type { FilterSearch, FilterState } from "@/lib/fonts/filter";
+import type { FontRecord } from "@/lib/fonts/types";
 import { EASE_OUT, MOTION_S } from "@/lib/motion";
 import { usePreview } from "@/lib/preview/context";
 import { cn } from "@/lib/utils";
 import { groupActiveFilters } from "./describe";
+import { ExportResultsButton } from "./export-results-button";
 import { SavePresetPopover } from "./save-preset-popover";
 
 const CHIP_CLASS =
@@ -27,11 +29,13 @@ export function ActiveFilterChips({
   onChange,
   align = "center",
   currentSearch,
+  results,
 }: {
   filter: FilterState;
   onChange: (next: FilterState) => void;
   align?: "center" | "left";
   currentSearch?: FilterSearch;
+  results?: FontRecord[];
 }) {
   const groups = groupActiveFilters(filter);
   const query = filter.query.trim();
@@ -103,6 +107,7 @@ export function ActiveFilterChips({
       {currentSearch && (
         <SavePresetPopover filter={filter} currentSearch={currentSearch} />
       )}
+      {results && results.length > 0 && <ExportResultsButton fonts={results} />}
     </div>
   );
 }
