@@ -36,6 +36,9 @@ interface PreviewState {
   setSize: (v: number) => void;
   leading: number;
   setLeading: (v: number) => void;
+  /** Float favorited fonts to the top of the catalog, ahead of the sort order. */
+  favFirst: boolean;
+  setFavFirst: (v: boolean) => void;
 }
 
 const PreviewContext = createContext<PreviewState | null>(null);
@@ -63,6 +66,10 @@ export function PreviewProvider({ children }: { children: ReactNode }) {
     "font-fridge.preview-leading",
     String(LEADING_DEFAULT)
   );
+  const [favFirst, setFavFirstRaw] = useLocalStorageState(
+    "font-fridge.favorites-first",
+    "0"
+  );
   const value = useMemo(() => {
     const parsed = Number(size);
     const parsedLeading = Number(leading);
@@ -80,6 +87,8 @@ export function PreviewProvider({ children }: { children: ReactNode }) {
         ? clampLeading(parsedLeading)
         : LEADING_DEFAULT,
       setLeading: (v: number) => setLeadingRaw(String(clampLeading(v))),
+      favFirst: favFirst === "1",
+      setFavFirst: (v: boolean) => setFavFirstRaw(v ? "1" : "0"),
     };
   }, [
     text,
@@ -95,6 +104,8 @@ export function PreviewProvider({ children }: { children: ReactNode }) {
     setSizeRaw,
     leading,
     setLeadingRaw,
+    favFirst,
+    setFavFirstRaw,
   ]);
   return (
     <PreviewContext.Provider value={value}>{children}</PreviewContext.Provider>

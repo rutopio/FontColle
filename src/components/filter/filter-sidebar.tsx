@@ -36,6 +36,7 @@ import { ClassificationSection } from "./classification-section";
 import { ColorFormatSection, ColorSection } from "./color-section";
 import { weightLabel, widthLabel } from "./constants";
 import { DesignerSection } from "./designer-section";
+import { FavoritesFirstSection } from "./favorites-first-section";
 import { FeatureSection } from "./feature-section";
 import { FontTypeSection } from "./font-type-section";
 import { FILTER_GROUP_IDS, FILTER_GROUPS, type FilterGroupId } from "./groups";
@@ -446,6 +447,7 @@ export function FilterSidebar({
         <div className="flex shrink-0 flex-col gap-4 border-border border-b p-4">
           <PreviewSizeSection />
           <PreviewLeadingSection />
+          <FavoritesFirstSection />
         </div>
       )}
       <ScrollArea

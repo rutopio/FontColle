@@ -96,6 +96,7 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
     setCoverOnly,
     showPreview,
     setShowPreview,
+    favFirst,
   } = usePreview();
   const { favorites, toggle } = useFavorites();
 
@@ -178,6 +179,7 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
   const deferredPreview = useDeferredValue(previewText);
   const renderableIds = useRenderableFontIds(deferredPreview, coverOnly);
   const favDep = favOnly ? favorites : null;
+  const favSet = useMemo(() => new Set(favorites), [favorites]);
   const { results, coverageHid } = useMemo(() => {
     const covered = applyFilters(fonts, deferredFilter);
     const matched = renderableIds
@@ -192,8 +194,27 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
       const matches = searchByQuery(list, deferredFilter.query);
       return byRelevance ? matches : sortFonts(matches, sort);
     };
-    return { results: order(filtered), coverageHid };
-  }, [fonts, deferredFilter, sort, byRelevance, favDep, renderableIds]);
+    const ordered = order(filtered);
+    // Favorites float to the top, each group keeping the sort order above.
+    const results =
+      favFirst && !favOnly && favSet.size > 0
+        ? [
+            ...ordered.filter((f) => favSet.has(f.id)),
+            ...ordered.filter((f) => !favSet.has(f.id)),
+          ]
+        : ordered;
+    return { results, coverageHid };
+  }, [
+    fonts,
+    deferredFilter,
+    sort,
+    byRelevance,
+    favDep,
+    renderableIds,
+    favFirst,
+    favOnly,
+    favSet,
+  ]);
 
   useListScrollRestore(scrollRef, listScrollY);
 
@@ -422,6 +443,7 @@ export function Catalog({ fonts }: { fonts: FontRecord[] }) {
                   onChange={commitFilter}
                   align="left"
                   currentSearch={filterToSearch(shownFilter)}
+                  results={results}
                 />
               )}
               {favOnly && (
